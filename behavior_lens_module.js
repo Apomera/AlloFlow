@@ -241,6 +241,33 @@
 
     const h = React.createElement;
     const { useState, useEffect, useRef, useMemo, useCallback, useReducer } = React;
+
+    // ── UI localization: pack-first, runtime-AI fallback (self-contained) ──
+    // BehaviorLab renders t('behavior_lens.*') || 'English' at ~1.6k sites, but
+    // those keys are not in the lang packs, so non-English viewers saw English.
+    // tt(key, en) keeps the pack lookup (a pack translation always wins if the
+    // keys ever land) and, on a miss, runtime-translates the English fallback
+    // into the viewer's UI language via the component's callGemini — cached
+    // per-device, English fallback, NEVER touching lang/*.js. In English (or
+    // with no callGemini) tt(key, en) === t(key) || en, byte-for-byte.
+    const BL_I18N_KEY = 'allo_behaviorlens_ui_i18n_v1';
+    const LANG_CTX = (typeof window !== 'undefined' && window.AlloLanguageContext) || (React && React.createContext ? React.createContext(null) : null);
+    const STR_REG = {};
+    const LL_CUR = { lang: 'English', cache: {}, t: null };
+    const llLoad = () => { try { return JSON.parse(localStorage.getItem(BL_I18N_KEY)) || {}; } catch (e) { return {}; } };
+    const llStore = (v) => { try { localStorage.setItem(BL_I18N_KEY, JSON.stringify(v)); } catch (e) {} };
+    const llInterp = (s, params) => { if (s == null || !params) return s; Object.keys(params).forEach((k) => { s = s.split('{' + k + '}').join(String(params[k])); }); return s; };
+    const trRuntime = (en, params) => { if (en && typeof en === 'string') STR_REG[en] = true; const p = LL_CUR.cache[LL_CUR.lang]; return llInterp((p && p[en] != null) ? p[en] : en, params); };
+    const tt = (key, en, params) => {
+        let v = null;
+        try { v = LL_CUR.t ? LL_CUR.t(key) : null; } catch (e) { v = null; }
+        if (v != null && v !== '' && v !== key) return llInterp(v, params); // pack translation wins
+        return trRuntime(en, params);
+    };
+    const llCleanJson = (raw) => { let s = String(raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, ''); const f = s.indexOf('{'), l = s.lastIndexOf('}'); return f >= 0 && l > f ? s.slice(f, l + 1) : s; };
+    const llSanitize = (obj, wanted) => { if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null; const out = {}; let n = 0; wanted.forEach((k) => { let v = obj[k]; if (typeof v === 'string') { v = v.slice(0, 600); if (v) { out[k] = v; n++; } } }); return n ? out : null; };
+    const llPrompt = (langName, list) => ['Translate these user-interface labels for a classroom behavior-tracking / ABC-observation app (used by teachers and school psychologists) into natural, concise ' + langName + ' (buttons, headings, field labels, help text — keep them short and professional).', 'Keep any {tokens}, numbers, and any emoji EXACTLY as written. Do NOT translate the acronyms ABC, FBA, BCBA, IEP, IOA, BIP, ABA. No commentary.', 'Return ONLY a JSON object mapping each ENGLISH string (used verbatim as the key) to its ' + langName + ' translation.', JSON.stringify(list)].join(String.fromCharCode(10));
+
     const warnLog = (...args) => console.warn("[BL-WARN]", ...args);
     const debugLog = (...args) => {
         if (typeof console !== "undefined") console.log("[BL-DBG]", ...args);
@@ -386,7 +413,7 @@
     const aiPrintDisclaimerHtml = (t) =>
         `<div style="margin-top:14px;padding:10px 12px;border:1px solid #fde68a;background:#fffbeb;border-radius:6px;font-size:9.5pt;color:#92400e;">`
         + `<strong>⚠️ AI-assisted, not a clinical conclusion.</strong> `
-        + esc(t && t('behavior_lens.ai.print_disclaimer') || 'The AI-generated content in this section is a heuristic estimate, not the professional judgment of a BCBA or licensed clinician. Verify all claims with direct observation before sharing with parents, IEP teams, or administrators.')
+        + esc(tt('behavior_lens.ai.print_disclaimer', 'The AI-generated content in this section is a heuristic estimate, not the professional judgment of a BCBA or licensed clinician. Verify all claims with direct observation before sharing with parents, IEP teams, or administrators.'))
         + `</div>`;
 
     const esc = (s) => {
@@ -613,7 +640,7 @@ Return ONLY valid JSON:
                     type: 'text',
                     value: customVal,
                     onChange: (e) => setCustomVal(e.target.value),
-                    placeholder: t('behavior_lens.abc.other_placeholder') || 'Describe...',
+                    placeholder: tt('behavior_lens.abc.other_placeholder', 'Describe...'),
                     'aria-label': 'Describe other category',
                     className: 'mt-2 w-full text-sm border border-slate-400 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400'
                 })
@@ -640,13 +667,13 @@ Return ONLY valid JSON:
                 // Quick-Fill AI
                 callGemini && h('div', { className: 'px-6 pt-4 pb-0' },
                     h('div', { className: 'bg-purple-50 rounded-xl border border-purple-200 p-3' },
-                        h('label', { className: 'text-[11px] font-bold text-purple-600 uppercase block mb-1.5' }, t('behavior_lens.quick_fill_label') || '🧠 Quick-Fill — Describe what happened'),
+                        h('label', { className: 'text-[11px] font-bold text-purple-600 uppercase block mb-1.5' }, tt('behavior_lens.quick_fill_label', '🧠 Quick-Fill — Describe what happened')),
                         h('div', { className: 'flex gap-2' },
                             h('input', {
                                 type: 'text',
                                 value: quickFillText,
                                 onChange: (e) => setQuickFillText(e.target.value),
-                                placeholder: t('behavior_lens.quick_fill_placeholder') || 'e.g. "Student threw paper during math when asked to show work, teacher redirected calmly"',
+                                placeholder: tt('behavior_lens.quick_fill_placeholder', 'e.g. "Student threw paper during math when asked to show work, teacher redirected calmly"'),
                                 'aria-label': 'Quick-fill description of what happened',
                                 className: 'flex-1 text-xs border border-purple-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-400 outline-none',
                                 onKeyDown: (e) => { if (e.key === 'Enter' && quickFillText.trim()) { e.preventDefault(); handleQuickFill(); } }
@@ -654,9 +681,9 @@ Return ONLY valid JSON:
                             h('button', { onClick: handleQuickFill,
                                 disabled: quickFillLoading || !quickFillText.trim(),
                                 className: 'px-4 py-2 bg-purple-700 text-white rounded-lg text-xs font-bold hover:bg-purple-600 disabled:opacity-40 transition-all whitespace-nowrap'
-                            }, quickFillLoading ? '⏳' : t('behavior_lens.quick_fill_btn') || '🧠 Fill')
+                            }, quickFillLoading ? '⏳' : tt('behavior_lens.quick_fill_btn', '🧠 Fill'))
                         ),
-                        h('p', { className: 'text-[11px] text-purple-700 mt-1' }, t('behavior_lens.quick_fill_hint') || 'AI will parse your description into the fields below. You can then edit manually.')
+                        h('p', { className: 'text-[11px] text-purple-700 mt-1' }, tt('behavior_lens.quick_fill_hint', 'AI will parse your description into the fields below. You can then edit manually.'))
                     )
                 ),
                 // Body
@@ -664,13 +691,13 @@ Return ONLY valid JSON:
                     // Setting
                     h('div', { className: 'mb-4' },
                         h('label', { className: 'block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide' },
-                            '📍 ', t('behavior_lens.abc.setting') || 'Setting / Location'
+                            '📍 ', tt('behavior_lens.abc.setting', 'Setting / Location')
                         ),
                         h('input', {
                             type: 'text',
                             value: setting,
                             onChange: (e) => setSetting(e.target.value),
-                            placeholder: t('behavior_lens.abc.setting_placeholder') || 'e.g., Classroom, Hallway, Cafeteria',
+                            placeholder: tt('behavior_lens.abc.setting_placeholder', 'e.g., Classroom, Hallway, Cafeteria'),
                             'aria-label': 'Setting or location',
                             className: 'w-full text-sm border border-slate-400 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400'
                         })
@@ -682,7 +709,7 @@ Return ONLY valid JSON:
                     // Intensity slider
                     h('div', { className: 'mb-4' },
                         h('label', { className: 'block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide' },
-                            '📊 ', t('behavior_lens.abc.intensity') || 'Intensity', ' — ', intensity, '/5'
+                            '📊 ', tt('behavior_lens.abc.intensity', 'Intensity'), ' — ', intensity, '/5'
                         ),
                         h('input', {
                             type: 'range',
@@ -693,21 +720,21 @@ Return ONLY valid JSON:
                             className: 'w-full accent-indigo-600'
                         }),
                         h('div', { className: 'flex justify-between text-[11px] text-slate-600 mt-0.5' },
-                            h('span', null, t('behavior_lens.abc.mild') || 'Mild'),
-                            h('span', null, t('behavior_lens.abc.moderate') || 'Moderate'),
-                            h('span', null, t('behavior_lens.abc.high_intensity') || 'High intensity')
+                            h('span', null, tt('behavior_lens.abc.mild', 'Mild')),
+                            h('span', null, tt('behavior_lens.abc.moderate', 'Moderate')),
+                            h('span', null, tt('behavior_lens.abc.high_intensity', 'High intensity'))
                         )
                     ),
                     // Duration
                     h('div', { className: 'mb-4' },
                         h('label', { className: 'block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide' },
-                            '⏱️ ', t('behavior_lens.abc.duration_label') || 'Duration (seconds)'
+                            '⏱️ ', tt('behavior_lens.abc.duration_label', 'Duration (seconds)')
                         ),
                         h('input', {
                             type: 'number',
                             value: duration,
                             onChange: (e) => setDuration(e.target.value),
-                            placeholder: t('behavior_lens.abc.duration_placeholder') || 'Optional',
+                            placeholder: tt('behavior_lens.abc.duration_placeholder', 'Optional'),
                             'aria-label': 'Duration in seconds',
                             min: 0,
                             className: 'w-full text-sm border border-slate-400 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400'
@@ -716,12 +743,12 @@ Return ONLY valid JSON:
                     // Notes
                     h('div', { className: 'mb-4' },
                         h('label', { className: 'block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide' },
-                            '📝 ', t('behavior_lens.abc.notes') || 'Notes'
+                            '📝 ', tt('behavior_lens.abc.notes', 'Notes')
                         ),
                         h('textarea', {
                             value: notes,
                             onChange: (e) => setNotes(e.target.value),
-                            placeholder: t('behavior_lens.abc.notes_placeholder') || 'Additional context...',
+                            placeholder: tt('behavior_lens.abc.notes_placeholder', 'Additional context...'),
                             'aria-label': 'Additional notes',
                             rows: 2,
                             className: 'w-full text-sm border border-slate-400 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none'
@@ -733,14 +760,14 @@ Return ONLY valid JSON:
                     h('button', { "aria-label": "On Close",
                         onClick: onClose,
                         className: 'px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors'
-                    }, t('common.cancel') || 'Cancel'),
+                    }, tt('common.cancel', 'Cancel')),
                     h('button', { onClick: handleSave,
                         disabled: !antecedent || !behavior || !consequence,
                         className: `px-5 py-2 text-sm font-bold rounded-lg transition-all ${antecedent && behavior && consequence
                             ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg'
                             : 'bg-slate-100 text-slate-600 cursor-not-allowed'
                             }`
-                    }, t('common.save') || 'Save Entry')
+                    }, tt('common.save', 'Save Entry'))
                 )
             )
         );
@@ -794,7 +821,7 @@ Make questions warm, specific to THIS incident (not generic), and age-appropriat
                 setRestorativeText(result);
             } catch (err) {
                 warnLog('Restorative questions failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.failed_to_generate_questions') || 'Failed to generate questions', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.failed_to_generate_questions', 'Failed to generate questions'), 'error');
                 setRestorativeId(null);
             } finally { setRestorativeLoading(false); }
         };
@@ -825,12 +852,12 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 const updated = { ...entry, ...parsed, intensity: Math.min(5, Math.max(1, parseInt(parsed.intensity) || entry.intensity)) };
                 handleSaveEntry(updated);
                 setShowModal(false);
-                if (addToast) addToast(t('behavior_lens.toast.entry_updated_via_ai') || 'Entry updated via AI ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.entry_updated_via_ai', 'Entry updated via AI ✨'), 'success');
                 setNlEditId(null);
                 setNlEditInput('');
             } catch (err) {
                 warnLog('NL edit failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.ai_edit_failed') || 'AI edit failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.ai_edit_failed', 'AI edit failed'), 'error');
             } finally { setNlEditLoading(false); }
         };
 
@@ -899,13 +926,13 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             });
             setShowModal(false);
             setEditEntry(null);
-            if (addToast) addToast(t('behavior_lens.abc.entry_saved') || 'ABC entry saved ✅', 'success');
+            if (addToast) addToast(tt('behavior_lens.abc.entry_saved', 'ABC entry saved ✅'), 'success');
         };
 
         const handleDelete = (id) => {
             setEntries(prev => prev.filter(e => e.id !== id));
             setSelectedIds(prev => { const n = new Set(prev); n.delete(id); return n; });
-            if (addToast) addToast(t('behavior_lens.abc.entry_deleted') || 'Entry deleted', 'info');
+            if (addToast) addToast(tt('behavior_lens.abc.entry_deleted', 'Entry deleted'), 'info');
         };
 
         const handleBulkDelete = () => {
@@ -942,7 +969,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
 
         const dateRangeOpts = [
             { key: 'all', label: 'All' },
-            { key: 'today', label: (t('behavior_lens.raw.today') || 'Today') },
+            { key: 'today', label: (tt('behavior_lens.raw.today', 'Today')) },
             { key: '7', label: '7d' },
             { key: '30', label: '30d' }
         ];
@@ -952,7 +979,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             h('div', { className: 'flex items-center justify-between' },
                 h('div', null,
                     h('h3', { className: 'text-lg font-black text-slate-800' },
-                        '📋 ', t('behavior_lens.abc.title') || 'ABC Data Collection'
+                        '📋 ', tt('behavior_lens.abc.title', 'ABC Data Collection')
                     ),
                     h('p', { className: 'text-xs text-slate-600 mt-0.5' },
                         studentName ? `${t('behavior_lens.abc.for_student') || 'For'}: ${studentName}` : '',
@@ -968,12 +995,12 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                             }`
                     },
                         h(Sparkles, { size: 13 }),
-                        analyzing ? (t('behavior_lens.abc.analyzing') || 'Analyzing...') : (t('behavior_lens.abc.ai_analyze') || 'AI Analyze')
+                        analyzing ? (tt('behavior_lens.abc.analyzing', 'Analyzing...')) : (tt('behavior_lens.abc.ai_analyze', 'AI Analyze'))
                     ),
                     h('button', { "aria-label": "Toggle edit entry",
                         onClick: () => { setEditEntry(null); setShowModal(true); },
                         className: 'bg-indigo-600 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all flex items-center gap-1.5'
-                    }, h(Plus, { size: 14 }), t('behavior_lens.abc.add_entry') || 'Add Entry')
+                    }, h(Plus, { size: 14 }), tt('behavior_lens.abc.add_entry', 'Add Entry'))
                 )
             ),
             // Search + Date range + Behavior filter bar
@@ -984,7 +1011,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         h('input', {
                             value: searchText,
                             onChange: e => setSearchText(e.target.value),
-                            placeholder: t('behavior_lens.search_placeholder') || 'Search antecedent, behavior, consequence, notes, setting...',
+                            placeholder: tt('behavior_lens.search_placeholder', 'Search antecedent, behavior, consequence, notes, setting...'),
                             'aria-label': 'Search ABC entries',
                             className: 'w-full text-xs ps-8 pe-3 py-2 border border-slate-400 rounded-lg focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 outline-none transition-all'
                         }),
@@ -1006,7 +1033,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 ),
                 // Behavior filter pills
                 h('div', { className: 'flex items-center gap-2 flex-wrap' },
-                    h('span', { className: 'text-xs font-bold text-slate-600' }, t('behavior_lens.filter') || 'Filter:'),
+                    h('span', { className: 'text-xs font-bold text-slate-600' }, tt('behavior_lens.filter', 'Filter:')),
                     uniqueBehaviors.map(beh =>
                         h('button', { "aria-label": "Toggle filter behavior",
                             key: beh,
@@ -1015,7 +1042,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                 ? 'bg-indigo-600 text-white border-indigo-600'
                                 : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-600'
                                 }`
-                        }, beh === 'all' ? (t('behavior_lens.all') || 'All') : beh)
+                        }, beh === 'all' ? (tt('behavior_lens.all', 'All')) : beh)
                     )
                 )
             ),
@@ -1035,41 +1062,41 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     ? h('button', { "aria-label": "Toggle confirm bulk delete",
                         onClick: () => setConfirmBulkDelete(true),
                         className: 'text-[11px] px-3 py-1 bg-red-600 text-white rounded-lg font-bold hover:bg-red-500 transition-all'
-                    }, t('behavior_lens.delete_selected') || '🗑 Delete Selected')
+                    }, tt('behavior_lens.delete_selected', '🗑 Delete Selected'))
                     : h('div', { className: 'flex items-center gap-2' },
-                        h('span', { className: 'text-[11px] text-red-700 font-bold' }, t('behavior_lens.are_you_sure') || 'Are you sure?'),
+                        h('span', { className: 'text-[11px] text-red-700 font-bold' }, tt('behavior_lens.are_you_sure', 'Are you sure?')),
                         h('button', { onClick: handleBulkDelete,
                             className: 'text-[11px] px-3 py-1 bg-red-700 text-white rounded-lg font-black hover:bg-red-600 transition-all'
-                        }, t('behavior_lens.yes_delete') || 'Yes, Delete'),
+                        }, tt('behavior_lens.yes_delete', 'Yes, Delete')),
                         h('button', { "aria-label": "Toggle confirm bulk delete",
                             onClick: () => setConfirmBulkDelete(false),
                             className: 'text-[11px] px-3 py-1 bg-white text-slate-600 border border-slate-400 rounded-lg font-bold hover:bg-slate-50 transition-all'
-                        }, t('common.cancel') || 'Cancel')
+                        }, tt('common.cancel', 'Cancel'))
                     ),
                 h('button', { "aria-label": "Toggle selected ids",
                     onClick: () => { setSelectedIds(new Set()); setConfirmBulkDelete(false); },
                     className: 'ms-auto text-[11px] text-red-600 hover:text-red-600 font-bold transition-colors'
-                }, t('behavior_lens.clear_selection') || 'Clear selection')
+                }, tt('behavior_lens.clear_selection', 'Clear selection'))
             ),
             // Entries table
             entries.length === 0
                 ? h('div', { className: 'text-center py-16 bg-white rounded-xl border-2 border-dashed border-slate-200' },
                     h('div', { className: 'text-4xl mb-3' }, '📊'),
                     h('p', { className: 'text-sm font-bold text-slate-600' },
-                        t('behavior_lens.abc.no_entries') || 'No ABC entries yet'
+                        tt('behavior_lens.abc.no_entries', 'No ABC entries yet')
                     ),
                     h('p', { className: 'text-xs text-slate-600 mt-1' },
-                        t('behavior_lens.abc.no_entries_hint') || 'Click "Add Entry" to start recording behavioral observations'
+                        tt('behavior_lens.abc.no_entries_hint', 'Click "Add Entry" to start recording behavioral observations')
                     )
                 )
                 : sorted.length === 0
                     ? h('div', { className: 'text-center py-10 bg-white rounded-xl border border-slate-400' },
                         h('div', { className: 'text-2xl mb-2' }, '🔍'),
-                        h('p', { className: 'text-sm font-bold text-slate-600' }, t('behavior_lens.no_entries_match') || 'No entries match your filters'),
+                        h('p', { className: 'text-sm font-bold text-slate-600' }, tt('behavior_lens.no_entries_match', 'No entries match your filters')),
                         h('button', { "aria-label": "Toggle search text",
                             onClick: () => { setSearchText(''); setDateRange('all'); setFilterBehavior('all'); },
                             className: 'mt-2 text-xs text-indigo-600 font-bold hover:underline'
-                        }, t('behavior_lens.clear_all_filters') || 'Clear all filters')
+                        }, tt('behavior_lens.clear_all_filters', 'Clear all filters'))
                     )
                     : h('div', { className: 'bg-white rounded-xl border border-slate-400 overflow-hidden shadow-sm' },
                         h('div', { className: 'overflow-x-auto' },
@@ -1095,14 +1122,14 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                 },
                                                 className: 'px-3 py-2.5 text-start text-xs font-bold text-slate-600 uppercase tracking-wide cursor-pointer hover:text-indigo-600 transition-colors select-none'
                                             },
-                                                col === 'timestamp' ? (t('behavior_lens.abc.time') || 'Time') :
+                                                col === 'timestamp' ? (tt('behavior_lens.abc.time', 'Time')) :
                                                     col === 'intensity' ? '📊' :
                                                         (t(`behavior_lens.abc.${col}`) || col.charAt(0).toUpperCase() + col.slice(1)),
                                                 sortField === col && h('span', { className: 'ms-1' }, sortDir === 'asc' ? '↑' : '↓')
                                             )
                                         ),
                                         // Phase column header
-                                        entries.some(e => e.phase) && h('th', { scope: 'col', className: 'px-2 py-2.5 text-center text-xs font-bold text-slate-600 uppercase tracking-wide' }, t('behavior_lens.abc.phase') || 'Phase'),
+                                        entries.some(e => e.phase) && h('th', { scope: 'col', className: 'px-2 py-2.5 text-center text-xs font-bold text-slate-600 uppercase tracking-wide' }, tt('behavior_lens.abc.phase', 'Phase')),
                                         // Notes indicator header
                                         h('th', { scope: 'col', className: 'px-2 py-2.5 text-center text-xs font-bold text-slate-600 w-8' }, '📝'),
                                         h('th', { scope: 'col', className: 'px-3 py-2.5 text-end text-xs font-bold text-slate-600 uppercase' }, '')
@@ -1177,12 +1204,12 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                         callGemini && h('button', { "aria-label": "Restorative Questions",
                                                             onClick: () => handleRestorativeQuestions(entry),
                                                             className: `p-2 rounded transition-colors ${restorativeId === entry.id ? 'bg-purple-100 text-purple-600' : 'text-slate-600 hover:bg-purple-50 hover:text-purple-500'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400`,
-                                                            title: t('behavior_lens.restorative_questions') || 'Restorative Questions'
+                                                            title: tt('behavior_lens.restorative_questions', 'Restorative Questions')
                                                         }, restorativeLoading && restorativeId === entry.id ? '⏳' : '💬'),
                                                         callGemini && h('button', { "aria-label": "Toggle nl edit id",
                                                             onClick: () => { setNlEditId(nlEditId === entry.id ? null : entry.id); setNlEditInput(''); },
                                                             className: `p-2 rounded transition-colors ${nlEditId === entry.id ? 'bg-amber-100 text-amber-600' : 'text-slate-600 hover:bg-amber-50 hover:text-amber-500'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400`,
-                                                            title: t('behavior_lens.ai_edit') || 'AI Edit'
+                                                            title: tt('behavior_lens.ai_edit', 'AI Edit')
                                                         }, '✏️🧠'),
                                                         h('button', { "aria-label": "Toggle edit entry",
                                                             onClick: () => { setEditEntry(entry); setShowModal(true); },
@@ -1201,11 +1228,11 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                 h('td', { colSpan: 8, className: 'px-6 py-3' },
                                                     h('div', { className: 'flex gap-6' },
                                                         entry.setting && h('div', null,
-                                                            h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.setting_label') || '📍 Setting'),
+                                                            h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.setting_label', '📍 Setting')),
                                                             h('p', { className: 'text-xs text-slate-700 mt-0.5' }, entry.setting)
                                                         ),
                                                         entry.notes && h('div', { className: 'flex-1' },
-                                                            h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.notes_label_inline') || '📝 Notes'),
+                                                            h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.notes_label_inline', '📝 Notes')),
                                                             h('p', { className: 'text-xs text-slate-700 mt-0.5 leading-relaxed' }, entry.notes)
                                                         )
                                                     )
@@ -1221,7 +1248,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                             value: nlEditInput,
                                                             onChange: e => setNlEditInput(e.target.value),
                                                             onKeyDown: e => e.key === 'Enter' && handleNlEdit(entry),
-                                                            placeholder: t('behavior_lens.nl_edit_placeholder') || 'e.g. "change consequence to teacher redirected"',
+                                                            placeholder: tt('behavior_lens.nl_edit_placeholder', 'e.g. "change consequence to teacher redirected"'),
                                                             'aria-label': 'Natural language edit for this entry',
                                                             className: 'flex-1 text-xs px-3 py-2 border border-amber-600 rounded-lg focus:border-amber-400 focus:ring-2 focus:ring-amber-300 outline-none',
                                                             autoFocus: true
@@ -1244,11 +1271,11 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                 h('td', { colSpan: 8, className: 'px-6 py-4' },
                                                     h('div', { className: 'space-y-2' },
                                                         h('div', { className: 'flex justify-between items-center' },
-                                                            h('h4', { className: 'text-xs font-black text-purple-700 uppercase flex items-center gap-1.5' }, t('behavior_lens.restorative_title') || '💬 Restorative Conversation Starters'),
-                                                            h('button', { "aria-label": "Toggle restorative id", onClick: () => setRestorativeId(null), className: 'text-purple-700 hover:text-purple-600 text-xs' }, t('behavior_lens.close') || '✕ Close')
+                                                            h('h4', { className: 'text-xs font-black text-purple-700 uppercase flex items-center gap-1.5' }, tt('behavior_lens.restorative_title', '💬 Restorative Conversation Starters')),
+                                                            h('button', { "aria-label": "Toggle restorative id", onClick: () => setRestorativeId(null), className: 'text-purple-700 hover:text-purple-600 text-xs' }, tt('behavior_lens.close', '✕ Close'))
                                                         ),
                                                         restorativeLoading
-                                                            ? h('div', { className: 'text-xs text-purple-500 animate-pulse' }, t('behavior_lens.generating_questions') || '⏳ Generating context-specific questions...')
+                                                            ? h('div', { className: 'text-xs text-purple-500 animate-pulse' }, tt('behavior_lens.generating_questions', '⏳ Generating context-specific questions...'))
                                                             : h('div', { className: 'text-xs text-purple-800 whitespace-pre-wrap leading-relaxed' }, restorativeText)
                                                     )
                                                 )
@@ -1336,7 +1363,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             if (method === 'interval') sessionData.data = { intervals, totalIntervals: intervals.length, occurredCount: intervals.filter(i => i.occurred).length };
             if (method === 'latency') sessionData.data = { latencyMs: latencyEnd && latencyStart ? latencyEnd - latencyStart : null };
             onSaveSession(sessionData);
-            if (addToast) addToast(t('behavior_lens.obs.saved') || 'Observation session saved ✅', 'success');
+            if (addToast) addToast(tt('behavior_lens.obs.saved', 'Observation session saved ✅'), 'success');
             onClose();
         };
 
@@ -1346,7 +1373,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 h('div', { className: 'flex items-center gap-3' },
                     h('div', { className: 'w-3 h-3 rounded-full animate-pulse', style: { background: isRunning ? '#ef4444' : '#64748b' } }),
                     h('h2', { className: 'text-lg font-black' },
-                        '🔍 ', t('behavior_lens.obs.title') || 'Live Observation'
+                        '🔍 ', tt('behavior_lens.obs.title', 'Live Observation')
                     ),
                     studentName && h('span', { className: 'text-sm text-slate-300 ms-2' }, `— ${studentName}`)
                 ),
@@ -1354,7 +1381,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     h('button', { onClick: handleSave,
                         disabled: timer === 0,
                         className: 'text-xs font-bold px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 transition-colors disabled:opacity-40 flex items-center gap-1.5'
-                    }, h(Save, { size: 14 }), t('behavior_lens.obs.save_session') || 'Save Session'),
+                    }, h(Save, { size: 14 }), tt('behavior_lens.obs.save_session', 'Save Session')),
                     h('button', { "aria-label": "On Close",
                         onClick: onClose,
                         className: 'p-2 rounded-full hover:bg-white/10 transition-colors'
@@ -1385,7 +1412,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         fmtDuration(timer)
                     ),
                     h('div', { className: 'text-sm text-slate-300 mt-1' },
-                        t('behavior_lens.obs.elapsed') || 'Elapsed Time'
+                        tt('behavior_lens.obs.elapsed', 'Elapsed Time')
                     )
                 ),
                 // Start/stop button
@@ -1400,7 +1427,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 method === 'frequency' && h('div', { className: 'flex flex-col items-center gap-4' },
                     h('div', { className: 'text-5xl font-black text-indigo-400 tabular-nums' }, frequency),
                     h('div', { className: 'text-xs text-slate-300' },
-                        t('behavior_lens.obs.occurrences') || 'Occurrences',
+                        tt('behavior_lens.obs.occurrences', 'Occurrences'),
                         timer > 0 && ` (${(frequency / (timer / 60)).toFixed(1)}/min)`
                     ),
                     h('div', { className: 'flex gap-3' },
@@ -1419,8 +1446,8 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 method === 'duration' && h('div', { className: 'flex flex-col items-center gap-4' },
                     h('div', { className: 'text-sm text-slate-300' },
                         durationStart
-                            ? (t('behavior_lens.obs.behavior_occurring') || '🔴 Behavior occurring...')
-                            : (t('behavior_lens.obs.tap_when_starts') || 'Tap when behavior starts')
+                            ? (tt('behavior_lens.obs.behavior_occurring', '🔴 Behavior occurring...'))
+                            : (tt('behavior_lens.obs.tap_when_starts', 'Tap when behavior starts'))
                     ),
                     h('button', { onClick: () => {
                             if (durationStart) {
@@ -1441,7 +1468,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 ),
                 method === 'interval' && h('div', { className: 'flex flex-col items-center gap-4' },
                     !isRunning && h('div', { className: 'flex items-center gap-2' },
-                        h('span', { className: 'text-xs text-slate-600' }, t('behavior_lens.obs.interval_length') || 'Interval:'),
+                        h('span', { className: 'text-xs text-slate-600' }, tt('behavior_lens.obs.interval_length', 'Interval:')),
                         h('select', {
                             value: intervalLength,
                             onChange: (e) => setIntervalLength(parseInt(e.target.value)),
@@ -1463,10 +1490,10 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 method === 'latency' && h('div', { className: 'flex flex-col items-center gap-4' },
                     h('div', { className: 'text-sm text-slate-600' },
                         latencyEnd
-                            ? (t('behavior_lens.obs.latency_recorded') || 'Latency recorded!')
+                            ? (tt('behavior_lens.obs.latency_recorded', 'Latency recorded!'))
                             : latencyStart
-                                ? (t('behavior_lens.obs.waiting_for_behavior') || '⏳ Waiting for behavior...')
-                                : (t('behavior_lens.obs.start_to_begin') || 'Start timer to begin latency measurement')
+                                ? (tt('behavior_lens.obs.waiting_for_behavior', '⏳ Waiting for behavior...'))
+                                : (tt('behavior_lens.obs.start_to_begin', 'Start timer to begin latency measurement'))
                     ),
                     latencyStart && !latencyEnd && h('button', { "aria-label": "Toggle latency end",
                         onClick: () => setLatencyEnd(Date.now()),
@@ -1483,7 +1510,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     type: 'text',
                     value: notes,
                     onChange: (e) => setNotes(e.target.value),
-                    placeholder: t('behavior_lens.obs.session_notes') || 'Session notes...',
+                    placeholder: tt('behavior_lens.obs.session_notes', 'Session notes...'),
                     'aria-label': 'Session notes',
                     className: 'flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500'
                 })
@@ -1630,8 +1657,8 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         if (stats.allAbc === 0 && stats.totalObs === 0) {
             return h('div', { className: 'max-w-4xl mx-auto text-center py-16' },
                 h('div', { className: 'text-5xl mb-4' }, '📊'),
-                h('h3', { className: 'text-lg font-black text-slate-700 mb-2' }, t('behavior_lens.overview.empty_title') || 'No Data Yet'),
-                h('p', { className: 'text-sm text-slate-600' }, t('behavior_lens.overview.empty_desc') || 'Start collecting ABC data or run live observations to see trends here.')
+                h('h3', { className: 'text-lg font-black text-slate-700 mb-2' }, tt('behavior_lens.overview.empty_title', 'No Data Yet')),
+                h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.overview.empty_desc', 'Start collecting ABC data or run live observations to see trends here.'))
             );
         }
 
@@ -1653,24 +1680,24 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             ),
             // Stat cards row
             h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3' },
-                renderStatCard('📋', t('behavior_lens.stat_abc_entries') || 'ABC Entries', stats.totalAbc, 'indigo'),
-                renderStatCard('🔍', t('behavior_lens.stat_observations') || 'Observations', stats.totalObs, 'emerald'),
-                renderStatCard('📅', t('behavior_lens.stat_this_week') || 'This Week', stats.thisWeek.length, 'sky'),
-                renderStatCard('⚡', t('behavior_lens.stat_avg_intensity') || 'Avg Intensity', stats.avgIntensity, 'amber')
+                renderStatCard('📋', tt('behavior_lens.stat_abc_entries', 'ABC Entries'), stats.totalAbc, 'indigo'),
+                renderStatCard('🔍', tt('behavior_lens.stat_observations', 'Observations'), stats.totalObs, 'emerald'),
+                renderStatCard('📅', tt('behavior_lens.stat_this_week', 'This Week'), stats.thisWeek.length, 'sky'),
+                renderStatCard('⚡', tt('behavior_lens.stat_avg_intensity', 'Avg Intensity'), stats.avgIntensity, 'amber')
             ),
             // Week-over-week comparison strip
             (stats.thisWeek.length > 0 || stats.lastWeek.length > 0) && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
-                h('h3', { className: 'text-xs font-black text-slate-600 uppercase mb-3' }, '📊 ' + (t('behavior_lens.week_comparison') || 'Week-over-Week Comparison')),
+                h('h3', { className: 'text-xs font-black text-slate-600 uppercase mb-3' }, '📊 ' + (tt('behavior_lens.week_comparison', 'Week-over-Week Comparison'))),
                 h('div', { className: 'grid grid-cols-2 gap-4' },
                     // Count comparison
                     h('div', { className: 'flex items-center gap-3 p-3 rounded-lg bg-slate-50' },
                         h('div', { className: 'text-center' },
-                            h('div', { className: 'text-[11px] text-slate-600 uppercase font-bold' }, t('behavior_lens.last_week') || 'Last Week'),
+                            h('div', { className: 'text-[11px] text-slate-600 uppercase font-bold' }, tt('behavior_lens.last_week', 'Last Week')),
                             h('div', { className: 'text-xl font-black text-slate-600' }, stats.lastWeek.length)
                         ),
                         h('div', { className: 'text-lg font-black text-slate-600' }, '→'),
                         h('div', { className: 'text-center' },
-                            h('div', { className: 'text-[11px] text-slate-600 uppercase font-bold' }, t('behavior_lens.this_week') || 'This Week'),
+                            h('div', { className: 'text-[11px] text-slate-600 uppercase font-bold' }, tt('behavior_lens.this_week', 'This Week')),
                             h('div', { className: 'text-xl font-black text-slate-700' }, stats.thisWeek.length)
                         ),
                         h('div', { className: `text-center px-2.5 py-1 rounded-full text-xs font-black ${stats.wowCountChange <= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}` },
@@ -1682,12 +1709,12 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     // Intensity comparison
                     h('div', { className: 'flex items-center gap-3 p-3 rounded-lg bg-slate-50' },
                         h('div', { className: 'text-center' },
-                            h('div', { className: 'text-[11px] text-slate-600 uppercase font-bold' }, t('behavior_lens.avg_intensity') || 'Avg Intensity'),
+                            h('div', { className: 'text-[11px] text-slate-600 uppercase font-bold' }, tt('behavior_lens.avg_intensity', 'Avg Intensity')),
                             h('div', { className: 'text-xl font-black text-slate-600' }, stats.lastWeekAvgI.toFixed(1))
                         ),
                         h('div', { className: 'text-lg font-black text-slate-600' }, '→'),
                         h('div', { className: 'text-center' },
-                            h('div', { className: 'text-[11px] text-slate-600 uppercase font-bold' }, t('behavior_lens.now') || 'Now'),
+                            h('div', { className: 'text-[11px] text-slate-600 uppercase font-bold' }, tt('behavior_lens.now', 'Now')),
                             h('div', { className: 'text-xl font-black text-slate-700' }, stats.thisWeekAvgI.toFixed(1))
                         ),
                         stats.wowIntensityChange !== 0 && h('div', { className: `text-center px-2.5 py-1 rounded-full text-xs font-black ${stats.wowIntensityChange <= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}` },
@@ -1698,7 +1725,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             ),
             // Trend chart
             stats.trendData.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, '📈 ', t('behavior_lens.overview.trend') || 'Daily Trend'),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, '📈 ', tt('behavior_lens.overview.trend', 'Daily Trend')),
                 h('div', { className: 'flex items-end gap-1', style: { height: '120px' } },
                     stats.trendData.map((day, i) => {
                         const barH = maxTrend > 0 ? (day.count / maxTrend) * 100 : 0;
@@ -1724,25 +1751,25 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 h('div', { className: 'flex items-center gap-3 mt-3 justify-center' },
                     h('div', { className: 'flex items-center gap-1' },
                         h('div', { className: 'w-3 h-3 rounded-sm', style: { background: '#86efac' } }),
-                        h('span', { className: 'text-[11px] text-slate-600' }, t('behavior_lens.low') || 'Low')
+                        h('span', { className: 'text-[11px] text-slate-600' }, tt('behavior_lens.low', 'Low'))
                     ),
                     h('div', { className: 'flex items-center gap-1' },
                         h('div', { className: 'w-3 h-3 rounded-sm', style: { background: '#fde047' } }),
-                        h('span', { className: 'text-[11px] text-slate-600' }, t('behavior_lens.med') || 'Med')
+                        h('span', { className: 'text-[11px] text-slate-600' }, tt('behavior_lens.med', 'Med'))
                     ),
                     h('div', { className: 'flex items-center gap-1' },
                         h('div', { className: 'w-3 h-3 rounded-sm', style: { background: '#fb923c' } }),
-                        h('span', { className: 'text-[11px] text-slate-600' }, t('behavior_lens.high') || 'High')
+                        h('span', { className: 'text-[11px] text-slate-600' }, tt('behavior_lens.high', 'High'))
                     ),
                     h('div', { className: 'flex items-center gap-1' },
                         h('div', { className: 'w-3 h-3 rounded-sm', style: { background: '#f87171' } }),
-                        h('span', { className: 'text-[11px] text-slate-600' }, t('behavior_lens.high_intensity_label') || 'High intensity')
+                        h('span', { className: 'text-[11px] text-slate-600' }, tt('behavior_lens.high_intensity_label', 'High intensity'))
                     )
                 )
             ),
             // Weekly heatmap
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, '📅 ', t('behavior_lens.overview.weekly') || 'Weekly Heatmap'),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, '📅 ', tt('behavior_lens.overview.weekly', 'Weekly Heatmap')),
                 h('div', { className: 'flex gap-2 justify-between' },
                     dayLabels.map((day, i) => {
                         const count = stats.dayMap[i] || 0;
@@ -1759,7 +1786,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             ),
             // Hour-of-day distribution
             Object.keys(stats.hourMap).length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '🕐 ', t('behavior_lens.overview.time_of_day') || 'Time of Day Distribution'),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '🕐 ', tt('behavior_lens.overview.time_of_day', 'Time of Day Distribution')),
                 h('div', { className: 'flex items-end gap-0.5', style: { height: '60px' } },
                     Array.from({ length: 24 }, (_, hr) => {
                         const count = stats.hourMap[hr] || 0;
@@ -1790,19 +1817,19 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             // Top antecedents & consequences
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4' },
                 stats.topAntecedents.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                    h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '🔺 ', t('behavior_lens.overview.top_antecedents') || 'Top Antecedents'),
+                    h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '🔺 ', tt('behavior_lens.overview.top_antecedents', 'Top Antecedents')),
                     renderBarChart(stats.topAntecedents, stats.topAntecedents[0]?.[1] || 1, 'indigo')
                 ),
                 stats.topConsequences.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                    h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '🔻 ', t('behavior_lens.overview.top_consequences') || 'Top Consequences'),
+                    h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '🔻 ', tt('behavior_lens.overview.top_consequences', 'Top Consequences')),
                     renderBarChart(stats.topConsequences, stats.topConsequences[0]?.[1] || 1, 'purple')
                 )
             ),
             // Antecedent → Behavior Correlation Matrix
             stats.topBehaviors.length > 0 && Object.keys(stats.corrMatrix).length > 0 &&
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-1' }, '🔗 ' + (t('behavior_lens.correlation_matrix') || 'Antecedent → Behavior Correlations')),
-                h('p', { className: 'text-[11px] text-slate-600 mb-3' }, t('behavior_lens.correlation_desc') || 'Darker cells indicate stronger co-occurrence between a trigger and behavior'),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-1' }, '🔗 ' + (tt('behavior_lens.correlation_matrix', 'Antecedent → Behavior Correlations'))),
+                h('p', { className: 'text-[11px] text-slate-600 mb-3' }, tt('behavior_lens.correlation_desc', 'Darker cells indicate stronger co-occurrence between a trigger and behavior')),
                 h('div', { className: 'overflow-x-auto' },
                     h('table', { className: 'w-full text-xs', style: { borderCollapse: 'separate', borderSpacing: '2px' } },
                         h('caption', { className: 'sr-only' }, '🔗 '), h('thead', null,
@@ -1839,7 +1866,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             ),
             // Intensity distribution
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '🌡️ ', t('behavior_lens.overview.intensity_dist') || 'Intensity Distribution'),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '🌡️ ', tt('behavior_lens.overview.intensity_dist', 'Intensity Distribution')),
                 h('div', { className: 'flex gap-2 items-end h-24' },
                     [1, 2, 3, 4, 5].map(level => {
                         const count = stats.intensities[level] || 0;
@@ -1859,7 +1886,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             // Structured AI Insight Cards
             (aiAnalysis || stats.topChain || stats.peakRisk) &&
             h('div', { className: 'space-y-3', 'data-help-key': 'bl_data_insights' },
-                h('h3', { className: 'text-sm font-black text-slate-800' }, '🧠 ', t('behavior_lens.overview.ai_summary') || 'Data Insights'),
+                h('h3', { className: 'text-sm font-black text-slate-800' }, '🧠 ', tt('behavior_lens.overview.ai_summary', 'Data Insights')),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
                     // Top Pattern card
                     stats.topChain && h('div', { className: 'bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-200 p-4' },
@@ -1937,7 +1964,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 if (!window.confirm(msg)) return;
             }
             setCounters(prev => prev.filter(c => c.id !== id));
-            if (addToast) addToast(t('behavior_lens.toast.counter_removed') || 'Counter removed', 'info');
+            if (addToast) addToast(tt('behavior_lens.toast.counter_removed', 'Counter removed'), 'info');
         };
 
         const handleSave = () => {
@@ -1957,7 +1984,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     }))
                 }
             });
-            if (addToast) addToast(t('behavior_lens.freq.saved') || 'Session saved ✅', 'success');
+            if (addToast) addToast(tt('behavior_lens.freq.saved', 'Session saved ✅'), 'success');
             onClose();
         };
 
@@ -1975,7 +2002,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 ),
                 h('button', { onClick: handleSave,
                     className: 'px-4 py-2 bg-emerald-700 text-white rounded-full text-sm font-bold hover:bg-emerald-400 transition-colors'
-                }, t('behavior_lens.freq.save') || 'Save')
+                }, tt('behavior_lens.freq.save', 'Save'))
             ),
 
             // Total counter display (if multiple counters)
@@ -2000,7 +2027,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                             h('input', {
                                 value: counter.label,
                                 onChange: (e) => setCounters(prev => prev.map(c => c.id === counter.id ? { ...c, label: e.target.value } : c)),
-                                placeholder: t('behavior_lens.ph.behavior') || 'Behavior...',
+                                placeholder: tt('behavior_lens.ph.behavior', 'Behavior...'),
                                 'aria-label': 'Behavior counter label',
                                 className: 'flex-1 bg-transparent text-white text-xs text-center border-b border-white/20 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400 outline-none py-0.5'
                             }),
@@ -2035,7 +2062,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 h('input', {
                     value: newLabel,
                     onChange: (e) => setNewLabel(e.target.value),
-                    placeholder: t('behavior_lens.ph.new_behavior_label') || 'New behavior label...',
+                    placeholder: tt('behavior_lens.ph.new_behavior_label', 'New behavior label...'),
                     'aria-label': 'New behavior label',
                     onKeyDown: (e) => { if (e.key === 'Enter') addCounter(); },
                     className: 'bg-white/10 border border-white/20 text-white text-sm rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-48'
@@ -2060,7 +2087,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             // Timer
             h('div', { className: 'absolute bottom-8 text-center' },
                 h('div', { className: 'text-3xl font-black tabular-nums text-slate-600' }, fmtDuration(elapsed)),
-                h('div', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.freq.elapsed') || 'Elapsed')
+                h('div', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.freq.elapsed', 'Elapsed'))
             )
         );
     };
@@ -2117,14 +2144,14 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 duration: elapsed,
                 data: { mode, intervalSec, totalIntervals, grid: [...grid], occurredCount, completedCount, percentage: parseFloat(pct) }
             });
-            if (addToast) addToast(t('behavior_lens.interval.saved') || 'Interval session saved ✅', 'success');
+            if (addToast) addToast(tt('behavior_lens.interval.saved', 'Interval session saved ✅'), 'success');
             onClose();
         };
 
         const modeLabels = {
-            partial: { label: t('behavior_lens.obs_partial') || 'Partial Interval', desc: 'Mark if behavior occurred at ANY point' },
-            whole: { label: t('behavior_lens.obs_whole') || 'Whole Interval', desc: 'Mark only if behavior lasted the ENTIRE interval' },
-            momentary: { label: t('behavior_lens.obs_momentary') || 'Momentary', desc: 'Mark only if behavior at the EXACT moment' }
+            partial: { label: tt('behavior_lens.obs_partial', 'Partial Interval'), desc: 'Mark if behavior occurred at ANY point' },
+            whole: { label: tt('behavior_lens.obs_whole', 'Whole Interval'), desc: 'Mark only if behavior lasted the ENTIRE interval' },
+            momentary: { label: tt('behavior_lens.obs_momentary', 'Momentary'), desc: 'Mark only if behavior at the EXACT moment' }
         };
 
         return h('div', { className: 'fixed inset-0 z-[250] bg-slate-900/95 flex flex-col' },
@@ -2133,12 +2160,12 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 h('div', { className: 'flex items-center gap-3' },
                     h('button', { onClick: onClose, 'aria-label': 'Close', className: 'p-2 rounded-full text-slate-600 hover:bg-white/10' }, h(X, { size: 20 })),
                     h('div', null,
-                        h('h3', { className: 'text-white font-black text-lg', 'data-help-key': 'bl_interval_recording' }, t('behavior_lens.interval.title') || 'Interval Recording'),
+                        h('h3', { className: 'text-white font-black text-lg', 'data-help-key': 'bl_interval_recording' }, tt('behavior_lens.interval.title', 'Interval Recording')),
                         h('p', { className: 'text-xs text-slate-600' }, `${studentName || ''} — ${modeLabels[mode].label}`)
                     )
                 ),
                 h('button', { onClick: handleSave, disabled: completedCount === 0, className: 'px-4 py-2 bg-emerald-700 text-white rounded-full text-sm font-bold hover:bg-emerald-400 disabled:opacity-40 transition-all' },
-                    t('behavior_lens.interval.save') || 'Save Session')
+                    tt('behavior_lens.interval.save', 'Save Session'))
             ),
             // Setup (shown when not running and no data)
             !running && completedCount === 0 && h('div', { className: 'p-6 space-y-4' },
@@ -2154,7 +2181,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 h('p', { className: 'text-xs text-slate-600 text-center' }, modeLabels[mode].desc),
                 h('div', { className: 'flex gap-4 items-center justify-center' },
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, t('behavior_lens.interval_sec') || 'Interval (sec)'),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.interval_sec', 'Interval (sec)')),
                         h('select', {
                             value: intervalSec,
                             onChange: (e) => setIntervalSec(Number(e.target.value)),
@@ -2163,7 +2190,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         }, [10, 15, 20, 30, 60].map(v => h('option', { key: v, value: v }, `${v}s`)))
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, t('behavior_lens.total_intervals') || 'Total Intervals'),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.total_intervals', 'Total Intervals')),
                         h('select', {
                             value: totalIntervals,
                             onChange: (e) => setTotalIntervals(Number(e.target.value)),
@@ -2175,7 +2202,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 h('button', { "aria-label": "Toggle running",
                     onClick: () => { setRunning(true); setGrid([]); setCurrentInterval(0); setElapsed(0); },
                     className: 'w-full py-3 bg-indigo-500 text-white rounded-xl font-bold text-lg hover:bg-indigo-400 transition-all'
-                }, '▶ ' + (t('behavior_lens.interval.start') || 'Start Recording'))
+                }, '▶ ' + (tt('behavior_lens.interval.start', 'Start Recording')))
             ),
             // Grid display
             (running || completedCount > 0) && h('div', { className: 'flex-1 overflow-y-auto p-4' },
@@ -2209,7 +2236,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     h('button', { "aria-label": "Mark",
                         onClick: () => mark(currentInterval),
                         className: 'bl-occurred-btn px-8 py-3 bg-red-700 text-white rounded-xl font-bold text-lg hover:bg-red-400 active:scale-95 transition-all'
-                    }, '✓ ' + (t('behavior_lens.obs_occurred') || 'Occurred')),
+                    }, '✓ ' + (tt('behavior_lens.obs_occurred', 'Occurred'))),
                     h('button', { "aria-label": "Pause",
                         onClick: () => setRunning(false),
                         className: 'px-6 py-3 bg-white/10 text-white rounded-xl font-bold hover:bg-white/20 transition-all'
@@ -2294,7 +2321,7 @@ Return ONLY valid JSON:
                 if (addToast) addToast(parsed.rationale || 'Setup suggested ✨', 'success');
             } catch (err) {
                 warnLog('Token AI suggest failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.ai_suggestion_failed_try_again') || 'AI suggestion failed — try again', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.ai_suggestion_failed_try_again', 'AI suggestion failed — try again'), 'error');
             } finally { setAiSuggestLoading(false); }
         };
 
@@ -2332,7 +2359,7 @@ Return ONLY valid JSON:
                 try { localStorage.setItem(studentKey ? studentKey('behaviorLens_tokenHistory_') : `behaviorLens_tokenHistory_${studentName}`, JSON.stringify(updated)); } catch (e) { /* localStorage may be unavailable in Canvas — workspace JSON is primary */ }
                 return updated;
             });
-            if (addToast) addToast(t('behavior_lens.toast.session_saved') || 'Session saved ✨', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.session_saved', 'Session saved ✨'), 'success');
         }, [studentName, responseCount, scheduleType, scheduleParam, targetBehavior, reward, tokens, slots]);
 
         // Compute next reinforcement point for ratio schedules
@@ -2394,11 +2421,11 @@ Return ONLY valid JSON:
                             setTimeout(() => setReinforceNow(false), 3000);
                             const nextEmpty = tokens.findIndex((t2, i) => !t2 && i < slots);
                             if (nextEmpty >= 0) toggleToken(nextEmpty);
-                            if (addToast) addToast(t('behavior_lens.toast.dro_interval_complete_reinforce_no_target_behavior') || '🎉 DRO interval complete — REINFORCE! No target behavior occurred!', 'success');
+                            if (addToast) addToast(tt('behavior_lens.toast.dro_interval_complete_reinforce_no_target_behavior', '🎉 DRO interval complete — REINFORCE! No target behavior occurred!'), 'success');
                             // auto-restart DRO timer
                             return 0;
                         }
-                        if (addToast) addToast(t('behavior_lens.toast.interval_ready_reinforce_next_behavior') || '⏰ Interval ready — reinforce next behavior!', 'info');
+                        if (addToast) addToast(tt('behavior_lens.toast.interval_ready_reinforce_next_behavior', '⏰ Interval ready — reinforce next behavior!'), 'info');
                     }
                     return next;
                 });
@@ -2422,7 +2449,7 @@ Return ONLY valid JSON:
                 if (nextReinforceAt && newCount >= nextReinforceAt) {
                     setReinforceNow(true);
                     setTimeout(() => setReinforceNow(false), 3000);
-                    if (addToast) addToast(t('behavior_lens.toast.reinforce_now') || '🎉 REINFORCE NOW!', 'success');
+                    if (addToast) addToast(tt('behavior_lens.toast.reinforce_now', '🎉 REINFORCE NOW!'), 'success');
                     const nextEmpty = tokens.findIndex((t2, i) => !t2 && i < slots);
                     if (nextEmpty >= 0) toggleToken(nextEmpty);
                     setNextReinforceAt(computeNextReinforce(scheduleType, scheduleParam, newCount));
@@ -2433,7 +2460,7 @@ Return ONLY valid JSON:
                 setReinforceNow(true);
                 setIntervalReady(false);
                 setTimeout(() => setReinforceNow(false), 3000);
-                if (addToast) addToast(t('behavior_lens.toast.reinforce_now') || '🎉 REINFORCE NOW!', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.reinforce_now', '🎉 REINFORCE NOW!'), 'success');
                 const nextEmpty = tokens.findIndex((t2, i) => !t2 && i < slots);
                 if (nextEmpty >= 0) toggleToken(nextEmpty);
                 setTimerSeconds(0);
@@ -2443,7 +2470,7 @@ Return ONLY valid JSON:
             if (scheduleType === 'DRO') {
                 setTimerSeconds(0);
                 setIntervalReady(false);
-                if (addToast) addToast(t('behavior_lens.toast.behavior_occurred_dro_timer_reset') || '⚠️ Behavior occurred — DRO timer reset', 'warning');
+                if (addToast) addToast(tt('behavior_lens.toast.behavior_occurred_dro_timer_reset', '⚠️ Behavior occurred — DRO timer reset'), 'warning');
             }
         };
 
@@ -2455,7 +2482,7 @@ Return ONLY valid JSON:
                 if (earnedCount >= slots && !showConfetti) {
                     setShowConfetti(true);
                     setTimeout(() => setShowConfetti(false), 3000);
-                    if (addToast) addToast(t('behavior_lens.token.complete') || '🎉 Token Board Complete!', 'success');
+                    if (addToast) addToast(tt('behavior_lens.token.complete', '🎉 Token Board Complete!'), 'success');
                 }
                 return next;
             });
@@ -2467,7 +2494,7 @@ Return ONLY valid JSON:
         return h('div', { className: 'max-w-2xl mx-auto space-y-6' },
             // Schedule selector
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-2' }, '📋 ' + (t('behavior_lens.token.schedule_type') || 'Reinforcement Schedule')),
+                h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-2' }, '📋 ' + (tt('behavior_lens.token.schedule_type', 'Reinforcement Schedule'))),
                 h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2' },
                     SCHEDULE_TYPES.map(st =>
                         h('button', { "aria-label": "Toggle schedule type",
@@ -2509,11 +2536,11 @@ Return ONLY valid JSON:
                 showThinning && h('div', { className: 'mt-2 p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-800 space-y-1' },
                     h('p', { className: 'font-bold' }, '📈 Schedule Thinning Steps:'),
                     h('ol', { className: 'list-decimal ps-4 space-y-0.5' },
-                        h('li', null, t('behavior_lens.reinforce_step_1') || 'Start with dense reinforcement (e.g., FR-1 or FR-2)'),
-                        h('li', null, t('behavior_lens.reinforce_step_2') || 'Once behavior is consistent (~80%), increase ratio by 1-2'),
-                        h('li', null, t('behavior_lens.reinforce_step_3') || 'Move to variable schedule (VR) for more natural maintenance'),
-                        h('li', null, t('behavior_lens.reinforce_step_4') || 'Gradually increase VR value (VR-3 → VR-5 → VR-8)'),
-                        h('li', null, t('behavior_lens.reinforce_step_5') || 'Transition to intermittent/natural reinforcement')
+                        h('li', null, tt('behavior_lens.reinforce_step_1', 'Start with dense reinforcement (e.g., FR-1 or FR-2)')),
+                        h('li', null, tt('behavior_lens.reinforce_step_2', 'Once behavior is consistent (~80%), increase ratio by 1-2')),
+                        h('li', null, tt('behavior_lens.reinforce_step_3', 'Move to variable schedule (VR) for more natural maintenance')),
+                        h('li', null, tt('behavior_lens.reinforce_step_4', 'Gradually increase VR value (VR-3 → VR-5 → VR-8)')),
+                        h('li', null, tt('behavior_lens.reinforce_step_5', 'Transition to intermittent/natural reinforcement'))
                     ),
                     h('p', { className: 'italic mt-1' }, '⚠️ If behavior breaks down, return to previous schedule density')
                 )
@@ -2522,28 +2549,28 @@ Return ONLY valid JSON:
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm space-y-3' },
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, '🎯 ' + (t('behavior_lens.token.target') || 'Target Behavior')),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, '🎯 ' + (tt('behavior_lens.token.target', 'Target Behavior'))),
                         h('input', {
                             value: targetBehavior,
                             onChange: (e) => setTargetBehavior(e.target.value),
-                            placeholder: t('behavior_lens.token.target_placeholder') || 'e.g., Raise hand before speaking',
+                            placeholder: tt('behavior_lens.token.target_placeholder', 'e.g., Raise hand before speaking'),
                             'aria-label': 'Target behavior',
                             className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-400 outline-none'
                         })
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, '🎁 ' + (t('behavior_lens.token.reward') || 'Reward')),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, '🎁 ' + (tt('behavior_lens.token.reward', 'Reward'))),
                         h('input', {
                             value: reward,
                             onChange: (e) => setReward(e.target.value),
-                            placeholder: t('behavior_lens.token.reward_placeholder') || 'e.g., 5 min free time',
+                            placeholder: tt('behavior_lens.token.reward_placeholder', 'e.g., 5 min free time'),
                             'aria-label': 'Reward description',
                             className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-400 outline-none'
                         })
                     )
                 ),
                 h('div', null,
-                    h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, '🔢 ' + (t('behavior_lens.token.count') || 'Number of Tokens')),
+                    h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, '🔢 ' + (tt('behavior_lens.token.count', 'Number of Tokens'))),
                     h('div', { className: 'flex gap-2' },
                         [3, 4, 5, 6, 8, 10].map(n =>
                             h('button', { "aria-label": "Toggle slots",
@@ -2577,7 +2604,7 @@ Return ONLY valid JSON:
             ),
             // Response counter + Reinforce button (for ratio/interval schedules)
             scheduleType !== 'token' && h('div', { className: `rounded-xl border-2 p-5 text-center transition-all ${reinforceNow ? 'border-amber-400 bg-amber-50 animate-pulse shadow-lg shadow-amber-200/50' : 'border-slate-200 bg-white'}` },
-                h('div', { className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, t('behavior_lens.responses_recorded') || 'Responses Recorded'),
+                h('div', { className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, tt('behavior_lens.responses_recorded', 'Responses Recorded')),
                 h('div', { className: 'text-4xl font-black text-slate-800 mb-3' }, responseCount),
                 reinforceNow && h('div', { className: 'text-xl font-black text-amber-600 mb-3 animate-bounce' }, '🎉 REINFORCE NOW!'),
                 (scheduleType === 'FR' || scheduleType === 'VR') && nextReinforceAt && !reinforceNow &&
@@ -2622,7 +2649,7 @@ Return ONLY valid JSON:
                 showConfetti && h('div', { className: 'absolute inset-0 flex items-center justify-center bg-white/60 rounded-2xl' },
                     h('div', { className: 'text-center' },
                         h('div', { className: 'text-6xl mb-2 animate-bounce' }, '🎉'),
-                        h('div', { className: 'text-2xl font-black text-rose-600' }, t('behavior_lens.token.success') || 'Great Job!'),
+                        h('div', { className: 'text-2xl font-black text-rose-600' }, tt('behavior_lens.token.success', 'Great Job!')),
                         reward && h('div', { className: 'text-lg text-amber-600 font-bold mt-1' }, `🎁 ${reward}`)
                     )
                 )
@@ -2632,7 +2659,7 @@ Return ONLY valid JSON:
                 h('button', { "aria-label": "Toggle tokens",
                     onClick: () => { setTokens([]); setShowConfetti(false); setResponseCount(0); setReinforceNow(false); },
                     className: 'px-6 py-2 bg-slate-100 text-slate-600 rounded-full text-sm font-bold hover:bg-slate-200 transition-all'
-                }, '↺ ' + (t('behavior_lens.token.reset') || 'Reset Board')),
+                }, '↺ ' + (tt('behavior_lens.token.reset', 'Reset Board'))),
                 h('button', { "aria-label": "Save Session",
                     onClick: saveSession,
                     disabled: responseCount === 0 && earnedCount === 0,
@@ -2731,7 +2758,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 setAnalysis(parsed);
             } catch (err) {
                 warnLog('Hotspot analysis failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.analysis_failed') || 'Analysis failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.analysis_failed', 'Analysis failed'), 'error');
             } finally { setAnalyzing(false); }
         };
 
@@ -2752,7 +2779,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             // Matrix
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, '🗓️ ', t('behavior_lens.hotspot.title') || 'Routine Hotspot Matrix'),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, '🗓️ ', tt('behavior_lens.hotspot.title', 'Routine Hotspot Matrix')),
                 h('div', { className: 'space-y-2' },
                     routines.map(routine => {
                         const count = matrix[routine] || 0;
@@ -2786,19 +2813,19 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                         );
                     })
                 ),
-                h('p', { className: 'text-[11px] text-slate-600 mt-3' }, t('behavior_lens.hotspot.tap_hint') || 'Tap a cell to increment. Click routine name to edit.')
+                h('p', { className: 'text-[11px] text-slate-600 mt-3' }, tt('behavior_lens.hotspot.tap_hint', 'Tap a cell to increment. Click routine name to edit.'))
             ),
             // AI analyze button
             callGemini && h('button', { onClick: handleAnalyze,
                 disabled: analyzing || Object.values(matrix).every(v => v === 0), 'aria-busy': analyzing,
                 className: 'w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl hover:from-orange-400 disabled:opacity-50 transition-all flex items-center justify-center gap-2'
-            }, analyzing ? '⏳ Analyzing...' : ('🧠 ' + (t('behavior_lens.hotspot.analyze') || 'Analyze Hotspots'))),
+            }, analyzing ? '⏳ Analyzing...' : ('🧠 ' + (tt('behavior_lens.hotspot.analyze', 'Analyze Hotspots')))),
             // Analysis results
             analysis && h('div', { className: 'bg-orange-50 rounded-xl border border-orange-200 p-5 animate-in slide-in-from-bottom-4 duration-300' },
                 h('h4', { className: 'text-sm font-black text-orange-800 mb-2' }, '🧠 Hotspot Analysis'),
                 h('p', { className: 'text-sm text-orange-700 mb-3' }, analysis.summary),
                 analysis.peakRoutines && analysis.peakRoutines.length > 0 && h('div', { className: 'mb-3' },
-                    h('div', { className: 'text-xs font-bold text-orange-600 uppercase mb-1' }, t('behavior_lens.peak_routines') || 'Peak Routines'),
+                    h('div', { className: 'text-xs font-bold text-orange-600 uppercase mb-1' }, tt('behavior_lens.peak_routines', 'Peak Routines')),
                     h('div', { className: 'flex flex-wrap gap-1' },
                         analysis.peakRoutines.map((r, i) => h('span', { key: i, className: 'px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-bold' }, r))
                     )
@@ -2948,10 +2975,10 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm space-y-4', 'data-help-key': 'bl_export_reports' },
-                h('h3', { className: 'text-sm font-black text-slate-800' }, '📥 ' + (t('behavior_lens.export.title') || 'Export Reports')),
+                h('h3', { className: 'text-sm font-black text-slate-800' }, '📥 ' + (tt('behavior_lens.export.title', 'Export Reports'))),
                 // Format selector
                 h('div', null,
-                    h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, t('behavior_lens.format') || 'Format'),
+                    h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.format', 'Format')),
                     h('div', { className: 'flex gap-2' },
                         [['json', '📦 JSON'], ['csv', '📊 CSV'], ['text', '📝 Text']].map(([key, label]) =>
                             h('button', { "aria-label": "Toggle format",
@@ -2971,7 +2998,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 ),
                 // Date range
                 h('div', null,
-                    h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, t('behavior_lens.date_range') || 'Date Range'),
+                    h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.date_range', 'Date Range')),
                     h('div', { className: 'flex gap-2' },
                         [['all', 'All Time'], ['month', 'Last 30 Days'], ['week', 'Last 7 Days']].map(([key, label]) =>
                             h('button', { "aria-label": "Toggle date range",
@@ -2994,7 +3021,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                 h('button', { onClick: handleExport,
                     disabled: filteredAbc.length === 0 && filteredObs.length === 0,
                     className: 'w-full py-3 bg-gradient-to-r from-slate-700 to-slate-900 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
-                }, '📥 ' + (t('behavior_lens.export.download') || 'Download Export')),
+                }, '📥 ' + (tt('behavior_lens.export.download', 'Download Export'))),
                 // Portfolio PDF (print-optimized)
                 h('button', { onClick: () => {
                         const student = studentName || 'Student';
@@ -3336,10 +3363,10 @@ Analyze this document and return ONLY valid JSON:
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
                 setSummary(parsed);
-                if (addToast) addToast(t('behavior_lens.toast.record_review_complete') || 'Record review complete ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.record_review_complete', 'Record review complete ✨'), 'success');
             } catch (err) {
                 warnLog('Record review failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.review_failed_try_again') || 'Review failed — try again', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.review_failed_try_again', 'Review failed — try again'), 'error');
             } finally { setLoading(false); }
         };
 
@@ -3357,12 +3384,12 @@ Analyze this document and return ONLY valid JSON:
 
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm space-y-4' },
-                h('h3', { className: 'text-sm font-black text-slate-800' }, '📄 ' + (t('behavior_lens.record.title') || 'Record Review')),
-                h('p', { className: 'text-xs text-slate-600' }, t('behavior_lens.record.desc') || 'Paste IEP goals, evaluation reports, or progress notes for AI-powered analysis.'),
+                h('h3', { className: 'text-sm font-black text-slate-800' }, '📄 ' + (tt('behavior_lens.record.title', 'Record Review'))),
+                h('p', { className: 'text-xs text-slate-600' }, tt('behavior_lens.record.desc', 'Paste IEP goals, evaluation reports, or progress notes for AI-powered analysis.')),
                 h('textarea', {
                     value: text,
                     onChange: (e) => setText(e.target.value),
-                    placeholder: t('behavior_lens.record.placeholder') || 'Paste document text here...',
+                    placeholder: tt('behavior_lens.record.placeholder', 'Paste document text here...'),
                     'aria-label': 'Paste document text for record review',
                     rows: 8,
                     className: 'w-full border border-slate-400 rounded-lg px-4 py-3 text-sm resize-y focus:ring-2 focus:ring-cyan-400 outline-none'
@@ -3370,7 +3397,7 @@ Analyze this document and return ONLY valid JSON:
                 h('button', { onClick: handleSummarize,
                     disabled: loading || text.trim().length < 50, 'aria-busy': loading,
                     className: 'w-full py-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all flex items-center justify-center gap-2'
-                }, loading ? '⏳ Analyzing...' : ('🧠 ' + (t('behavior_lens.record.analyze') || 'AI Summarize')))
+                }, loading ? '⏳ Analyzing...' : ('🧠 ' + (tt('behavior_lens.record.analyze', 'AI Summarize'))))
             ),
             summary && h('div', { className: 'bg-cyan-50 rounded-xl border border-cyan-200 p-5 animate-in slide-in-from-bottom-4 duration-300 space-y-2' },
                 h('div', { className: 'flex items-center justify-between mb-3' },
@@ -3432,20 +3459,20 @@ Create a hypothesis diagram and return ONLY valid JSON:
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
                 setBoxes(parsed);
-                if (addToast) addToast(t('behavior_lens.toast.hypothesis_generated') || 'Hypothesis generated ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.hypothesis_generated', 'Hypothesis generated ✨'), 'success');
             } catch (err) {
                 warnLog('Hypothesis generation failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.generation_failed') || 'Generation failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.generation_failed', 'Generation failed'), 'error');
             } finally { setGenerating(false); }
         };
 
         const fc = aiAnalysis?.hypothesizedFunction ? (FUNCTION_COLORS[aiAnalysis.hypothesizedFunction] || FUNCTION_COLORS['Attention']) : FUNCTION_COLORS['Attention'];
         const diagramSteps = [
-            { key: 'setting', label: (t('behavior_lens.raw.setting_event') || 'Setting Event'), icon: '🏫', color: '#e0f2fe', border: '#38bdf8' },
-            { key: 'antecedent', label: (t('behavior_lens.raw.antecedent') || 'Antecedent'), icon: '🔺', color: '#fef3c7', border: '#f59e0b' },
-            { key: 'behavior', label: (t('behavior_lens.raw.behavior') || 'Behavior'), icon: '⚡', color: '#fee2e2', border: '#ef4444' },
-            { key: 'consequence', label: (t('behavior_lens.raw.consequence') || 'Consequence'), icon: '🔻', color: '#e0e7ff', border: '#6366f1' },
-            { key: 'function', label: (t('behavior_lens.raw.function') || 'Function'), icon: fc.emoji, color: fc.bg, border: fc.border },
+            { key: 'setting', label: (tt('behavior_lens.raw.setting_event', 'Setting Event')), icon: '🏫', color: '#e0f2fe', border: '#38bdf8' },
+            { key: 'antecedent', label: (tt('behavior_lens.raw.antecedent', 'Antecedent')), icon: '🔺', color: '#fef3c7', border: '#f59e0b' },
+            { key: 'behavior', label: (tt('behavior_lens.raw.behavior', 'Behavior')), icon: '⚡', color: '#fee2e2', border: '#ef4444' },
+            { key: 'consequence', label: (tt('behavior_lens.raw.consequence', 'Consequence')), icon: '🔻', color: '#e0e7ff', border: '#6366f1' },
+            { key: 'function', label: (tt('behavior_lens.raw.function', 'Function')), icon: fc.emoji, color: fc.bg, border: fc.border },
         ];
 
         return h('div', { className: 'max-w-4xl mx-auto space-y-4' },
@@ -3453,10 +3480,10 @@ Create a hypothesis diagram and return ONLY valid JSON:
             callGemini && h('button', { onClick: handleGenerate,
                 disabled: generating || abcEntries.length < 2, 'aria-busy': generating,
                 className: 'w-full py-3 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all flex items-center justify-center gap-2'
-            }, generating ? '⏳ Generating...' : ('🧠 ' + (t('behavior_lens.hypothesis.generate') || 'Generate Hypothesis from Data'))),
+            }, generating ? '⏳ Generating...' : ('🧠 ' + (tt('behavior_lens.hypothesis.generate', 'Generate Hypothesis from Data')))),
             // Diagram
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-6 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-6 text-center' }, '🔗 ' + (t('behavior_lens.hypothesis.title') || 'Functional Hypothesis Diagram')),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-6 text-center' }, '🔗 ' + (tt('behavior_lens.hypothesis.title', 'Functional Hypothesis Diagram'))),
                 h('div', { className: 'space-y-3' },
                     diagramSteps.map((step, idx) =>
                         h('div', { key: step.key },
@@ -3611,10 +3638,10 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
                 setSuggestions(parsed.goals || []);
-                if (addToast) addToast(t('behavior_lens.toast.goals_suggested') || 'Goals suggested ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.goals_suggested', 'Goals suggested ✨'), 'success');
             } catch (err) {
                 warnLog('Goal suggestion failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.suggestion_failed') || 'Suggestion failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.suggestion_failed', 'Suggestion failed'), 'error');
             } finally { setSuggesting(false); }
         };
 
@@ -3626,7 +3653,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
                 status: 'active', dataPoints: []
             }]);
             setSpecific(''); setMeasurable(''); setAchievable(''); setRelevant(''); setTimeBound('');
-            if (addToast) addToast(t('behavior_lens.toast.goal_saved') || 'Goal saved ✅', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.goal_saved', 'Goal saved ✅'), 'success');
         };
 
         const applySuggestion = (goal) => {
@@ -3658,7 +3685,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
             setProgressGoalId(null);
             setProgressScore(3);
             setProgressNotes('');
-            if (addToast) addToast(t('behavior_lens.toast.progress_logged') || 'Progress logged 📊', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.progress_logged', 'Progress logged 📊'), 'success');
         };
 
         const deleteGoal = (goalId) => {
@@ -3667,7 +3694,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
             const msg = (t && t('behavior_lens.confirm.delete_goal')) || `Delete ${label}? This can't be undone.`;
             if (!window.confirm(msg)) return;
             setSavedGoals(prev => prev.filter(g => g.id !== goalId));
-            if (addToast) addToast(t('behavior_lens.toast.goal_removed') || 'Goal removed', 'info');
+            if (addToast) addToast(tt('behavior_lens.toast.goal_removed', 'Goal removed'), 'info');
         };
 
         const statusColors = {
@@ -3712,11 +3739,11 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
         };
 
         const smartFields = [
-            { key: 'S', label: 'Specific', value: specific, set: setSpecific, placeholder: t('behavior_lens.ph.what_behavior_will_change') || 'What behavior will change?', color: '#3b82f6' },
-            { key: 'M', label: 'Measurable', value: measurable, set: setMeasurable, placeholder: t('behavior_lens.ph.how_will_progress_be_measured') || 'How will progress be measured?', color: '#10b981' },
-            { key: 'A', label: 'Achievable', value: achievable, set: setAchievable, placeholder: t('behavior_lens.ph.what_supports_are_needed') || 'What supports are needed?', color: '#f59e0b' },
-            { key: 'R', label: 'Relevant', value: relevant, set: setRelevant, placeholder: t('behavior_lens.ph.why_does_this_matter') || 'Why does this matter?', color: '#8b5cf6' },
-            { key: 'T', label: 'Time-Bound', value: timeBound, set: setTimeBound, placeholder: t('behavior_lens.ph.by_when') || 'By when?', color: '#ef4444' },
+            { key: 'S', label: 'Specific', value: specific, set: setSpecific, placeholder: tt('behavior_lens.ph.what_behavior_will_change', 'What behavior will change?'), color: '#3b82f6' },
+            { key: 'M', label: 'Measurable', value: measurable, set: setMeasurable, placeholder: tt('behavior_lens.ph.how_will_progress_be_measured', 'How will progress be measured?'), color: '#10b981' },
+            { key: 'A', label: 'Achievable', value: achievable, set: setAchievable, placeholder: tt('behavior_lens.ph.what_supports_are_needed', 'What supports are needed?'), color: '#f59e0b' },
+            { key: 'R', label: 'Relevant', value: relevant, set: setRelevant, placeholder: tt('behavior_lens.ph.why_does_this_matter', 'Why does this matter?'), color: '#8b5cf6' },
+            { key: 'T', label: 'Time-Bound', value: timeBound, set: setTimeBound, placeholder: tt('behavior_lens.ph.by_when', 'By when?'), color: '#ef4444' },
         ];
 
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
@@ -3724,7 +3751,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
             callGemini && h('button', { onClick: handleSuggest,
                 disabled: suggesting,
                 className: 'w-full py-3 bg-gradient-to-r from-lime-500 to-emerald-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
-            }, suggesting ? '⏳ Generating...' : ('🧠 ' + (t('behavior_lens.goals.suggest') || 'AI Suggest Goals'))),
+            }, suggesting ? '⏳ Generating...' : ('🧠 ' + (tt('behavior_lens.goals.suggest', 'AI Suggest Goals')))),
             // Suggestions
             suggestions && suggestions.length > 0 && h('div', { className: 'bg-lime-50 rounded-xl border border-lime-200 p-4 space-y-2' },
                 h('h4', { className: 'text-xs font-bold text-lime-700 uppercase mb-2' }, '💡 AI Suggestions — tap to apply'),
@@ -3736,7 +3763,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
             ),
             // SMART form
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm space-y-3' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎯 ' + (t('behavior_lens.goals.title') || 'SMART Goal Builder')),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-2' }, '🎯 ' + (tt('behavior_lens.goals.title', 'SMART Goal Builder'))),
                 smartFields.map(f =>
                     h('div', { key: f.key, className: 'flex items-start gap-3' },
                         h('div', {
@@ -3764,7 +3791,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
                 h('button', { "aria-label": "Save Goal",
                     onClick: saveGoal,
                     className: 'mt-3 px-4 py-2 bg-lime-500 text-white rounded-lg font-bold text-sm hover:bg-lime-400 transition-all'
-                }, '✓ ' + (t('behavior_lens.goals.save') || 'Save Goal'))
+                }, '✓ ' + (tt('behavior_lens.goals.save', 'Save Goal')))
             ),
             // Saved goals with progress tracking
             savedGoals.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm space-y-4' },
@@ -3815,7 +3842,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
                             h('button', { "aria-label": "Toggle goal status",
                                 onClick: () => setGoalStatus(g.id, 'discontinued'),
                                 className: 'text-[11px] px-3 py-1.5 bg-slate-50 text-slate-600 border border-slate-400 rounded-lg font-bold hover:bg-slate-100 transition-all'
-                            }, (t('behavior_lens.raw.discontinue') || 'Discontinue'))
+                            }, (tt('behavior_lens.raw.discontinue', 'Discontinue')))
                         ),
                         // Reactivate for non-active goals
                         g.status !== 'active' && h('div', { className: 'mt-2 pt-2 border-t border-slate-100' },
@@ -3828,7 +3855,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
                         progressGoalId === g.id && g.status === 'active' && h('div', { className: 'mt-3 p-3 bg-emerald-50/50 rounded-xl border border-emerald-200 space-y-2' },
                             h('div', { className: 'text-xs font-bold text-emerald-700 uppercase' }, '📊 Log Progress Point'),
                             h('div', { className: 'flex items-center gap-3' },
-                                h('label', { className: 'text-[11px] text-slate-600 font-bold' }, t('behavior_lens.score_1_5') || 'Score (1–5):'),
+                                h('label', { className: 'text-[11px] text-slate-600 font-bold' }, tt('behavior_lens.score_1_5', 'Score (1–5):')),
                                 h('div', { className: 'flex gap-1' },
                                     [1, 2, 3, 4, 5].map(s =>
                                         h('button', { "aria-label": "Toggle progress score",
@@ -3842,7 +3869,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
                             h('input', {
                                 value: progressNotes,
                                 onChange: e => setProgressNotes(e.target.value),
-                                placeholder: t('behavior_lens.optional_notes') || 'Optional notes...',
+                                placeholder: tt('behavior_lens.optional_notes', 'Optional notes...'),
                                 'aria-label': 'Progress notes',
                                 className: 'w-full text-xs p-2 border border-emerald-600 rounded-lg focus:border-emerald-400 focus:ring-2 focus:ring-emerald-300 outline-none'
                             }),
@@ -3910,12 +3937,12 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
         }, [studentName]);
 
         const saveContract = () => {
-            if (!target.trim()) { if (addToast) addToast(t('behavior_lens.toast.enter_a_target_behavior_first') || 'Enter a target behavior first', 'error'); return; }
+            if (!target.trim()) { if (addToast) addToast(tt('behavior_lens.toast.enter_a_target_behavior_first', 'Enter a target behavior first'), 'error'); return; }
             const entry = { id: uid(), savedAt: new Date().toISOString(), target, studentExpectations, rewards, teacherSupports, supportPlan, duration, studentSig, studentSigDate, teacherSig, teacherSigDate, status };
             const updated = [entry, ...history.filter(c => c.id !== entry.id)].slice(0, 20);
             setHistory(updated);
             try { localStorage.setItem(lsKey, JSON.stringify(updated)); } catch { }
-            if (addToast) addToast(t('behavior_lens.toast.contract_saved') || 'Contract saved ✨', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.contract_saved', 'Contract saved ✨'), 'success');
         };
 
         const loadContract = (c) => {
@@ -3966,10 +3993,10 @@ Generate a behavior contract and return ONLY valid JSON:
                 setSupportPlan(parsed.supportPlan || parsed.consequences || '');
                 setDuration(parsed.duration || '2 weeks');
                 setStatus('active');
-                if (addToast) addToast(t('behavior_lens.toast.contract_drafted') || 'Contract drafted ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.contract_drafted', 'Contract drafted ✨'), 'success');
             } catch (err) {
                 warnLog('Contract drafting failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.drafting_failed') || 'Drafting failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.drafting_failed', 'Drafting failed'), 'error');
             } finally { setDrafting(false); }
         };
 
@@ -3983,7 +4010,7 @@ Generate a behavior contract and return ONLY valid JSON:
             h('div', { className: 'flex gap-2 flex-wrap' },
                 callGemini && h('button', { onClick: handleDraft, disabled: drafting,
                     className: 'flex-1 py-3 bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
-                }, drafting ? '⏳ Drafting...' : ('🧠 ' + (t('behavior_lens.contract.draft') || 'AI Draft Contract'))),
+                }, drafting ? '⏳ Drafting...' : ('🧠 ' + (tt('behavior_lens.contract.draft', 'AI Draft Contract')))),
                 h('button', { 'aria-expanded': String(showHistory), onClick: saveContract, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-600 transition-all' }, '💾 Save'),
                 history.length > 0 && h('button', { 'aria-expanded': String(showHistory), "aria-label": "Toggle show history",
                     onClick: () => setShowHistory(!showHistory),
@@ -3999,12 +4026,12 @@ Generate a behavior contract and return ONLY valid JSON:
                         h('div', { className: 'text-[11px] text-slate-600 mt-0.5' }, `${fmtDate(c.savedAt)} • ${c.duration || '—'} • ${c.status || 'active'}`)
                     ),
                     h('span', { style: { fontSize: '8px', padding: '2px 6px', borderRadius: 8, background: (statusColors[c.status] || statusColors.active).bg, color: (statusColors[c.status] || statusColors.active).text, border: `1px solid ${(statusColors[c.status] || statusColors.active).border}`, fontWeight: 700, textTransform: 'uppercase' } }, c.status || 'active'),
-                    h('button', { onClick: () => deleteHistoryItem(c.id), title: 'Close', 'aria-label': 'Close', className: 'ms-2 text-slate-600 hover:text-red-500 text-sm transition-colors', title: (t('behavior_lens.raw.delete') || 'Delete') }, '✕')
+                    h('button', { onClick: () => deleteHistoryItem(c.id), title: 'Close', 'aria-label': 'Close', className: 'ms-2 text-slate-600 hover:text-red-500 text-sm transition-colors', title: (tt('behavior_lens.raw.delete', 'Delete')) }, '✕')
                 ))
             ),
             // Status badge bar
             h('div', { className: 'flex items-center gap-2' },
-                h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.status') || 'Status:'),
+                h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.status', 'Status:')),
                 ['active', 'expired', 'renewed'].map(s => h('button', { "aria-label": "Toggle status",
                     key: s, onClick: () => setStatus(s),
                     style: { fontSize: '10px', padding: '3px 10px', borderRadius: 20, fontWeight: 700, textTransform: 'uppercase', border: `1.5px solid ${statusColors[s].border}`, background: status === s ? statusColors[s].bg : 'transparent', color: status === s ? statusColors[s].text : '#94a3b8', cursor: 'pointer', transition: 'all .15s' }
@@ -4013,7 +4040,7 @@ Generate a behavior contract and return ONLY valid JSON:
             // Contract form
             h('div', { id: 'behavior-contract-printable', className: 'bg-white rounded-xl border-2 border-fuchsia-200 p-6 shadow-sm space-y-4 print:border-black print:shadow-none' },
                 h('div', { className: 'text-center border-b border-slate-200 pb-4 mb-4' },
-                    h('h2', { className: 'text-xl font-black text-slate-800' }, '📜 ' + (t('behavior_lens.contract.title') || 'Behavior Contract')),
+                    h('h2', { className: 'text-xl font-black text-slate-800' }, '📜 ' + (tt('behavior_lens.contract.title', 'Behavior Contract'))),
                     h('p', { className: 'text-xs text-slate-600 mt-1' }, `Student: ${studentName || '___'} | Duration: ${duration}`),
                     h('span', { style: { display: 'inline-block', marginTop: 6, fontSize: '10px', padding: '2px 10px', borderRadius: 20, fontWeight: 700, textTransform: 'uppercase', background: sc.bg, color: sc.text, border: `1px solid ${sc.border}` } }, status)
                 ),
@@ -4047,12 +4074,12 @@ Generate a behavior contract and return ONLY valid JSON:
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-200 mt-4' },
                     h('div', { className: 'space-y-2' },
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block' }, '👤 Student Signature'),
-                        h('input', { type: 'text', value: studentSig, onChange: (e) => setStudentSig(e.target.value), 'aria-label': 'Type full name', placeholder: t('behavior_lens.ph.type_full_name') || 'Type full name', maxLength: 80, className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm italic font-serif focus:ring-2 focus:ring-fuchsia-400 outline-none' }),
+                        h('input', { type: 'text', value: studentSig, onChange: (e) => setStudentSig(e.target.value), 'aria-label': 'Type full name', placeholder: tt('behavior_lens.ph.type_full_name', 'Type full name'), maxLength: 80, className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm italic font-serif focus:ring-2 focus:ring-fuchsia-400 outline-none' }),
                         h('input', { type: 'date', value: studentSigDate, onChange: (e) => setStudentSigDate(e.target.value), 'aria-label': 'Student signature date', className: 'w-full border border-slate-400 rounded-lg px-3 py-1.5 text-xs text-slate-600 focus:ring-2 focus:ring-fuchsia-400 outline-none' })
                     ),
                     h('div', { className: 'space-y-2' },
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block' }, '👩‍🏫 Teacher Signature'),
-                        h('input', { type: 'text', value: teacherSig, onChange: (e) => setTeacherSig(e.target.value), 'aria-label': 'Type full name', placeholder: t('behavior_lens.ph.type_full_name') || 'Type full name', maxLength: 80, className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm italic font-serif focus:ring-2 focus:ring-fuchsia-400 outline-none' }),
+                        h('input', { type: 'text', value: teacherSig, onChange: (e) => setTeacherSig(e.target.value), 'aria-label': 'Type full name', placeholder: tt('behavior_lens.ph.type_full_name', 'Type full name'), maxLength: 80, className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm italic font-serif focus:ring-2 focus:ring-fuchsia-400 outline-none' }),
                         h('input', { type: 'date', value: teacherSigDate, onChange: (e) => setTeacherSigDate(e.target.value), 'aria-label': 'Teacher signature date', className: 'w-full border border-slate-400 rounded-lg px-3 py-1.5 text-xs text-slate-600 focus:ring-2 focus:ring-fuchsia-400 outline-none' })
                     )
                 )
@@ -4060,7 +4087,7 @@ Generate a behavior contract and return ONLY valid JSON:
             // Print button
             h('button', { onClick: handlePrint,
                 className: 'w-full py-2 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all print:hidden'
-            }, '🖨️ ' + (t('behavior_lens.contract.print') || 'Print Contract'))
+            }, '🖨️ ' + (tt('behavior_lens.contract.print', 'Print Contract')))
         );
     };
 
@@ -4070,13 +4097,13 @@ Generate a behavior contract and return ONLY valid JSON:
         const lsKey = studentKey ? studentKey('bl_escalation_') : `bl_escalation_${studentName || '_'}`;
         const legacyEscalationKey = `bl_escalation_${studentName || '_'}`;
         const defaultPhases = [
-            { name: t('behavior_lens.cycle_calm') || 'Calm', icon: '😌', color: '#22c55e', bg: '#f0fdf4', signs: 'Cooperative, on-task, following routines', response: 'Reinforce positive behavior, build rapport' },
-            { name: t('behavior_lens.cycle_triggers') || 'Triggers', icon: '⚡', color: '#eab308', bg: '#fefce8', signs: 'Subtle changes in body language, withdrawal', response: 'Remove/reduce trigger, redirect calmly' },
-            { name: t('behavior_lens.cycle_agitation') || 'Agitation', icon: '😤', color: '#f97316', bg: '#fff7ed', signs: 'Off-task, fidgeting, difficulty following directions begins', response: 'Offer choices, use proximity, check in privately' },
-            { name: t('behavior_lens.cycle_acceleration') || 'Acceleration', icon: '🔥', color: '#ef4444', bg: '#fef2f2', signs: 'Increasing intensity, arguing, difficulty de-escalating', response: 'Avoid power struggles, state expectations calmly, clear the area if needed' },
-            { name: t('behavior_lens.cycle_peak') || 'Peak', icon: '💥', color: '#dc2626', bg: '#fee2e2', signs: 'Highest intensity behavior, student is overwhelmed', response: 'Focus on safety, use crisis protocols, document' },
-            { name: t('behavior_lens.cycle_de_escalation') || 'De-escalation', icon: '🌊', color: '#3b82f6', bg: '#eff6ff', signs: 'Confusion, withdrawal, reduced intensity', response: 'Allow space, avoid debriefing too soon, quiet environment' },
-            { name: t('behavior_lens.cycle_recovery') || 'Recovery', icon: '🌱', color: '#06b6d4', bg: '#ecfeff', signs: 'Returning to baseline, may be subdued', response: 'Rebuild relationship, gentle re-engagement, debrief when ready' },
+            { name: tt('behavior_lens.cycle_calm', 'Calm'), icon: '😌', color: '#22c55e', bg: '#f0fdf4', signs: 'Cooperative, on-task, following routines', response: 'Reinforce positive behavior, build rapport' },
+            { name: tt('behavior_lens.cycle_triggers', 'Triggers'), icon: '⚡', color: '#eab308', bg: '#fefce8', signs: 'Subtle changes in body language, withdrawal', response: 'Remove/reduce trigger, redirect calmly' },
+            { name: tt('behavior_lens.cycle_agitation', 'Agitation'), icon: '😤', color: '#f97316', bg: '#fff7ed', signs: 'Off-task, fidgeting, difficulty following directions begins', response: 'Offer choices, use proximity, check in privately' },
+            { name: tt('behavior_lens.cycle_acceleration', 'Acceleration'), icon: '🔥', color: '#ef4444', bg: '#fef2f2', signs: 'Increasing intensity, arguing, difficulty de-escalating', response: 'Avoid power struggles, state expectations calmly, clear the area if needed' },
+            { name: tt('behavior_lens.cycle_peak', 'Peak'), icon: '💥', color: '#dc2626', bg: '#fee2e2', signs: 'Highest intensity behavior, student is overwhelmed', response: 'Focus on safety, use crisis protocols, document' },
+            { name: tt('behavior_lens.cycle_de_escalation', 'De-escalation'), icon: '🌊', color: '#3b82f6', bg: '#eff6ff', signs: 'Confusion, withdrawal, reduced intensity', response: 'Allow space, avoid debriefing too soon, quiet environment' },
+            { name: tt('behavior_lens.cycle_recovery', 'Recovery'), icon: '🌱', color: '#06b6d4', bg: '#ecfeff', signs: 'Returning to baseline, may be subdued', response: 'Rebuild relationship, gentle re-engagement, debrief when ready' },
         ];
         const [selected, setSelected] = useState(null);
         const [personalizing, setPersonalizing] = useState(false);
@@ -4095,13 +4122,13 @@ Generate a behavior contract and return ONLY valid JSON:
 
         const saveCycle = () => {
             try { localStorage.setItem(lsKey, JSON.stringify(personalized)); } catch { }
-            if (addToast) addToast(t('behavior_lens.toast.escalation_cycle_saved') || 'Escalation cycle saved ✅', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.escalation_cycle_saved', 'Escalation cycle saved ✅'), 'success');
         };
 
         const resetCycle = () => {
             setPersonalized({});
             try { localStorage.removeItem(lsKey); } catch { }
-            if (addToast) addToast(t('behavior_lens.toast.reset_to_defaults') || 'Reset to defaults', 'info');
+            if (addToast) addToast(tt('behavior_lens.toast.reset_to_defaults', 'Reset to defaults'), 'info');
         };
 
         const updatePhaseField = (phaseName, field, val) => {
@@ -4138,10 +4165,10 @@ Personalize each phase of the cycle and return ONLY valid JSON:
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
                 setPersonalized(parsed);
-                if (addToast) addToast(t('behavior_lens.toast.cycle_personalized') || 'Cycle personalized ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.cycle_personalized', 'Cycle personalized ✨'), 'success');
             } catch (err) {
                 warnLog('Personalization failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.personalization_failed') || 'Personalization failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.personalization_failed', 'Personalization failed'), 'error');
             } finally { setPersonalizing(false); }
         };
 
@@ -4150,7 +4177,7 @@ Personalize each phase of the cycle and return ONLY valid JSON:
             h('div', { className: 'flex gap-2 flex-wrap' },
                 callGemini && h('button', { onClick: handlePersonalize, disabled: personalizing || abcEntries.length < 2,
                     className: 'flex-1 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
-                }, personalizing ? '⏳ Personalizing...' : ('🧠 ' + (t('behavior_lens.cycle.personalize') || 'Personalize for This Student'))),
+                }, personalizing ? '⏳ Personalizing...' : ('🧠 ' + (tt('behavior_lens.cycle.personalize', 'Personalize for This Student')))),
                 h('button', { 'aria-expanded': String(editing), onClick: saveCycle, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-600 transition-all' }, '💾 Save'),
                 h('button', { 'aria-expanded': String(editing), "aria-label": "Toggle editing",
                     onClick: () => setEditing(!editing),
@@ -4160,7 +4187,7 @@ Personalize each phase of the cycle and return ONLY valid JSON:
             ),
             // Cycle visualization
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-4 text-center' }, DualLabel('🔄 Escalation Cycle') || '🔄 ' + (t('behavior_lens.cycle.title') || 'Escalation Cycle (Colvin & Sugai)')),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-4 text-center' }, DualLabel('🔄 Escalation Cycle') || '🔄 ' + (tt('behavior_lens.cycle.title', 'Escalation Cycle (Colvin & Sugai)'))),
                 h('div', { className: 'space-y-2' },
                     defaultPhases.map((phase, idx) => {
                         const p = personalized[phase.name] || {};
@@ -4213,11 +4240,11 @@ Personalize each phase of the cycle and return ONLY valid JSON:
     // Phase 8: localStorage persistence, date-stamped snapshots, top-3 summary strip
     const ReinforcerAssessment = ({ studentName, studentKey, aiAnalysis, callGemini, t, addToast }) => {
         const categories = {
-            social: { label: 'Social', icon: '👥', items: [t('behavior_lens.reinf_verbal_praise') || 'Verbal praise', 'High-five/fist bump', t('behavior_lens.reinf_lunch_with_teacher') || 'Lunch with teacher', 'Phone call home', 'Peer recognition', 'Leadership role'] },
-            activity: { label: 'Activity', icon: '🎮', items: [t('behavior_lens.reinf_extra_recess') || 'Extra recess', 'Free choice time', 'Computer time', 'Read aloud to class', 'Helper role', 'Drawing time'] },
-            tangible: { label: 'Tangible', icon: '🎁', items: [t('behavior_lens.reinf_stickers') || 'Stickers', 'Pencils/erasers', 'Bookmarks', 'Certificates', 'Class store credits', 'Special seating'] },
-            sensory: { label: 'Sensory', icon: '🌀', items: ['Fidget tool', t('behavior_lens.reinf_noise_canceling_headphones') || 'Noise-canceling headphones', 'Movement break', 'Quiet corner', t('behavior_lens.reinf_weighted_lap_pad') || 'Weighted lap pad', 'Music listening'] },
-            edible: { label: (t('behavior_lens.raw.fooddrink') || 'Food/Drink'), icon: '🍎', items: ['Healthy snack', 'Water bottle refill', 'Special lunch item', 'Gum/mints'] }
+            social: { label: 'Social', icon: '👥', items: [tt('behavior_lens.reinf_verbal_praise', 'Verbal praise'), 'High-five/fist bump', tt('behavior_lens.reinf_lunch_with_teacher', 'Lunch with teacher'), 'Phone call home', 'Peer recognition', 'Leadership role'] },
+            activity: { label: 'Activity', icon: '🎮', items: [tt('behavior_lens.reinf_extra_recess', 'Extra recess'), 'Free choice time', 'Computer time', 'Read aloud to class', 'Helper role', 'Drawing time'] },
+            tangible: { label: 'Tangible', icon: '🎁', items: [tt('behavior_lens.reinf_stickers', 'Stickers'), 'Pencils/erasers', 'Bookmarks', 'Certificates', 'Class store credits', 'Special seating'] },
+            sensory: { label: 'Sensory', icon: '🌀', items: ['Fidget tool', tt('behavior_lens.reinf_noise_canceling_headphones', 'Noise-canceling headphones'), 'Movement break', 'Quiet corner', tt('behavior_lens.reinf_weighted_lap_pad', 'Weighted lap pad'), 'Music listening'] },
+            edible: { label: (tt('behavior_lens.raw.fooddrink', 'Food/Drink')), icon: '🍎', items: ['Healthy snack', 'Water bottle refill', 'Special lunch item', 'Gum/mints'] }
         };
 
         const lsKey = studentKey ? studentKey('bl_reinforcer_') : `bl_reinforcer_${studentName || '_'}`;
@@ -4253,13 +4280,13 @@ Personalize each phase of the cycle and return ONLY valid JSON:
 
         const saveRatings = () => {
             try { localStorage.setItem(lsKey, JSON.stringify(ratings)); } catch { }
-            if (addToast) addToast(t('behavior_lens.toast.ratings_saved') || 'Ratings saved ✅', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.ratings_saved', 'Ratings saved ✅'), 'success');
         };
 
         const takeSnapshot = () => {
             const ratedCount = Object.values(ratings).filter(v => v > 0).length;
             if (ratedCount === 0) {
-                if (addToast) addToast(t('behavior_lens.toast.rate_at_least_one_item_first') || 'Rate at least one item first', 'warning');
+                if (addToast) addToast(tt('behavior_lens.toast.rate_at_least_one_item_first', 'Rate at least one item first'), 'warning');
                 return;
             }
             const snap = {
@@ -4270,7 +4297,7 @@ Personalize each phase of the cycle and return ONLY valid JSON:
             const updated = [snap, ...snapshots].slice(0, 10);
             setSnapshots(updated);
             try { localStorage.setItem(snapKey, JSON.stringify(updated)); } catch { }
-            if (addToast) addToast(t('behavior_lens.toast.snapshot_saved') || 'Snapshot saved 📸', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.snapshot_saved', 'Snapshot saved 📸'), 'success');
         };
 
         const rankedItems = useMemo(() => {
@@ -4305,10 +4332,10 @@ Recommend reinforcers and return ONLY valid JSON:
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
                 setAiSuggestions(parsed);
-                if (addToast) addToast(t('behavior_lens.toast.reinforcers_recommended') || 'Reinforcers recommended ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.reinforcers_recommended', 'Reinforcers recommended ✨'), 'success');
             } catch (err) {
                 warnLog('Reinforcer suggestion failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.suggestion_failed') || 'Suggestion failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.suggestion_failed', 'Suggestion failed'), 'error');
             } finally { setSuggesting(false); }
         };
 
@@ -4363,7 +4390,7 @@ Recommend reinforcers and return ONLY valid JSON:
             callGemini && h('button', { onClick: handleSuggest,
                 disabled: suggesting,
                 className: 'w-full py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
-            }, suggesting ? '⏳ Analyzing...' : ('🧠 ' + (t('behavior_lens.reinforcer.suggest') || 'AI Recommend Reinforcers'))),
+            }, suggesting ? '⏳ Analyzing...' : ('🧠 ' + (tt('behavior_lens.reinforcer.suggest', 'AI Recommend Reinforcers')))),
             // AI suggestions
             aiSuggestions && h('div', { className: 'bg-pink-50 rounded-xl border border-pink-200 p-5 animate-in slide-in-from-bottom-4 duration-300' },
                 h('h4', { className: 'text-sm font-black text-pink-800 mb-3' }, '🧠 AI Recommendations'),
@@ -4404,7 +4431,7 @@ Recommend reinforcers and return ONLY valid JSON:
             ),
             // Ranked summary
             rankedItems.length > 0 && h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-5' },
-                h('h4', { className: 'text-sm font-black text-amber-800 mb-3' }, '🏆 ' + (t('behavior_lens.top_preferences') || 'Top Preferences')),
+                h('h4', { className: 'text-sm font-black text-amber-800 mb-3' }, '🏆 ' + (tt('behavior_lens.top_preferences', 'Top Preferences'))),
                 h('div', { className: 'space-y-1' },
                     rankedItems.slice(0, 8).map(([item, rating], i) =>
                         h('div', { key: item, className: 'flex items-center gap-2 text-sm' },
@@ -4422,17 +4449,17 @@ Recommend reinforcers and return ONLY valid JSON:
     // Fullscreen student-facing visual choice overlay
     const ChoiceBoard = ({ onClose, studentName, t, addToast, callGemini }) => {
         const [choices, setChoices] = useState([
-            { label: (t('behavior_lens.raw.take_a_break') || 'Take a break'), emoji: '🧘' },
-            { label: (t('behavior_lens.raw.ask_for_help') || 'Ask for help'), emoji: '🙋' },
-            { label: (t('behavior_lens.raw.use_a_tool') || 'Use a tool'), emoji: '🔧' },
-            { label: (t('behavior_lens.raw.keep_working') || 'Keep working'), emoji: '💪' },
+            { label: (tt('behavior_lens.raw.take_a_break', 'Take a break')), emoji: '🧘' },
+            { label: (tt('behavior_lens.raw.ask_for_help', 'Ask for help')), emoji: '🙋' },
+            { label: (tt('behavior_lens.raw.use_a_tool', 'Use a tool')), emoji: '🔧' },
+            { label: (tt('behavior_lens.raw.keep_working', 'Keep working')), emoji: '💪' },
         ]);
         const [editing, setEditing] = useState(false);
         const [selected, setSelected] = useState(null);
         const [log, setLog] = useState([]);
         const [mode, setMode] = useState('choice'); // 'choice' or 'firstThen'
-        const [firstItem, setFirstItem] = useState({ label: (t('behavior_lens.raw.finish_math_worksheet') || 'Finish math worksheet'), emoji: '📝' });
-        const [thenItem, setThenItem] = useState({ label: (t('behavior_lens.raw.free_time_on_ipad') || 'Free time on iPad'), emoji: '🎮' });
+        const [firstItem, setFirstItem] = useState({ label: (tt('behavior_lens.raw.finish_math_worksheet', 'Finish math worksheet')), emoji: '📝' });
+        const [thenItem, setThenItem] = useState({ label: (tt('behavior_lens.raw.free_time_on_ipad', 'Free time on iPad')), emoji: '🎮' });
         const [firstDone, setFirstDone] = useState(false);
         const [aiChoiceLoading, setAiChoiceLoading] = useState(false);
 
@@ -4462,10 +4489,10 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                 if (parsed.choices && Array.isArray(parsed.choices)) setChoices(parsed.choices.slice(0, 6));
                 if (parsed.firstItem) setFirstItem(parsed.firstItem);
                 if (parsed.thenItem) setThenItem(parsed.thenItem);
-                if (addToast) addToast(t('behavior_lens.toast.choices_suggested') || 'Choices suggested ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.choices_suggested', 'Choices suggested ✨'), 'success');
             } catch (err) {
                 warnLog('Choice AI suggest failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.ai_suggestion_failed') || 'AI suggestion failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.ai_suggestion_failed', 'AI suggestion failed'), 'error');
             } finally { setAiChoiceLoading(false); }
         };
 
@@ -4505,7 +4532,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                     ),
                     h('div', { className: 'flex gap-2 flex-wrap' },
                         choices.length < 6 && h('button', { "aria-label": "+ Add Choice",
-                            onClick: () => setChoices(prev => [...prev, { label: (t('behavior_lens.raw.new_choice') || 'New choice'), emoji: '✨' }]),
+                            onClick: () => setChoices(prev => [...prev, { label: (tt('behavior_lens.raw.new_choice', 'New choice')), emoji: '✨' }]),
                             className: 'px-3 py-2 bg-emerald-100 text-emerald-300 rounded-lg text-sm font-bold'
                         }, '+ Add Choice'),
                         callGemini && h('button', { onClick: handleAiSuggestChoices,
@@ -4519,15 +4546,15 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                         h('div', { className: 'space-y-2' },
                             h('div', { className: 'flex gap-2' },
                                 h('input', { value: firstItem.emoji, onChange: (e) => setFirstItem(p => ({ ...p, emoji: e.target.value })), 'aria-label': 'FIRST task emoji', className: 'w-12 text-center text-xl border rounded-lg', maxLength: 2 }),
-                                h('input', { value: firstItem.label, onChange: (e) => setFirstItem(p => ({ ...p, label: e.target.value })), className: 'flex-1 border rounded-lg px-3 py-2 text-sm', 'aria-label': 'FIRST task', placeholder: t('behavior_lens.ph.first_task') || 'FIRST (task)...' })
+                                h('input', { value: firstItem.label, onChange: (e) => setFirstItem(p => ({ ...p, label: e.target.value })), className: 'flex-1 border rounded-lg px-3 py-2 text-sm', 'aria-label': 'FIRST task', placeholder: tt('behavior_lens.ph.first_task', 'FIRST (task)...') })
                             ),
                             h('div', { className: 'flex gap-2' },
                                 h('input', { value: thenItem.emoji, onChange: (e) => setThenItem(p => ({ ...p, emoji: e.target.value })), 'aria-label': 'THEN reward emoji', className: 'w-12 text-center text-xl border rounded-lg', maxLength: 2 }),
-                                h('input', { value: thenItem.label, onChange: (e) => setThenItem(p => ({ ...p, label: e.target.value })), className: 'flex-1 border rounded-lg px-3 py-2 text-sm', 'aria-label': 'THEN reward', placeholder: t('behavior_lens.ph.then_reward') || 'THEN (reward)...' })
+                                h('input', { value: thenItem.label, onChange: (e) => setThenItem(p => ({ ...p, label: e.target.value })), className: 'flex-1 border rounded-lg px-3 py-2 text-sm', 'aria-label': 'THEN reward', placeholder: tt('behavior_lens.ph.then_reward', 'THEN (reward)...') })
                             )
                         )
                     ),
-                    h('button', { "aria-label": "Toggle editing", onClick: () => setEditing(false), className: 'w-full py-2 bg-indigo-500 text-white rounded-lg font-bold' }, t('behavior_lens.ui.done') || 'Done')
+                    h('button', { "aria-label": "Toggle editing", onClick: () => setEditing(false), className: 'w-full py-2 bg-indigo-500 text-white rounded-lg font-bold' }, tt('behavior_lens.ui.done', 'Done'))
                 )
             );
         }
@@ -4540,19 +4567,19 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                         h('button', { onClick: () => setMode('choice'), className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '🔲 Choices'),
                         h('button', { onClick: () => setEditing(true), className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '✏️ Edit')
                     ),
-                    h('span', { className: 'text-white/60 text-xs font-bold' }, t('behavior_lens.first_then') || 'First → Then'),
-                    h('button', { "aria-label": "On Close", onClick: onClose, className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, t('behavior_lens.close') || '✕ Close')
+                    h('span', { className: 'text-white/60 text-xs font-bold' }, tt('behavior_lens.first_then', 'First → Then')),
+                    h('button', { "aria-label": "On Close", onClick: onClose, className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, tt('behavior_lens.close', '✕ Close'))
                 ),
                 h('div', { className: 'flex-1 grid grid-cols-2 gap-6 p-6' },
                     // FIRST panel
                     h('button', { "aria-label": "Toggle first done",
-                        onClick: () => { setFirstDone(true); if (addToast) addToast(t('behavior_lens.toast.first_task_complete') || 'First task complete! ✅', 'success'); },
+                        onClick: () => { setFirstDone(true); if (addToast) addToast(tt('behavior_lens.toast.first_task_complete', 'First task complete! ✅'), 'success'); },
                         className: `rounded-3xl flex flex-col items-center justify-center shadow-2xl transition-all duration-500 ${firstDone
                             ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 scale-95 ring-4 ring-emerald-300/50'
                             : 'bg-gradient-to-br from-blue-400 to-indigo-600 hover:scale-[1.02] active:scale-95'
                             } `
                     },
-                        h('div', { className: 'text-xs font-black text-white/60 uppercase tracking-widest mb-2' }, t('behavior_lens.first_label') || 'FIRST'),
+                        h('div', { className: 'text-xs font-black text-white/60 uppercase tracking-widest mb-2' }, tt('behavior_lens.first_label', 'FIRST')),
                         h('span', { className: 'text-6xl md:text-8xl mb-4 drop-shadow-lg' }, firstItem.emoji),
                         h('span', { className: 'text-xl md:text-2xl font-black text-white drop-shadow-md text-center px-4' }, firstItem.label),
                         firstDone && h('div', { className: 'mt-4 text-white text-4xl animate-bounce' }, '✅')
@@ -4564,7 +4591,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                             : 'bg-gradient-to-br from-slate-600 to-slate-800 opacity-50 grayscale'
                             } `
                     },
-                        h('div', { className: 'text-xs font-black text-white/60 uppercase tracking-widest mb-2' }, t('behavior_lens.then_label') || 'THEN'),
+                        h('div', { className: 'text-xs font-black text-white/60 uppercase tracking-widest mb-2' }, tt('behavior_lens.then_label', 'THEN')),
                         h('span', { className: 'text-6xl md:text-8xl mb-4 drop-shadow-lg' }, thenItem.emoji),
                         h('span', { className: 'text-xl md:text-2xl font-black text-white drop-shadow-md text-center px-4' }, thenItem.label),
                         !firstDone && h('div', { className: 'mt-4 text-white/30 text-sm font-bold' }, '🔒 Complete "First" to unlock')
@@ -4588,7 +4615,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                     h('button', { onClick: () => setEditing(true), className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '✏️ Edit')
                 ),
                 h('span', { className: 'text-white/60 text-xs font-bold' }, studentName ? `For: ${studentName} ` : 'Choice Board'),
-                h('button', { "aria-label": "On Close", onClick: onClose, className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, t('behavior_lens.close') || '✕ Close')
+                h('button', { "aria-label": "On Close", onClick: onClose, className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, tt('behavior_lens.close', '✕ Close'))
             ),
             // Choices grid
             h('div', { className: `flex-1 grid gap-4 p-6 ${choices.length <= 2 ? 'grid-cols-1' : choices.length <= 4 ? 'grid-cols-2' : 'grid-cols-3'} ` },
@@ -4611,14 +4638,14 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
     // 8-item classroom environment checklist with scoring
     const EnvironmentAudit = ({ studentName, callGemini, t, addToast }) => {
         const items = [
-            { id: 'structure', label: (t('behavior_lens.raw.classroom_structure') || 'Classroom Structure'), desc: 'Clear physical layout, defined areas, organized spaces' },
-            { id: 'schedule', label: (t('behavior_lens.raw.visual_schedule') || 'Visual Schedule'), desc: 'Daily schedule posted and referenced regularly' },
-            { id: 'rules', label: (t('behavior_lens.raw.rules_expectations') || 'Rules & Expectations'), desc: 'Positively stated rules visibly posted' },
-            { id: 'noise', label: (t('behavior_lens.raw.noise_level') || 'Noise Level'), desc: 'Appropriate volume management and signal systems' },
-            { id: 'seating', label: (t('behavior_lens.raw.seating_arrangement') || 'Seating Arrangement'), desc: 'Strategic seating that minimizes triggers' },
-            { id: 'materials', label: (t('behavior_lens.raw.materials_access') || 'Materials Access'), desc: 'Students can access needed materials independently' },
+            { id: 'structure', label: (tt('behavior_lens.raw.classroom_structure', 'Classroom Structure')), desc: 'Clear physical layout, defined areas, organized spaces' },
+            { id: 'schedule', label: (tt('behavior_lens.raw.visual_schedule', 'Visual Schedule')), desc: 'Daily schedule posted and referenced regularly' },
+            { id: 'rules', label: (tt('behavior_lens.raw.rules_expectations', 'Rules & Expectations')), desc: 'Positively stated rules visibly posted' },
+            { id: 'noise', label: (tt('behavior_lens.raw.noise_level', 'Noise Level')), desc: 'Appropriate volume management and signal systems' },
+            { id: 'seating', label: (tt('behavior_lens.raw.seating_arrangement', 'Seating Arrangement')), desc: 'Strategic seating that minimizes triggers' },
+            { id: 'materials', label: (tt('behavior_lens.raw.materials_access', 'Materials Access')), desc: 'Students can access needed materials independently' },
             { id: 'transitions', label: 'Transition Cues', desc: 'Clear signals and routines for activity transitions' },
-            { id: 'ratio', label: (t('behavior_lens.raw.positivecorrective_ratio') || 'Positive:Corrective Ratio'), desc: 'Aim for 4:1 positive to corrective interactions' },
+            { id: 'ratio', label: (tt('behavior_lens.raw.positivecorrective_ratio', 'Positive:Corrective Ratio')), desc: 'Aim for 4:1 positive to corrective interactions' },
         ];
         const [ratings, setRatings] = useState({});
         const [aiRecs, setAiRecs] = useState(null);
@@ -4627,9 +4654,9 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
         const total = useMemo(() => Object.values(ratings).reduce((s, v) => s + v, 0), [ratings]);
         const maxScore = items.length * 5;
         const pct = maxScore > 0 ? Math.round((total / maxScore) * 100) : 0;
-        const grade = pct >= 80 ? { label: (t('behavior_lens.raw.strong') || 'Strong'), color: '#22c55e', bg: '#f0fdf4' } :
-            pct >= 50 ? { label: (t('behavior_lens.raw.developing') || 'Developing'), color: '#f59e0b', bg: '#fefce8' } :
-                { label: (t('behavior_lens.raw.needs_improvement') || 'Needs Improvement'), color: '#ef4444', bg: '#fef2f2' };
+        const grade = pct >= 80 ? { label: (tt('behavior_lens.raw.strong', 'Strong')), color: '#22c55e', bg: '#f0fdf4' } :
+            pct >= 50 ? { label: (tt('behavior_lens.raw.developing', 'Developing')), color: '#f59e0b', bg: '#fefce8' } :
+                { label: (tt('behavior_lens.raw.needs_improvement', 'Needs Improvement')), color: '#ef4444', bg: '#fef2f2' };
 
         const handleRecommend = async () => {
             if (!callGemini) return;
@@ -4656,16 +4683,16 @@ Provide improvement recommendations and return ONLY valid JSON:
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
                 setAiRecs(parsed);
-                if (addToast) addToast(t('behavior_lens.toast.recommendations_ready') || 'Recommendations ready ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.recommendations_ready', 'Recommendations ready ✨'), 'success');
             } catch (err) {
                 warnLog('Audit recs failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.failed_try_again') || 'Failed — try again', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.failed_try_again', 'Failed — try again'), 'error');
             } finally { setLoading(false); }
         };
 
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, '🏫 ' + (t('behavior_lens.audit.title') || 'Classroom Environment Audit')),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, '🏫 ' + (tt('behavior_lens.audit.title', 'Classroom Environment Audit'))),
                 h('div', { className: 'space-y-3' },
                     items.map(item =>
                         h('div', { key: item.id, className: 'flex items-center justify-between gap-3' },
@@ -4693,7 +4720,7 @@ Provide improvement recommendations and return ONLY valid JSON:
             Object.keys(ratings).length > 0 && h('div', { className: 'rounded-xl border-2 p-5', style: { background: grade.bg, borderColor: grade.color } },
                 h('div', { className: 'flex items-center justify-between' },
                     h('div', null,
-                        h('div', { className: 'text-xs font-bold uppercase', style: { color: grade.color } }, t('behavior_lens.overall_score') || 'Overall Score'),
+                        h('div', { className: 'text-xs font-bold uppercase', style: { color: grade.color } }, tt('behavior_lens.overall_score', 'Overall Score')),
                         h('div', { className: 'text-3xl font-black', style: { color: grade.color } }, `${total}/${maxScore}`)
                     ),
                     h('div', { className: 'text-end' },
@@ -4706,7 +4733,7 @@ Provide improvement recommendations and return ONLY valid JSON:
             callGemini && h('button', { onClick: handleRecommend,
                 disabled: loading || Object.keys(ratings).length < 3, 'aria-busy': loading,
                 className: 'w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
-            }, loading ? '⏳ Analyzing...' : ('🧠 ' + (t('behavior_lens.audit.recommend') || 'AI Recommend Improvements'))),
+            }, loading ? '⏳ Analyzing...' : ('🧠 ' + (tt('behavior_lens.audit.recommend', 'AI Recommend Improvements')))),
             // Recommendations
             aiRecs && h('div', { className: 'bg-blue-50 rounded-xl border border-blue-200 p-5 animate-in slide-in-from-bottom-4 duration-300' },
                 aiRecs.summary && h('p', { className: 'text-sm text-blue-700 mb-3 font-medium' }, aiRecs.summary),
@@ -4732,9 +4759,9 @@ Provide improvement recommendations and return ONLY valid JSON:
         const [loading, setLoading] = useState(false);
 
         const sources = [
-            { key: 'abc', label: (t('behavior_lens.raw.abc_data') || 'ABC Data'), icon: '📋', count: abcEntries.length, color: '#6366f1' },
-            { key: 'obs', label: (t('behavior_lens.raw.observations') || 'Observations'), icon: '🔍', count: observationSessions.length, color: '#10b981' },
-            { key: 'ai', label: (t('behavior_lens.raw.ai_analysis') || 'AI Analysis'), icon: '🧠', count: aiAnalysis ? 1 : 0, color: '#8b5cf6' },
+            { key: 'abc', label: (tt('behavior_lens.raw.abc_data', 'ABC Data')), icon: '📋', count: abcEntries.length, color: '#6366f1' },
+            { key: 'obs', label: (tt('behavior_lens.raw.observations', 'Observations')), icon: '🔍', count: observationSessions.length, color: '#10b981' },
+            { key: 'ai', label: (tt('behavior_lens.raw.ai_analysis', 'AI Analysis')), icon: '🧠', count: aiAnalysis ? 1 : 0, color: '#8b5cf6' },
         ];
         const totalSources = sources.filter(s => s.count > 0).length;
 
@@ -4777,10 +4804,10 @@ Analyze data convergence and return ONLY valid JSON:
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
                 setAnalysis(parsed);
-                if (addToast) addToast(t('behavior_lens.toast.triangulation_complete') || 'Triangulation complete ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.triangulation_complete', 'Triangulation complete ✨'), 'success');
             } catch (err) {
                 warnLog('Triangulation failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.analysis_failed') || 'Analysis failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.analysis_failed', 'Analysis failed'), 'error');
             } finally { setLoading(false); }
         };
 
@@ -4799,7 +4826,7 @@ Analyze data convergence and return ONLY valid JSON:
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             // Sources overview
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm', 'data-help-key': 'bl_data_triangulation' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, '🔺 ' + (t('behavior_lens.triangulation.title') || 'Data Triangulation')),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-4' }, '🔺 ' + (tt('behavior_lens.triangulation.title', 'Data Triangulation'))),
                 h('div', { className: 'grid grid-cols-3 gap-3' },
                     sources.map(s =>
                         h('div', { key: s.key, className: 'text-center p-3 rounded-xl border', style: { borderColor: s.count > 0 ? s.color: '#475569', background: s.count > 0 ? s.color + '08' : '#f8fafc' } },
@@ -4817,7 +4844,7 @@ Analyze data convergence and return ONLY valid JSON:
             callGemini && h('button', { onClick: handleAnalyze,
                 disabled: loading || totalSources < 1, 'aria-busy': loading,
                 className: 'w-full py-3 bg-gradient-to-r from-zinc-600 to-zinc-800 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
-            }, loading ? '⏳ Analyzing...' : ('🧠 ' + (t('behavior_lens.triangulation.analyze') || 'Analyze Data Convergence'))),
+            }, loading ? '⏳ Analyzing...' : ('🧠 ' + (tt('behavior_lens.triangulation.analyze', 'Analyze Data Convergence')))),
             // Results
             analysis && h('div', { className: 'bg-zinc-50 rounded-xl border border-zinc-200 p-5 animate-in slide-in-from-bottom-4 duration-300 space-y-2' },
                 analysis.summary && h('p', { className: 'text-sm text-zinc-700 font-medium bg-white p-3 rounded-lg border border-zinc-100 mb-3' }, analysis.summary),
@@ -4880,39 +4907,39 @@ Provide a brief impact interpretation and return ONLY valid JSON:
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
                 setAiInsight(parsed);
-                if (addToast) addToast(t('behavior_lens.toast.impact_analyzed') || 'Impact analyzed ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.impact_analyzed', 'Impact analyzed ✨'), 'success');
             } catch (err) {
                 warnLog('Impact analysis failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.analysis_failed') || 'Analysis failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.analysis_failed', 'Analysis failed'), 'error');
             } finally { setLoading(false); }
         };
 
         const bars = [
-            { label: (t('behavior_lens.raw.per_day') || 'Per Day'), value: lostPerDay, max: 60, unit: 'min' },
-            { label: (t('behavior_lens.raw.per_week') || 'Per Week'), value: lostPerWeek, max: 300, unit: 'min' },
-            { label: (t('behavior_lens.raw.per_month') || 'Per Month'), value: lostPerMonth, max: 1200, unit: 'min' },
-            { label: (t('behavior_lens.raw.per_year') || 'Per Year'), value: lostPerYear, max: 10000, unit: 'min' },
+            { label: (tt('behavior_lens.raw.per_day', 'Per Day')), value: lostPerDay, max: 60, unit: 'min' },
+            { label: (tt('behavior_lens.raw.per_week', 'Per Week')), value: lostPerWeek, max: 300, unit: 'min' },
+            { label: (tt('behavior_lens.raw.per_month', 'Per Month')), value: lostPerMonth, max: 1200, unit: 'min' },
+            { label: (tt('behavior_lens.raw.per_year', 'Per Year')), value: lostPerYear, max: 10000, unit: 'min' },
         ];
 
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             // Input form
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm space-y-3' },
-                h('h3', { className: 'text-sm font-black text-slate-800' }, '⏱️ ' + (t('behavior_lens.impact.title') || 'Impact Analysis Calculator')),
+                h('h3', { className: 'text-sm font-black text-slate-800' }, '⏱️ ' + (tt('behavior_lens.impact.title', 'Impact Analysis Calculator'))),
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.incidents_per_day') || 'Incidents per day'),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.incidents_per_day', 'Incidents per day')),
                         h('input', { type: 'number', value: frequency, onChange: (e) => setFrequency(e.target.value), placeholder: '3', 'aria-label': 'Incidents per day', className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm mt-0.5' })
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.avg_duration_min') || 'Avg duration (min)'),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.avg_duration_min', 'Avg duration (min)')),
                         h('input', { type: 'number', value: avgDuration, onChange: (e) => setAvgDuration(e.target.value), placeholder: '5', 'aria-label': 'Average duration in minutes', className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm mt-0.5' })
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.school_days_week') || 'School days/week'),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.school_days_week', 'School days/week')),
                         h('input', { type: 'number', value: schoolDays, onChange: (e) => setSchoolDays(e.target.value), 'aria-label': 'School days per week', className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm mt-0.5' })
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.cost_per_pupil') || 'Cost per pupil ($/yr)'),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.cost_per_pupil', 'Cost per pupil ($/yr)')),
                         h('input', { type: 'number', value: costPerPupil, onChange: (e) => setCostPerPupil(e.target.value), 'aria-label': 'Cost per pupil per year', className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm mt-0.5' })
                     )
                 )
@@ -4932,7 +4959,7 @@ Provide a brief impact interpretation and return ONLY valid JSON:
                     )
                 ),
                 h('div', { className: 'mt-4 p-3 bg-red-50 rounded-lg border border-red-200 text-center' },
-                    h('div', { className: 'text-[11px] font-bold text-red-600 uppercase' }, t('behavior_lens.estimated_annual_cost') || 'Estimated Annual Cost'),
+                    h('div', { className: 'text-[11px] font-bold text-red-600 uppercase' }, tt('behavior_lens.estimated_annual_cost', 'Estimated Annual Cost')),
                     h('div', { className: 'text-2xl font-black text-red-700' }, `$${annualCost.toFixed(2)}`)
                 )
             ),
@@ -4940,7 +4967,7 @@ Provide a brief impact interpretation and return ONLY valid JSON:
             callGemini && freq > 0 && dur > 0 && h('button', { onClick: handleInterpret,
                 disabled: loading, 'aria-busy': loading,
                 className: 'w-full py-3 bg-gradient-to-r from-yellow-500 to-amber-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
-            }, loading ? '⏳ Analyzing...' : ('🧠 ' + (t('behavior_lens.impact.interpret') || 'AI Interpret Impact'))),
+            }, loading ? '⏳ Analyzing...' : ('🧠 ' + (tt('behavior_lens.impact.interpret', 'AI Interpret Impact')))),
             aiInsight && h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-5 animate-in slide-in-from-bottom-4 duration-300' },
                 aiInsight.severity && h('span', { className: `px-2 py-0.5 rounded-full text-xs font-bold ${aiInsight.severity === 'high' || aiInsight.severity === 'severe' ? 'bg-red-100 text-red-700' : aiInsight.severity === 'significant' ? 'bg-orange-100 text-orange-700' : aiInsight.severity === 'moderate' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}` }, aiInsight.severity),
                 aiInsight.interpretation && h('p', { className: 'text-sm text-slate-700 mt-2' }, aiInsight.interpretation),
@@ -4956,9 +4983,9 @@ Provide a brief impact interpretation and return ONLY valid JSON:
         const lsKey = studentKey ? studentKey('bl_crisis_') : `bl_crisis_${studentName || '_'}`;
         const legacyCrisisKey = `bl_crisis_${studentName || '_'}`;
         const tiers = [
-            { key: 'prevention', label: (t('behavior_lens.raw.prevention') || 'Prevention'), icon: '🛡️', color: '#22c55e', bg: '#f0fdf4' },
-            { key: 'deescalation', label: t('behavior_lens.cycle_de_escalation') || 'De-escalation', icon: '🌊', color: '#3b82f6', bg: '#eff6ff' },
-            { key: 'emergency', label: (t('behavior_lens.raw.emergency') || 'Emergency'), icon: '🚨', color: '#ef4444', bg: '#fef2f2' },
+            { key: 'prevention', label: (tt('behavior_lens.raw.prevention', 'Prevention')), icon: '🛡️', color: '#22c55e', bg: '#f0fdf4' },
+            { key: 'deescalation', label: tt('behavior_lens.cycle_de_escalation', 'De-escalation'), icon: '🌊', color: '#3b82f6', bg: '#eff6ff' },
+            { key: 'emergency', label: (tt('behavior_lens.raw.emergency', 'Emergency')), icon: '🚨', color: '#ef4444', bg: '#fef2f2' },
         ];
         const emptyPlan = { prevention: { triggers: '', staffActions: '', communication: '' }, deescalation: { triggers: '', staffActions: '', communication: '' }, emergency: { triggers: '', staffActions: '', communication: '' } };
         const [plan, setPlan] = useState(emptyPlan);
@@ -4984,7 +5011,7 @@ Provide a brief impact interpretation and return ONLY valid JSON:
             const data = { plan, contacts: contacts.filter(c => c.name || c.role || c.phone), lastReviewed: new Date().toISOString() };
             setLastReviewed(data.lastReviewed);
             try { localStorage.setItem(lsKey, JSON.stringify(data)); } catch { }
-            if (addToast) addToast(t('behavior_lens.toast.crisis_plan_saved') || 'Crisis plan saved ✅', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.crisis_plan_saved', 'Crisis plan saved ✅'), 'success');
         };
 
         const addContact = () => setContacts(prev => [...prev, { id: uid(), name: '', role: '', phone: '' }]);
@@ -5042,10 +5069,10 @@ Generate a 3-tier crisis intervention plan and return ONLY valid JSON:
                     if (Array.isArray(parsed.emergencyContacts)) setContacts(parsed.emergencyContacts);
                     else setContacts([{ id: uid(), name: String(parsed.emergencyContacts), role: '', phone: '' }]);
                 }
-                if (addToast) addToast(t('behavior_lens.toast.crisis_plan_drafted') || 'Crisis plan drafted ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.crisis_plan_drafted', 'Crisis plan drafted ✨'), 'success');
             } catch (err) {
                 warnLog('Crisis plan failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.drafting_failed') || 'Drafting failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.drafting_failed', 'Drafting failed'), 'error');
             } finally { setDrafting(false); }
         };
 
@@ -5058,7 +5085,7 @@ Generate a 3-tier crisis intervention plan and return ONLY valid JSON:
             h('div', { className: 'flex gap-2 flex-wrap' },
                 callGemini && h('button', { onClick: handleDraft, disabled: drafting,
                     className: 'flex-1 py-3 bg-gradient-to-r from-stone-600 to-stone-800 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
-                }, drafting ? '⏳ Drafting...' : ('🧠 ' + (t('behavior_lens.crisis.draft') || 'AI Draft Crisis Plan'))),
+                }, drafting ? '⏳ Drafting...' : ('🧠 ' + (tt('behavior_lens.crisis.draft', 'AI Draft Crisis Plan')))),
                 h('button', { "aria-label": "Save Plan", onClick: savePlan, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-600 transition-all' }, '💾 Save Plan')
             ),
             // Last reviewed badge
@@ -5069,7 +5096,7 @@ Generate a 3-tier crisis intervention plan and return ONLY valid JSON:
             // Plan card
             h('div', { className: 'bg-white rounded-xl border-2 border-red-200 p-5 shadow-sm print:border-black' },
                 h('div', { className: 'text-center border-b border-slate-200 pb-3 mb-4' },
-                    h('h2', { className: 'text-lg font-black text-slate-800' }, '🚨 ' + (t('behavior_lens.crisis.title') || 'Crisis Intervention Plan')),
+                    h('h2', { className: 'text-lg font-black text-slate-800' }, '🚨 ' + (tt('behavior_lens.crisis.title', 'Crisis Intervention Plan'))),
                     h('p', { className: 'text-xs text-slate-600 mt-1' }, `Student: ${studentName || '___'}`)
                 ),
                 // Tiers
@@ -5106,10 +5133,10 @@ Generate a 3-tier crisis intervention plan and return ONLY valid JSON:
                     h('div', { className: 'space-y-2' },
                         contacts.map((c, i) =>
                             h('div', { key: c.id || i, className: 'flex gap-2 items-center' },
-                                h('input', { type: 'text', value: c.name || '', onChange: (e) => updateContact(i, 'name', e.target.value), placeholder: (t('behavior_lens.raw.name') || 'Name'), 'aria-label': 'Contact name', maxLength: 80, className: 'flex-1 bg-white/70 rounded-lg px-3 py-1.5 text-sm border border-red-600 outline-none focus:ring-2 focus:ring-red-300' }),
-                                h('input', { type: 'text', value: c.role || '', onChange: (e) => updateContact(i, 'role', e.target.value), placeholder: (t('behavior_lens.raw.role') || 'Role'), 'aria-label': 'Contact role', maxLength: 60, className: 'w-28 bg-white/70 rounded-lg px-3 py-1.5 text-sm border border-red-600 outline-none focus:ring-2 focus:ring-red-300' }),
-                                h('input', { type: 'text', value: c.phone || '', onChange: (e) => updateContact(i, 'phone', e.target.value), placeholder: (t('behavior_lens.raw.phone') || 'Phone'), 'aria-label': 'Contact phone', maxLength: 20, className: 'w-28 bg-white/70 rounded-lg px-3 py-1.5 text-sm border border-red-600 outline-none focus:ring-2 focus:ring-red-300' }),
-                                contacts.length > 1 && h('button', { onClick: () => removeContact(i), title: 'Remove contact', 'aria-label': 'Remove contact', className: 'text-red-600 hover:text-red-500 text-sm', title: (t('behavior_lens.raw.remove') || 'Remove') }, '✕')
+                                h('input', { type: 'text', value: c.name || '', onChange: (e) => updateContact(i, 'name', e.target.value), placeholder: (tt('behavior_lens.raw.name', 'Name')), 'aria-label': 'Contact name', maxLength: 80, className: 'flex-1 bg-white/70 rounded-lg px-3 py-1.5 text-sm border border-red-600 outline-none focus:ring-2 focus:ring-red-300' }),
+                                h('input', { type: 'text', value: c.role || '', onChange: (e) => updateContact(i, 'role', e.target.value), placeholder: (tt('behavior_lens.raw.role', 'Role')), 'aria-label': 'Contact role', maxLength: 60, className: 'w-28 bg-white/70 rounded-lg px-3 py-1.5 text-sm border border-red-600 outline-none focus:ring-2 focus:ring-red-300' }),
+                                h('input', { type: 'text', value: c.phone || '', onChange: (e) => updateContact(i, 'phone', e.target.value), placeholder: (tt('behavior_lens.raw.phone', 'Phone')), 'aria-label': 'Contact phone', maxLength: 20, className: 'w-28 bg-white/70 rounded-lg px-3 py-1.5 text-sm border border-red-600 outline-none focus:ring-2 focus:ring-red-300' }),
+                                contacts.length > 1 && h('button', { onClick: () => removeContact(i), title: 'Remove contact', 'aria-label': 'Remove contact', className: 'text-red-600 hover:text-red-500 text-sm', title: (tt('behavior_lens.raw.remove', 'Remove')) }, '✕')
                             )
                         )
                     )
@@ -5127,9 +5154,9 @@ Generate a 3-tier crisis intervention plan and return ONLY valid JSON:
     // Student-facing red/yellow/green behavior zone poster
     const TrafficLightVisual = ({ studentName, aiAnalysis, callGemini, t, addToast }) => {
         const [zones, setZones] = useState({
-            green: { title: (t('behavior_lens.raw.ready_to_learn') || 'Ready to Learn'), items: 'Sitting in seat; Eyes on teacher; Raising hand; Following directions' },
-            yellow: { title: (t('behavior_lens.raw.slow_down') || 'Slow Down'), items: 'Feeling frustrated; Getting distracted; Talking out of turn; Need a break' },
-            red: { title: (t('behavior_lens.raw.stop_get_help') || 'Stop & Get Help'), items: 'Feeling very upset; Wanting to leave; Cannot focus; Need adult support' },
+            green: { title: (tt('behavior_lens.raw.ready_to_learn', 'Ready to Learn')), items: 'Sitting in seat; Eyes on teacher; Raising hand; Following directions' },
+            yellow: { title: (tt('behavior_lens.raw.slow_down', 'Slow Down')), items: 'Feeling frustrated; Getting distracted; Talking out of turn; Need a break' },
+            red: { title: (tt('behavior_lens.raw.stop_get_help', 'Stop & Get Help')), items: 'Feeling very upset; Wanting to leave; Cannot focus; Need adult support' },
         });
         const [generating, setGenerating] = useState(false);
 
@@ -5156,10 +5183,10 @@ Create student-friendly language and return ONLY valid JSON:
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
                 setZones(parsed);
-                if (addToast) addToast(t('behavior_lens.toast.traffic_light_generated') || 'Traffic light generated ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.traffic_light_generated', 'Traffic light generated ✨'), 'success');
             } catch (err) {
                 warnLog('Traffic light failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.generation_failed') || 'Generation failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.generation_failed', 'Generation failed'), 'error');
             } finally { setGenerating(false); }
         };
 
@@ -5174,7 +5201,7 @@ Create student-friendly language and return ONLY valid JSON:
             callGemini && h('button', { onClick: handleGenerate,
                 disabled: generating, 'aria-busy': generating,
                 className: 'w-full py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
-            }, generating ? '⏳ Generating...' : ('🧠 ' + (t('behavior_lens.traffic.generate') || 'AI Generate Expectations'))),
+            }, generating ? '⏳ Generating...' : ('🧠 ' + (tt('behavior_lens.traffic.generate', 'AI Generate Expectations')))),
             // Traffic light poster
             h('div', { id: 'traffic-light-printable', className: 'bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-lg print:shadow-none' },
                 h('h2', { className: 'text-center text-lg font-black text-slate-800 mb-1' }, '🚦 My Self-Regulation Plan'),
@@ -5204,7 +5231,7 @@ Create student-friendly language and return ONLY valid JSON:
                             h('textarea', {
                                 value: zone.items || '',
                                 onChange: (e) => setZones(prev => ({ ...prev, [z.key]: { ...prev[z.key], items: e.target.value } })),
-                                placeholder: t('behavior_lens.ph.items_separated_by_semicolons') || 'Items separated by semicolons',
+                                placeholder: tt('behavior_lens.ph.items_separated_by_semicolons', 'Items separated by semicolons'),
                                 'aria-label': 'Zone items separated by semicolons',
                                 rows: 1,
                                 className: 'w-full mt-2 bg-white/50 rounded-lg px-3 py-1.5 text-xs border border-transparent focus:border-slate-200 focus:ring-2 focus:ring-slate-300 outline-none resize-none print:hidden'
@@ -5278,15 +5305,15 @@ Return ONLY valid JSON:
                 if (addToast) addToast(parsed.rationale || 'Config suggested ✨', 'success');
             } catch (err) {
                 warnLog('DataSheet AI config failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.ai_suggestion_failed') || 'AI suggestion failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.ai_suggestion_failed', 'AI suggestion failed'), 'error');
             } finally { setAiConfigLoading(false); }
         };
 
         const methods = [
-            { id: 'frequency', label: (t('behavior_lens.raw.frequency_count') || 'Frequency Count'), icon: '🔢' },
-            { id: 'duration', label: (t('behavior_lens.raw.duration_log') || 'Duration Log'), icon: '⏱️' },
-            { id: 'abc', label: (t('behavior_lens.raw.abc_narrative') || 'ABC Narrative'), icon: '📋' },
-            { id: 'latency', label: (t('behavior_lens.raw.latency_recording') || 'Latency Recording'), icon: '⏳' },
+            { id: 'frequency', label: (tt('behavior_lens.raw.frequency_count', 'Frequency Count')), icon: '🔢' },
+            { id: 'duration', label: (tt('behavior_lens.raw.duration_log', 'Duration Log')), icon: '⏱️' },
+            { id: 'abc', label: (tt('behavior_lens.raw.abc_narrative', 'ABC Narrative')), icon: '📋' },
+            { id: 'latency', label: (tt('behavior_lens.raw.latency_recording', 'Latency Recording')), icon: '⏳' },
         ];
 
         const numIntervals = parseInt(intervals) || 6;
@@ -5297,11 +5324,11 @@ Return ONLY valid JSON:
                 return h('table', { className: 'w-full text-xs border-collapse print:text-[11px]' },
                     h('caption', { className: 'sr-only' }, 'Latency Recording'), h('thead', null,
                         h('tr', { className: 'bg-slate-100' },
-                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-start' }, t('behavior_lens.date') || 'Date'),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-start' }, tt('behavior_lens.date', 'Date')),
                             ...Array.from({ length: numIntervals }, (_, i) =>
                                 h('th', { scope: 'col', key: i, className: 'border border-slate-400 px-2 py-1.5' }, `Period ${i + 1}`)
                             ),
-                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.total') || 'Total')
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, tt('behavior_lens.total', 'Total'))
                         )
                     ),
                     h('tbody', null,
@@ -5321,11 +5348,11 @@ Return ONLY valid JSON:
                 return h('table', { className: 'w-full text-xs border-collapse print:text-[11px]' },
                     h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
                         h('tr', { className: 'bg-slate-100' },
-                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-start' }, t('behavior_lens.date') || 'Date'),
-                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.start_time') || 'Start Time'),
-                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.end_time') || 'End Time'),
-                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.duration') || 'Duration'),
-                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-start' }, t('behavior_lens.notes') || 'Notes')
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-start' }, tt('behavior_lens.date', 'Date')),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, tt('behavior_lens.start_time', 'Start Time')),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, tt('behavior_lens.end_time', 'End Time')),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, tt('behavior_lens.duration', 'Duration')),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-start' }, tt('behavior_lens.notes', 'Notes'))
                         )
                     ),
                     h('tbody', null,
@@ -5346,9 +5373,9 @@ Return ONLY valid JSON:
                     Array.from({ length: numDays }, (_, d) =>
                         h('div', { key: d, className: 'border border-slate-400 rounded-lg p-3 print:break-inside-avoid' },
                             h('div', { className: 'flex gap-4 text-xs mb-2' },
-                                h('span', null, t('behavior_lens.date_blank') || 'Date: ____________'),
-                                h('span', null, t('behavior_lens.time_blank') || 'Time: ____________'),
-                                h('span', null, t('behavior_lens.observer_blank') || 'Observer: ____________')
+                                h('span', null, tt('behavior_lens.date_blank', 'Date: ____________')),
+                                h('span', null, tt('behavior_lens.time_blank', 'Time: ____________')),
+                                h('span', null, tt('behavior_lens.observer_blank', 'Observer: ____________'))
                             ),
                             h('div', { className: 'grid grid-cols-3 gap-2' },
                                 ['Antecedent', 'Behavior', 'Consequence'].map(label =>
@@ -5366,11 +5393,11 @@ Return ONLY valid JSON:
             return h('table', { className: 'w-full text-xs border-collapse print:text-[11px]' },
                 h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
                     h('tr', { className: 'bg-slate-100' },
-                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-start' }, t('behavior_lens.date') || 'Date'),
-                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.cue_given') || 'Cue Given'),
-                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.response_start') || 'Response Start'),
-                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, t('behavior_lens.latency_sec') || 'Latency (sec)'),
-                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-start' }, t('behavior_lens.notes') || 'Notes')
+                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-start' }, tt('behavior_lens.date', 'Date')),
+                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, tt('behavior_lens.cue_given', 'Cue Given')),
+                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, tt('behavior_lens.response_start', 'Response Start')),
+                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5' }, tt('behavior_lens.latency_sec', 'Latency (sec)')),
+                        h('th', { scope: 'col', className: 'border border-slate-400 px-2 py-1.5 text-start' }, tt('behavior_lens.notes', 'Notes'))
                     )
                 ),
                 h('tbody', null,
@@ -5390,24 +5417,24 @@ Return ONLY valid JSON:
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             // Config
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm space-y-3 print:hidden', 'data-help-key': 'bl_datasheet_generator' },
-                h('h3', { className: 'text-sm font-black text-slate-800' }, '📋 ' + (t('behavior_lens.datasheet.title') || 'Data Sheet Generator')),
+                h('h3', { className: 'text-sm font-black text-slate-800' }, '📋 ' + (tt('behavior_lens.datasheet.title', 'Data Sheet Generator'))),
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.collection_method') || 'Collection Method'),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.collection_method', 'Collection Method')),
                         h('select', { value: method, onChange: (e) => setMethod(e.target.value), 'aria-label': 'Data collection method', className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm mt-0.5' },
                             methods.map(m => h('option', { key: m.id, value: m.id }, `${m.icon} ${m.label}`))
                         )
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.behavior_label') || 'Behavior Label'),
-                        h('input', { value: behaviorLabel, onChange: (e) => setBehaviorLabel(e.target.value), 'aria-label': 'eg, Off-task behavior', placeholder: t('behavior_lens.ph.eg_offtask_behavior') || 'e.g., Off-task behavior', className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm mt-0.5' })
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.behavior_label', 'Behavior Label')),
+                        h('input', { value: behaviorLabel, onChange: (e) => setBehaviorLabel(e.target.value), 'aria-label': 'eg, Off-task behavior', placeholder: tt('behavior_lens.ph.eg_offtask_behavior', 'e.g., Off-task behavior'), className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm mt-0.5' })
                     ),
                     method === 'frequency' && h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.periods_per_day') || 'Periods per day'),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.periods_per_day', 'Periods per day')),
                         h('input', { type: 'number', value: intervals, onChange: (e) => setIntervals(e.target.value), 'aria-label': 'Periods per day', min: 2, max: 12, className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm mt-0.5' })
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.rows_days') || 'Rows / days'),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.rows_days', 'Rows / days')),
                         h('input', { type: 'number', value: dateRange, onChange: (e) => setDateRange(e.target.value), 'aria-label': 'Number of rows or days', min: 1, max: 20, className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm mt-0.5' })
                     )
                 )
@@ -5454,7 +5481,7 @@ Return ONLY valid JSON:
                 setTranslateLang('');
             } catch (err) {
                 warnLog('Translation failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.translation_failed') || 'Translation failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.translation_failed', 'Translation failed'), 'error');
             } finally { setTranslating(false); }
         };
 
@@ -5487,17 +5514,17 @@ Do NOT use the student codename in the note — use "your child" or "your studen
 Return the note as plain text (no JSON). Include date placeholder and signature line.`;
                 const result = await callGemini(prompt, true);
                 setNote(result);
-                if (addToast) addToast(t('behavior_lens.toast.home_note_generated') || 'Home note generated ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.home_note_generated', 'Home note generated ✨'), 'success');
             } catch (err) {
                 warnLog('Home note failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.generation_failed') || 'Generation failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.generation_failed', 'Generation failed'), 'error');
             } finally { setGenerating(false); }
         };
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             // Tone selector
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '📝 ' + (t('behavior_lens.homenote.title') || 'Home Note Generator')),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '📝 ' + (tt('behavior_lens.homenote.title', 'Home Note Generator'))),
                 h('div', { className: 'grid grid-cols-3 gap-2' },
                     tones.map(tn =>
                         h('button', { "aria-label": "Toggle tone",
@@ -5515,7 +5542,7 @@ Return the note as plain text (no JSON). Include date placeholder and signature 
             callGemini && h('button', { onClick: handleGenerate,
                 disabled: generating, 'aria-busy': generating,
                 className: 'w-full py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
-            }, generating ? '⏳ Generating...' : ('🧠 ' + (t('behavior_lens.homenote.generate') || 'AI Generate Home Note'))),
+            }, generating ? '⏳ Generating...' : ('🧠 ' + (tt('behavior_lens.homenote.generate', 'AI Generate Home Note')))),
             // Note display
             note && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm print:shadow-none' },
                 h('textarea', {
@@ -5528,7 +5555,7 @@ Return the note as plain text (no JSON). Include date placeholder and signature 
                 }),
                 h('div', { className: 'flex gap-2 mt-3 print:hidden flex-wrap' },
                     h('button', { "aria-label": "Copy",
-                        onClick: () => { navigator.clipboard.writeText(note); if (addToast) addToast(t('behavior_lens.toast.copied') || 'Copied!', 'success'); },
+                        onClick: () => { navigator.clipboard.writeText(note); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
                         className: 'px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200'
                     }, '📋 Copy'),
                     h('button', { onClick: () => window.print(), className: 'px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🖨️ Print'),
@@ -5540,14 +5567,14 @@ Return the note as plain text (no JSON). Include date placeholder and signature 
                             className: 'px-4 py-2 bg-blue-50 text-blue-700 border border-blue-600 rounded-lg text-sm font-bold hover:bg-blue-100 transition-all'
                         }, translating ? '⏳ Translating...' : '🌐 Translate'),
                         showTranslate && h('div', { className: 'absolute bottom-full mb-1 left-0 bg-white border border-slate-400 rounded-xl shadow-lg z-10 p-3 min-w-56' },
-                            h('label', { className: 'text-[11px] font-bold text-slate-600 mb-1 block' }, t('behavior_lens.ui.translate_to_any_language') || 'Translate to any language:'),
+                            h('label', { className: 'text-[11px] font-bold text-slate-600 mb-1 block' }, tt('behavior_lens.ui.translate_to_any_language', 'Translate to any language:')),
                             h('div', { className: 'flex gap-1.5' },
                                 h('input', {
                                     type: 'text',
                                     value: translateLang,
                                     onChange: e => setTranslateLang(e.target.value),
                                     onKeyDown: e => { if (e.key === 'Enter' && translateLang.trim()) handleTranslate(); },
-                                    placeholder: t('behavior_lens.ph.eg_spanish_arabic_somali') || 'e.g. Spanish, Arabic, Somali…',
+                                    placeholder: tt('behavior_lens.ph.eg_spanish_arabic_somali', 'e.g. Spanish, Arabic, Somali…'),
                                     'aria-label': 'Target language for translation',
                                     className: 'flex-1 px-3 py-1.5 text-sm border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-blue-300',
                                     autoFocus: true
@@ -5561,7 +5588,7 @@ Return the note as plain text (no JSON). Include date placeholder and signature 
                     ),
                     // Undo AI
                     preAiNote !== null && h('button', { "aria-label": "Undo AI",
-                        onClick: () => { setNote(preAiNote); setPreAiNote(null); if (addToast) addToast(t('behavior_lens.toast.reverted') || 'Reverted', 'info'); },
+                        onClick: () => { setNote(preAiNote); setPreAiNote(null); if (addToast) addToast(tt('behavior_lens.toast.reverted', 'Reverted'), 'info'); },
                         className: 'px-4 py-2 bg-amber-50 text-amber-700 border border-amber-600 rounded-lg text-sm font-bold hover:bg-amber-100'
                     }, '↩️ Undo AI')
                 )
@@ -5608,7 +5635,7 @@ Return the note as plain text (no JSON). Include date placeholder and signature 
         const pct = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
 
         const saveToday = () => {
-            if (items.length === 0) { if (addToast) addToast(t('behavior_lens.toast.generate_a_checklist_first') || 'Generate a checklist first', 'error'); return; }
+            if (items.length === 0) { if (addToast) addToast(tt('behavior_lens.toast.generate_a_checklist_first', 'Generate a checklist first'), 'error'); return; }
             const updated = { ...history, [date]: { checks: { ...checks }, score: checkedCount, total: totalItems, pct } };
             setHistory(updated);
             try { localStorage.setItem(lsKey, JSON.stringify({ items, history: updated })); } catch { }
@@ -5719,10 +5746,10 @@ Generate a daily fidelity checklist (5-8 items) and return ONLY valid JSON:
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
                 setItems(parsed.items || []);
                 setChecks({});
-                if (addToast) addToast(t('behavior_lens.toast.checklist_generated') || 'Checklist generated ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.checklist_generated', 'Checklist generated ✨'), 'success');
             } catch (err) {
                 warnLog('Fidelity gen failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.generation_failed') || 'Generation failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.generation_failed', 'Generation failed'), 'error');
             } finally { setGenerating(false); }
         };
 
@@ -5735,11 +5762,11 @@ Generate a daily fidelity checklist (5-8 items) and return ONLY valid JSON:
             h('div', { className: 'flex gap-2 flex-wrap' },
                 callGemini && h('button', { onClick: handleGenerate, disabled: generating, 'aria-busy': generating,
                     className: 'flex-1 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
-                }, generating ? '⏳ Generating...' : ('🧠 ' + (t('behavior_lens.fidelity.generate') || 'AI Generate Checklist from BIP'))),
+                }, generating ? '⏳ Generating...' : ('🧠 ' + (tt('behavior_lens.fidelity.generate', 'AI Generate Checklist from BIP')))),
                 h('button', { "aria-label": "Quick Fill",
                     onClick: handleQuickFill,
                     className: 'px-4 py-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all',
-                    title: (t('behavior_lens.raw.instantly_fill_functionmatched_fidelity_items_no_ai_needed') || 'Instantly fill function-matched fidelity items (no AI needed)')
+                    title: (tt('behavior_lens.raw.instantly_fill_functionmatched_fidelity_items_no_ai_needed', 'Instantly fill function-matched fidelity items (no AI needed)'))
                 }, '⚡ Quick Fill'),
                 items.length > 0 && h('button', { onClick: saveToday, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-600 transition-all' }, '💾 Save Today'),
                 items.length > 0 && h('button', { "aria-label": "Clear", onClick: clearChecks, className: 'px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all' }, '🔄 Clear')
@@ -5768,7 +5795,7 @@ Generate a daily fidelity checklist (5-8 items) and return ONLY valid JSON:
             // Checklist
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm print:shadow-none' },
                 h('div', { className: 'flex items-center justify-between mb-4 border-b pb-3' },
-                    h('h3', { className: 'text-sm font-black text-slate-800' }, '✅ ' + (t('behavior_lens.fidelity.title') || 'Teacher Fidelity Checklist')),
+                    h('h3', { className: 'text-sm font-black text-slate-800' }, '✅ ' + (tt('behavior_lens.fidelity.title', 'Teacher Fidelity Checklist'))),
                     h('input', { type: 'date', value: date, onChange: (e) => loadDay(e.target.value), 'aria-label': 'Fidelity checklist date', className: 'text-xs border border-slate-400 rounded-lg px-2 py-1 print:border-black' })
                 ),
                 studentName && h('p', { className: 'text-xs text-slate-600 mb-3' }, `Student: ${studentName}`),
@@ -5785,10 +5812,10 @@ Generate a daily fidelity checklist (5-8 items) and return ONLY valid JSON:
                             h('span', { className: `text-sm ${checks[i] ? 'text-emerald-700 line-through' : 'text-slate-700'}` }, item)
                         )
                     )
-                ) : h('p', { className: 'text-xs text-slate-600 text-center py-6' }, t('behavior_lens.ui.click_ai_generate_checklist_to_create_items_based') || 'Click "AI Generate Checklist" to create items based on the BIP'),
+                ) : h('p', { className: 'text-xs text-slate-600 text-center py-6' }, tt('behavior_lens.ui.click_ai_generate_checklist_to_create_items_based', 'Click "AI Generate Checklist" to create items based on the BIP')),
                 // Score
                 items.length > 0 && h('div', { className: 'mt-4 p-3 rounded-lg border text-center', style: { background: scoreBg(pct), borderColor: scoreBorder(pct) } },
-                    h('div', { className: 'text-xs font-bold uppercase', style: { color: scoreColor(pct) } }, t('behavior_lens.fidelity_score') || 'Fidelity Score'),
+                    h('div', { className: 'text-xs font-bold uppercase', style: { color: scoreColor(pct) } }, tt('behavior_lens.fidelity_score', 'Fidelity Score')),
                     h('div', { className: 'text-2xl font-black', style: { color: scoreColor(pct) } }, `${checkedCount}/${totalItems} (${pct}%)`)
                 )
             )
@@ -5799,11 +5826,11 @@ Generate a daily fidelity checklist (5-8 items) and return ONLY valid JSON:
     // 5-question contextual fit assessment (Horner et al.)
     const FeasibilityCheck = ({ studentName, callGemini, t, addToast }) => {
         const questions = [
-            { id: 'skill', label: (t('behavior_lens.raw.staff_skill') || 'Staff Skill'), desc: 'Do staff have the skills to implement this plan consistently?' },
-            { id: 'resources', label: (t('behavior_lens.raw.resource_availability') || 'Resource Availability'), desc: 'Are the needed materials, space, and time available?' },
-            { id: 'values', label: (t('behavior_lens.raw.value_alignment') || 'Value Alignment'), desc: 'Does the plan align with the school\'s values and culture?' },
-            { id: 'time', label: (t('behavior_lens.raw.time_commitment') || 'Time Commitment'), desc: 'Is the required time investment realistic given current demands?' },
-            { id: 'admin', label: (t('behavior_lens.raw.administrative_support') || 'Administrative Support'), desc: 'Is there leadership buy-in and administrative support?' },
+            { id: 'skill', label: (tt('behavior_lens.raw.staff_skill', 'Staff Skill')), desc: 'Do staff have the skills to implement this plan consistently?' },
+            { id: 'resources', label: (tt('behavior_lens.raw.resource_availability', 'Resource Availability')), desc: 'Are the needed materials, space, and time available?' },
+            { id: 'values', label: (tt('behavior_lens.raw.value_alignment', 'Value Alignment')), desc: 'Does the plan align with the school\'s values and culture?' },
+            { id: 'time', label: (tt('behavior_lens.raw.time_commitment', 'Time Commitment')), desc: 'Is the required time investment realistic given current demands?' },
+            { id: 'admin', label: (tt('behavior_lens.raw.administrative_support', 'Administrative Support')), desc: 'Is there leadership buy-in and administrative support?' },
         ];
         const [ratings, setRatings] = useState({});
         const [aiRecs, setAiRecs] = useState(null);
@@ -5812,9 +5839,9 @@ Generate a daily fidelity checklist (5-8 items) and return ONLY valid JSON:
         const total = useMemo(() => Object.values(ratings).reduce((s, v) => s + v, 0), [ratings]);
         const maxScore = questions.length * 5;
         const pct = maxScore > 0 ? Math.round((total / maxScore) * 100) : 0;
-        const verdict = pct >= 80 ? { label: (t('behavior_lens.raw.feasible') || 'Feasible'), color: '#22c55e', bg: '#f0fdf4' } :
-            pct >= 50 ? { label: (t('behavior_lens.raw.needs_modification') || 'Needs Modification'), color: '#f59e0b', bg: '#fefce8' } :
-                { label: (t('behavior_lens.raw.not_feasible') || 'Not Feasible'), color: '#ef4444', bg: '#fef2f2' };
+        const verdict = pct >= 80 ? { label: (tt('behavior_lens.raw.feasible', 'Feasible')), color: '#22c55e', bg: '#f0fdf4' } :
+            pct >= 50 ? { label: (tt('behavior_lens.raw.needs_modification', 'Needs Modification')), color: '#f59e0b', bg: '#fefce8' } :
+                { label: (tt('behavior_lens.raw.not_feasible', 'Not Feasible')), color: '#ef4444', bg: '#fef2f2' };
 
         const handleRecommend = async () => {
             if (!callGemini) return;
@@ -5840,17 +5867,17 @@ Provide recommendations to improve feasibility. Return ONLY valid JSON:
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
                 setAiRecs(parsed);
-                if (addToast) addToast(t('behavior_lens.toast.assessment_complete') || 'Assessment complete ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.assessment_complete', 'Assessment complete ✨'), 'success');
             } catch (err) {
                 warnLog('Feasibility failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.failed') || 'Failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.failed', 'Failed'), 'error');
             } finally { setLoading(false); }
         };
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-1' }, '⚖️ ' + (t('behavior_lens.feasibility.title') || 'Contextual Fit Assessment')),
-                h('p', { className: 'text-[11px] text-slate-600 mb-4' }, t('behavior_lens.ui.based_on_horner_salentine_albin_2003') || 'Based on Horner, Salentine, & Albin (2003)'),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-1' }, '⚖️ ' + (tt('behavior_lens.feasibility.title', 'Contextual Fit Assessment'))),
+                h('p', { className: 'text-[11px] text-slate-600 mb-4' }, tt('behavior_lens.ui.based_on_horner_salentine_albin_2003', 'Based on Horner, Salentine, & Albin (2003)')),
                 h('div', { className: 'space-y-3' },
                     questions.map(q =>
                         h('div', { key: q.id },
@@ -5877,7 +5904,7 @@ Provide recommendations to improve feasibility. Return ONLY valid JSON:
             ),
             // Score
             Object.keys(ratings).length > 0 && h('div', { className: 'rounded-xl border-2 p-4 text-center', style: { background: verdict.bg, borderColor: verdict.color } },
-                h('div', { className: 'text-xs font-bold uppercase', style: { color: verdict.color } }, t('behavior_lens.contextual_fit') || 'Contextual Fit'),
+                h('div', { className: 'text-xs font-bold uppercase', style: { color: verdict.color } }, tt('behavior_lens.contextual_fit', 'Contextual Fit')),
                 h('div', { className: 'text-3xl font-black', style: { color: verdict.color } }, `${total}/${maxScore}`),
                 h('div', { className: 'text-xs font-bold px-2 py-0.5 rounded-full text-white inline-block mt-1', style: { background: verdict.color } }, verdict.label)
             ),
@@ -5885,7 +5912,7 @@ Provide recommendations to improve feasibility. Return ONLY valid JSON:
             callGemini && h('button', { onClick: handleRecommend,
                 disabled: loading || Object.keys(ratings).length < 3, 'aria-busy': loading,
                 className: 'w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
-            }, loading ? '⏳ Analyzing...' : ('🧠 ' + (t('behavior_lens.feasibility.recommend') || 'AI Recommendations'))),
+            }, loading ? '⏳ Analyzing...' : ('🧠 ' + (tt('behavior_lens.feasibility.recommend', 'AI Recommendations')))),
             aiRecs && h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-5 animate-in slide-in-from-bottom-4 duration-300' },
                 aiRecs.summary && h('p', { className: 'text-sm text-amber-700 mb-3 font-medium' }, aiRecs.summary),
                 aiRecs.recommendations && h('ul', { className: 'space-y-1.5' },
@@ -5903,11 +5930,11 @@ Provide recommendations to improve feasibility. Return ONLY valid JSON:
     // Goal Attainment Scaling: 5-level rubric (-2 to +2)
     const GasRubric = ({ studentName, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
         const levels = [
-            { score: -2, label: (t('behavior_lens.raw.much_less_than_expected') || 'Much less than expected'), color: '#ef4444' },
-            { score: -1, label: (t('behavior_lens.raw.less_than_expected') || 'Less than expected'), color: '#f59e0b' },
-            { score: 0, label: (t('behavior_lens.raw.expected_level') || 'Expected level'), color: '#3b82f6' },
-            { score: 1, label: (t('behavior_lens.raw.more_than_expected') || 'More than expected'), color: '#22c55e' },
-            { score: 2, label: (t('behavior_lens.raw.much_more_than_expected') || 'Much more than expected'), color: '#10b981' },
+            { score: -2, label: (tt('behavior_lens.raw.much_less_than_expected', 'Much less than expected')), color: '#ef4444' },
+            { score: -1, label: (tt('behavior_lens.raw.less_than_expected', 'Less than expected')), color: '#f59e0b' },
+            { score: 0, label: (tt('behavior_lens.raw.expected_level', 'Expected level')), color: '#3b82f6' },
+            { score: 1, label: (tt('behavior_lens.raw.more_than_expected', 'More than expected')), color: '#22c55e' },
+            { score: 2, label: (tt('behavior_lens.raw.much_more_than_expected', 'Much more than expected')), color: '#10b981' },
         ];
         const [goalText, setGoalText] = useState('');
         const [descriptors, setDescriptors] = useState({});
@@ -5937,21 +5964,21 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
                 setDescriptors(parsed);
-                if (addToast) addToast(t('behavior_lens.toast.gas_rubric_generated') || 'GAS rubric generated ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.gas_rubric_generated', 'GAS rubric generated ✨'), 'success');
             } catch (err) {
                 warnLog('GAS gen failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.generation_failed') || 'Generation failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.generation_failed', 'Generation failed'), 'error');
             } finally { setGenerating(false); }
         };
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             // Goal input
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm print:hidden' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-2' }, '📐 ' + (t('behavior_lens.gas.title') || 'Goal Attainment Scale')),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-2' }, '📐 ' + (tt('behavior_lens.gas.title', 'Goal Attainment Scale'))),
                 h('textarea', {
                     value: goalText,
                     onChange: (e) => setGoalText(e.target.value),
-                    placeholder: t('behavior_lens.ph.enter_the_behavioral_goal_to_scale_eg_student_will') || 'Enter the behavioral goal to scale (e.g., "Student will remain in seat during independent work for 15 minutes")',
+                    placeholder: tt('behavior_lens.ph.enter_the_behavioral_goal_to_scale_eg_student_will', 'Enter the behavioral goal to scale (e.g., "Student will remain in seat during independent work for 15 minutes")'),
                     'aria-label': 'Behavioral goal to scale',
                     rows: 2,
                     className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm resize-none'
@@ -5961,7 +5988,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             callGemini && h('button', { onClick: handleGenerate,
                 disabled: generating || !goalText.trim(), 'aria-busy': generating,
                 className: 'w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all print:hidden'
-            }, generating ? '⏳ Generating...' : ('🧠 ' + (t('behavior_lens.gas.generate') || 'AI Generate GAS Descriptors'))),
+            }, generating ? '⏳ Generating...' : ('🧠 ' + (tt('behavior_lens.gas.generate', 'AI Generate GAS Descriptors')))),
             // Rubric table
             (Object.keys(descriptors).length > 0 || goalText) && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm print:shadow-none print:border-black' },
                 h('div', { className: 'text-center mb-3 border-b pb-2' },
@@ -5969,15 +5996,15 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                     h('p', { className: 'text-[11px] text-slate-600' }, `Student: ${studentName || '___'}`)
                 ),
                 goalText && h('div', { className: 'mb-3 p-2 bg-blue-50 rounded-lg' },
-                    h('div', { className: 'text-[11px] font-bold text-blue-600 uppercase' }, t('behavior_lens.goal') || 'Goal'),
+                    h('div', { className: 'text-[11px] font-bold text-blue-600 uppercase' }, tt('behavior_lens.goal', 'Goal')),
                     h('p', { className: 'text-sm text-blue-700' }, goalText)
                 ),
                 h('table', { className: 'w-full text-xs border-collapse' },
                     h('caption', { className: 'sr-only' }, '📐 Goal Attainment Scale'), h('thead', null,
                         h('tr', null,
-                            h('th', { scope: 'col', className: 'border border-slate-400 px-3 py-2 text-start w-16' }, t('behavior_lens.score') || 'Score'),
-                            h('th', { scope: 'col', className: 'border border-slate-400 px-3 py-2 text-start w-40' }, (t('behavior_lens.raw.level') || 'Level')),
-                            h('th', { scope: 'col', className: 'border border-slate-400 px-3 py-2 text-start' }, (t('behavior_lens.raw.descriptor') || 'Descriptor'))
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-3 py-2 text-start w-16' }, tt('behavior_lens.score', 'Score')),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-3 py-2 text-start w-40' }, (tt('behavior_lens.raw.level', 'Level'))),
+                            h('th', { scope: 'col', className: 'border border-slate-400 px-3 py-2 text-start' }, (tt('behavior_lens.raw.descriptor', 'Descriptor')))
                         )
                     ),
                     h('tbody', null,
@@ -5991,7 +6018,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                                         onChange: (e) => setDescriptors(prev => ({ ...prev, [String(lv.score)]: e.target.value })),
                                         className: 'w-full bg-transparent outline-none focus:ring-2 focus:ring-indigo-300 rounded text-sm',
                                         'aria-label': 'Rating descriptor',
-                                        placeholder: t('behavior_lens.ph.enter_descriptor') || 'Enter descriptor...'
+                                        placeholder: tt('behavior_lens.ph.enter_descriptor', 'Enter descriptor...')
                                     })
                                 )
                             )
@@ -6095,7 +6122,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                 h('input', {
                     value: searchTerm,
                     onChange: (e) => setSearchTerm(e.target.value),
-                    placeholder: t('behavior_lens.ph.search_aba_terms') || '🔍 Search ABA terms...',
+                    placeholder: tt('behavior_lens.ph.search_aba_terms', '🔍 Search ABA terms...'),
                     'aria-label': 'Search ABA terms',
                     className: 'w-full bg-white border border-slate-400 rounded-xl px-4 py-3 text-sm shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none'
                 }),
@@ -6129,7 +6156,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             activeTab === 'schedules' && h('div', { className: 'space-y-3' },
                 h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-4' },
                     h('h3', { className: 'text-sm font-black text-indigo-800 mb-1' }, '📋 Reinforcement Schedules Explained'),
-                    h('p', { className: 'text-xs text-indigo-600' }, t('behavior_lens.ui.how_often_and_when_to_deliver_reinforcement_use_th') || 'How often and when to deliver reinforcement. Use the Token Board tool to implement these schedules in practice.')
+                    h('p', { className: 'text-xs text-indigo-600' }, tt('behavior_lens.ui.how_often_and_when_to_deliver_reinforcement_use_th', 'How often and when to deliver reinforcement. Use the Token Board tool to implement these schedules in practice.'))
                 ),
                 scheduleExplainer.map(s =>
                     h('div', { key: s.type, className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
@@ -6139,7 +6166,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                                 h('div', { className: 'text-sm font-black text-slate-800' }, s.type),
                                 h('div', { className: 'text-xs text-slate-600 mt-0.5' }, s.desc),
                                 h('div', { className: 'mt-2 p-2 bg-blue-50 rounded-lg text-xs text-blue-700' },
-                                    h('span', { className: 'font-bold' }, t('behavior_lens.ui.example') || 'Example: '), s.example
+                                    h('span', { className: 'font-bold' }, tt('behavior_lens.ui.example', 'Example: ')), s.example
                                 ),
                                 h('div', { className: 'mt-1 text-[11px] text-slate-600 italic' }, `Best used: ${s.when}`)
                             )
@@ -6148,7 +6175,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                 ),
                 h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-4 text-xs text-amber-800' },
                     h('p', { className: 'font-bold mb-1' }, '📈 Schedule Thinning Path:'),
-                    h('p', null, t('behavior_lens.ui.crf_every_time_fr2_fr3_fr5_vr5_vr8_natural_reinfor') || 'CRF (every time) → FR-2 → FR-3 → FR-5 → VR-5 → VR-8 → Natural reinforcement'),
+                    h('p', null, tt('behavior_lens.ui.crf_every_time_fr2_fr3_fr5_vr5_vr8_natural_reinfor', 'CRF (every time) → FR-2 → FR-3 → FR-5 → VR-5 → VR-8 → Natural reinforcement')),
                     h('p', { className: 'italic mt-1' }, '⚠️ If behavior breaks down, go back one step.')
                 )
             ),
@@ -6157,7 +6184,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             activeTab === 'decision' && h('div', { className: 'space-y-3' },
                 h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-4' },
                     h('h3', { className: 'text-sm font-black text-emerald-800 mb-1' }, '🌲 Function Identification Decision Tree'),
-                    h('p', { className: 'text-xs text-emerald-600' }, t('behavior_lens.ui.use_this_flow_to_hypothesize_the_function_of_a_cha') || 'Use this flow to hypothesize the function of a challenging behavior.')
+                    h('p', { className: 'text-xs text-emerald-600' }, tt('behavior_lens.ui.use_this_flow_to_hypothesize_the_function_of_a_cha', 'Use this flow to hypothesize the function of a challenging behavior.'))
                 ),
                 decisionTree.map((step, i) =>
                     h('div', { key: i, className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
@@ -6179,7 +6206,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                 ),
                 h('div', { className: 'bg-purple-50 rounded-xl border border-purple-200 p-4 text-xs text-purple-700' },
                     h('p', { className: 'font-bold mb-1' }, '💡 Pro Tip:'),
-                    h('p', null, t('behavior_lens.ui.behaviors_can_serve_multiple_functions_always_coll') || 'Behaviors can serve MULTIPLE functions. Always collect enough data (10+ ABC entries) before finalizing your hypothesis. Use the AI Pattern Analysis tool for data-driven confirmation.')
+                    h('p', null, tt('behavior_lens.ui.behaviors_can_serve_multiple_functions_always_coll', 'Behaviors can serve MULTIPLE functions. Always collect enough data (10+ ABC entries) before finalizing your hypothesis. Use the AI Pattern Analysis tool for data-driven confirmation.'))
                 )
             ),
 
@@ -6187,7 +6214,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             activeTab === 'mistakes' && h('div', { className: 'space-y-3' },
                 h('div', { className: 'bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-200 p-4' },
                     h('h3', { className: 'text-sm font-black text-red-800 mb-1' }, '⚠️ Common ABA Implementation Mistakes'),
-                    h('p', { id: 'err-behavior_lens_module-5831', role: 'alert', className: 'text-xs text-red-600' }, t('behavior_lens.ui.avoid_these_frequently_seen_errors_to_improve_beha') || 'Avoid these frequently seen errors to improve behavioral outcomes.')
+                    h('p', { id: 'err-behavior_lens_module-5831', role: 'alert', className: 'text-xs text-red-600' }, tt('behavior_lens.ui.avoid_these_frequently_seen_errors_to_improve_beha', 'Avoid these frequently seen errors to improve behavioral outcomes.'))
                 ),
                 commonMistakes.map((m, i) =>
                     h('div', { key: i, className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
@@ -6214,19 +6241,19 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
         const homeContexts = [
             'Morning routine', 'Getting ready for school', 'Mealtime', 'Homework time',
             'Screen time transition', 'Playtime with siblings', 'Bedtime routine',
-            t('behavior_lens.home_public_outing') || 'Public outing', t('behavior_lens.home_in_car') || 'In the car', t('behavior_lens.home_after_school') || 'After school', 'Other'
+            tt('behavior_lens.home_public_outing', 'Public outing'), tt('behavior_lens.home_in_car', 'In the car'), tt('behavior_lens.home_after_school', 'After school'), 'Other'
         ];
 
         const homeResponses = [
-            t('behavior_lens.parent_redirected') || 'Redirected calmly', t('behavior_lens.parent_gave_break') || 'Gave a break', t('behavior_lens.parent_used_timer') || 'Used a timer', 'Offered choices',
-            t('behavior_lens.parent_first_then') || 'Used first-then language', t('behavior_lens.parent_ignored') || 'Ignored the behavior', 'Praised alternative behavior',
-            t('behavior_lens.parent_removed_item') || 'Removed the item/activity', t('behavior_lens.parent_visual_schedule') || 'Used a visual schedule', 'Other'
+            tt('behavior_lens.parent_redirected', 'Redirected calmly'), tt('behavior_lens.parent_gave_break', 'Gave a break'), tt('behavior_lens.parent_used_timer', 'Used a timer'), 'Offered choices',
+            tt('behavior_lens.parent_first_then', 'Used first-then language'), tt('behavior_lens.parent_ignored', 'Ignored the behavior'), 'Praised alternative behavior',
+            tt('behavior_lens.parent_removed_item', 'Removed the item/activity'), tt('behavior_lens.parent_visual_schedule', 'Used a visual schedule'), 'Other'
         ];
 
         const homeMoods = [
-            { emoji: '😊', label: (t('behavior_lens.raw.good_day') || 'Good day') },
-            { emoji: '😐', label: (t('behavior_lens.raw.okay') || 'Okay') },
-            { emoji: '😟', label: (t('behavior_lens.raw.challenging') || 'Challenging') }
+            { emoji: '😊', label: (tt('behavior_lens.raw.good_day', 'Good day')) },
+            { emoji: '😐', label: (tt('behavior_lens.raw.okay', 'Okay')) },
+            { emoji: '😟', label: (tt('behavior_lens.raw.challenging', 'Challenging')) }
         ];
 
         // Load from localStorage
@@ -6248,13 +6275,13 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             try { localStorage.setItem(studentKey ? studentKey('behaviorLens_homeLog_') : `behaviorLens_homeLog_${studentName}`, JSON.stringify(updated)); } catch (e) { /* ignore */ }
             setNewEntry({ context: '', behavior: '', response: '', notes: '', mood: '' });
             setShowForm(false);
-            if (addToast) addToast(t('behavior_lens.toast.entry_saved') || 'Entry saved ✅', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.entry_saved', 'Entry saved ✅'), 'success');
         };
 
         // Export home log entries as a Snapshot JSON file
         const handleExportSnapshot = () => {
             if (entries.length === 0) {
-                if (addToast) addToast(t('behavior_lens.toast.no_entries_to_export') || 'No entries to export', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.no_entries_to_export', 'No entries to export'), 'error');
                 return;
             }
             const snapshot = {
@@ -6271,7 +6298,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             a.download = `home-log-${(studentName || 'student').replace(/\s+/g, '_')}-${new Date().toISOString().slice(0, 10)}.json`;
             a.click();
             URL.revokeObjectURL(url);
-            if (addToast) addToast(t('behavior_lens.toast.home_log_exported_as_snapshot') || 'Home log exported as snapshot 📦', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.home_log_exported_as_snapshot', 'Home log exported as snapshot 📦'), 'success');
         };
 
         // Summary stats
@@ -6291,8 +6318,8 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-4' },
-                h('h3', { className: 'text-sm font-black text-blue-800 mb-1' }, '🏠 ' + (t('behavior_lens.homelog.title') || 'Home Behavior Log')),
-                h('p', { className: 'text-xs text-blue-600' }, t('behavior_lens.ui.track_behaviors_at_home_using_simple_everyday_lang') || 'Track behaviors at home using simple, everyday language. This helps your child\'s school team see the full picture.')
+                h('h3', { className: 'text-sm font-black text-blue-800 mb-1' }, '🏠 ' + (tt('behavior_lens.homelog.title', 'Home Behavior Log'))),
+                h('p', { className: 'text-xs text-blue-600' }, tt('behavior_lens.ui.track_behaviors_at_home_using_simple_everyday_lang', 'Track behaviors at home using simple, everyday language. This helps your child\'s school team see the full picture.'))
             ),
             // Summary strip
             summary && h('div', { className: 'flex flex-wrap gap-3 bg-white rounded-xl border border-slate-400 px-4 py-3 shadow-sm' },
@@ -6332,7 +6359,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                             const existingIds = new Set(prev.map(p => p.id));
                             const fresh = newAbcEntries.filter(n => !existingIds.has(n.id));
                             if (fresh.length === 0) {
-                                if (addToast) addToast(t('behavior_lens.toast.all_entries_already_synced_to_abc_data') || 'All entries already synced to ABC data', 'info');
+                                if (addToast) addToast(tt('behavior_lens.toast.all_entries_already_synced_to_abc_data', 'All entries already synced to ABC data'), 'info');
                                 return prev;
                             }
                             if (addToast) addToast(t('behavior_lens.toast.n_home_entries_pushed_to_abc_data') || `${fresh.length} home entries pushed to ABC data ✅`, 'success');
@@ -6363,10 +6390,10 @@ Provide a brief analysis (3-5 bullet points) covering:
 - 1-2 practical suggestions for the family`;
                             const result = await callGemini(prompt, true);
                             setAiPatternResult(result);
-                            if (addToast) addToast(t('behavior_lens.toast.pattern_analysis_complete') || 'Pattern analysis complete ✨', 'success');
+                            if (addToast) addToast(tt('behavior_lens.toast.pattern_analysis_complete', 'Pattern analysis complete ✨'), 'success');
                         } catch (err) {
                             warnLog('Home log AI analysis failed:', err);
-                            if (addToast) addToast(t('behavior_lens.toast.ai_analysis_failed') || 'AI analysis failed', 'error');
+                            if (addToast) addToast(tt('behavior_lens.toast.ai_analysis_failed', 'AI analysis failed'), 'error');
                         } finally { setAiPatternLoading(false); }
                     },
                     disabled: aiPatternLoading,
@@ -6377,7 +6404,7 @@ Provide a brief analysis (3-5 bullet points) covering:
             aiPatternResult && h('div', { className: 'bg-purple-50 rounded-xl border border-purple-200 p-4' },
                 h('div', { className: 'flex justify-between items-start mb-2' },
                     h('h4', { className: 'text-xs font-black text-purple-700 uppercase' }, '🧠 AI Pattern Analysis'),
-                    h('button', { "aria-label": "Toggle ai pattern result", onClick: () => setAiPatternResult(''), className: 'text-purple-700 hover:text-purple-600 text-xs' }, t('behavior_lens.close') || '✕ Close')
+                    h('button', { "aria-label": "Toggle ai pattern result", onClick: () => setAiPatternResult(''), className: 'text-purple-700 hover:text-purple-600 text-xs' }, tt('behavior_lens.close', '✕ Close'))
                 ),
                 h('div', { className: 'text-xs text-purple-800 whitespace-pre-wrap leading-relaxed' }, aiPatternResult)
             ),
@@ -6415,7 +6442,7 @@ Provide a brief analysis (3-5 bullet points) covering:
                     h('textarea', {
                         value: newEntry.behavior,
                         onChange: (e) => setNewEntry(p => ({ ...p, behavior: e.target.value })),
-                        placeholder: t('behavior_lens.ph.describe_what_your_child_did') || 'Describe what your child did...',
+                        placeholder: tt('behavior_lens.ph.describe_what_your_child_did', 'Describe what your child did...'),
                         'aria-label': 'Describe what your child did',
                         rows: 2,
                         className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm resize-none focus:ring-2 focus:ring-blue-400 outline-none'
@@ -6438,7 +6465,7 @@ Provide a brief analysis (3-5 bullet points) covering:
                     h('input', {
                         value: newEntry.notes,
                         onChange: (e) => setNewEntry(p => ({ ...p, notes: e.target.value })),
-                        placeholder: t('behavior_lens.ph.any_other_details_was_child_tired_hungry_etc') || 'Any other details (was child tired, hungry, etc.)...',
+                        placeholder: tt('behavior_lens.ph.any_other_details_was_child_tired_hungry_etc', 'Any other details (was child tired, hungry, etc.)...'),
                         'aria-label': 'Extra notes about the home log entry',
                         className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none'
                     })
@@ -6468,7 +6495,7 @@ Provide a brief analysis (3-5 bullet points) covering:
                 )
             ) : h('div', { className: 'text-center py-8 bg-slate-50 rounded-xl' },
                 h('div', { className: 'text-3xl mb-2' }, '🏠'),
-                h('p', { className: 'text-sm text-slate-600' }, t('behavior_lens.ui.no_entries_yet_tap_log_a_behavior_to_get_started') || 'No entries yet. Tap "Log a Behavior" to get started!')
+                h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.ui.no_entries_yet_tap_log_a_behavior_to_get_started', 'No entries yet. Tap "Log a Behavior" to get started!'))
             )
         );
     };
@@ -6512,10 +6539,10 @@ Create a concise pocket BIP. Return ONLY valid JSON:
                 try { parsed = JSON.parse(cleaned); }
                 catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
                 setCard(parsed);
-                if (addToast) addToast(t('behavior_lens.toast.pocket_bip_generated') || 'Pocket BIP generated ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.pocket_bip_generated', 'Pocket BIP generated ✨'), 'success');
             } catch (err) {
                 warnLog('Pocket BIP failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.generation_failed') || 'Generation failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.generation_failed', 'Generation failed'), 'error');
             } finally { setGenerating(false); }
         };
 
@@ -6532,7 +6559,7 @@ Create a concise pocket BIP. Return ONLY valid JSON:
             callGemini && h('button', { onClick: handleGenerate,
                 disabled: generating, 'aria-busy': generating,
                 className: 'w-full py-3 bg-gradient-to-r from-slate-600 to-slate-800 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all print:hidden'
-            }, generating ? '⏳ Generating...' : ('🧠 ' + (t('behavior_lens.pocket.generate') || 'AI Generate Pocket BIP'))),
+            }, generating ? '⏳ Generating...' : ('🧠 ' + (tt('behavior_lens.pocket.generate', 'AI Generate Pocket BIP')))),
             // Card
             h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 p-5 shadow-lg print:shadow-none print:border-black', style: { maxWidth: '350px', margin: '0 auto' } },
                 h('div', { className: 'text-center border-b border-slate-200 pb-2 mb-3' },
@@ -6562,11 +6589,11 @@ Create a concise pocket BIP. Return ONLY valid JSON:
     // AI-powered counseling role-play simulation for professional development
     const CounselingSimulation = ({ studentName, abcEntries, aiAnalysis, callGemini, t, addToast }) => {
         const SCENARIOS = [
-            { id: 'escape', label: (t('behavior_lens.raw.escapemaintained') || 'Escape-Maintained'), icon: '🏃', desc: 'Student avoids difficult tasks or overwhelming situations', persona: 'You are a student who becomes avoidant and shuts down when work feels too hard. You might put your head down, leave your seat, or say "I can\'t do this." You generally respond well to breaks and scaffolded support.' },
-            { id: 'attention', label: (t('behavior_lens.raw.connectionseeking') || 'Connection-Seeking'), icon: '👀', desc: 'Student seeks connection through behaviors that communicate a need for interaction', persona: 'You are a student who craves adult and peer connection. You might call out, make jokes, or act silly to get reactions. Deep down you want to feel noticed and valued. You respond well to praise and quality time.' },
-            { id: 'tangible', label: (t('behavior_lens.raw.tangiblemotivated') || 'Tangible-Motivated'), icon: '🎁', desc: 'Student has difficulty when preferred items or activities are unavailable', persona: 'You are a student who becomes frustrated when you can\'t have a preferred item or activity. You might negotiate, refuse to work, or become upset. You respond well to first/then agreements and visual schedules.' },
-            { id: 'sensory', label: (t('behavior_lens.raw.sensoryrelated') || 'Sensory-Related'), icon: '🌀', desc: 'Student is overwhelmed or under-stimulated by sensory input', persona: 'You are a student who is very sensitive to sensory input — noise, lights, textures. You might cover your ears, rock, or leave the area. You respond well to sensory breaks and modified environments.' },
-            { id: 'custom', label: (t('behavior_lens.raw.custom_scenario') || 'Custom Scenario'), icon: '✏️', desc: 'Define your own student persona and behavioral context', persona: '' },
+            { id: 'escape', label: (tt('behavior_lens.raw.escapemaintained', 'Escape-Maintained')), icon: '🏃', desc: 'Student avoids difficult tasks or overwhelming situations', persona: 'You are a student who becomes avoidant and shuts down when work feels too hard. You might put your head down, leave your seat, or say "I can\'t do this." You generally respond well to breaks and scaffolded support.' },
+            { id: 'attention', label: (tt('behavior_lens.raw.connectionseeking', 'Connection-Seeking')), icon: '👀', desc: 'Student seeks connection through behaviors that communicate a need for interaction', persona: 'You are a student who craves adult and peer connection. You might call out, make jokes, or act silly to get reactions. Deep down you want to feel noticed and valued. You respond well to praise and quality time.' },
+            { id: 'tangible', label: (tt('behavior_lens.raw.tangiblemotivated', 'Tangible-Motivated')), icon: '🎁', desc: 'Student has difficulty when preferred items or activities are unavailable', persona: 'You are a student who becomes frustrated when you can\'t have a preferred item or activity. You might negotiate, refuse to work, or become upset. You respond well to first/then agreements and visual schedules.' },
+            { id: 'sensory', label: (tt('behavior_lens.raw.sensoryrelated', 'Sensory-Related')), icon: '🌀', desc: 'Student is overwhelmed or under-stimulated by sensory input', persona: 'You are a student who is very sensitive to sensory input — noise, lights, textures. You might cover your ears, rock, or leave the area. You respond well to sensory breaks and modified environments.' },
+            { id: 'custom', label: (tt('behavior_lens.raw.custom_scenario', 'Custom Scenario')), icon: '✏️', desc: 'Define your own student persona and behavioral context', persona: '' },
         ];
 
         const [scenario, setScenario] = useState(null);
@@ -6639,7 +6666,7 @@ Create a concise pocket BIP. Return ONLY valid JSON:
             if (!scenario) return;
             const persona = getPersona();
             if (!persona.trim()) {
-                if (addToast) addToast(t('behavior_lens.toast.please_define_a_student_persona') || 'Please define a student persona', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.please_define_a_student_persona', 'Please define a student persona'), 'error');
                 return;
             }
             setMessages([{
@@ -6659,7 +6686,7 @@ Create a concise pocket BIP. Return ONLY valid JSON:
                     .then(function(r) { try { var p = JSON.parse(r.replace(/```json?\n?/g,'').replace(/```/g,'').trim()); setStudentAvatar(p); } catch(e) { warnLog('Profile parse failed', e); } })
                     .catch(function(e) { warnLog('Profile generation failed', e); });
             }
-            if (addToast) addToast(t('behavior_lens.toast.simulation_started_you_are_now_the_counselor') || 'Simulation started — you are now the counselor 🎭', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.simulation_started_you_are_now_the_counselor', 'Simulation started — you are now the counselor 🎭'), 'success');
         };
 
         const handleSend = async () => {
@@ -6728,7 +6755,7 @@ Respond only with the student's words:`;
 
             } catch (err) {
                 warnLog('Counseling simulation failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.response_failed_try_again') || 'Response failed — try again', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.response_failed_try_again', 'Response failed — try again'), 'error');
             } finally {
                 setSending(false);
             }
@@ -6770,7 +6797,7 @@ Respond only with the student's words:`;
             return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
                 // Scenario selector
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                    h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '🎭 ' + (t('behavior_lens.counseling.choose_scenario') || 'Choose a Scenario')),
+                    h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '🎭 ' + (tt('behavior_lens.counseling.choose_scenario', 'Choose a Scenario'))),
                     h('div', { className: 'space-y-2' },
                         SCENARIOS.map(s =>
                             h('button', { "aria-label": "Toggle scenario",
@@ -6795,7 +6822,7 @@ Respond only with the student's words:`;
                     h('textarea', {
                         value: customPersona,
                         onChange: (e) => setCustomPersona(e.target.value),
-                        placeholder: t('behavior_lens.ph.describe_the_student_persona_eg_you_are_a_3rd_grad') || 'Describe the student persona... e.g., "You are a 3rd grader who becomes anxious during math and tends to cry and shut down..."',
+                        placeholder: tt('behavior_lens.ph.describe_the_student_persona_eg_you_are_a_3rd_grad', 'Describe the student persona... e.g., "You are a 3rd grader who becomes anxious during math and tends to cry and shut down..."'),
                         'aria-label': 'Student persona description',
                         rows: 4,
                         className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 outline-none resize-none'
@@ -6807,7 +6834,7 @@ Respond only with the student's words:`;
                     h('textarea', {
                         value: additionalInstructions,
                         onChange: (e) => setAdditionalInstructions(e.target.value),
-                        placeholder: t('behavior_lens.ph.add_context_constraints_or_specific_challenges_eg') || 'Add context, constraints, or specific challenges... e.g., "The student also has a speech delay" or "This is a middle school student"',
+                        placeholder: tt('behavior_lens.ph.add_context_constraints_or_specific_challenges_eg', 'Add context, constraints, or specific challenges... e.g., "The student also has a speech delay" or "This is a middle school student"'),
                         'aria-label': 'Additional instructions',
                         rows: 2,
                         className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 outline-none resize-none'
@@ -6824,8 +6851,8 @@ Respond only with the student's words:`;
                             className: 'w-4 h-4 accent-teal-600'
                         }),
                         h('div', null,
-                            h('div', { className: 'text-sm font-bold text-slate-700' }, '🖼️ ' + (t('behavior_lens.counseling.enable_images') || 'Enable Image Generation')),
-                            h('div', { className: 'text-[11px] text-slate-600' }, t('behavior_lens.ui.ai_will_generate_visual_scenes_during_the_conversa') || 'AI will generate visual scenes during the conversation (requires Imagen)')
+                            h('div', { className: 'text-sm font-bold text-slate-700' }, '🖼️ ' + (tt('behavior_lens.counseling.enable_images', 'Enable Image Generation'))),
+                            h('div', { className: 'text-[11px] text-slate-600' }, tt('behavior_lens.ui.ai_will_generate_visual_scenes_during_the_conversa', 'AI will generate visual scenes during the conversation (requires Imagen)'))
                         )
                     )
                 ),
@@ -6833,7 +6860,7 @@ Respond only with the student's words:`;
                 aiAnalysis && scenario && h('div', { className: 'bg-teal-50 rounded-xl border border-teal-200 p-3 flex items-center gap-2' },
                     h('span', { className: 'text-lg' }, '🧠'),
                     h('div', null,
-                        h('div', { className: 'text-xs font-bold text-teal-700' }, t('behavior_lens.ui.ai_context_available') || 'AI Context Available'),
+                        h('div', { className: 'text-xs font-bold text-teal-700' }, tt('behavior_lens.ui.ai_context_available', 'AI Context Available')),
                         h('div', { className: 'text-[11px] text-teal-600', title: 'Heuristic AI estimate — not a clinical conclusion' }, `Hypothesized function: ${aiAnalysis.hypothesizedFunction} (AI estimate: ${aiConfidenceBucket(aiAnalysis.confidence).label} confidence)`)
                     )
                 ),
@@ -6841,7 +6868,7 @@ Respond only with the student's words:`;
                 scenario && h('button', { onClick: handleStart,
                     disabled: scenario.id === 'custom' && !customPersona.trim(),
                     className: 'w-full py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all text-base'
-                }, '🎬 ' + (t('behavior_lens.counseling.start') || 'Begin Counseling Session')),
+                }, '🎬 ' + (tt('behavior_lens.counseling.start', 'Begin Counseling Session'))),
                 // Session count
                 sessionCount > 0 && h('div', { className: 'text-center text-xs text-slate-600' }, `${sessionCount} session${sessionCount > 1 ? 's' : ''} completed this visit`)
             );
@@ -6919,9 +6946,9 @@ Respond only with the student's words:`;
                         h('label', { className: 'block text-xs font-bold text-slate-300 uppercase mb-2' }, '🌟 Self-Assessment: How effective was my counseling?'),
                         h('input', { type: 'range', min: 1, max: 5, value: selfRating, onChange: (e) => setSelfRating(parseInt(e.target.value)), 'aria-label': 'Self-assessment rating 1 to 5', className: 'w-full accent-teal-600' }),
                         h('div', { className: 'flex justify-between text-[11px] text-slate-300 mt-0.5' },
-                            h('span', null, t('behavior_lens.needs_practice') || 'Needs practice'),
-                            h('span', null, t('behavior_lens.getting_there') || 'Getting there'),
-                            h('span', null, t('behavior_lens.feeling_confident') || 'Feeling confident')
+                            h('span', null, tt('behavior_lens.needs_practice', 'Needs practice')),
+                            h('span', null, tt('behavior_lens.getting_there', 'Getting there')),
+                            h('span', null, tt('behavior_lens.feeling_confident', 'Feeling confident'))
                         )
                     ),
                     h('div', null,
@@ -6931,7 +6958,7 @@ Respond only with the student's words:`;
                             onChange: (e) => setStrategyNotes(e.target.value),
                             'aria-label': 'Counseling strategy reflection notes',
                             rows: 4,
-                            placeholder: t('behavior_lens.ph.reflect_on_your_approachn_what_worked_welln_what_w') || 'Reflect on your approach...\n• What worked well?\n• What would you do differently?\n• What strategies do you want to practice next?',
+                            placeholder: tt('behavior_lens.ph.reflect_on_your_approachn_what_worked_welln_what_w', 'Reflect on your approach...\n• What worked well?\n• What would you do differently?\n• What strategies do you want to practice next?'),
                             className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 outline-none resize-none'
                         })
                     )
@@ -6963,7 +6990,7 @@ Respond only with the student's words:`;
                         className: 'flex-1 py-3 bg-slate-100 text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all'
                     }, '🔄 New Session'),
                     h('button', { "aria-label": "Save & Close",
-                        onClick: () => { if (addToast) addToast(t('behavior_lens.toast.reflection_saved') || 'Reflection saved ✨', 'success'); handleReset(); },
+                        onClick: () => { if (addToast) addToast(tt('behavior_lens.toast.reflection_saved', 'Reflection saved ✨'), 'success'); handleReset(); },
                         className: 'flex-1 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl transition-all'
                     }, '✅ Save & Close')
                 )
@@ -7053,7 +7080,7 @@ Respond only with the student's words:`;
                         value: input,
                         onChange: (e) => setInput(e.target.value),
                         onKeyDown: (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } },
-                        placeholder: t('behavior_lens.ph.respond_as_the_counselor') || 'Respond as the counselor...',
+                        placeholder: tt('behavior_lens.ph.respond_as_the_counselor', 'Respond as the counselor...'),
                         'aria-label': 'Your counselor response',
                         disabled: sending,
                         className: 'flex-1 border border-slate-400 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-teal-400 outline-none disabled:opacity-50'
@@ -7068,7 +7095,7 @@ Respond only with the student's words:`;
                     h('div', { className: 'text-[11px] text-slate-600' }, '💡 Tip: Try validation, active listening, and offering choices'),
                     h('button', { onClick: handleEndSession,
                         className: 'text-[11px] text-red-600 hover:text-red-600 font-bold transition-all'
-                    }, t('behavior_lens.end_session') || 'End Session →')
+                    }, tt('behavior_lens.end_session', 'End Session →'))
                 )
             )
         );
@@ -7078,10 +7105,10 @@ Respond only with the student's words:`;
     // Student-facing reflection tool: captures the student's own perspective
     const StudentSelfCheck = ({ studentName, studentKey, t, addToast, callGemini }) => {
         const MOODS = [
-            { emoji: '😊', label: (t('behavior_lens.raw.good') || 'Good'), color: 'emerald' },
-            { emoji: '😐', label: (t('behavior_lens.raw.okay') || 'Okay'), color: 'amber' },
-            { emoji: '😟', label: (t('behavior_lens.raw.worried') || 'Worried'), color: 'blue' },
-            { emoji: '😡', label: (t('behavior_lens.raw.frustrated') || 'Frustrated'), color: 'red' },
+            { emoji: '😊', label: (tt('behavior_lens.raw.good', 'Good')), color: 'emerald' },
+            { emoji: '😐', label: (tt('behavior_lens.raw.okay', 'Okay')), color: 'amber' },
+            { emoji: '😟', label: (tt('behavior_lens.raw.worried', 'Worried')), color: 'blue' },
+            { emoji: '😡', label: (tt('behavior_lens.raw.frustrated', 'Frustrated')), color: 'red' },
             { emoji: '😢', label: 'Sad', color: 'violet' }
         ];
 
@@ -7117,7 +7144,7 @@ Respond only with the student's words:`;
             setMood('');
             setAnswers({ happening: '', feeling: '', needed: '', nextTime: '' });
             setShowForm(false);
-            if (addToast) addToast(t('behavior_lens.toast.reflection_saved_2') || 'Reflection saved 🌟', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.reflection_saved_2', 'Reflection saved 🌟'), 'success');
         };
 
         const deleteEntry = (id) => {
@@ -7128,7 +7155,7 @@ Respond only with the student's words:`;
             const updated = entries.filter(e => e.id !== id);
             setEntries(updated);
             try { localStorage.setItem(storageKey, JSON.stringify(updated)); } catch (e) { /* ignore */ }
-            if (addToast) addToast(t('behavior_lens.toast.self_check_deleted') || 'Self-check entry deleted', 'info');
+            if (addToast) addToast(tt('behavior_lens.toast.self_check_deleted', 'Self-check entry deleted'), 'info');
         };
 
         // Mood trend: count moods over last 7 entries
@@ -7157,7 +7184,7 @@ Respond only with the student's words:`;
                 ),
                 // Mood trend mini-bar (last 7)
                 entries.length > 0 && h('div', { className: 'mt-3 flex items-center gap-3' },
-                    h('span', { className: 'text-[11px] font-bold text-violet-500 uppercase' }, t('behavior_lens.ui.recent_moods') || 'Recent moods:'),
+                    h('span', { className: 'text-[11px] font-bold text-violet-500 uppercase' }, tt('behavior_lens.ui.recent_moods', 'Recent moods:')),
                     h('div', { className: 'flex gap-1' },
                         MOODS.map(m =>
                             moodTrend[m.emoji] > 0 && h('div', {
@@ -7193,10 +7220,10 @@ Provide a brief, warm analysis (3-4 bullet points) that:
 Keep language warm and age-appropriate.`;
                             const result = await callGemini(prompt, true);
                             setAiReflectionResult(result);
-                            if (addToast) addToast(t('behavior_lens.toast.reflection_analysis_ready') || 'Reflection analysis ready 🌟', 'success');
+                            if (addToast) addToast(tt('behavior_lens.toast.reflection_analysis_ready', 'Reflection analysis ready 🌟'), 'success');
                         } catch (err) {
                             warnLog('Self-check AI analysis failed:', err);
-                            if (addToast) addToast(t('behavior_lens.toast.ai_analysis_failed') || 'AI analysis failed', 'error');
+                            if (addToast) addToast(tt('behavior_lens.toast.ai_analysis_failed', 'AI analysis failed'), 'error');
                         } finally { setAiReflectionLoading(false); }
                     },
                     disabled: aiReflectionLoading,
@@ -7207,7 +7234,7 @@ Keep language warm and age-appropriate.`;
             aiReflectionResult && h('div', { className: 'bg-violet-50 rounded-xl border border-violet-200 p-4' },
                 h('div', { className: 'flex justify-between items-start mb-2' },
                     h('h4', { className: 'text-xs font-black text-violet-700 uppercase' }, '🌟 My Reflection Patterns'),
-                    h('button', { "aria-label": "Toggle ai reflection result", onClick: () => setAiReflectionResult(''), className: 'text-violet-700 hover:text-violet-600 text-xs' }, t('behavior_lens.close') || '✕ Close')
+                    h('button', { "aria-label": "Toggle ai reflection result", onClick: () => setAiReflectionResult(''), className: 'text-violet-700 hover:text-violet-600 text-xs' }, tt('behavior_lens.close', '✕ Close'))
                 ),
                 h('div', { className: 'text-xs text-violet-800 whitespace-pre-wrap leading-relaxed' }, aiReflectionResult)
             ),
@@ -7233,10 +7260,10 @@ Keep language warm and age-appropriate.`;
                 ),
                 // Structured prompts
                 [
-                    { key: 'happening', label: '📍 What was happening?', placeholder: t('behavior_lens.ph.what_was_going_on_before_you_felt_this_way') || 'What was going on before you felt this way?' },
-                    { key: 'feeling', label: '💭 How were you feeling inside?', placeholder: t('behavior_lens.ph.nervous_angry_bored_overwhelmed') || 'Nervous? Angry? Bored? Overwhelmed?' },
-                    { key: 'needed', label: '🤝 What did you need?', placeholder: t('behavior_lens.ph.a_break_help_someone_to_listen_space') || 'A break? Help? Someone to listen? Space?' },
-                    { key: 'nextTime', label: '💡 What might help next time?', placeholder: t('behavior_lens.ph.what_could_you_or_a_grownup_do_differently') || 'What could you or a grown-up do differently?' }
+                    { key: 'happening', label: '📍 What was happening?', placeholder: tt('behavior_lens.ph.what_was_going_on_before_you_felt_this_way', 'What was going on before you felt this way?') },
+                    { key: 'feeling', label: '💭 How were you feeling inside?', placeholder: tt('behavior_lens.ph.nervous_angry_bored_overwhelmed', 'Nervous? Angry? Bored? Overwhelmed?') },
+                    { key: 'needed', label: '🤝 What did you need?', placeholder: tt('behavior_lens.ph.a_break_help_someone_to_listen_space', 'A break? Help? Someone to listen? Space?') },
+                    { key: 'nextTime', label: '💡 What might help next time?', placeholder: tt('behavior_lens.ph.what_could_you_or_a_grownup_do_differently', 'What could you or a grown-up do differently?') }
                 ].map(q =>
                     h('div', { key: q.key },
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, q.label),
@@ -7298,7 +7325,7 @@ Keep language warm and age-appropriate.`;
                 )
                 : h('div', { className: 'text-center py-8 bg-slate-50 rounded-xl' },
                     h('div', { className: 'text-3xl mb-2' }, '🪞'),
-                    h('p', { className: 'text-sm text-slate-600' }, t('behavior_lens.ui.no_reflections_yet_tap_the_button_above_to_check_i') || 'No reflections yet. Tap the button above to check in with yourself!')
+                    h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.ui.no_reflections_yet_tap_the_button_above_to_check_i', 'No reflections yet. Tap the button above to check in with yourself!'))
                 )
         );
     };
@@ -7418,7 +7445,7 @@ Keep language warm and age-appropriate.`;
                 try {
                     const data = JSON.parse(e.target.result);
                     if (!data || typeof data !== 'object' || !data.alloflowSnapshot) {
-                        addToast && addToast(t('behavior_lens.toast.not_a_valid_alloflow_snapshot_file') || 'Not a valid AlloFlow snapshot file', 'error');
+                        addToast && addToast(tt('behavior_lens.toast.not_a_valid_alloflow_snapshot_file', 'Not a valid AlloFlow snapshot file'), 'error');
                         return;
                     }
                     // Pre-validate: reject and report when shapes are wrong.
@@ -7458,7 +7485,7 @@ Keep language warm and age-appropriate.`;
                         hasAi: !!data.behaviorLens?.aiAnalysis,
                     });
                 } catch (err) {
-                    addToast && addToast(t('behavior_lens.toast.failed_to_parse_snapshot_file') || 'Failed to parse snapshot file', 'error');
+                    addToast && addToast(tt('behavior_lens.toast.failed_to_parse_snapshot_file', 'Failed to parse snapshot file'), 'error');
                 }
             };
             reader.readAsText(file);
@@ -7489,7 +7516,7 @@ Keep language warm and age-appropriate.`;
         const renderExport = () => h('div', { className: 'space-y-4' },
             // Role selector
             h('div', null,
-                h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, t('behavior_lens.ui.your_role') || 'Your Role'),
+                h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.ui.your_role', 'Your Role')),
                 h('div', { className: 'flex gap-2' },
                     [['educator', '🏫 Educator'], ['family', '👨‍👩‍👧 Family']].map(([key, label]) =>
                         h('button', { "aria-label": "Toggle role",
@@ -7502,7 +7529,7 @@ Keep language warm and age-appropriate.`;
             // Privacy controls
             h('div', null,
                 h('div', { className: 'flex items-center justify-between mb-2' },
-                    h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.ui.data_to_include') || 'Data to Include'),
+                    h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.data_to_include', 'Data to Include')),
                     h('button', { "aria-label": "Toggle All",
                         onClick: toggleAll,
                         className: 'text-[11px] font-bold text-cyan-600 hover:text-cyan-800 transition-colors'
@@ -7525,13 +7552,13 @@ Keep language warm and age-appropriate.`;
             h('div', { className: 'bg-cyan-50 rounded-lg p-3 border border-cyan-100 flex items-center gap-2' },
                 h('span', { className: 'text-lg' }, '🏷️'),
                 h('div', null,
-                    h('div', { className: 'text-[11px] font-bold text-cyan-600 uppercase' }, t('behavior_lens.ui.student_codename') || 'Student Codename'),
+                    h('div', { className: 'text-[11px] font-bold text-cyan-600 uppercase' }, tt('behavior_lens.ui.student_codename', 'Student Codename')),
                     h('div', { className: 'text-sm font-black text-cyan-900' }, studentName || 'Not assigned')
                 )
             ),
             // Optional message
             h('div', null,
-                h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, t('behavior_lens.ui.optional_message') || 'Optional Message'),
+                h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.ui.optional_message', 'Optional Message')),
                 h('textarea', {
                     value: message, onChange: e => setMessage(e.target.value),
                     placeholder: role === 'educator' ? 'Notes for the family... (e.g., strategies that worked well this week)' : 'Notes for the teacher... (e.g., what happened at home over the weekend)',
@@ -7562,10 +7589,10 @@ Data included: ${dataOverview.join(', ') || 'None selected'}
 Write 2-3 sentences that are professional, warm, and collaborative. Focus on partnership and shared success. Do NOT use the student's codename in the message.`;
                             const result = await callGemini(prompt, true);
                             setMessage(result.trim());
-                            if (addToast) addToast(t('behavior_lens.toast.message_drafted') || 'Message drafted ✨', 'success');
+                            if (addToast) addToast(tt('behavior_lens.toast.message_drafted', 'Message drafted ✨'), 'success');
                         } catch (err) {
                             warnLog('Snapshot AI message failed:', err);
-                            if (addToast) addToast(t('behavior_lens.toast.ai_draft_failed') || 'AI draft failed', 'error');
+                            if (addToast) addToast(tt('behavior_lens.toast.ai_draft_failed', 'AI draft failed'), 'error');
                         } finally { setAiMessageLoading(false); }
                     },
                     disabled: aiMessageLoading,
@@ -7586,7 +7613,7 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
                     className: `border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all ${dragActive ? 'border-cyan-500 bg-cyan-50' : 'border-slate-200 hover:border-cyan-300 hover:bg-slate-50'}`
                 },
                     h('div', { className: 'text-4xl mb-3' }, '📥'),
-                    h('p', { className: 'text-sm font-bold text-slate-700 mb-1' }, t('behavior_lens.ui.drop_a_snapshot_file_here') || 'Drop a Snapshot File Here'),
+                    h('p', { className: 'text-sm font-bold text-slate-700 mb-1' }, tt('behavior_lens.ui.drop_a_snapshot_file_here', 'Drop a Snapshot File Here')),
                     h('p', { className: 'text-xs text-slate-600' }, 'or click to browse (.json)'),
                     h('input', { ref: fileRef, type: 'file', accept: '.json', onChange: handleFileInput, className: 'hidden' })
                 )
@@ -7606,10 +7633,10 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
                     ),
                     // Data summary
                     h('div', { className: 'bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-2 text-xs' },
-                        h('div', { className: 'font-bold text-slate-700 mb-1' }, t('behavior_lens.ui.incoming_data') || 'Incoming Data'),
+                        h('div', { className: 'font-bold text-slate-700 mb-1' }, tt('behavior_lens.ui.incoming_data', 'Incoming Data')),
                         h('div', { className: 'flex justify-between' }, h('span', null, '📋 New ABC Entries'), h('span', { className: 'font-bold text-emerald-600' }, `+${importPreview.newAbc.length}`)),
                         h('div', { className: 'flex justify-between' }, h('span', null, '🔍 New Observations'), h('span', { className: 'font-bold text-emerald-600' }, `+${importPreview.newObs.length}`)),
-                        importPreview.hasAi && h('div', { className: 'flex justify-between' }, h('span', null, '🧠 AI Analysis'), h('span', { className: 'font-bold text-blue-600' }, t('behavior_lens.ui.included') || 'Included')),
+                        importPreview.hasAi && h('div', { className: 'flex justify-between' }, h('span', null, '🧠 AI Analysis'), h('span', { className: 'font-bold text-blue-600' }, tt('behavior_lens.ui.included', 'Included'))),
                         importPreview.dupeCount > 0 && h('div', { className: 'text-amber-600 mt-1 flex items-center gap-1' }, `⚠️ ${importPreview.dupeCount} duplicate(s) will be skipped`)
                     ),
                     // Codename mismatch warning
@@ -7621,7 +7648,7 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
                         h('button', { "aria-label": "Toggle import preview",
                             onClick: () => setImportPreview(null),
                             className: 'flex-1 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all'
-                        }, (t('behavior_lens.raw.cancel') || 'Cancel')),
+                        }, (tt('behavior_lens.raw.cancel', 'Cancel'))),
                         h('button', { "aria-label": "Merge Data",
                             onClick: handleMerge,
                             disabled: importPreview.newAbc.length === 0 && importPreview.newObs.length === 0,
@@ -7636,7 +7663,7 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm space-y-4' },
                 h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { className: 'text-lg' }, '📦'),
-                    h('h3', { className: 'text-sm font-black text-slate-800' }, t('behavior_lens.ui.student_snapshot_exchange') || 'Student Snapshot Exchange')
+                    h('h3', { className: 'text-sm font-black text-slate-800' }, tt('behavior_lens.ui.student_snapshot_exchange', 'Student Snapshot Exchange'))
                 ),
                 h('p', { className: 'text-xs text-slate-600 leading-relaxed -mt-2' },
                     'Share behavioral data with families or colleagues via JSON files — no shared platform needed. Export your observations, send the file, and have the other party import it.'),
@@ -7661,37 +7688,37 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
         const DEFAULT_SECTIONS = [
             {
                 id: 'purpose',
-                title: (t('behavior_lens.raw.purpose_of_data_exchange') || 'Purpose of Data Exchange'),
+                title: (tt('behavior_lens.raw.purpose_of_data_exchange', 'Purpose of Data Exchange')),
                 content: 'This consent authorizes the exchange of behavioral observation data between your child\'s educational team and your family using AlloFlow\'s Student Snapshot Exchange system. The goal is to build a shared, holistic understanding of your child across home and school settings to better support their growth.\n\nData is exchanged via JSON files — simple data files transferred directly between parties (email, USB, etc.) — with no third-party cloud storage involved.',
                 required: true,
             },
             {
                 id: 'data_types',
-                title: (t('behavior_lens.raw.types_of_data_collected_shared') || 'Types of Data Collected & Shared'),
+                title: (tt('behavior_lens.raw.types_of_data_collected_shared', 'Types of Data Collected & Shared')),
                 content: '• ABC Observations — Antecedent-Behavior-Consequence records of behavioral patterns\n• Observation Sessions — Timed frequency counts and interval data\n• AI-Generated Analysis — Summaries and pattern recognition generated by Google Gemini (when enabled)\n• Home Behavior Logs — Parent-reported observations from the home environment\n• Self-Regulation Plans — Visual supports created for your child\n\nAll data uses a student codename (e.g., "Brave Otter") rather than your child\'s real name to add an additional layer of privacy protection.',
                 required: true,
             },
             {
                 id: 'ai_disclosure',
-                title: (t('behavior_lens.raw.artificial_intelligence_ai_usage_disclosure') || 'Artificial Intelligence (AI) Usage Disclosure'),
+                title: (tt('behavior_lens.raw.artificial_intelligence_ai_usage_disclosure', 'Artificial Intelligence (AI) Usage Disclosure')),
                 content: 'AlloFlow uses Google Gemini AI to analyze behavioral patterns and generate supportive recommendations. When used through a school-managed Google Workspace account, AI processing is covered by the school district\'s Data Processing Agreement (DPA) with Google, which includes FERPA protections.\n\nIf you choose to use AI features on a personal (non-school) Google account, those interactions fall under Google\'s standard consumer Terms of Service rather than the school\'s educational agreement. AI-powered features in Family Mode are optional and can be disabled.',
                 required: true,
             },
             {
                 id: 'storage',
-                title: (t('behavior_lens.raw.data_storage_security') || 'Data Storage & Security'),
+                title: (tt('behavior_lens.raw.data_storage_security', 'Data Storage & Security')),
                 content: 'All behavioral data is stored locally on the device where it was created (browser localStorage). No student data is stored on AlloFlow servers. Data only moves between parties when a human explicitly exports a snapshot file and shares it.\n\nThe Student Snapshot Exchange system uses a "sneakernet" model — data travels as a file you physically or digitally hand to the other party, not through a shared database or cloud sync.',
                 required: true,
             },
             {
                 id: 'rights',
-                title: (t('behavior_lens.raw.your_rights_under_ferpa') || 'Your Rights Under FERPA'),
+                title: (tt('behavior_lens.raw.your_rights_under_ferpa', 'Your Rights Under FERPA')),
                 content: 'Under the Family Educational Rights and Privacy Act (FERPA), you have the right to:\n\n• Inspect and review your child\'s education records\n• Request corrections to records you believe are inaccurate\n• Consent to or refuse the disclosure of personally identifiable information\n• File a complaint with the U.S. Department of Education\n\nYou may withdraw this consent at any time by notifying your child\'s teacher or school administrator in writing.',
                 required: true,
             },
             {
                 id: 'optional_notes',
-                title: (t('behavior_lens.raw.additional_schooldistrict_notes') || 'Additional School/District Notes'),
+                title: (tt('behavior_lens.raw.additional_schooldistrict_notes', 'Additional School/District Notes')),
                 content: '[Your school or district may add policy-specific language here. For example: specific data retention periods, names of authorized personnel, or references to district technology use policies.]',
                 required: false,
             },
@@ -7730,12 +7757,12 @@ Write 2-3 sentences that are professional, warm, and collaborative. Focus on par
         const saveEdit = () => {
             setSections(prev => prev.map(s => s.id === editingId ? { ...s, content: editBuffer } : s));
             setEditingId(null);
-            addToast && addToast(t('behavior_lens.toast.section_updated') || 'Section updated', 'success');
+            addToast && addToast(tt('behavior_lens.toast.section_updated', 'Section updated'), 'success');
         };
 
         const resetToDefault = () => {
             setSections(DEFAULT_SECTIONS);
-            addToast && addToast(t('behavior_lens.toast.reset_to_default_template') || 'Reset to default template', 'info');
+            addToast && addToast(tt('behavior_lens.toast.reset_to_default_template', 'Reset to default template'), 'info');
         };
 
         const [aiCustomizeLoading, setAiCustomizeLoading] = useState(false);
@@ -7769,11 +7796,11 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
                         const updated = parsed.sections.find(u => u.id === s.id);
                         return updated ? { ...s, content: updated.content } : s;
                     }));
-                    if (addToast) addToast(t('behavior_lens.toast.language_customized_u2728') || 'Language customized \u2728', 'success');
+                    if (addToast) addToast(tt('behavior_lens.toast.language_customized_u2728', 'Language customized \u2728'), 'success');
                 }
             } catch (err) {
                 warnLog('Consent AI customize failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.ai_customization_failed') || 'AI customization failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.ai_customization_failed', 'AI customization failed'), 'error');
             } finally { setAiCustomizeLoading(false); }
         };
 
@@ -7792,7 +7819,7 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
             const dateSuffix = new Date().toISOString().split('T')[0];
             a.href = url; a.download = `alloflow_consent_template_${dateSuffix}.json`; a.click();
             URL.revokeObjectURL(url);
-            addToast && addToast(t('behavior_lens.toast.consent_template_exported') || 'Consent template exported', 'success');
+            addToast && addToast(tt('behavior_lens.toast.consent_template_exported', 'Consent template exported'), 'success');
         };
 
         const handleImportTemplate = (e) => {
@@ -7803,14 +7830,14 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
                 try {
                     const data = JSON.parse(ev.target.result);
                     if (!data.alloflowConsentTemplate || !data.sections) {
-                        addToast && addToast(t('behavior_lens.toast.not_a_valid_consent_template_file') || 'Not a valid consent template file', 'error');
+                        addToast && addToast(tt('behavior_lens.toast.not_a_valid_consent_template_file', 'Not a valid consent template file'), 'error');
                         return;
                     }
                     setSections(data.sections);
                     if (data.schoolName) setSchoolName(data.schoolName);
                     if (data.teacherName) setTeacherName(data.teacherName);
-                    addToast && addToast(t('behavior_lens.toast.consent_template_imported') || 'Consent template imported', 'success');
-                } catch { addToast && addToast(t('behavior_lens.toast.failed_to_parse_template') || 'Failed to parse template', 'error'); }
+                    addToast && addToast(tt('behavior_lens.toast.consent_template_imported', 'Consent template imported'), 'success');
+                } catch { addToast && addToast(tt('behavior_lens.toast.failed_to_parse_template', 'Failed to parse template'), 'error'); }
             };
             reader.readAsText(file);
         };
@@ -7836,16 +7863,16 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
                 <p style="font-size:11px;color:#64748b;">Student Codename: <strong>${esc(studentName) || '_______________'}</strong></p>
                 ${sections.map(s => `<h2>${esc(s.title)}</h2><p>${esc(s.content).replace(/\n/g, '<br>')}</p>`).join('')}
                 <div class="sig-block">
-                    <p style="font-size:13px;font-weight:bold;">${esc(t('bl.consent_options') || 'Consent Options')}</p>
-                    <div class="checkbox-line">${esc(t('bl.consent_data_exchange') || 'I consent to the exchange of behavioral data as described above.')}</div>
+                    <p style="font-size:13px;font-weight:bold;">${esc(tt('bl.consent_options', 'Consent Options'))}</p>
+                    <div class="checkbox-line">${esc(tt('bl.consent_data_exchange', 'I consent to the exchange of behavioral data as described above.'))}</div>
                     <div class="checkbox-line">${esc(t('bl.consent_ai_optional') || "I consent to AI-powered analysis of my child's behavioral data (optional).")}</div>
-                    <div class="checkbox-line">${esc(t('bl.consent_ai_decline') || 'I decline AI-powered analysis but consent to manual data exchange only.')}</div>
+                    <div class="checkbox-line">${esc(tt('bl.consent_ai_decline', 'I decline AI-powered analysis but consent to manual data exchange only.'))}</div>
                     <div class="sig-line"></div>
-                    <div class="sig-label">${esc(t('bl.parent_guardian_signature') || 'Parent/Guardian Signature')}</div>
+                    <div class="sig-label">${esc(tt('bl.parent_guardian_signature', 'Parent/Guardian Signature'))}</div>
                     <div class="sig-line" style="width:30%;"></div>
-                    <div class="sig-label">${esc(t('bl.date_label') || 'Date')}</div>
+                    <div class="sig-label">${esc(tt('bl.date_label', 'Date'))}</div>
                     <div class="sig-line"></div>
-                    <div class="sig-label">${esc(t('bl.parent_guardian_name') || 'Parent/Guardian Printed Name')}</div>
+                    <div class="sig-label">${esc(tt('bl.parent_guardian_name', 'Parent/Guardian Printed Name'))}</div>
                 </div>
                 </body></html>`;
             const win = window.open('', '_blank');
@@ -7885,7 +7912,7 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm space-y-4' },
                 h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { className: 'text-lg' }, '📋'),
-                    h('h3', { className: 'text-sm font-black text-slate-800' }, t('behavior_lens.ui.ferpa_consent_manager') || 'FERPA Consent Manager')
+                    h('h3', { className: 'text-sm font-black text-slate-800' }, tt('behavior_lens.ui.ferpa_consent_manager', 'FERPA Consent Manager'))
                 ),
                 h('p', { className: 'text-xs text-slate-600 leading-relaxed -mt-2' },
                     'Customize and share a FERPA-compliant consent form for behavioral data exchange. Edit any section, then export as JSON to share with colleagues or print for parent signatures.'),
@@ -7893,13 +7920,13 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
                 h('div', { className: 'grid grid-cols-2 gap-2' },
                     h('input', {
                         value: schoolName, onChange: e => setSchoolName(e.target.value),
-                        placeholder: t('behavior_lens.ph.schooldistrict_name') || 'School/District Name',
+                        placeholder: tt('behavior_lens.ph.schooldistrict_name', 'School/District Name'),
                         'aria-label': 'School or district name',
                         className: 'text-xs p-2.5 border border-slate-400 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-300 outline-none'
                     }),
                     h('input', {
                         value: teacherName, onChange: e => setTeacherName(e.target.value),
-                        placeholder: t('behavior_lens.ph.teacherspecialist_name') || 'Teacher/Specialist Name',
+                        placeholder: tt('behavior_lens.ph.teacherspecialist_name', 'Teacher/Specialist Name'),
                         'aria-label': 'Teacher or specialist name',
                         className: 'text-xs p-2.5 border border-slate-400 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-300 outline-none'
                     })
@@ -7909,7 +7936,7 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
                     h('div', { key: section.id, className: `rounded-xl border p-4 transition-all ${editingId === section.id ? 'border-cyan-400 bg-cyan-50/30 shadow-sm' : 'border-slate-100 bg-slate-50 hover:border-slate-200'}` },
                         h('div', { className: 'flex items-center justify-between mb-2' },
                             h('h4', { className: 'text-xs font-bold text-slate-700 flex items-center gap-1.5' },
-                                section.required && h('span', { className: 'text-[11px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-black uppercase' }, t('behavior_lens.ui.required') || 'Required'),
+                                section.required && h('span', { className: 'text-[11px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-black uppercase' }, tt('behavior_lens.ui.required', 'Required')),
                                 section.title
                             ),
                             editingId !== section.id &&
@@ -7929,7 +7956,7 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
                                 }),
                                 h('div', { className: 'flex gap-2' },
                                     h('button', { onClick: saveEdit, className: 'px-3 py-1.5 bg-cyan-700 text-white rounded-lg text-[11px] font-bold hover:bg-cyan-700 transition-colors' }, '✅ Save'),
-                                    h('button', { "aria-label": "Toggle editing id", onClick: () => setEditingId(null), className: 'px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold hover:bg-slate-200 transition-colors' }, t('behavior_lens.ui.cancel') || 'Cancel')
+                                    h('button', { "aria-label": "Toggle editing id", onClick: () => setEditingId(null), className: 'px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold hover:bg-slate-200 transition-colors' }, tt('behavior_lens.ui.cancel', 'Cancel'))
                                 )
                             )
                         ) : (
@@ -8023,19 +8050,19 @@ Use plain text formatting. Be specific and actionable.`;
                 setPreAiPlan(plan);
                 const result = await callGemini(fullPrompt, true);
                 setPlan(result);
-                if (addToast) addToast(t('behavior_lens.toast.intervention_plan_generated') || 'Intervention plan generated ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.intervention_plan_generated', 'Intervention plan generated ✨'), 'success');
             } catch (err) {
                 warnLog('Intervention plan failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.generation_failed') || 'Generation failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.generation_failed', 'Generation failed'), 'error');
             } finally { setGenerating(false); }
         };
 
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '📋 ' + (t('behavior_lens.intervention.title') || 'AI Intervention Plan Generator')),
-                h('p', { className: 'text-xs text-slate-600 mb-4' }, t('behavior_lens.ui.generate_a_multiweek_intervention_plan_based_on_yo') || 'Generate a multi-week intervention plan based on your collected ABC data and AI analysis.'),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '📋 ' + (tt('behavior_lens.intervention.title', 'AI Intervention Plan Generator'))),
+                h('p', { className: 'text-xs text-slate-600 mb-4' }, tt('behavior_lens.ui.generate_a_multiweek_intervention_plan_based_on_yo', 'Generate a multi-week intervention plan based on your collected ABC data and AI analysis.')),
                 h('div', { className: 'flex items-center gap-3 mb-4' },
-                    h('label', { className: 'text-xs font-bold text-slate-600' }, t('behavior_lens.ui.weeks') || 'Weeks:'),
+                    h('label', { className: 'text-xs font-bold text-slate-600' }, tt('behavior_lens.ui.weeks', 'Weeks:')),
                     [2, 4, 6, 8].map(w =>
                         h('button', { "aria-label": "Toggle weeks",
                             key: w,
@@ -8066,12 +8093,12 @@ Use plain text formatting. Be specific and actionable.`;
                 }),
                 h('div', { className: 'flex gap-2 mt-3' },
                     h('button', { "aria-label": "Copy",
-                        onClick: () => { navigator.clipboard.writeText(plan); if (addToast) addToast(t('behavior_lens.toast.copied') || 'Copied!', 'success'); },
+                        onClick: () => { navigator.clipboard.writeText(plan); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
                         className: 'px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200'
                     }, '📋 Copy'),
                     h('button', { onClick: () => window.print(), className: 'px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🖨️ Print'),
                     preAiPlan !== null && h('button', { "aria-label": "Undo AI",
-                        onClick: () => { setPlan(preAiPlan); setPreAiPlan(null); if (addToast) addToast(t('behavior_lens.toast.reverted_to_previous') || 'Reverted to previous', 'info'); },
+                        onClick: () => { setPlan(preAiPlan); setPreAiPlan(null); if (addToast) addToast(tt('behavior_lens.toast.reverted_to_previous', 'Reverted to previous'), 'info'); },
                         className: 'px-4 py-2 bg-amber-50 text-amber-700 border border-amber-600 rounded-lg text-sm font-bold hover:bg-amber-100'
                     }, '↩️ Undo AI')
                 )
@@ -8157,19 +8184,19 @@ Use professional, objective language. Do NOT use the student codename — use "t
                 setPreAiNarrative(narrative);
                 const result = await callGemini(prompt, true);
                 setNarrative(result);
-                if (addToast) addToast(t('behavior_lens.toast.progress_narrative_generated') || 'Progress narrative generated ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.progress_narrative_generated', 'Progress narrative generated ✨'), 'success');
             } catch (err) {
                 warnLog('Progress narrative failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.generation_failed') || 'Generation failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.generation_failed', 'Generation failed'), 'error');
             } finally { setGenerating(false); }
         };
 
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
-                h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '📈 ' + (t('behavior_lens.progress.title') || 'Progress Narrative Generator')),
-                h('p', { className: 'text-xs text-slate-600 mb-4' }, t('behavior_lens.ui.generate_iepready_progress_monitoring_paragraphs_f') || 'Generate IEP-ready progress monitoring paragraphs from your accumulated behavioral data.'),
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '📈 ' + (tt('behavior_lens.progress.title', 'Progress Narrative Generator'))),
+                h('p', { className: 'text-xs text-slate-600 mb-4' }, tt('behavior_lens.ui.generate_iepready_progress_monitoring_paragraphs_f', 'Generate IEP-ready progress monitoring paragraphs from your accumulated behavioral data.')),
                 h('div', { className: 'flex items-center gap-3 mb-3' },
-                    h('label', { className: 'text-xs font-bold text-slate-600' }, t('behavior_lens.ui.style') || 'Style:'),
+                    h('label', { className: 'text-xs font-bold text-slate-600' }, tt('behavior_lens.ui.style', 'Style:')),
                     ['brief', 'detailed'].map(s =>
                         h('button', { "aria-label": "Toggle style",
                             key: s,
@@ -8200,12 +8227,12 @@ Use professional, objective language. Do NOT use the student codename — use "t
                 }),
                 h('div', { className: 'flex gap-2 mt-3' },
                     h('button', { "aria-label": "Copy",
-                        onClick: () => { navigator.clipboard.writeText(narrative); if (addToast) addToast(t('behavior_lens.toast.copied') || 'Copied!', 'success'); },
+                        onClick: () => { navigator.clipboard.writeText(narrative); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
                         className: 'px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200'
                     }, '📋 Copy'),
                     h('button', { onClick: () => window.print(), className: 'px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🖨️ Print'),
                     preAiNarrative !== null && h('button', { "aria-label": "Undo AI",
-                        onClick: () => { setNarrative(preAiNarrative); setPreAiNarrative(null); if (addToast) addToast(t('behavior_lens.toast.reverted_to_previous') || 'Reverted to previous', 'info'); },
+                        onClick: () => { setNarrative(preAiNarrative); setPreAiNarrative(null); if (addToast) addToast(tt('behavior_lens.toast.reverted_to_previous', 'Reverted to previous'), 'info'); },
                         className: 'px-4 py-2 bg-amber-50 text-amber-700 border border-amber-600 rounded-lg text-sm font-bold hover:bg-amber-100'
                     }, '↩️ Undo AI')
                 )
@@ -8246,7 +8273,7 @@ Use professional, objective language. Do NOT use the student codename — use "t
             { id: 'tangible', label: '🎯 Tangible Access' }
         ];
         const grades = [
-            { id: 'K-2', label: (t('behavior_lens.raw.k2_ages_58') || 'K-2 (ages 5-8)') },
+            { id: 'K-2', label: (tt('behavior_lens.raw.k2_ages_58', 'K-2 (ages 5-8)')) },
             { id: '3-5', label: '3-5 (ages 8-11)' },
             { id: '6-8', label: '6-8 (ages 11-14)' },
             { id: '9-12', label: '9-12 (ages 14-18)' }
@@ -8267,7 +8294,7 @@ Use professional, objective language. Do NOT use the student codename — use "t
                     { id: 'p5', timestamp: new Date(Date.now() - 8 * 86400000).toISOString(), behavior: 'Engaged cooperatively with math manipulatives', antecedent: 'Math lesson transitioned to hands-on activity', consequence: 'Teacher praised effort', setting: 'Math class, group work', intensity: 1, duration: '25 min', notes: 'Positive engagement' },
                     { id: 'p6', timestamp: new Date(Date.now() - 7 * 86400000).toISOString(), behavior: 'Threw pencil across room', antecedent: 'Asked to redo incorrect problems on worksheet', consequence: 'Removed from class for 5 minutes', setting: 'Math class', intensity: 5, duration: '3 min', notes: 'Escalation after redirect' },
                     { id: 'p7', timestamp: new Date(Date.now() - 5 * 86400000).toISOString(), behavior: 'Asked to work with partner instead of alone', antecedent: 'Independent reading assignment', consequence: 'Teacher allowed partner work', setting: 'ELA class', intensity: 1, duration: '2 min', notes: 'Appropriate request' },
-                    { id: 'p8', timestamp: new Date(Date.now() - 3 * 86400000).toISOString(), behavior: 'Shut down completely, would not respond to staff', antecedent: 'Substitute teacher gave unfamiliar assignment', consequence: 'Left alone, eventually rejoined after 15 min', setting: 'Science class', intensity: 4, duration: '15 min', notes: t('behavior_lens.abc_ant_change_in_routine') || 'Change in routine' },
+                    { id: 'p8', timestamp: new Date(Date.now() - 3 * 86400000).toISOString(), behavior: 'Shut down completely, would not respond to staff', antecedent: 'Substitute teacher gave unfamiliar assignment', consequence: 'Left alone, eventually rejoined after 15 min', setting: 'Science class', intensity: 4, duration: '15 min', notes: tt('behavior_lens.abc_ant_change_in_routine', 'Change in routine') },
                     { id: 'p9', timestamp: new Date(Date.now() - 2 * 86400000).toISOString(), behavior: 'Completed modified worksheet with minimal prompting', antecedent: 'Teacher provided choice of 2 assignments', consequence: 'Earned 5 min free time', setting: 'Math class', intensity: 1, duration: '20 min', notes: 'Choice helped' },
                     { id: 'p10', timestamp: new Date(Date.now() - 1 * 86400000).toISOString(), behavior: 'Argued with teacher about assignment length', antecedent: 'Long reading passage assigned', consequence: 'Teacher broke into smaller chunks', setting: 'ELA class', intensity: 3, duration: '8 min', notes: '' },
                 ],
@@ -8410,7 +8437,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                 }
             } catch (err) {
                 warnLog('Custom scenario generation failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.scenario_generation_failed_try_again') || 'Scenario generation failed — try again', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.scenario_generation_failed_try_again', 'Scenario generation failed — try again'), 'error');
             } finally { setGenerating(false); }
         };
 
@@ -8418,7 +8445,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
             // Header
             h('div', { className: 'text-center py-4' },
                 h('div', { className: 'text-4xl mb-2' }, '🎓'),
-                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_practice_sandbox' }, t('behavior_lens.ui.practice_sandbox') || 'Practice Sandbox'),
+                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_practice_sandbox' }, tt('behavior_lens.ui.practice_sandbox', 'Practice Sandbox')),
                 h('p', { className: 'text-xs text-slate-600 max-w-lg mx-auto mt-1' },
                     'Load realistic but FICTIONAL student data to practice ABA data collection and analysis. Perfect for professional development, pre-service training, or learning the tool before working with real students.'
                 ),
@@ -8428,7 +8455,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
             // Pre-built scenarios
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
                 h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '📚 Classic ABA Scenarios'),
-                h('p', { className: 'text-xs text-slate-600 mb-4' }, t('behavior_lens.ui.prebuilt_scenarios_covering_the_4_functions_of_beh') || 'Pre-built scenarios covering the 4 functions of behavior. Work offline — no AI needed.'),
+                h('p', { className: 'text-xs text-slate-600 mb-4' }, tt('behavior_lens.ui.prebuilt_scenarios_covering_the_4_functions_of_beh', 'Pre-built scenarios covering the 4 functions of behavior. Work offline — no AI needed.')),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
                     prebuiltScenarios.map(sc =>
                         h('div', {
@@ -8463,10 +8490,10 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
             // AI Custom Scenario Generator
             callGemini && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
                 h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '🤖 AI Custom Scenario'),
-                h('p', { className: 'text-xs text-slate-600 mb-4' }, t('behavior_lens.ui.generate_a_unique_scenario_tailored_to_your_traini') || 'Generate a unique scenario tailored to your training needs.'),
+                h('p', { className: 'text-xs text-slate-600 mb-4' }, tt('behavior_lens.ui.generate_a_unique_scenario_tailored_to_your_traini', 'Generate a unique scenario tailored to your training needs.')),
                 h('div', { className: 'grid grid-cols-2 gap-3 mb-3' },
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, t('behavior_lens.ui.behavioral_function') || 'Behavioral Function'),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, tt('behavior_lens.ui.behavioral_function', 'Behavioral Function')),
                         h('select', {
                             value: customFunc,
                             onChange: e => setCustomFunc(e.target.value),
@@ -8475,7 +8502,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                         }, functions.map(f => h('option', { key: f.id, value: f.id }, f.label)))
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, t('behavior_lens.ui.grade_band') || 'Grade Band'),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, tt('behavior_lens.ui.grade_band', 'Grade Band')),
                         h('select', {
                             value: customGrade,
                             onChange: e => setCustomGrade(e.target.value),
@@ -8529,21 +8556,21 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                             h('div', { className: 'w-4 h-4 bg-white rounded-full shadow mx-0.5' })
                         ),
                         h('div', null,
-                            h('span', { className: 'text-xs font-bold text-slate-700' }, isComplex ? (t('behavior_lens.sandbox.complex_scenario') || '🧩 Complex Scenario') : (t('behavior_lens.sandbox.standard_scenario') || '📋 Standard Scenario')),
+                            h('span', { className: 'text-xs font-bold text-slate-700' }, isComplex ? (tt('behavior_lens.sandbox.complex_scenario', '🧩 Complex Scenario')) : (tt('behavior_lens.sandbox.standard_scenario', '📋 Standard Scenario'))),
                             h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, isComplex
-                                ? (t('behavior_lens.sandbox.complex_desc') || 'Co-occurring behaviors, environmental shifts, trend patterns')
-                                : (t('behavior_lens.sandbox.standard_desc') || 'Single function, consistent setting, straightforward data')
+                                ? (tt('behavior_lens.sandbox.complex_desc', 'Co-occurring behaviors, environmental shifts, trend patterns'))
+                                : (tt('behavior_lens.sandbox.standard_desc', 'Single function, consistent setting, straightforward data'))
                             )
                         )
                     )
                 ),
                 h('div', { className: 'mb-3' },
-                    h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, t('behavior_lens.ui.additional_context_optional') || 'Additional Context (optional)'),
+                    h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, tt('behavior_lens.ui.additional_context_optional', 'Additional Context (optional)')),
                     h('input', {
                         type: 'text',
                         value: customContext,
                         onChange: e => setCustomContext(e.target.value),
-                        placeholder: t('behavior_lens.ph.eg_student_with_autism_cooccurring_adhd_new_to_the') || 'e.g. "student with autism", "co-occurring ADHD", "new to the school"',
+                        placeholder: tt('behavior_lens.ph.eg_student_with_autism_cooccurring_adhd_new_to_the', 'e.g. "student with autism", "co-occurring ADHD", "new to the school"'),
                         'aria-label': 'Additional context for sandbox',
                         className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-sm'
                     })
@@ -8551,20 +8578,20 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                 h('button', { onClick: handleCustomGenerate,
                     disabled: generating, 'aria-busy': generating,
                     className: 'w-full py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
-                }, generating ? (t('behavior_lens.sandbox.generating') || '⏳ Generating Scenario...') : (t('behavior_lens.sandbox.generate_custom') || '🧠 Generate Custom Scenario'))
+                }, generating ? (tt('behavior_lens.sandbox.generating', '⏳ Generating Scenario...')) : (tt('behavior_lens.sandbox.generate_custom', '🧠 Generate Custom Scenario')))
             ),
 
             // ═══════ ADD PHASE DATA (visible when data is loaded) ═══════
             (abcEntries && abcEntries.length > 0) && h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-5 shadow-sm' },
                 h('div', { className: 'flex items-center justify-between mb-3' },
-                    h('h3', { className: 'text-sm font-black text-slate-800 flex items-center gap-2' }, t('behavior_lens.sandbox.add_phase_data') || '📊 Add Phase Data'),
+                    h('h3', { className: 'text-sm font-black text-slate-800 flex items-center gap-2' }, tt('behavior_lens.sandbox.add_phase_data', '📊 Add Phase Data')),
                     h('span', { className: 'text-[11px] bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold' }, t('behavior_lens.sandbox.entries_loaded') || `${abcEntries.length} entries loaded`)
                 ),
-                h('p', { className: 'text-xs text-slate-600 mb-4' }, t('behavior_lens.sandbox.add_phase_desc') || 'Generate additional data representing a new phase (e.g., after implementing an intervention). New entries will be appended to existing data with timestamps continuing forward.'),
+                h('p', { className: 'text-xs text-slate-600 mb-4' }, tt('behavior_lens.sandbox.add_phase_desc', 'Generate additional data representing a new phase (e.g., after implementing an intervention). New entries will be appended to existing data with timestamps continuing forward.')),
 
                 // Phase selector
                 h('div', { className: 'mb-3' },
-                    h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1.5' }, t('behavior_lens.sandbox.phase_label') || '🏷️ Phase Label'),
+                    h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1.5' }, tt('behavior_lens.sandbox.phase_label', '🏷️ Phase Label')),
                     h('div', { className: 'flex gap-2 flex-wrap' },
                         [
                             { id: 'intervention', label: '💊 Intervention', color: 'emerald' },
@@ -8582,7 +8609,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
 
                 // Intervention description
                 h('div', { className: 'mb-3' },
-                    h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, t('behavior_lens.sandbox.intervention_desc_label') || '📋 Intervention / Phase Description'),
+                    h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, tt('behavior_lens.sandbox.intervention_desc_label', '📋 Intervention / Phase Description')),
                     h('textarea', {
                         value: interventionDesc,
                         onChange: e => setInterventionDesc(e.target.value),
@@ -8595,7 +8622,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
 
                 // Expected pattern
                 h('div', { className: 'mb-3' },
-                    h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1.5' }, t('behavior_lens.sandbox.expected_pattern') || '📉 Expected Pattern'),
+                    h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1.5' }, tt('behavior_lens.sandbox.expected_pattern', '📉 Expected Pattern')),
                     h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
                         [
                             { id: 'improving', label: '📈 Improving', desc: 'Gradual decrease in problem behavior' },
@@ -8618,7 +8645,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                 // Parameters row
                 h('div', { className: 'grid grid-cols-2 gap-3 mb-4' },
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, t('behavior_lens.sandbox.phase_duration') || '📅 Phase Duration'),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, tt('behavior_lens.sandbox.phase_duration', '📅 Phase Duration')),
                         h('select', {
                             value: phaseDays,
                             onChange: e => setPhaseDays(parseInt(e.target.value)),
@@ -8627,7 +8654,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                         }, phaseDayOptions.map(d => h('option', { key: d, value: d }, d + ' days')))
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, t('behavior_lens.sandbox.new_entries') || '📝 New Entries'),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, tt('behavior_lens.sandbox.new_entries', '📝 New Entries')),
                         h('select', {
                             value: phaseEntries,
                             onChange: e => setPhaseEntries(parseInt(e.target.value)),
@@ -8639,7 +8666,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
 
                 // Summary preview
                 h('div', { className: 'mb-4 p-3 bg-slate-50 rounded-lg border border-slate-100' },
-                    h('div', { className: 'text-[11px] font-bold text-slate-600 mb-1' }, t('behavior_lens.sandbox.generation_preview') || '📋 Generation Preview'),
+                    h('div', { className: 'text-[11px] font-bold text-slate-600 mb-1' }, tt('behavior_lens.sandbox.generation_preview', '📋 Generation Preview')),
                     h('div', { className: 'text-xs text-slate-600' },
                         `Will generate ${phaseEntries} new ${phaseLabel.replace('_', ' ')} entries spanning ${phaseDays} days, ` +
                         `starting after your latest existing entry. Pattern: ${expectedPattern}. ` +
@@ -8840,14 +8867,14 @@ Rules:
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '📖'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.aba_concept_glossary') || 'ABA Concept Glossary'),
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.aba_concept_glossary', 'ABA Concept Glossary')),
                 h('p', { className: 'text-xs text-slate-600 mt-1' }, `${terms.length} essential terms for understanding Applied Behavior Analysis`)
             ),
             h('input', {
                 type: 'text',
                 value: search,
                 onChange: e => setSearch(e.target.value),
-                placeholder: t('behavior_lens.ph.search_terms_eg_reinforcement_fba_data') || '🔍 Search terms... (e.g. "reinforcement", "FBA", "data")',
+                placeholder: tt('behavior_lens.ph.search_terms_eg_reinforcement_fba_data', '🔍 Search terms... (e.g. "reinforcement", "FBA", "data")'),
                 'aria-label': 'Search glossary terms',
                 className: 'w-full px-4 py-3 border border-slate-400 rounded-xl text-sm shadow-sm focus:ring-2 focus:ring-blue-300 outline-none'
             }),
@@ -8930,11 +8957,11 @@ Rules:
             grade,
             color,
             dimensions: [
-                { label: t('behavior_lens.dq.volume') || 'Volume', value: Math.round(volScore * 100), tip: volScore < 1 ? (t('behavior_lens.dq.tip_add_entries') || `Add ${Math.max(0, 10 - entries.length)} more entries (need 10+)`) : (t('behavior_lens.dq.tip_great_volume') || 'Great volume of data!') },
-                { label: t('behavior_lens.dq.recency') || 'Recency', value: Math.round(recScore * 100), tip: recScore < 1 ? (t('behavior_lens.dq.tip_last_entry_ago') || `Last entry was ${Math.round(daysSince)} days ago — add fresh data`) : (t('behavior_lens.dq.tip_data_current') || 'Data is current!') },
-                { label: t('behavior_lens.dq.diversity') || 'Diversity', value: Math.round(divScore * 100), tip: divScore < 1 ? (t('behavior_lens.dq.tip_antecedent_types') || `Only ${uniqueAnt.size} antecedent type${uniqueAnt.size !== 1 ? 's' : ''} — collect across 3+ settings`) : (t('behavior_lens.dq.tip_good_diversity') || 'Good setting diversity!') },
-                { label: t('behavior_lens.dq.completeness') || 'Completeness', value: Math.round(compScore * 100), tip: compScore < 1 ? (t('behavior_lens.dq.tip_missing_fields') || `${entries.length - complete} entries are missing A, B, or C fields`) : (t('behavior_lens.dq.tip_all_complete') || 'All entries fully complete!') },
-                { label: t('behavior_lens.dq.temporal_spread') || 'Temporal Spread', value: Math.round(spreadScore * 100), tip: spreadScore < 1 ? (t('behavior_lens.dq.tip_spread_days') || `Data from only ${uniqueDays.size} day${uniqueDays.size !== 1 ? 's' : ''} — spread across 3+ days`) : (t('behavior_lens.dq.tip_good_coverage') || 'Good temporal coverage!') },
+                { label: tt('behavior_lens.dq.volume', 'Volume'), value: Math.round(volScore * 100), tip: volScore < 1 ? (t('behavior_lens.dq.tip_add_entries') || `Add ${Math.max(0, 10 - entries.length)} more entries (need 10+)`) : (tt('behavior_lens.dq.tip_great_volume', 'Great volume of data!')) },
+                { label: tt('behavior_lens.dq.recency', 'Recency'), value: Math.round(recScore * 100), tip: recScore < 1 ? (t('behavior_lens.dq.tip_last_entry_ago') || `Last entry was ${Math.round(daysSince)} days ago — add fresh data`) : (tt('behavior_lens.dq.tip_data_current', 'Data is current!')) },
+                { label: tt('behavior_lens.dq.diversity', 'Diversity'), value: Math.round(divScore * 100), tip: divScore < 1 ? (t('behavior_lens.dq.tip_antecedent_types') || `Only ${uniqueAnt.size} antecedent type${uniqueAnt.size !== 1 ? 's' : ''} — collect across 3+ settings`) : (tt('behavior_lens.dq.tip_good_diversity', 'Good setting diversity!')) },
+                { label: tt('behavior_lens.dq.completeness', 'Completeness'), value: Math.round(compScore * 100), tip: compScore < 1 ? (t('behavior_lens.dq.tip_missing_fields') || `${entries.length - complete} entries are missing A, B, or C fields`) : (tt('behavior_lens.dq.tip_all_complete', 'All entries fully complete!')) },
+                { label: tt('behavior_lens.dq.temporal_spread', 'Temporal Spread'), value: Math.round(spreadScore * 100), tip: spreadScore < 1 ? (t('behavior_lens.dq.tip_spread_days') || `Data from only ${uniqueDays.size} day${uniqueDays.size !== 1 ? 's' : ''} — spread across 3+ days`) : (tt('behavior_lens.dq.tip_good_coverage', 'Good temporal coverage!')) },
             ]
         };
     };
@@ -8960,7 +8987,7 @@ Rules:
                 onClick: e => e.stopPropagation()
             },
                 h('div', { className: 'flex items-center justify-between mb-3' },
-                    h('div', { className: 'text-sm font-black text-slate-800' }, t('behavior_lens.dq.scorecard_title') || '📊 Data Quality Scorecard'),
+                    h('div', { className: 'text-sm font-black text-slate-800' }, tt('behavior_lens.dq.scorecard_title', '📊 Data Quality Scorecard')),
                     h('button', { onClick: () => setExpanded(false), title: 'Close', 'aria-label': 'Close', className: 'text-slate-600 hover:text-slate-700 text-lg' }, '×')
                 ),
                 h('div', { className: `text-center py-3 rounded-xl mb-3 ${quality.color === 'emerald' ? 'bg-emerald-50' : quality.color === 'amber' ? 'bg-amber-50' : 'bg-red-50'}` },
@@ -8991,13 +9018,13 @@ Rules:
         if (dismissed) return null;
 
         const FBA_STEPS = [
-            { id: 1, check: () => !selectedStudent, label: t('behavior_lens.fba.step_select_student') || 'Select a Student', desc: t('behavior_lens.fba.step_select_student_desc') || 'Choose or create a student profile to begin collecting data', tool: null, icon: '👤' },
-            { id: 2, check: () => abcEntries.length === 0, label: t('behavior_lens.fba.step_record_abc') || 'Record ABC Data', desc: t('behavior_lens.fba.step_record_abc_desc') || 'Start documenting Antecedent-Behavior-Consequence observations', tool: 'abc', icon: '📋' },
-            { id: 3, check: () => abcEntries.length > 0 && abcEntries.length < 5, label: t('behavior_lens.fba.step_collect_more') || 'Collect More Data', desc: t('behavior_lens.fba.step_collect_more_desc') || `You have ${abcEntries.length} entries — aim for 5+ across different days for reliable patterns`, tool: 'abc', icon: '📝' },
-            { id: 4, check: () => abcEntries.length >= 5 && !aiAnalysis, label: t('behavior_lens.fba.step_ai_analysis') || 'Run AI Pattern Analysis', desc: t('behavior_lens.fba.step_ai_analysis_desc') || 'You have enough data! Let AI identify behavior patterns and potential functions', tool: 'analysis', icon: '🧠' },
-            { id: 5, check: () => !!aiAnalysis && observationSessions.length === 0, label: t('behavior_lens.fba.step_hypothesis') || 'Build a Hypothesis', desc: t('behavior_lens.fba.step_hypothesis_desc') || 'Create a visual hypothesis diagram linking triggers, behaviors, and consequences', tool: 'hypothesis', icon: '🔗' },
-            { id: 6, check: () => !!aiAnalysis && sessionHistory.length === 0, label: t('behavior_lens.fba.step_sessions') || 'Track Intervention Sessions', desc: t('behavior_lens.fba.step_sessions_desc') || 'Start tracking data on your intervention to measure effectiveness', tool: 'sessiontracker', icon: '📈' },
-            { id: 7, check: () => sessionHistory.length > 0, label: t('behavior_lens.fba.step_report') || 'Generate a Progress Report', desc: t('behavior_lens.fba.step_report_desc') || '🎉 Full FBA cycle data collected! Create a professional progress report', tool: 'progressreport', icon: '📄' },
+            { id: 1, check: () => !selectedStudent, label: tt('behavior_lens.fba.step_select_student', 'Select a Student'), desc: tt('behavior_lens.fba.step_select_student_desc', 'Choose or create a student profile to begin collecting data'), tool: null, icon: '👤' },
+            { id: 2, check: () => abcEntries.length === 0, label: tt('behavior_lens.fba.step_record_abc', 'Record ABC Data'), desc: tt('behavior_lens.fba.step_record_abc_desc', 'Start documenting Antecedent-Behavior-Consequence observations'), tool: 'abc', icon: '📋' },
+            { id: 3, check: () => abcEntries.length > 0 && abcEntries.length < 5, label: tt('behavior_lens.fba.step_collect_more', 'Collect More Data'), desc: t('behavior_lens.fba.step_collect_more_desc') || `You have ${abcEntries.length} entries — aim for 5+ across different days for reliable patterns`, tool: 'abc', icon: '📝' },
+            { id: 4, check: () => abcEntries.length >= 5 && !aiAnalysis, label: tt('behavior_lens.fba.step_ai_analysis', 'Run AI Pattern Analysis'), desc: tt('behavior_lens.fba.step_ai_analysis_desc', 'You have enough data! Let AI identify behavior patterns and potential functions'), tool: 'analysis', icon: '🧠' },
+            { id: 5, check: () => !!aiAnalysis && observationSessions.length === 0, label: tt('behavior_lens.fba.step_hypothesis', 'Build a Hypothesis'), desc: tt('behavior_lens.fba.step_hypothesis_desc', 'Create a visual hypothesis diagram linking triggers, behaviors, and consequences'), tool: 'hypothesis', icon: '🔗' },
+            { id: 6, check: () => !!aiAnalysis && sessionHistory.length === 0, label: tt('behavior_lens.fba.step_sessions', 'Track Intervention Sessions'), desc: tt('behavior_lens.fba.step_sessions_desc', 'Start tracking data on your intervention to measure effectiveness'), tool: 'sessiontracker', icon: '📈' },
+            { id: 7, check: () => sessionHistory.length > 0, label: tt('behavior_lens.fba.step_report', 'Generate a Progress Report'), desc: tt('behavior_lens.fba.step_report_desc', '🎉 Full FBA cycle data collected! Create a professional progress report'), tool: 'progressreport', icon: '📄' },
         ];
 
         const currentStep = FBA_STEPS.find(s => s.check());
@@ -9024,7 +9051,7 @@ Rules:
                 currentStep.tool && onOpenTool && h('button', { "aria-label": "On Open Tool",
                     onClick: () => onOpenTool(currentStep.tool),
                     className: 'px-4 py-1.5 bg-white text-slate-800 rounded-lg text-xs font-black hover:bg-white/90 transition-all shadow-sm'
-                }, t('behavior_lens.fba.open_tool') || '→ Open Tool'),
+                }, tt('behavior_lens.fba.open_tool', '→ Open Tool')),
                 h('div', { className: 'flex-1' },
                     h('div', { className: 'w-full bg-white/20 rounded-full h-1.5 overflow-hidden' },
                         h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': Math.round(progress), className: 'h-full bg-white/80 rounded-full transition-all duration-700', style: { width: `${progress}%` } })
@@ -9085,16 +9112,16 @@ Rules:
         return h('div', { className: mini ? '' : 'max-w-2xl mx-auto space-y-4' },
             !mini && h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '📅'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.heatmap.title') || 'Behavior Timeline Heatmap'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.heatmap.subtitle') || 'Incident density across the past 4 school weeks')
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.heatmap.title', 'Behavior Timeline Heatmap')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.heatmap.subtitle', 'Incident density across the past 4 school weeks'))
             ),
             // Legend
             !mini && h('div', { className: 'flex items-center justify-center gap-4 text-[11px] text-slate-600' },
-                h('span', null, t('behavior_lens.heatmap.less') || 'Less'),
+                h('span', null, tt('behavior_lens.heatmap.less', 'Less')),
                 ['#f1f5f9', '#fef3c7', '#fbbf24', '#f97316', '#ef4444'].map((c, i) =>
                     h('div', { key: i, className: 'w-4 h-4 rounded-sm border border-slate-400', style: { backgroundColor: c } })
                 ),
-                h('span', null, t('behavior_lens.heatmap.more') || 'More')
+                h('span', null, tt('behavior_lens.heatmap.more', 'More'))
             ),
             // SVG Grid
             h('div', { className: 'flex justify-center relative' },
@@ -9491,158 +9518,158 @@ Rules:
         // ── Track definitions ──
         const TRACKS = {
             fba: {
-                id: 'fba', icon: '🗺️', title: (t('behavior_lens.raw.full_fba') || 'Full FBA'),
+                id: 'fba', icon: '🗺️', title: (tt('behavior_lens.raw.full_fba', 'Full FBA')),
                 subtitle: '6 steps · Complete Functional Behavior Assessment',
                 gradient: 'from-blue-500 to-indigo-600',
                 steps: [
-                    { id: 'fba_1', num: 1, title: (t('behavior_lens.raw.define_target_behavior') || 'Define Target Behavior'), icon: '🎯', tool: 'abc', toolName: 'ABC Data',
+                    { id: 'fba_1', num: 1, title: (tt('behavior_lens.raw.define_target_behavior', 'Define Target Behavior')), icon: '🎯', tool: 'abc', toolName: 'ABC Data',
                       desc: 'Operationally define the behavior so it is observable and measurable.',
                       tip: 'Ask: "Could two people independently agree on whether this behavior occurred?"',
                       autoCheck: () => abcEntries.length > 0 ? `✅ ${abcEntries.length} ABC entries logged` : null,
                       subs: [
-                          { id: 'fba_1a', label: (t('behavior_lens.raw.write_an_observable_measurable_behavior_definition') || 'Write an observable, measurable behavior definition') },
-                          { id: 'fba_1b', label: (t('behavior_lens.raw.confirm_two_observers_could_agree_on_occurrence') || 'Confirm two observers could agree on occurrence') },
-                          { id: 'fba_1c', label: (t('behavior_lens.raw.select_the_primary_settings_for_data_collection') || 'Select the primary setting(s) for data collection') },
+                          { id: 'fba_1a', label: (tt('behavior_lens.raw.write_an_observable_measurable_behavior_definition', 'Write an observable, measurable behavior definition')) },
+                          { id: 'fba_1b', label: (tt('behavior_lens.raw.confirm_two_observers_could_agree_on_occurrence', 'Confirm two observers could agree on occurrence')) },
+                          { id: 'fba_1c', label: (tt('behavior_lens.raw.select_the_primary_settings_for_data_collection', 'Select the primary setting(s) for data collection')) },
                       ] },
-                    { id: 'fba_2', num: 2, title: (t('behavior_lens.raw.collect_baseline_data') || 'Collect Baseline Data'), icon: '📊', tool: 'observation', toolName: 'Live Observation',
+                    { id: 'fba_2', num: 2, title: (tt('behavior_lens.raw.collect_baseline_data', 'Collect Baseline Data')), icon: '📊', tool: 'observation', toolName: 'Live Observation',
                       desc: 'Gather data on frequency, duration, and intensity BEFORE intervention.',
                       tip: 'Collect 3–5 sessions across different days and settings for reliable baseline.',
                       autoCheck: () => observationSessions.length >= 3 ? `✅ ${observationSessions.length} sessions recorded` : observationSessions.length > 0 ? `🔄 ${observationSessions.length}/3 sessions (need more)` : null,
                       subs: [
-                          { id: 'fba_2a', label: (t('behavior_lens.raw.complete_at_least_3_observation_sessions') || 'Complete at least 3 observation sessions') },
-                          { id: 'fba_2b', label: (t('behavior_lens.raw.observe_across_multiple_settings_classroom_recess_etc') || 'Observe across multiple settings (classroom, recess, etc.)') },
-                          { id: 'fba_2c', label: (t('behavior_lens.raw.record_duration_and_intensity_for_each_incident') || 'Record duration and intensity for each incident') },
+                          { id: 'fba_2a', label: (tt('behavior_lens.raw.complete_at_least_3_observation_sessions', 'Complete at least 3 observation sessions')) },
+                          { id: 'fba_2b', label: (tt('behavior_lens.raw.observe_across_multiple_settings_classroom_recess_etc', 'Observe across multiple settings (classroom, recess, etc.)')) },
+                          { id: 'fba_2c', label: (tt('behavior_lens.raw.record_duration_and_intensity_for_each_incident', 'Record duration and intensity for each incident')) },
                       ] },
-                    { id: 'fba_3', num: 3, title: (t('behavior_lens.raw.identify_patterns') || 'Identify Patterns'), icon: '🔍', tool: 'analysis', toolName: 'AI Analysis',
+                    { id: 'fba_3', num: 3, title: (tt('behavior_lens.raw.identify_patterns', 'Identify Patterns')), icon: '🔍', tool: 'analysis', toolName: 'AI Analysis',
                       desc: 'Analyze ABC data to discover antecedent triggers and maintaining consequences.',
                       tip: 'Use AI Analysis after 3+ entries to automatically detect patterns.',
                       autoCheck: () => aiAnalysis ? '✅ AI Analysis completed' : abcEntries.length >= 3 ? '🔄 Ready for analysis — run AI Analysis' : null,
                       subs: [
-                          { id: 'fba_3a', label: (t('behavior_lens.raw.run_ai_analysis_on_collected_data') || 'Run AI Analysis on collected data') },
-                          { id: 'fba_3b', label: (t('behavior_lens.raw.review_the_most_common_antecedent_triggers') || 'Review the most common antecedent triggers') },
-                          { id: 'fba_3c', label: (t('behavior_lens.raw.review_the_most_common_consequence_patterns') || 'Review the most common consequence patterns') },
+                          { id: 'fba_3a', label: (tt('behavior_lens.raw.run_ai_analysis_on_collected_data', 'Run AI Analysis on collected data')) },
+                          { id: 'fba_3b', label: (tt('behavior_lens.raw.review_the_most_common_antecedent_triggers', 'Review the most common antecedent triggers')) },
+                          { id: 'fba_3c', label: (tt('behavior_lens.raw.review_the_most_common_consequence_patterns', 'Review the most common consequence patterns')) },
                       ] },
-                    { id: 'fba_4', num: 4, title: (t('behavior_lens.raw.hypothesize_function') || 'Hypothesize Function'), icon: '🧩', tool: 'hypothesis', toolName: 'Hypothesis Diagram',
+                    { id: 'fba_4', num: 4, title: (tt('behavior_lens.raw.hypothesize_function', 'Hypothesize Function')), icon: '🧩', tool: 'hypothesis', toolName: 'Hypothesis Diagram',
                       desc: 'Determine WHY the behavior occurs — Escape, Attention, Sensory, or Tangible.',
                       tip: 'A behavior can serve multiple functions. Consider whether function changes across settings.',
                       autoCheck: () => aiAnalysis?.hypothesizedFunction ? `✅ Hypothesized: ${aiAnalysis.hypothesizedFunction}` : null,
                       subs: [
-                          { id: 'fba_4a', label: (t('behavior_lens.raw.map_antecedent_behavior_consequence_pathways') || 'Map antecedent → behavior → consequence pathways') },
-                          { id: 'fba_4b', label: (t('behavior_lens.raw.confirm_hypothesis_with_the_team_or_a_colleague') || 'Confirm hypothesis with the team or a colleague') },
-                          { id: 'fba_4c', label: (t('behavior_lens.raw.document_the_hypothesis_in_session_notes') || 'Document the hypothesis in session notes') },
+                          { id: 'fba_4a', label: (tt('behavior_lens.raw.map_antecedent_behavior_consequence_pathways', 'Map antecedent → behavior → consequence pathways')) },
+                          { id: 'fba_4b', label: (tt('behavior_lens.raw.confirm_hypothesis_with_the_team_or_a_colleague', 'Confirm hypothesis with the team or a colleague')) },
+                          { id: 'fba_4c', label: (tt('behavior_lens.raw.document_the_hypothesis_in_session_notes', 'Document the hypothesis in session notes')) },
                       ] },
-                    { id: 'fba_5', num: 5, title: (t('behavior_lens.raw.design_intervention') || 'Design Intervention'), icon: '📋', tool: 'intervention', toolName: 'Intervention Plan',
+                    { id: 'fba_5', num: 5, title: (tt('behavior_lens.raw.design_intervention', 'Design Intervention')), icon: '📋', tool: 'intervention', toolName: 'Intervention Plan',
                       desc: 'Build a BIP addressing the function with replacement behaviors and reinforcement.',
                       tip: 'Replacement behaviors must serve the SAME function and be EASIER to perform.',
                       autoCheck: () => null,
                       subs: [
-                          { id: 'fba_5a', label: (t('behavior_lens.raw.identify_12_functionally_equivalent_replacement_behaviors') || 'Identify 1–2 functionally equivalent replacement behaviors') },
-                          { id: 'fba_5b', label: (t('behavior_lens.raw.plan_a_reinforcement_schedule_for_replacement_behaviors') || 'Plan a reinforcement schedule for replacement behaviors') },
-                          { id: 'fba_5c', label: (t('behavior_lens.raw.set_intervention_duration_eg_46_weeks') || 'Set intervention duration (e.g., 4–6 weeks)') },
+                          { id: 'fba_5a', label: (tt('behavior_lens.raw.identify_12_functionally_equivalent_replacement_behaviors', 'Identify 1–2 functionally equivalent replacement behaviors')) },
+                          { id: 'fba_5b', label: (tt('behavior_lens.raw.plan_a_reinforcement_schedule_for_replacement_behaviors', 'Plan a reinforcement schedule for replacement behaviors')) },
+                          { id: 'fba_5c', label: (tt('behavior_lens.raw.set_intervention_duration_eg_46_weeks', 'Set intervention duration (e.g., 4–6 weeks)')) },
                       ] },
-                    { id: 'fba_6', num: 6, title: (t('behavior_lens.raw.monitor_adjust') || 'Monitor & Adjust'), icon: '📈', tool: 'progress', toolName: 'Progress Narrative',
+                    { id: 'fba_6', num: 6, title: (tt('behavior_lens.raw.monitor_adjust', 'Monitor & Adjust')), icon: '📈', tool: 'progress', toolName: 'Progress Narrative',
                       desc: 'Compare ongoing data to baseline. Make data-driven decisions to adjust.',
                       tip: 'Allow 2–3 weeks before major changes, unless safety is a concern.',
                       autoCheck: () => null,
                       subs: [
-                          { id: 'fba_6a', label: (t('behavior_lens.raw.compare_current_data_to_baseline_levels') || 'Compare current data to baseline levels') },
-                          { id: 'fba_6b', label: (t('behavior_lens.raw.share_progress_with_the_team_and_family') || 'Share progress with the team and family') },
-                          { id: 'fba_6c', label: (t('behavior_lens.raw.adjust_the_plan_based_on_data_trends') || 'Adjust the plan based on data trends') },
+                          { id: 'fba_6a', label: (tt('behavior_lens.raw.compare_current_data_to_baseline_levels', 'Compare current data to baseline levels')) },
+                          { id: 'fba_6b', label: (tt('behavior_lens.raw.share_progress_with_the_team_and_family', 'Share progress with the team and family')) },
+                          { id: 'fba_6c', label: (tt('behavior_lens.raw.adjust_the_plan_based_on_data_trends', 'Adjust the plan based on data trends')) },
                       ] },
                 ],
             },
             bip: {
-                id: 'bip', icon: '⚡', title: (t('behavior_lens.raw.quick_bip') || 'Quick BIP'),
+                id: 'bip', icon: '⚡', title: (tt('behavior_lens.raw.quick_bip', 'Quick BIP')),
                 subtitle: '4 steps · When the function is already known',
                 gradient: 'from-amber-500 to-orange-600',
                 steps: [
-                    { id: 'bip_1', num: 1, title: (t('behavior_lens.raw.confirm_function') || 'Confirm Function'), icon: '🧩', tool: 'hypothesis', toolName: 'Hypothesis Diagram',
+                    { id: 'bip_1', num: 1, title: (tt('behavior_lens.raw.confirm_function', 'Confirm Function')), icon: '🧩', tool: 'hypothesis', toolName: 'Hypothesis Diagram',
                       desc: 'Verify the hypothesized function of the behavior with your team.',
                       tip: 'Even if the function seems obvious, document it with at least some data.',
                       autoCheck: () => aiAnalysis?.hypothesizedFunction ? `✅ Hypothesized: ${aiAnalysis.hypothesizedFunction}` : null,
                       subs: [
-                          { id: 'bip_1a', label: (t('behavior_lens.raw.review_existing_data_supporting_the_hypothesis') || 'Review existing data supporting the hypothesis') },
-                          { id: 'bip_1b', label: (t('behavior_lens.raw.confirm_function_with_team_consensus') || 'Confirm function with team consensus') },
-                          { id: 'bip_1c', label: (t('behavior_lens.raw.document_the_confirmed_function') || 'Document the confirmed function') },
+                          { id: 'bip_1a', label: (tt('behavior_lens.raw.review_existing_data_supporting_the_hypothesis', 'Review existing data supporting the hypothesis')) },
+                          { id: 'bip_1b', label: (tt('behavior_lens.raw.confirm_function_with_team_consensus', 'Confirm function with team consensus')) },
+                          { id: 'bip_1c', label: (tt('behavior_lens.raw.document_the_confirmed_function', 'Document the confirmed function')) },
                       ] },
-                    { id: 'bip_2', num: 2, title: (t('behavior_lens.raw.plan_replacement_behaviors') || 'Plan Replacement Behaviors'), icon: '🔄', tool: 'replacebehavior', toolName: 'Replacement Behavior Planner',
+                    { id: 'bip_2', num: 2, title: (tt('behavior_lens.raw.plan_replacement_behaviors', 'Plan Replacement Behaviors')), icon: '🔄', tool: 'replacebehavior', toolName: 'Replacement Behavior Planner',
                       desc: 'Map each target behavior to a functionally equivalent replacement.',
                       tip: 'Replacements must be easier, more efficient, and serve the same function.',
                       autoCheck: () => null,
                       subs: [
-                          { id: 'bip_2a', label: (t('behavior_lens.raw.map_each_target_behavior_to_a_replacement') || 'Map each target behavior to a replacement') },
-                          { id: 'bip_2b', label: (t('behavior_lens.raw.select_a_teaching_strategy_for_each_replacement') || 'Select a teaching strategy for each replacement') },
-                          { id: 'bip_2c', label: (t('behavior_lens.raw.plan_reinforcement_for_replacement_behaviors') || 'Plan reinforcement for replacement behaviors') },
+                          { id: 'bip_2a', label: (tt('behavior_lens.raw.map_each_target_behavior_to_a_replacement', 'Map each target behavior to a replacement')) },
+                          { id: 'bip_2b', label: (tt('behavior_lens.raw.select_a_teaching_strategy_for_each_replacement', 'Select a teaching strategy for each replacement')) },
+                          { id: 'bip_2c', label: (tt('behavior_lens.raw.plan_reinforcement_for_replacement_behaviors', 'Plan reinforcement for replacement behaviors')) },
                       ] },
-                    { id: 'bip_3', num: 3, title: (t('behavior_lens.raw.build_intervention_plan') || 'Build Intervention Plan'), icon: '📋', tool: 'intervention', toolName: 'Intervention Plan',
+                    { id: 'bip_3', num: 3, title: (tt('behavior_lens.raw.build_intervention_plan', 'Build Intervention Plan')), icon: '📋', tool: 'intervention', toolName: 'Intervention Plan',
                       desc: 'Generate a structured multi-week intervention plan with AI assistance.',
                       tip: 'Include prevention strategies, response protocols, and team roles.',
                       autoCheck: () => null,
                       subs: [
-                          { id: 'bip_3a', label: (t('behavior_lens.raw.select_evidencebased_intervention_strategies') || 'Select evidence-based intervention strategies') },
-                          { id: 'bip_3b', label: (t('behavior_lens.raw.set_timeline_and_milestones_eg_4_weeks') || 'Set timeline and milestones (e.g., 4 weeks)') },
-                          { id: 'bip_3c', label: (t('behavior_lens.raw.assign_team_roles_and_responsibilities') || 'Assign team roles and responsibilities') },
+                          { id: 'bip_3a', label: (tt('behavior_lens.raw.select_evidencebased_intervention_strategies', 'Select evidence-based intervention strategies')) },
+                          { id: 'bip_3b', label: (tt('behavior_lens.raw.set_timeline_and_milestones_eg_4_weeks', 'Set timeline and milestones (e.g., 4 weeks)')) },
+                          { id: 'bip_3c', label: (tt('behavior_lens.raw.assign_team_roles_and_responsibilities', 'Assign team roles and responsibilities')) },
                       ] },
-                    { id: 'bip_4', num: 4, title: (t('behavior_lens.raw.plan_fidelity_monitoring') || 'Plan Fidelity Monitoring'), icon: '✓', tool: 'fidelity', toolName: 'Fidelity Checklist',
+                    { id: 'bip_4', num: 4, title: (tt('behavior_lens.raw.plan_fidelity_monitoring', 'Plan Fidelity Monitoring')), icon: '✓', tool: 'fidelity', toolName: 'Fidelity Checklist',
                       desc: 'Ensure the intervention is implemented as designed with structured checks.',
                       tip: 'Schedule IOA sessions and review dates upfront.',
                       autoCheck: () => null,
                       subs: [
-                          { id: 'bip_4a', label: (t('behavior_lens.raw.set_review_dates_and_checkin_schedule') || 'Set review dates and check-in schedule') },
-                          { id: 'bip_4b', label: (t('behavior_lens.raw.plan_data_collection_methods_and_frequency') || 'Plan data collection methods and frequency') },
-                          { id: 'bip_4c', label: (t('behavior_lens.raw.assign_an_ioa_partner_for_reliability_checks') || 'Assign an IOA partner for reliability checks') },
+                          { id: 'bip_4a', label: (tt('behavior_lens.raw.set_review_dates_and_checkin_schedule', 'Set review dates and check-in schedule')) },
+                          { id: 'bip_4b', label: (tt('behavior_lens.raw.plan_data_collection_methods_and_frequency', 'Plan data collection methods and frequency')) },
+                          { id: 'bip_4c', label: (tt('behavior_lens.raw.assign_an_ioa_partner_for_reliability_checks', 'Assign an IOA partner for reliability checks')) },
                       ] },
                 ],
             },
             rti: {
-                id: 'rti', icon: '🔄', title: (t('behavior_lens.raw.rti_behavior_tier') || 'RTI Behavior Tier'),
+                id: 'rti', icon: '🔄', title: (tt('behavior_lens.raw.rti_behavior_tier', 'RTI Behavior Tier')),
                 subtitle: '5 steps · Tiered intervention progression',
                 gradient: 'from-emerald-500 to-teal-600',
                 steps: [
-                    { id: 'rti_1', num: 1, title: (t('behavior_lens.raw.tier_1_universal_screening') || 'Tier 1: Universal Screening'), icon: '🏫', tool: 'abc', toolName: 'ABC Data',
+                    { id: 'rti_1', num: 1, title: (tt('behavior_lens.raw.tier_1_universal_screening', 'Tier 1: Universal Screening')), icon: '🏫', tool: 'abc', toolName: 'ABC Data',
                       desc: 'Conduct a classroom-wide scan to identify students needing additional support.',
                       tip: 'Use simple frequency counts to identify students 1.5× above the class average.',
                       autoCheck: () => abcEntries.length > 0 ? `✅ ${abcEntries.length} entries collected` : null,
                       subs: [
-                          { id: 'rti_1a', label: (t('behavior_lens.raw.complete_a_classroomwide_behavior_scan') || 'Complete a classroom-wide behavior scan') },
-                          { id: 'rti_1b', label: (t('behavior_lens.raw.identify_students_exceeding_the_universal_threshold') || 'Identify students exceeding the universal threshold') },
-                          { id: 'rti_1c', label: (t('behavior_lens.raw.document_baseline_frequency_for_flagged_students') || 'Document baseline frequency for flagged students') },
+                          { id: 'rti_1a', label: (tt('behavior_lens.raw.complete_a_classroomwide_behavior_scan', 'Complete a classroom-wide behavior scan')) },
+                          { id: 'rti_1b', label: (tt('behavior_lens.raw.identify_students_exceeding_the_universal_threshold', 'Identify students exceeding the universal threshold')) },
+                          { id: 'rti_1c', label: (tt('behavior_lens.raw.document_baseline_frequency_for_flagged_students', 'Document baseline frequency for flagged students')) },
                       ] },
-                    { id: 'rti_2', num: 2, title: (t('behavior_lens.raw.tier_2_targeted_intervention') || 'Tier 2: Targeted Intervention'), icon: '👥', tool: 'intervention', toolName: 'Intervention Plan',
+                    { id: 'rti_2', num: 2, title: (tt('behavior_lens.raw.tier_2_targeted_intervention', 'Tier 2: Targeted Intervention')), icon: '👥', tool: 'intervention', toolName: 'Intervention Plan',
                       desc: 'Implement a small-group or targeted strategy for 6 weeks with progress monitoring.',
                       tip: 'Standard Tier 2 interventions include Check-In Check-Out (CICO) and social skills groups.',
                       autoCheck: () => null,
                       subs: [
-                          { id: 'rti_2a', label: (t('behavior_lens.raw.select_a_tier_2_group_strategy_eg_cico_social_skills') || 'Select a Tier 2 group strategy (e.g., CICO, social skills)') },
-                          { id: 'rti_2b', label: (t('behavior_lens.raw.set_a_6week_intervention_cycle') || 'Set a 6-week intervention cycle') },
-                          { id: 'rti_2c', label: (t('behavior_lens.raw.plan_weekly_progress_monitoring_data_collection') || 'Plan weekly progress monitoring data collection') },
+                          { id: 'rti_2a', label: (tt('behavior_lens.raw.select_a_tier_2_group_strategy_eg_cico_social_skills', 'Select a Tier 2 group strategy (e.g., CICO, social skills)')) },
+                          { id: 'rti_2b', label: (tt('behavior_lens.raw.set_a_6week_intervention_cycle', 'Set a 6-week intervention cycle')) },
+                          { id: 'rti_2c', label: (tt('behavior_lens.raw.plan_weekly_progress_monitoring_data_collection', 'Plan weekly progress monitoring data collection')) },
                       ] },
-                    { id: 'rti_3', num: 3, title: (t('behavior_lens.raw.data_decision_point') || 'Data Decision Point'), icon: '📊', tool: 'trends', toolName: 'Trend Dashboard',
+                    { id: 'rti_3', num: 3, title: (tt('behavior_lens.raw.data_decision_point', 'Data Decision Point')), icon: '📊', tool: 'trends', toolName: 'Trend Dashboard',
                       desc: 'Review progress data and compare to peers. Decide whether to continue, fade, or intensify.',
                       tip: 'Use the Trend Dashboard and AI Analysis together for a comprehensive picture.',
                       autoCheck: () => aiAnalysis ? '✅ Analysis data available for review' : null,
                       subs: [
-                          { id: 'rti_3a', label: (t('behavior_lens.raw.review_progress_monitoring_data_vs_baseline') || 'Review progress monitoring data vs. baseline') },
-                          { id: 'rti_3b', label: (t('behavior_lens.raw.compare_student_performance_to_peer_norms') || 'Compare student performance to peer norms') },
-                          { id: 'rti_3c', label: (t('behavior_lens.raw.make_tier_movement_decision_stay_fade_intensify') || 'Make tier movement decision (stay / fade / intensify)') },
+                          { id: 'rti_3a', label: (tt('behavior_lens.raw.review_progress_monitoring_data_vs_baseline', 'Review progress monitoring data vs. baseline')) },
+                          { id: 'rti_3b', label: (tt('behavior_lens.raw.compare_student_performance_to_peer_norms', 'Compare student performance to peer norms')) },
+                          { id: 'rti_3c', label: (tt('behavior_lens.raw.make_tier_movement_decision_stay_fade_intensify', 'Make tier movement decision (stay / fade / intensify)')) },
                       ] },
-                    { id: 'rti_4', num: 4, title: (t('behavior_lens.raw.tier_3_intensive_support') || 'Tier 3: Intensive Support'), icon: '🎯', tool: 'hypothesis', toolName: 'Hypothesis Diagram',
+                    { id: 'rti_4', num: 4, title: (tt('behavior_lens.raw.tier_3_intensive_support', 'Tier 3: Intensive Support')), icon: '🎯', tool: 'hypothesis', toolName: 'Hypothesis Diagram',
                       desc: 'For non-responders: conduct a full FBA and develop an individualized BIP.',
                       tip: 'Tier 3 typically involves a full FBA. Use the Full FBA workflow track for guidance.',
                       autoCheck: () => null,
                       subs: [
-                          { id: 'rti_4a', label: (t('behavior_lens.raw.conduct_a_full_functional_behavior_assessment') || 'Conduct a full Functional Behavior Assessment') },
-                          { id: 'rti_4b', label: (t('behavior_lens.raw.develop_an_individualized_behavior_intervention_plan') || 'Develop an individualized Behavior Intervention Plan') },
-                          { id: 'rti_4c', label: (t('behavior_lens.raw.set_up_weekly_progress_monitoring') || 'Set up weekly progress monitoring') },
+                          { id: 'rti_4a', label: (tt('behavior_lens.raw.conduct_a_full_functional_behavior_assessment', 'Conduct a full Functional Behavior Assessment')) },
+                          { id: 'rti_4b', label: (tt('behavior_lens.raw.develop_an_individualized_behavior_intervention_plan', 'Develop an individualized Behavior Intervention Plan')) },
+                          { id: 'rti_4c', label: (tt('behavior_lens.raw.set_up_weekly_progress_monitoring', 'Set up weekly progress monitoring')) },
                       ] },
-                    { id: 'rti_5', num: 5, title: (t('behavior_lens.raw.outcome_evaluation') || 'Outcome Evaluation'), icon: '📈', tool: 'progress', toolName: 'Progress Narrative',
+                    { id: 'rti_5', num: 5, title: (tt('behavior_lens.raw.outcome_evaluation', 'Outcome Evaluation')), icon: '📈', tool: 'progress', toolName: 'Progress Narrative',
                       desc: 'Measure overall effectiveness, calculate effect size, and prepare for IEP if needed.',
                       tip: 'Use Effect Size and IEP Prep tools to quantify and document outcomes.',
                       autoCheck: () => null,
                       subs: [
-                          { id: 'rti_5a', label: (t('behavior_lens.raw.measure_effect_size_of_interventions') || 'Measure effect size of interventions') },
-                          { id: 'rti_5b', label: (t('behavior_lens.raw.prepare_documentation_for_iep_team_if_applicable') || 'Prepare documentation for IEP team (if applicable)') },
-                          { id: 'rti_5c', label: (t('behavior_lens.raw.document_outcomes_and_lessons_learned') || 'Document outcomes and lessons learned') },
+                          { id: 'rti_5a', label: (tt('behavior_lens.raw.measure_effect_size_of_interventions', 'Measure effect size of interventions')) },
+                          { id: 'rti_5b', label: (tt('behavior_lens.raw.prepare_documentation_for_iep_team_if_applicable', 'Prepare documentation for IEP team (if applicable)')) },
+                          { id: 'rti_5c', label: (tt('behavior_lens.raw.document_outcomes_and_lessons_learned', 'Document outcomes and lessons learned')) },
                       ] },
                 ],
             },
@@ -9728,8 +9755,8 @@ Based on this progress, recommend the ONE most important next action. Be specifi
             return h('div', { className: 'max-w-2xl mx-auto space-y-5' },
                 h('div', { className: 'text-center py-4' },
                     h('div', { className: 'text-5xl mb-3' }, '🧭'),
-                    h('h2', { className: 'text-xl font-black text-slate-800' }, t('behavior_lens.workflow.title') || 'Guided Workflows'),
-                    h('p', { className: 'text-sm text-slate-600 mt-1 max-w-md mx-auto' }, t('behavior_lens.workflow.subtitle') || 'Choose a step-by-step guide for your clinical process')
+                    h('h2', { className: 'text-xl font-black text-slate-800' }, tt('behavior_lens.workflow.title', 'Guided Workflows')),
+                    h('p', { className: 'text-sm text-slate-600 mt-1 max-w-md mx-auto' }, tt('behavior_lens.workflow.subtitle', 'Choose a step-by-step guide for your clinical process'))
                 ),
                 h('div', { className: 'space-y-3' },
                     Object.values(TRACKS).map(tr => {
@@ -9966,7 +9993,7 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
                 aiRec && h('div', { className: 'bg-white rounded-xl border-2 border-purple-200 p-4 shadow-sm' },
                     h('div', { className: 'flex items-center gap-2 mb-2' },
                         h('span', { className: 'text-sm' }, '🤖'),
-                        h('span', { className: 'text-xs font-black text-purple-700' }, t('behavior_lens.ui.allobot_recommendation') || 'AlloBot Recommendation')
+                        h('span', { className: 'text-xs font-black text-purple-700' }, tt('behavior_lens.ui.allobot_recommendation', 'AlloBot Recommendation'))
                     ),
                     h('p', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-wrap' }, aiRec)
                 )
@@ -10021,10 +10048,10 @@ Keep it concise and encouraging. Use plain language.`;
 
                 const result = await callGemini(prompt, true);
                 setReport(result);
-                if (addToast) addToast(t('behavior_lens.toast.quality_check_complete') || 'Quality check complete ✅', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.quality_check_complete', 'Quality check complete ✅'), 'success');
             } catch (err) {
                 warnLog('Quality check failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.quality_check_failed') || 'Quality check failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.quality_check_failed', 'Quality check failed'), 'error');
             } finally { setChecking(false); }
         };
 
@@ -10054,8 +10081,8 @@ Keep it concise and encouraging. Use plain language.`;
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '✅'),
-                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_data_quality_checker' }, t('behavior_lens.ui.data_quality_checker') || 'Data Quality Checker'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.review_your_abc_data_collection_for_completeness_a') || 'Review your ABC data collection for completeness and quality')
+                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_data_quality_checker' }, tt('behavior_lens.ui.data_quality_checker', 'Data Quality Checker')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.review_your_abc_data_collection_for_completeness_a', 'Review your ABC data collection for completeness and quality'))
             ),
             // Quick local checks
             quickChecks.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
@@ -10071,7 +10098,7 @@ Keep it concise and encouraging. Use plain language.`;
             ),
             abcEntries.length === 0 && h('div', { className: 'text-center py-8 bg-white rounded-xl border border-slate-400' },
                 h('div', { className: 'text-3xl mb-2' }, '📭'),
-                h('p', { className: 'text-sm text-slate-600' }, t('behavior_lens.ui.no_abc_entries_to_check_yet_start_collecting_data') || 'No ABC entries to check yet. Start collecting data first!')
+                h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.ui.no_abc_entries_to_check_yet_start_collecting_data', 'No ABC entries to check yet. Start collecting data first!'))
             ),
             // AI deep check
             callGemini && abcEntries.length > 0 && h('button', { onClick: handleCheck,
@@ -10082,7 +10109,7 @@ Keep it concise and encouraging. Use plain language.`;
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, report),
                 h('div', { className: 'flex gap-2 mt-4' },
                     h('button', { "aria-label": "Copy Report",
-                        onClick: () => { navigator.clipboard.writeText(report); if (addToast) addToast(t('behavior_lens.toast.copied') || 'Copied!', 'success'); },
+                        onClick: () => { navigator.clipboard.writeText(report); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
                         className: 'px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-[11px] font-bold hover:bg-green-200'
                     }, '📋 Copy Report')
                 )
@@ -10131,7 +10158,7 @@ Keep it concise and encouraging. Use plain language.`;
             return grid;
         }, [abcEntries]);
         const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const timeLabels = [t('behavior_lens.early_am') || 'Early AM', t('behavior_lens.morning_label') || 'Morning', t('behavior_lens.afternoon_label') || 'Afternoon', t('behavior_lens.late_pm') || 'Late PM'];
+        const timeLabels = [tt('behavior_lens.early_am', 'Early AM'), tt('behavior_lens.morning_label', 'Morning'), tt('behavior_lens.afternoon_label', 'Afternoon'), tt('behavior_lens.late_pm', 'Late PM')];
 
         const views = [
             { id: 'intensity', label: '📈 Intensity Trend' },
@@ -10142,15 +10169,15 @@ Keep it concise and encouraging. Use plain language.`;
         if (abcEntries.length === 0) {
             return h('div', { className: 'max-w-2xl mx-auto text-center py-12' },
                 h('div', { className: 'text-4xl mb-3' }, '📊'),
-                h('h2', { className: 'text-lg font-black text-slate-800 mb-2' }, t('behavior_lens.trend_dashboard') || 'Behavior Trend Dashboard'),
-                h('p', { className: 'text-sm text-slate-600' }, t('behavior_lens.ui.add_abc_entries_to_see_visual_trend_data') || 'Add ABC entries to see visual trend data.')
+                h('h2', { className: 'text-lg font-black text-slate-800 mb-2' }, tt('behavior_lens.trend_dashboard', 'Behavior Trend Dashboard')),
+                h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.ui.add_abc_entries_to_see_visual_trend_data', 'Add ABC entries to see visual trend data.'))
             );
         }
 
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '📊'),
-                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_trend_dashboard' }, t('behavior_lens.trend_dashboard') || 'Behavior Trend Dashboard'),
+                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_trend_dashboard' }, tt('behavior_lens.trend_dashboard', 'Behavior Trend Dashboard')),
                 h('p', { className: 'text-xs text-slate-600 mt-1' }, `${abcEntries.length} entries visualized`)
             ),
             // View tabs
@@ -10250,9 +10277,9 @@ Keep it concise and encouraging. Use plain language.`;
                     )
                 ),
                 h('div', { className: 'flex items-center gap-4 mt-3 text-[11px] text-slate-600' },
-                    h('span', null, t('behavior_lens.ui.low') || 'Low'), h('div', { className: 'w-4 h-3 bg-green-200 rounded' }),
+                    h('span', null, tt('behavior_lens.ui.low', 'Low')), h('div', { className: 'w-4 h-3 bg-green-200 rounded' }),
                     h('div', { className: 'w-4 h-3 bg-amber-300 rounded' }),
-                    h('div', { className: 'w-4 h-3 bg-red-400 rounded' }), h('span', null, t('behavior_lens.ui.high') || 'High')
+                    h('div', { className: 'w-4 h-3 bg-red-400 rounded' }), h('span', null, tt('behavior_lens.ui.high', 'High'))
                 )
             )
         );
@@ -10297,13 +10324,13 @@ Keep it concise and encouraging. Use plain language.`;
                 timestamp: new Date().toISOString(),
             }, ...prev]);
             setNewNote('');
-            if (addToast) addToast(t('behavior_lens.toast.note_added') || 'Note added', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.note_added', 'Note added'), 'success');
         };
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🤝'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.team_collaboration_notes') || 'Team Collaboration Notes'),
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.team_collaboration_notes', 'Team Collaboration Notes')),
                 h('p', { className: 'text-xs text-slate-600 mt-1' }, `Shared notes for ${studentName || 'the student'} — all team members contribute`)
             ),
             // Add note
@@ -10320,7 +10347,7 @@ Keep it concise and encouraging. Use plain language.`;
                         value: newNote,
                         onChange: e => setNewNote(e.target.value),
                         onKeyDown: e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAdd(); } },
-                        placeholder: t('behavior_lens.ph.add_a_team_note_shiftenter_for_new_line') || 'Add a team note... (Shift+Enter for new line)',
+                        placeholder: tt('behavior_lens.ph.add_a_team_note_shiftenter_for_new_line', 'Add a team note... (Shift+Enter for new line)'),
                         'aria-label': 'Add a team note',
                         rows: 2,
                         className: 'flex-1 px-3 py-2 border border-slate-400 rounded-lg text-sm resize-none outline-none focus:ring-2 focus:ring-indigo-300'
@@ -10335,7 +10362,7 @@ Keep it concise and encouraging. Use plain language.`;
             notes.length === 0
                 ? h('div', { className: 'text-center py-8 bg-white rounded-xl border border-slate-400' },
                     h('div', { className: 'text-3xl mb-2' }, '💬'),
-                    h('p', { className: 'text-sm text-slate-600' }, t('behavior_lens.ui.no_team_notes_yet_start_the_conversation') || 'No team notes yet. Start the conversation!')
+                    h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.ui.no_team_notes_yet_start_the_conversation', 'No team notes yet. Start the conversation!'))
                 )
                 : h('div', { className: 'space-y-3' },
                     notes.map(note => {
@@ -10453,40 +10480,40 @@ Keep the language strengths-based and restorative. Use "your child" not the code
                 setPreAiPacket(packet);
                 const result = await callGemini(prompt, true);
                 setPacket(result);
-                if (addToast) addToast(t('behavior_lens.toast.iep_prep_packet_generated') || 'IEP prep packet generated ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.iep_prep_packet_generated', 'IEP prep packet generated ✨'), 'success');
             } catch (err) {
                 warnLog('IEP prep generation failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.generation_failed') || 'Generation failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.generation_failed', 'Generation failed'), 'error');
             } finally { setGenerating(false); }
         };
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '📄'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.iep_meeting_prep') || 'IEP Meeting Prep'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.aigenerated_meeting_preparation_packet_from_your_b') || 'AI-generated meeting preparation packet from your behavioral data')
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.iep_meeting_prep', 'IEP Meeting Prep')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.aigenerated_meeting_preparation_packet_from_your_b', 'AI-generated meeting preparation packet from your behavioral data'))
             ),
             // Stats overview - expanded grid
             h('div', { className: 'grid grid-cols-5 gap-2' },
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3 text-center shadow-sm' },
                     h('div', { className: 'text-xl font-black text-indigo-600' }, abcEntries.length),
-                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, t('behavior_lens.ui.abc_entries') || 'ABC Entries')
+                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, tt('behavior_lens.ui.abc_entries', 'ABC Entries'))
                 ),
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3 text-center shadow-sm' },
                     h('div', { className: 'text-xl font-black text-emerald-600' }, observationSessions.length),
-                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, t('behavior_lens.ui.observations') || 'Observations')
+                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, tt('behavior_lens.ui.observations', 'Observations'))
                 ),
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3 text-center shadow-sm' },
                     h('div', { className: 'text-xl font-black text-purple-600' }, aiAnalysis ? '✅' : '—'),
-                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, t('behavior_lens.ui.ai_analysis') || 'AI Analysis')
+                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, tt('behavior_lens.ui.ai_analysis', 'AI Analysis'))
                 ),
                 h('div', { className: `bg-white rounded-xl border p-3 text-center shadow-sm ${graphExport ? 'border-indigo-200' : 'border-slate-200'}` },
                     h('div', { className: `text-xl font-black ${graphExport ? 'text-indigo-600' : 'text-slate-600'}` }, graphExport ? (graphExport.phaseAnalysis?.length || 0) : '—'),
-                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, t('behavior_lens.ui.graph_phases') || 'Graph Phases')
+                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, tt('behavior_lens.ui.graph_phases', 'Graph Phases'))
                 ),
                 h('div', { className: `bg-white rounded-xl border p-3 text-center shadow-sm ${effectSizeResults ? 'border-purple-200' : 'border-slate-200'}` },
                     h('div', { className: `text-xl font-black ${effectSizeResults ? 'text-purple-600' : 'text-slate-600'}` }, effectSizeResults ? '✅' : '—'),
-                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, t('behavior_lens.ui.effect_sizes') || 'Effect Sizes')
+                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, tt('behavior_lens.ui.effect_sizes', 'Effect Sizes'))
                 )
             ),
 
@@ -10507,18 +10534,18 @@ Keep the language strengths-based and restorative. Use "your child" not the code
                 disabled: generating || abcEntries.length === 0, 'aria-busy': generating,
                 className: 'w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
             }, generating ? '⏳ Preparing Packet...' : `🧠 Generate IEP Prep Packet${graphExport || effectSizeResults ? ' (with graph/effect data)' : ''}`),
-            abcEntries.length === 0 && h('p', { className: 'text-[11px] text-slate-600 text-center' }, t('behavior_lens.ui.collect_some_abc_data_first_to_generate_a_meaningf') || 'Collect some ABC data first to generate a meaningful packet.'),
+            abcEntries.length === 0 && h('p', { className: 'text-[11px] text-slate-600 text-center' }, tt('behavior_lens.ui.collect_some_abc_data_first_to_generate_a_meaningf', 'Collect some ABC data first to generate a meaningful packet.')),
             // Packet display
             packet && h('div', { className: 'bg-white rounded-xl border border-blue-200 p-5 shadow-sm' },
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, packet),
                 h('div', { className: 'flex gap-2 mt-4 flex-wrap' },
                     h('button', { "aria-label": "Copy",
-                        onClick: () => { navigator.clipboard.writeText(packet); if (addToast) addToast(t('behavior_lens.toast.copied') || 'Copied!', 'success'); },
+                        onClick: () => { navigator.clipboard.writeText(packet); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
                         className: 'px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200'
                     }, '📋 Copy'),
                     h('button', { onClick: () => window.print(), className: 'px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200' }, '🖨️ Print'),
                     preAiPacket !== null && h('button', { "aria-label": "Undo AI",
-                        onClick: () => { setPacket(preAiPacket); setPreAiPacket(null); if (addToast) addToast(t('behavior_lens.toast.reverted') || 'Reverted', 'info'); },
+                        onClick: () => { setPacket(preAiPacket); setPreAiPacket(null); if (addToast) addToast(tt('behavior_lens.toast.reverted', 'Reverted'), 'info'); },
                         className: 'px-4 py-2 bg-amber-50 text-amber-700 border border-amber-600 rounded-lg text-sm font-bold hover:bg-amber-100'
                     }, '↩️ Undo AI')
                 )
@@ -10612,10 +10639,10 @@ Be specific with percentages where possible. Keep language strengths-based and a
 
                 const result = await callGemini(prompt, true);
                 setInsights(result);
-                if (addToast) addToast(t('behavior_lens.toast.predictive_analysis_complete') || 'Predictive analysis complete ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.predictive_analysis_complete', 'Predictive analysis complete ✨'), 'success');
             } catch (err) {
                 warnLog('Predictive analysis failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.analysis_failed') || 'Analysis failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.analysis_failed', 'Analysis failed'), 'error');
             } finally { setAnalyzing(false); }
         };
 
@@ -10624,8 +10651,8 @@ Be specific with percentages where possible. Keep language strengths-based and a
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🔮'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.predictive_insights') || 'Predictive Insights'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.aipowered_pattern_analysis_with_proactive_preventi') || 'AI-powered pattern analysis with proactive prevention strategies')
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.predictive_insights', 'Predictive Insights')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.aipowered_pattern_analysis_with_proactive_preventi', 'AI-powered pattern analysis with proactive prevention strategies'))
             ),
             // Local patterns
             localPatterns.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
@@ -10641,7 +10668,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
             ),
             abcEntries.length < 3 && h('div', { className: 'text-center py-8 bg-white rounded-xl border border-slate-400' },
                 h('div', { className: 'text-3xl mb-2' }, '📊'),
-                h('p', { className: 'text-sm text-slate-600' }, t('behavior_lens.ui.need_at_least_3_abc_entries_for_pattern_detection') || 'Need at least 3 ABC entries for pattern detection.')
+                h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.ui.need_at_least_3_abc_entries_for_pattern_detection', 'Need at least 3 ABC entries for pattern detection.'))
             ),
             // AI deep analysis
             callGemini && abcEntries.length >= 3 && h('button', { onClick: handleAIAnalysis,
@@ -10652,7 +10679,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, insights),
                 h('div', { className: 'flex gap-2 mt-4' },
                     h('button', { "aria-label": "Copy",
-                        onClick: () => { navigator.clipboard.writeText(insights); if (addToast) addToast(t('behavior_lens.toast.copied') || 'Copied!', 'success'); },
+                        onClick: () => { navigator.clipboard.writeText(insights); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
                         className: 'px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-[11px] font-bold hover:bg-purple-200'
                     }, '📋 Copy')
                 )
@@ -10668,11 +10695,11 @@ Be specific with percentages where possible. Keep language strengths-based and a
         const [reflection, setReflection] = useState('');
 
         const moods = [
-            { id: 'great', emoji: '🌟', label: (t('behavior_lens.raw.great') || 'Great!'), color: 'green' },
-            { id: 'good', emoji: '😊', label: (t('behavior_lens.raw.good') || 'Good'), color: 'blue' },
-            { id: 'okay', emoji: '😐', label: (t('behavior_lens.raw.okay') || 'Okay'), color: 'amber' },
-            { id: 'tough', emoji: '😔', label: (t('behavior_lens.raw.tough') || 'Tough'), color: 'orange' },
-            { id: 'hard', emoji: '😢', label: (t('behavior_lens.raw.really_hard') || 'Really Hard'), color: 'red' },
+            { id: 'great', emoji: '🌟', label: (tt('behavior_lens.raw.great', 'Great!')), color: 'green' },
+            { id: 'good', emoji: '😊', label: (tt('behavior_lens.raw.good', 'Good')), color: 'blue' },
+            { id: 'okay', emoji: '😐', label: (tt('behavior_lens.raw.okay', 'Okay')), color: 'amber' },
+            { id: 'tough', emoji: '😔', label: (tt('behavior_lens.raw.tough', 'Tough')), color: 'orange' },
+            { id: 'hard', emoji: '😢', label: (tt('behavior_lens.raw.really_hard', 'Really Hard')), color: 'red' },
         ];
 
         // Computed stats
@@ -10693,16 +10720,16 @@ Be specific with percentages where possible. Keep language strengths-based and a
 
         const badges = useMemo(() => {
             const earned = [];
-            if (checkins.length >= 1) earned.push({ id: 'first', icon: '🏁', title: (t('behavior_lens.raw.first_checkin') || 'First Check-In'), desc: 'Completed your first mood check-in!' });
-            if (checkins.length >= 5) earned.push({ id: 'five', icon: '⭐', title: (t('behavior_lens.raw.high_five') || 'High Five'), desc: '5 check-ins completed!' });
-            if (checkins.length >= 10) earned.push({ id: 'ten', icon: '🌟', title: (t('behavior_lens.raw.star_tracker') || 'Star Tracker'), desc: '10 check-ins completed!' });
-            if (checkins.length >= 25) earned.push({ id: 'twentyfive', icon: '🏆', title: (t('behavior_lens.raw.champion') || 'Champion'), desc: '25 check-ins!' });
+            if (checkins.length >= 1) earned.push({ id: 'first', icon: '🏁', title: (tt('behavior_lens.raw.first_checkin', 'First Check-In')), desc: 'Completed your first mood check-in!' });
+            if (checkins.length >= 5) earned.push({ id: 'five', icon: '⭐', title: (tt('behavior_lens.raw.high_five', 'High Five')), desc: '5 check-ins completed!' });
+            if (checkins.length >= 10) earned.push({ id: 'ten', icon: '🌟', title: (tt('behavior_lens.raw.star_tracker', 'Star Tracker')), desc: '10 check-ins completed!' });
+            if (checkins.length >= 25) earned.push({ id: 'twentyfive', icon: '🏆', title: (tt('behavior_lens.raw.champion', 'Champion')), desc: '25 check-ins!' });
             if (streak >= 3) earned.push({ id: 'streak3', icon: '🔥', title: '3-Day Streak', desc: 'Checked in 3 days in a row!' });
-            if (streak >= 7) earned.push({ id: 'streak7', icon: '💎', title: (t('behavior_lens.raw.week_warrior') || 'Week Warrior'), desc: '7-day streak!' });
+            if (streak >= 7) earned.push({ id: 'streak7', icon: '💎', title: (tt('behavior_lens.raw.week_warrior', 'Week Warrior')), desc: '7-day streak!' });
             const hasReflection = checkins.some(c => c.reflection && c.reflection.length > 10);
-            if (hasReflection) earned.push({ id: 'reflector', icon: '🪞', title: (t('behavior_lens.raw.selfreflector') || 'Self-Reflector'), desc: 'Wrote a thoughtful reflection!' });
+            if (hasReflection) earned.push({ id: 'reflector', icon: '🪞', title: (tt('behavior_lens.raw.selfreflector', 'Self-Reflector')), desc: 'Wrote a thoughtful reflection!' });
             const positiveCount = checkins.filter(c => c.mood === 'great' || c.mood === 'good').length;
-            if (positiveCount >= 5) earned.push({ id: 'positive5', icon: '☀️', title: (t('behavior_lens.raw.sunshine_collector') || 'Sunshine Collector'), desc: '5 positive check-ins!' });
+            if (positiveCount >= 5) earned.push({ id: 'positive5', icon: '☀️', title: (tt('behavior_lens.raw.sunshine_collector', 'Sunshine Collector')), desc: '5 positive check-ins!' });
             return earned;
         }, [checkins, streak]);
 
@@ -10731,22 +10758,22 @@ Be specific with percentages where possible. Keep language strengths-based and a
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🎮'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.my_progress_quest') || 'My Progress Quest'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.track_your_feelings_earn_badges_and_build_streaks') || 'Track your feelings, earn badges, and build streaks!')
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.my_progress_quest', 'My Progress Quest')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.track_your_feelings_earn_badges_and_build_streaks', 'Track your feelings, earn badges, and build streaks!'))
             ),
             // Stats bar
             h('div', { className: 'grid grid-cols-3 gap-3' },
                 h('div', { className: 'bg-gradient-to-br from-orange-400 to-red-500 rounded-xl p-4 text-center text-white shadow-lg' },
                     h('div', { className: 'text-2xl font-black' }, `${streak}🔥`),
-                    h('div', { className: 'text-[11px] font-bold opacity-80' }, t('behavior_lens.ui.day_streak') || 'Day Streak')
+                    h('div', { className: 'text-[11px] font-bold opacity-80' }, tt('behavior_lens.ui.day_streak', 'Day Streak'))
                 ),
                 h('div', { className: 'bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl p-4 text-center text-white shadow-lg' },
                     h('div', { className: 'text-2xl font-black' }, checkins.length),
-                    h('div', { className: 'text-[11px] font-bold opacity-80' }, t('behavior_lens.ui.checkins') || 'Check-Ins')
+                    h('div', { className: 'text-[11px] font-bold opacity-80' }, tt('behavior_lens.ui.checkins', 'Check-Ins'))
                 ),
                 h('div', { className: 'bg-gradient-to-br from-amber-400 to-yellow-500 rounded-xl p-4 text-center text-white shadow-lg' },
                     h('div', { className: 'text-2xl font-black' }, badges.length),
-                    h('div', { className: 'text-[11px] font-bold opacity-80' }, t('behavior_lens.ui.badges') || 'Badges')
+                    h('div', { className: 'text-[11px] font-bold opacity-80' }, tt('behavior_lens.ui.badges', 'Badges'))
                 )
             ),
             // Mood check-in
@@ -10766,7 +10793,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
                     h('textarea', {
                         value: reflection,
                         onChange: e => setReflection(e.target.value),
-                        placeholder: t('behavior_lens.ph.what_made_you_feel_this_way_optional') || 'What made you feel this way? (optional)',
+                        placeholder: tt('behavior_lens.ph.what_made_you_feel_this_way_optional', 'What made you feel this way? (optional)'),
                         'aria-label': 'Mood reflection notes',
                         rows: 2,
                         className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-sm resize-none outline-none focus:ring-2 focus:ring-blue-300'
@@ -10855,7 +10882,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🌍'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.cultural_context_reflection') || 'Cultural Context Reflection'),
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.cultural_context_reflection', 'Cultural Context Reflection')),
                 h('p', { className: 'text-xs text-slate-600 mt-1' }, `Pause and reflect before interpreting behavior for ${studentName || 'your student'}`)
             ),
             // Progress
@@ -10900,7 +10927,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
                 yesCount >= 6 && h('p', { className: 'text-xs text-teal-700' }, '💚 Strong cultural awareness. You\'ve thoughtfully considered multiple perspectives before proceeding.'),
                 yesCount >= 3 && yesCount < 6 && h('p', { className: 'text-xs text-teal-700' }, '💛 Good start! Consider revisiting the "Not Yet" items before finalizing your analysis.'),
                 yesCount < 3 && h('p', { className: 'text-xs text-teal-700' }, '🧡 Important reflection needed. Consider connecting with the family and colleagues before interpreting behavior.'),
-                h('p', { className: 'text-[11px] text-teal-600 mt-2 italic' }, t('behavior_lens.ui.remember_cultural_humility_is_a_lifelong_practice') || 'Remember: cultural humility is a lifelong practice. Every reflection makes you a more equitable practitioner.')
+                h('p', { className: 'text-[11px] text-teal-600 mt-2 italic' }, tt('behavior_lens.ui.remember_cultural_humility_is_a_lifelong_practice', 'Remember: cultural humility is a lifelong practice. Every reflection makes you a more equitable practitioner.'))
             )
         );
     };
@@ -10949,18 +10976,18 @@ Provide:
 
                 const result = await callGemini(prompt, true);
                 setOutput(result);
-                if (addToast) addToast(t('behavior_lens.toast.reframed_through_strengths_lens') || 'Reframed through strengths lens ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.reframed_through_strengths_lens', 'Reframed through strengths lens ✨'), 'success');
             } catch (err) {
                 warnLog('Reframe failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.reframe_failed') || 'Reframe failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.reframe_failed', 'Reframe failed'), 'error');
             } finally { setLoading(false); }
         };
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '✨'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.strengthbased_reframe') || 'Strength-Based Reframe'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.transform_deficitbased_language_into_assetfocused') || 'Transform deficit-based language into asset-focused descriptions')
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.strengthbased_reframe', 'Strength-Based Reframe')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.transform_deficitbased_language_into_assetfocused', 'Transform deficit-based language into asset-focused descriptions'))
             ),
             // Input
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
@@ -10968,7 +10995,7 @@ Provide:
                 h('textarea', {
                     value: input,
                     onChange: e => setInput(e.target.value),
-                    placeholder: t('behavior_lens.ph.eg_student_is_defiant_and_refuses_to_follow_direct') || 'e.g., "Student is defiant and refuses to follow directions."',
+                    placeholder: tt('behavior_lens.ph.eg_student_is_defiant_and_refuses_to_follow_direct', 'e.g., "Student is defiant and refuses to follow directions."'),
                     'aria-label': 'Paste a deficit-based description to reframe',
                     rows: 3,
                     className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-sm resize-none outline-none focus:ring-2 focus:ring-teal-300'
@@ -10983,7 +11010,7 @@ Provide:
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, output),
                 h('div', { className: 'flex gap-2 mt-3' },
                     h('button', { "aria-label": "Copy Reframe",
-                        onClick: () => { navigator.clipboard.writeText(output); if (addToast) addToast(t('behavior_lens.toast.copied') || 'Copied!', 'success'); },
+                        onClick: () => { navigator.clipboard.writeText(output); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
                         className: 'px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-200'
                     }, '📋 Copy Reframe'),
                     h('button', { "aria-label": "New",
@@ -11091,10 +11118,10 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
 
                 const result = await callGemini(prompt, true);
                 setAiReport(result);
-                if (addToast) addToast(t('behavior_lens.toast.bias_reflection_complete') || 'Bias reflection complete', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.bias_reflection_complete', 'Bias reflection complete'), 'success');
             } catch (err) {
                 warnLog('Bias analysis failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.analysis_failed') || 'Analysis failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.analysis_failed', 'Analysis failed'), 'error');
             } finally { setAnalyzing(false); }
         };
 
@@ -11104,11 +11131,11 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🪞'),
                 h('h2', { className: 'text-lg font-black text-slate-800' }, DualLabel('Bias Reflection Monitor')),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.gently_surfaces_patterns_for_reflection_growth_not') || 'Gently surfaces patterns for reflection — growth, not guilt')
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.gently_surfaces_patterns_for_reflection_growth_not', 'Gently surfaces patterns for reflection — growth, not guilt'))
             ),
             abcEntries.length < 5 && h('div', { className: 'text-center py-8 bg-white rounded-xl border border-slate-400' },
                 h('div', { className: 'text-3xl mb-2' }, '📊'),
-                h('p', { className: 'text-sm text-slate-600' }, t('behavior_lens.ui.need_at_least_5_abc_entries_for_pattern_analysis') || 'Need at least 5 ABC entries for pattern analysis.')
+                h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.ui.need_at_least_5_abc_entries_for_pattern_analysis', 'Need at least 5 ABC entries for pattern analysis.'))
             ),
             localFlags.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
                 h('h3', { className: 'text-sm font-black text-slate-800 mb-3' }, '⚡ Auto-Detected Patterns'),
@@ -11128,7 +11155,7 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
             aiReport && h('div', { className: 'bg-white rounded-xl border border-teal-200 p-5 shadow-sm' },
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, aiReport),
                 h('button', { "aria-label": "Copy Report",
-                    onClick: () => { navigator.clipboard.writeText(aiReport); if (addToast) addToast(t('behavior_lens.toast.copied') || 'Copied!', 'success'); },
+                    onClick: () => { navigator.clipboard.writeText(aiReport); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
                     className: 'mt-3 px-3 py-1.5 bg-teal-100 text-teal-700 rounded-lg text-[11px] font-bold hover:bg-teal-200'
                 }, '📋 Copy Report')
             )
@@ -11142,7 +11169,7 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
 
         const guides = [
             {
-                id: 'repair', icon: '💛', title: (t('behavior_lens.raw.harm_repair_conversation') || 'Harm Repair Conversation'), color: 'amber',
+                id: 'repair', icon: '💛', title: (tt('behavior_lens.raw.harm_repair_conversation', 'Harm Repair Conversation')), color: 'amber',
                 desc: 'When a student has caused harm and needs to repair the relationship',
                 steps: [
                     { q: 'What happened?', tip: 'Listen without judgment. Use "Tell me about..." not "Why did you..."', who: 'Ask the student' },
@@ -11154,7 +11181,7 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
                 ]
             },
             {
-                id: 'circle', icon: '🔵', title: (t('behavior_lens.raw.community_circle') || 'Community Circle'), color: 'blue',
+                id: 'circle', icon: '🔵', title: (tt('behavior_lens.raw.community_circle', 'Community Circle')), color: 'blue',
                 desc: 'For building relationships and addressing class-wide concerns',
                 steps: [
                     { q: 'Opening Ceremony', tip: 'Start with a mindful moment, breathing exercise, or positive affirmation. This signals "circle time is different."', who: 'Facilitator' },
@@ -11166,7 +11193,7 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
                 ]
             },
             {
-                id: 'reintegration', icon: '🟢', title: (t('behavior_lens.raw.reintegration_conference') || 'Reintegration Conference'), color: 'green',
+                id: 'reintegration', icon: '🟢', title: (tt('behavior_lens.raw.reintegration_conference', 'Reintegration Conference')), color: 'green',
                 desc: 'When a student returns from suspension, exclusion, or extended absence',
                 steps: [
                     { q: 'Welcome back', tip: '"We\'re glad you\'re here. Our community isn\'t complete without you." Lead with belonging, not shame.', who: 'Facilitator' },
@@ -11193,8 +11220,8 @@ Remember: this is about growth, not guilt. Keep the tone supportive and empoweri
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🤝'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.restorative_conversation_guide') || 'Restorative Conversation Guide'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.stepbystep_scripts_for_healing_relationships_and_b') || 'Step-by-step scripts for healing relationships and building community')
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.restorative_conversation_guide', 'Restorative Conversation Guide')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.stepbystep_scripts_for_healing_relationships_and_b', 'Step-by-step scripts for healing relationships and building community'))
             ),
             // Guide selector
             !activeGuide && h('div', { className: 'space-y-3' },
@@ -11476,9 +11503,9 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
             { id: 'challenge', label: '🧡 Challenging Relationship', color: 'orange' },
         ];
         const strengths = [
-            { id: 'strong', label: (t('behavior_lens.raw.strong') || 'Strong'), color: 'green' },
-            { id: 'developing', label: (t('behavior_lens.raw.developing') || 'Developing'), color: 'amber' },
-            { id: 'strained', label: (t('behavior_lens.raw.strained') || 'Strained'), color: 'red' },
+            { id: 'strong', label: (tt('behavior_lens.raw.strong', 'Strong')), color: 'green' },
+            { id: 'developing', label: (tt('behavior_lens.raw.developing', 'Developing')), color: 'amber' },
+            { id: 'strained', label: (tt('behavior_lens.raw.strained', 'Strained')), color: 'red' },
         ];
 
         const handleAdd = () => {
@@ -11490,7 +11517,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                 strength: newStrength,
             }]);
             setNewName('');
-            if (addToast) addToast(t('behavior_lens.toast.connection_added') || 'Connection added', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.connection_added', 'Connection added'), 'success');
         };
 
         const roleColors = { amber: 'bg-amber-100 text-amber-700 border-amber-200', green: 'bg-green-100 text-green-700 border-green-200', purple: 'bg-purple-100 text-purple-700 border-purple-200', blue: 'bg-blue-100 text-blue-700 border-blue-200', orange: 'bg-orange-100 text-orange-700 border-orange-200' };
@@ -11504,7 +11531,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🗺️'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.relationship_map') || 'Relationship Map'),
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.relationship_map', 'Relationship Map')),
                 h('p', { className: 'text-xs text-slate-600 mt-1' }, `Connection ecosystem for ${studentName || 'your student'}`)
             ),
             // Add form
@@ -11515,7 +11542,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                         value: newName,
                         onChange: e => setNewName(e.target.value),
                         onKeyDown: e => { if (e.key === 'Enter') handleAdd(); },
-                        placeholder: t('behavior_lens.ph.person') || 'Person\'s name or role',
+                        placeholder: tt('behavior_lens.ph.person', 'Person\'s name or role'),
                         'aria-label': 'New connection name or role',
                         className: 'flex-1 px-3 py-2 border border-slate-400 rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-300'
                     }),
@@ -11543,7 +11570,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
             connections.length === 0
                 ? h('div', { className: 'text-center py-8 bg-white rounded-xl border border-slate-400' },
                     h('div', { className: 'text-3xl mb-2' }, '🗺️'),
-                    h('p', { className: 'text-sm text-slate-600' }, t('behavior_lens.ui.add_connections_to_build_the_relationship_map') || 'Add connections to build the relationship map.')
+                    h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.ui.add_connections_to_build_the_relationship_map', 'Add connections to build the relationship map.'))
                 )
                 : h('div', { className: 'space-y-3' },
                     // Center student
@@ -11610,11 +11637,11 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
         const [translating, setTranslating] = useState(false);
 
         const categories = [
-            { id: 'strength', icon: '⭐', label: (t('behavior_lens.raw.strengthcelebration') || 'Strength/Celebration'), color: 'green' },
-            { id: 'concern', icon: '💬', label: (t('behavior_lens.raw.concern') || 'Concern'), color: 'amber' },
-            { id: 'context', icon: '🏠', label: (t('behavior_lens.raw.home_context') || 'Home Context'), color: 'blue' },
-            { id: 'culture', icon: '🌍', label: (t('behavior_lens.raw.cultural_insight') || 'Cultural Insight'), color: 'purple' },
-            { id: 'suggestion', icon: '💡', label: (t('behavior_lens.raw.suggestion') || 'Suggestion'), color: 'teal' },
+            { id: 'strength', icon: '⭐', label: (tt('behavior_lens.raw.strengthcelebration', 'Strength/Celebration')), color: 'green' },
+            { id: 'concern', icon: '💬', label: (tt('behavior_lens.raw.concern', 'Concern')), color: 'amber' },
+            { id: 'context', icon: '🏠', label: (tt('behavior_lens.raw.home_context', 'Home Context')), color: 'blue' },
+            { id: 'culture', icon: '🌍', label: (tt('behavior_lens.raw.cultural_insight', 'Cultural Insight')), color: 'purple' },
+            { id: 'suggestion', icon: '💡', label: (tt('behavior_lens.raw.suggestion', 'Suggestion')), color: 'teal' },
         ];
 
         const catColors = { green: 'bg-green-100 text-green-700 border-green-200', amber: 'bg-amber-100 text-amber-700 border-amber-200', blue: 'bg-blue-100 text-blue-700 border-blue-200', purple: 'bg-purple-100 text-purple-700 border-purple-200', teal: 'bg-teal-100 text-teal-700 border-teal-200' };
@@ -11633,7 +11660,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                 translated: null,
             }, ...prev]);
             setObservation('');
-            if (addToast) addToast(t('behavior_lens.toast.family_voice_entry_added') || 'Family voice entry added ✨', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.family_voice_entry_added', 'Family voice entry added ✨'), 'success');
         };
 
         const handleTranslate = async (entryId) => {
@@ -11645,16 +11672,16 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                 const prompt = `Translate the following family observation into ${translateLang}. Maintain the tone and meaning. Only return the translated text.\n\n"${entry.text}"`;
                 const result = await callGemini(prompt, true);
                 setEntries(prev => prev.map(e => e.id === entryId ? { ...e, translated: result } : e));
-                if (addToast) addToast(t('behavior_lens.toast.translated') || 'Translated!', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.translated', 'Translated!'), 'success');
             } catch (err) {
-                if (addToast) addToast(t('behavior_lens.toast.translation_failed') || 'Translation failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.translation_failed', 'Translation failed'), 'error');
             } finally { setTranslating(false); }
         };
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '👪'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.family_voice') || 'Family Voice'),
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.family_voice', 'Family Voice')),
                 h('p', { className: 'text-xs text-slate-600 mt-1' }, `Family observations and insights for ${studentName || 'your student'} — centering family expertise`)
             ),
             // Input form
@@ -11669,7 +11696,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                 h('textarea', {
                     value: observation,
                     onChange: e => setObservation(e.target.value),
-                    placeholder: t('behavior_lens.ph.share_what_you_notice_at_home_strengths_concerns_c') || 'Share what you notice at home — strengths, concerns, cultural context, or suggestions for the school team...',
+                    placeholder: tt('behavior_lens.ph.share_what_you_notice_at_home_strengths_concerns_c', 'Share what you notice at home — strengths, concerns, cultural context, or suggestions for the school team...'),
                     'aria-label': 'Parent observation or family voice entry',
                     rows: 3,
                     className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-sm resize-none outline-none focus:ring-2 focus:ring-purple-300 mb-2'
@@ -11686,7 +11713,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                     h('input', {
                         value: translateLang,
                         onChange: e => setTranslateLang(e.target.value),
-                        placeholder: t('behavior_lens.ph.type_language_eg_spanish_arabic_somali') || 'Type language (e.g., Spanish, Arabic, Somali)',
+                        placeholder: tt('behavior_lens.ph.type_language_eg_spanish_arabic_somali', 'Type language (e.g., Spanish, Arabic, Somali)'),
                         'aria-label': 'Target language for translation',
                         className: 'flex-1 px-3 py-2 border border-slate-400 rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-300'
                     }),
@@ -11697,7 +11724,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
             entries.length === 0
                 ? h('div', { className: 'text-center py-8 bg-white rounded-xl border border-slate-400' },
                     h('div', { className: 'text-3xl mb-2' }, '💬'),
-                    h('p', { className: 'text-sm text-slate-600' }, t('behavior_lens.ui.family_voices_are_powerful_share_your_first_observ') || 'Family voices are powerful. Share your first observation!')
+                    h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.ui.family_voices_are_powerful_share_your_first_observ', 'Family voices are powerful. Share your first observation!'))
                 )
                 : h('div', { className: 'space-y-3' },
                     entries.map(entry => {
@@ -11737,12 +11764,12 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
         const [form, setForm] = useState({ who: '', method: 'phone', topic: '', outcome: '', followUp: '' });
 
         const methods = [
-            { id: 'phone', icon: '📞', label: (t('behavior_lens.raw.phone_call') || 'Phone Call') },
-            { id: 'email', icon: '📧', label: (t('behavior_lens.raw.email') || 'Email') },
-            { id: 'inperson', icon: '🤝', label: (t('behavior_lens.raw.inperson') || 'In-Person') },
-            { id: 'note', icon: '📝', label: (t('behavior_lens.raw.written_note') || 'Written Note') },
-            { id: 'app', icon: '📱', label: (t('behavior_lens.raw.apptext') || 'App/Text') },
-            { id: 'video', icon: '💻', label: (t('behavior_lens.raw.video_call') || 'Video Call') },
+            { id: 'phone', icon: '📞', label: (tt('behavior_lens.raw.phone_call', 'Phone Call')) },
+            { id: 'email', icon: '📧', label: (tt('behavior_lens.raw.email', 'Email')) },
+            { id: 'inperson', icon: '🤝', label: (tt('behavior_lens.raw.inperson', 'In-Person')) },
+            { id: 'note', icon: '📝', label: (tt('behavior_lens.raw.written_note', 'Written Note')) },
+            { id: 'app', icon: '📱', label: (tt('behavior_lens.raw.apptext', 'App/Text')) },
+            { id: 'video', icon: '💻', label: (tt('behavior_lens.raw.video_call', 'Video Call')) },
         ];
 
         const handleAdd = () => {
@@ -11758,7 +11785,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                 followUpDone: false,
             }, ...prev]);
             setForm({ who: '', method: 'phone', topic: '', outcome: '', followUp: '' });
-            if (addToast) addToast(t('behavior_lens.toast.contact_logged') || 'Contact logged', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.contact_logged', 'Contact logged'), 'success');
         };
 
         const toggleFollowUp = (id) => {
@@ -11770,7 +11797,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '📞'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.communication_log') || 'Communication Log'),
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.communication_log', 'Communication Log')),
                 h('p', { className: 'text-xs text-slate-600 mt-1' }, `Two-way family contact tracker for ${studentName || 'your student'}`)
             ),
             // Follow-up alerts
@@ -11795,7 +11822,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                     h('input', {
                         value: form.who,
                         onChange: e => setForm(prev => ({ ...prev, who: e.target.value })),
-                        placeholder: t('behavior_lens.ph.who_did_you_contact') || 'Who did you contact?',
+                        placeholder: tt('behavior_lens.ph.who_did_you_contact', 'Who did you contact?'),
                         'aria-label': 'Contact person name',
                         className: 'px-3 py-2 border border-slate-400 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-300'
                     }),
@@ -11811,7 +11838,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                 h('textarea', {
                     value: form.topic,
                     onChange: e => setForm(prev => ({ ...prev, topic: e.target.value })),
-                    placeholder: t('behavior_lens.ph.topic_purpose_of_contact') || 'Topic / purpose of contact',
+                    placeholder: tt('behavior_lens.ph.topic_purpose_of_contact', 'Topic / purpose of contact'),
                     'aria-label': 'Topic or purpose of contact',
                     rows: 2,
                     className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-sm resize-none outline-none focus:ring-2 focus:ring-blue-300 mb-2'
@@ -11819,7 +11846,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                 h('textarea', {
                     value: form.outcome,
                     onChange: e => setForm(prev => ({ ...prev, outcome: e.target.value })),
-                    placeholder: t('behavior_lens.ph.outcome_key_takeaways_optional') || 'Outcome / key takeaways (optional)',
+                    placeholder: tt('behavior_lens.ph.outcome_key_takeaways_optional', 'Outcome / key takeaways (optional)'),
                     'aria-label': 'Outcome or key takeaways',
                     rows: 1,
                     className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-sm resize-none outline-none focus:ring-2 focus:ring-blue-300 mb-2'
@@ -11827,7 +11854,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                 h('input', {
                     value: form.followUp,
                     onChange: e => setForm(prev => ({ ...prev, followUp: e.target.value })),
-                    placeholder: t('behavior_lens.ph.followup_needed_optional') || 'Follow-up needed? (optional)',
+                    placeholder: tt('behavior_lens.ph.followup_needed_optional', 'Follow-up needed? (optional)'),
                     'aria-label': 'Follow-up needed',
                     className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-300 mb-2'
                 }),
@@ -11841,7 +11868,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
             contacts.length === 0
                 ? h('div', { className: 'text-center py-8 bg-white rounded-xl border border-slate-400' },
                     h('div', { className: 'text-3xl mb-2' }, '📞'),
-                    h('p', { className: 'text-sm text-slate-600' }, t('behavior_lens.ui.no_contacts_logged_yet_consistent_communication_bu') || 'No contacts logged yet. Consistent communication builds trust!')
+                    h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.ui.no_contacts_logged_yet_consistent_communication_bu', 'No contacts logged yet. Consistent communication builds trust!'))
                 )
                 : h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
                     h('h3', { className: 'text-xs font-black text-slate-700 mb-3' }, `📋 Contact History (${contacts.length})`),
@@ -11877,15 +11904,15 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
             contacts.length > 0 && h('div', { className: 'grid grid-cols-3 gap-3' },
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3 text-center' },
                     h('div', { className: 'text-xl font-black text-blue-600' }, contacts.length),
-                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, t('behavior_lens.ui.total_contacts') || 'Total Contacts')
+                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, tt('behavior_lens.ui.total_contacts', 'Total Contacts'))
                 ),
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3 text-center' },
                     h('div', { className: 'text-xl font-black text-green-600' }, contacts.filter(c => c.followUpDone).length),
-                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, t('behavior_lens.ui.followups_done') || 'Follow-Ups Done')
+                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, tt('behavior_lens.ui.followups_done', 'Follow-Ups Done'))
                 ),
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3 text-center' },
                     h('div', { className: 'text-xl font-black text-purple-600' }, [...new Set(contacts.map(c => c.method))].length),
-                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, t('behavior_lens.ui.methods_used') || 'Methods Used')
+                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, tt('behavior_lens.ui.methods_used', 'Methods Used'))
                 )
             )
         );
@@ -12125,17 +12152,17 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
         }, [breathPhase]);
 
         const tools = [
-            { id: 'breathe', icon: '🌊', title: (t('behavior_lens.raw.breathing_exercise') || 'Breathing Exercise'), desc: '4-4-6 box breathing with visual animation', color: 'blue' },
-            { id: 'timer', icon: '⏱️', title: (t('behavior_lens.raw.visual_break_timer') || 'Visual Break Timer'), desc: 'Countdown timer for calm-down breaks', color: 'green' },
-            { id: 'sensory', icon: '🎧', title: (t('behavior_lens.raw.sensory_break_menu') || 'Sensory Break Menu'), desc: 'Quick sensory strategies organized by type', color: 'purple' },
+            { id: 'breathe', icon: '🌊', title: (tt('behavior_lens.raw.breathing_exercise', 'Breathing Exercise')), desc: '4-4-6 box breathing with visual animation', color: 'blue' },
+            { id: 'timer', icon: '⏱️', title: (tt('behavior_lens.raw.visual_break_timer', 'Visual Break Timer')), desc: 'Countdown timer for calm-down breaks', color: 'green' },
+            { id: 'sensory', icon: '🎧', title: (tt('behavior_lens.raw.sensory_break_menu', 'Sensory Break Menu')), desc: 'Quick sensory strategies organized by type', color: 'purple' },
             { id: 'grounding', icon: '🌿', title: '5-4-3-2-1 Grounding', desc: 'Guided grounding exercise for anxiety', color: 'teal' },
         ];
 
         const sensoryStrategies = [
-            { category: t('behavior_lens.coping_visual') || '👀 Visual', items: [t('behavior_lens.coping_look_out_window') || 'Look out window', t('behavior_lens.coping_count_ceiling_tiles') || 'Count ceiling tiles', t('behavior_lens.coping_watch_a_glitter_jar') || 'Watch a glitter jar', 'Draw/doodle freely', 'Find 3 calming colors'] },
-            { category: t('behavior_lens.coping_auditory') || '👂 Auditory', items: [t('behavior_lens.coping_listen_to_calming_music') || 'Listen to calming music', t('behavior_lens.coping_count_sounds_you_hear') || 'Count sounds you hear', 'Hum a favorite tune', 'Whisper a mantra', 'Use noise-canceling headphones'] },
-            { category: t('behavior_lens.coping_tactile') || '🤲 Tactile', items: [t('behavior_lens.coping_squeeze_a_stress_ball') || 'Squeeze a stress ball', t('behavior_lens.coping_hold_something_cold') || 'Hold something cold', 'Touch 5 different textures', 'Press palms together (10 sec)', 'Fidget tool'] },
-            { category: t('behavior_lens.coping_movement') || '🏃 Movement', items: [t('behavior_lens.coping_wall_push_ups_10_') || 'Wall push-ups (10)', t('behavior_lens.coping_chair_stretches') || 'Chair stretches', t('behavior_lens.coping_walk_to_water_fountain') || 'Walk to water fountain', 'Tense and release muscles', 'Desk yoga pose'] },
+            { category: tt('behavior_lens.coping_visual', '👀 Visual'), items: [tt('behavior_lens.coping_look_out_window', 'Look out window'), tt('behavior_lens.coping_count_ceiling_tiles', 'Count ceiling tiles'), tt('behavior_lens.coping_watch_a_glitter_jar', 'Watch a glitter jar'), 'Draw/doodle freely', 'Find 3 calming colors'] },
+            { category: tt('behavior_lens.coping_auditory', '👂 Auditory'), items: [tt('behavior_lens.coping_listen_to_calming_music', 'Listen to calming music'), tt('behavior_lens.coping_count_sounds_you_hear', 'Count sounds you hear'), 'Hum a favorite tune', 'Whisper a mantra', 'Use noise-canceling headphones'] },
+            { category: tt('behavior_lens.coping_tactile', '🤲 Tactile'), items: [tt('behavior_lens.coping_squeeze_a_stress_ball', 'Squeeze a stress ball'), tt('behavior_lens.coping_hold_something_cold', 'Hold something cold'), 'Touch 5 different textures', 'Press palms together (10 sec)', 'Fidget tool'] },
+            { category: tt('behavior_lens.coping_movement', '🏃 Movement'), items: [tt('behavior_lens.coping_wall_push_ups_10_', 'Wall push-ups (10)'), tt('behavior_lens.coping_chair_stretches', 'Chair stretches'), tt('behavior_lens.coping_walk_to_water_fountain', 'Walk to water fountain'), 'Tense and release muscles', 'Desk yoga pose'] },
         ];
 
         const groundingSteps = [
@@ -12152,7 +12179,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🧘'),
                 h('h2', { className: 'text-lg font-black text-slate-800' }, DualLabel('De-escalation Toolkit')),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.realtime_calming_tools_for_inthemoment_support') || 'Real-time calming tools for in-the-moment support')
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.realtime_calming_tools_for_inthemoment_support', 'Real-time calming tools for in-the-moment support'))
             ),
             // Tool selector or active tool
             !activeTool && h('div', { className: 'grid grid-cols-2 gap-3' },
@@ -12303,7 +12330,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
             { id: 'escape', label: '🚪 Escape/Avoidance', desc: 'Student wants to get away from something' },
             { id: 'attention', label: '👋 Attention', desc: 'Student wants attention from adults or peers' },
             { id: 'tangible', label: '🎁 Tangible/Access', desc: 'Student wants access to an item or activity' },
-            { id: 'sensory', label: t('behavior_lens.reinforcer_sensory') || '🌀 Sensory', desc: 'Behavior provides automatic sensory stimulation' },
+            { id: 'sensory', label: tt('behavior_lens.reinforcer_sensory', '🌀 Sensory'), desc: 'Behavior provides automatic sensory stimulation' },
         ];
 
         const handleAdd = () => {
@@ -12319,15 +12346,15 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                 createdAt: new Date().toISOString(),
             }]);
             setForm({ targetBehavior: '', function: 'escape', replacement: '', teachingStrategy: '', reinforcement: '' });
-            if (addToast) addToast(t('behavior_lens.toast.replacement_plan_added') || 'Replacement plan added', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.replacement_plan_added', 'Replacement plan added'), 'success');
         };
 
         const progressOptions = [
-            { id: 'not_started', label: (t('behavior_lens.raw.not_started') || 'Not Started'), color: 'bg-slate-200 text-slate-600' },
-            { id: 'teaching', label: (t('behavior_lens.raw.teaching') || 'Teaching'), color: 'bg-blue-200 text-blue-700' },
-            { id: 'prompting', label: (t('behavior_lens.raw.needs_prompts') || 'Needs Prompts'), color: 'bg-amber-200 text-amber-700' },
-            { id: 'emerging', label: (t('behavior_lens.raw.emerging') || 'Emerging'), color: 'bg-green-200 text-green-700' },
-            { id: 'mastered', label: (t('behavior_lens.raw.mastered') || 'Mastered'), color: 'bg-green-500 text-white' },
+            { id: 'not_started', label: (tt('behavior_lens.raw.not_started', 'Not Started')), color: 'bg-slate-200 text-slate-600' },
+            { id: 'teaching', label: (tt('behavior_lens.raw.teaching', 'Teaching')), color: 'bg-blue-200 text-blue-700' },
+            { id: 'prompting', label: (tt('behavior_lens.raw.needs_prompts', 'Needs Prompts')), color: 'bg-amber-200 text-amber-700' },
+            { id: 'emerging', label: (tt('behavior_lens.raw.emerging', 'Emerging')), color: 'bg-green-200 text-green-700' },
+            { id: 'mastered', label: (tt('behavior_lens.raw.mastered', 'Mastered')), color: 'bg-green-500 text-white' },
         ];
 
         // Auto-suggest from ABC data
@@ -12344,7 +12371,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🔄'),
                 h('h2', { className: 'text-lg font-black text-slate-800' }, DualLabel('Replacement Behavior Planner')),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.map_target_behaviors_to_functionally_equivalent_re') || 'Map target behaviors to functionally equivalent replacements')
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.map_target_behaviors_to_functionally_equivalent_re', 'Map target behaviors to functionally equivalent replacements'))
             ),
             // Auto-suggest from data
             topBehaviors.length > 0 && !form.targetBehavior && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
@@ -12365,7 +12392,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                 h('input', {
                     value: form.targetBehavior,
                     onChange: e => setForm(prev => ({ ...prev, targetBehavior: e.target.value })),
-                    placeholder: t('behavior_lens.ph.target_behavior_what_you_want_to_reduce') || '🎯 Target behavior (what you want to reduce)',
+                    placeholder: tt('behavior_lens.ph.target_behavior_what_you_want_to_reduce', '🎯 Target behavior (what you want to reduce)'),
                     'aria-label': 'Target behavior to reduce',
                     className: 'w-full px-3 py-2 border border-red-600 rounded-lg text-sm outline-none focus:ring-2 focus:ring-red-300 mb-2 bg-red-50'
                 }),
@@ -12379,21 +12406,21 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                 h('input', {
                     value: form.replacement,
                     onChange: e => setForm(prev => ({ ...prev, replacement: e.target.value })),
-                    placeholder: t('behavior_lens.ph.replacement_behavior_functionally_equivalent') || '✅ Replacement behavior (functionally equivalent)',
+                    placeholder: tt('behavior_lens.ph.replacement_behavior_functionally_equivalent', '✅ Replacement behavior (functionally equivalent)'),
                     'aria-label': 'Replacement behavior',
                     className: 'w-full px-3 py-2 border border-green-600 rounded-lg text-sm outline-none focus:ring-2 focus:ring-green-300 mb-2 bg-green-50'
                 }),
                 h('input', {
                     value: form.teachingStrategy,
                     onChange: e => setForm(prev => ({ ...prev, teachingStrategy: e.target.value })),
-                    placeholder: t('behavior_lens.ph.teaching_strategy_how_you') || '📚 Teaching strategy (how you\'ll teach the replacement)',
+                    placeholder: tt('behavior_lens.ph.teaching_strategy_how_you', '📚 Teaching strategy (how you\'ll teach the replacement)'),
                     'aria-label': 'Teaching strategy',
                     className: 'w-full px-3 py-2 border border-blue-600 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-300 mb-2 bg-blue-50'
                 }),
                 h('input', {
                     value: form.reinforcement,
                     onChange: e => setForm(prev => ({ ...prev, reinforcement: e.target.value })),
-                    placeholder: t('behavior_lens.ph.reinforcement_how_you') || '⭐ Reinforcement (how you\'ll reward the replacement)',
+                    placeholder: tt('behavior_lens.ph.reinforcement_how_you', '⭐ Reinforcement (how you\'ll reward the replacement)'),
                     'aria-label': 'Reinforcement strategy',
                     className: 'w-full px-3 py-2 border border-amber-600 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-300 mb-2 bg-amber-50'
                 }),
@@ -12424,10 +12451,10 @@ JSON only, no markdown.`;
                             try { parsed = JSON.parse(result); }
                             catch { const obj = parseJsonBlobFromText(result); if (obj) parsed = obj; else throw new Error('Parse failed'); }
                             if (parsed.replacement) setForm(prev => ({ ...prev, replacement: parsed.replacement, teachingStrategy: parsed.teachingStrategy || prev.teachingStrategy, reinforcement: parsed.reinforcement || prev.reinforcement }));
-                            if (addToast) addToast(t('behavior_lens.toast.ai_suggestion_applied') || 'AI suggestion applied ✨', 'success');
+                            if (addToast) addToast(tt('behavior_lens.toast.ai_suggestion_applied', 'AI suggestion applied ✨'), 'success');
                         } catch (err) {
                             warnLog('AI suggest failed:', err);
-                            if (addToast) addToast(t('behavior_lens.toast.ai_suggestion_failed') || 'AI suggestion failed', 'error');
+                            if (addToast) addToast(tt('behavior_lens.toast.ai_suggestion_failed', 'AI suggestion failed'), 'error');
                         } finally { setAiSuggestLoading(false); }
                     },
                     disabled: aiSuggestLoading,
@@ -12438,7 +12465,7 @@ JSON only, no markdown.`;
             plans.length === 0
                 ? h('div', { className: 'text-center py-8 bg-white rounded-xl border border-slate-400' },
                     h('div', { className: 'text-3xl mb-2' }, '🔄'),
-                    h('p', { className: 'text-sm text-slate-600' }, t('behavior_lens.ui.create_your_first_replacement_behavior_plan') || 'Create your first replacement behavior plan.')
+                    h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.ui.create_your_first_replacement_behavior_plan', 'Create your first replacement behavior plan.'))
                 )
                 : h('div', { className: 'space-y-3' },
                     plans.map(plan => {
@@ -12702,28 +12729,28 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
 
         const categories = [
             {
-                id: 'social', icon: '👋', label: (t('behavior_lens.raw.social') || 'Social'), color: 'blue',
-                items: [t('behavior_lens.reinf_verbal_praise') || 'Verbal praise', t('behavior_lens.reinf_high_five_fist_bump') || 'High five/fist bump', t('behavior_lens.reinf_positive_note_home') || 'Positive note home', t('behavior_lens.reinf_lunch_with_teacher') || 'Lunch with teacher', 'Helper role', 'Peer recognition', 'Choice of seating buddy']
+                id: 'social', icon: '👋', label: (tt('behavior_lens.raw.social', 'Social')), color: 'blue',
+                items: [tt('behavior_lens.reinf_verbal_praise', 'Verbal praise'), tt('behavior_lens.reinf_high_five_fist_bump', 'High five/fist bump'), tt('behavior_lens.reinf_positive_note_home', 'Positive note home'), tt('behavior_lens.reinf_lunch_with_teacher', 'Lunch with teacher'), 'Helper role', 'Peer recognition', 'Choice of seating buddy']
             },
             {
-                id: 'activity', icon: '🎮', label: (t('behavior_lens.raw.activity') || 'Activity'), color: 'green',
-                items: [t('behavior_lens.reinf_extra_recess') || 'Extra recess', t('behavior_lens.reinf_free_drawing_time') || 'Free drawing time', t('behavior_lens.reinf_computer_tablet_time') || 'Computer/tablet time', 'Choose class activity', 'Read aloud to class', 'Lead a game', 'Show and tell']
+                id: 'activity', icon: '🎮', label: (tt('behavior_lens.raw.activity', 'Activity')), color: 'green',
+                items: [tt('behavior_lens.reinf_extra_recess', 'Extra recess'), tt('behavior_lens.reinf_free_drawing_time', 'Free drawing time'), tt('behavior_lens.reinf_computer_tablet_time', 'Computer/tablet time'), 'Choose class activity', 'Read aloud to class', 'Lead a game', 'Show and tell']
             },
             {
-                id: 'tangible', icon: '🎁', label: (t('behavior_lens.raw.tangible') || 'Tangible'), color: 'purple',
-                items: [t('behavior_lens.reinf_stickers') || 'Stickers', t('behavior_lens.reinf_treasure_box_pick') || 'Treasure box pick', 'Special pencil/eraser', 'Bookmarks', 'Class currency/points', 'Certificate/award', 'Choose a book']
+                id: 'tangible', icon: '🎁', label: (tt('behavior_lens.raw.tangible', 'Tangible')), color: 'purple',
+                items: [tt('behavior_lens.reinf_stickers', 'Stickers'), tt('behavior_lens.reinf_treasure_box_pick', 'Treasure box pick'), 'Special pencil/eraser', 'Bookmarks', 'Class currency/points', 'Certificate/award', 'Choose a book']
             },
             {
-                id: 'sensory', icon: '🌀', label: (t('behavior_lens.raw.sensory') || 'Sensory'), color: 'teal',
-                items: [t('behavior_lens.reinf_fidget_tools') || 'Fidget tools', t('behavior_lens.reinf_standing_desk_time') || 'Standing desk time', t('behavior_lens.reinf_noise_canceling_headphones') || 'Noise-canceling headphones', t('behavior_lens.reinf_weighted_lap_pad') || 'Weighted lap pad', 'Movement break', 'Music during work', 'Dim lighting option']
+                id: 'sensory', icon: '🌀', label: (tt('behavior_lens.raw.sensory', 'Sensory')), color: 'teal',
+                items: [tt('behavior_lens.reinf_fidget_tools', 'Fidget tools'), tt('behavior_lens.reinf_standing_desk_time', 'Standing desk time'), tt('behavior_lens.reinf_noise_canceling_headphones', 'Noise-canceling headphones'), tt('behavior_lens.reinf_weighted_lap_pad', 'Weighted lap pad'), 'Movement break', 'Music during work', 'Dim lighting option']
             },
             {
-                id: 'escape', icon: '🚪', label: (t('behavior_lens.raw.breaksescape') || 'Breaks/Escape'), color: 'amber',
-                items: [t('behavior_lens.reinf_break_pass') || 'Break pass', t('behavior_lens.reinf_quiet_corner_time') || 'Quiet corner time', t('behavior_lens.reinf_walk_in_hallway') || 'Walk in hallway', 'Skip one problem', 'Reduced assignment', 'Cool-down space', 'End task early']
+                id: 'escape', icon: '🚪', label: (tt('behavior_lens.raw.breaksescape', 'Breaks/Escape')), color: 'amber',
+                items: [tt('behavior_lens.reinf_break_pass', 'Break pass'), tt('behavior_lens.reinf_quiet_corner_time', 'Quiet corner time'), tt('behavior_lens.reinf_walk_in_hallway', 'Walk in hallway'), 'Skip one problem', 'Reduced assignment', 'Cool-down space', 'End task early']
             },
             {
-                id: 'academic', icon: '📚', label: (t('behavior_lens.raw.academic') || 'Academic'), color: 'indigo',
-                items: [t('behavior_lens.reinf_choose_topic_to_study') || 'Choose topic to study', t('behavior_lens.reinf_teach_a_mini_lesson') || 'Teach a mini-lesson', t('behavior_lens.reinf_use_whiteboards') || 'Use whiteboards', t('behavior_lens.reinf_partner_work') || 'Partner work', 'Presentation to class', 'Research project choice', 'Read favorite genre']
+                id: 'academic', icon: '📚', label: (tt('behavior_lens.raw.academic', 'Academic')), color: 'indigo',
+                items: [tt('behavior_lens.reinf_choose_topic_to_study', 'Choose topic to study'), tt('behavior_lens.reinf_teach_a_mini_lesson', 'Teach a mini-lesson'), tt('behavior_lens.reinf_use_whiteboards', 'Use whiteboards'), tt('behavior_lens.reinf_partner_work', 'Partner work'), 'Presentation to class', 'Research project choice', 'Read favorite genre']
             }
         ];
 
@@ -12807,7 +12834,7 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                         value: newCustom,
                         onChange: e => setNewCustom(e.target.value),
                         onKeyDown: e => { if (e.key === 'Enter' && newCustom.trim()) { setCustomItems(prev => [...prev, newCustom.trim()]); setNewCustom(''); } },
-                        placeholder: t('behavior_lens.ph.add_a_custom_reinforcer') || 'Add a custom reinforcer',
+                        placeholder: tt('behavior_lens.ph.add_a_custom_reinforcer', 'Add a custom reinforcer'),
                         'aria-label': 'Add a custom reinforcer',
                         className: 'flex-1 px-3 py-2 border border-slate-400 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-300'
                     }),
@@ -12900,10 +12927,10 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
 
                 const result = await callGemini(prompt, true);
                 setAiSuggestions(result);
-                if (addToast) addToast(t('behavior_lens.toast.modification_plan_generated') || 'Modification plan generated', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.modification_plan_generated', 'Modification plan generated'), 'success');
             } catch (err) {
                 warnLog('Antecedent analysis failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.analysis_failed') || 'Analysis failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.analysis_failed', 'Analysis failed'), 'error');
             } finally { setAnalyzing(false); }
         };
 
@@ -12919,7 +12946,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                 createdAt: new Date().toISOString(),
             }]);
             setNewMod({ setting: '', change: '', rationale: '' });
-            if (addToast) addToast(t('behavior_lens.toast.modification_tracked') || 'Modification tracked', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.modification_tracked', 'Modification tracked'), 'success');
         };
 
         const statusOptions = [
@@ -12934,7 +12961,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🛠️'),
                 h('h2', { className: 'text-lg font-black text-slate-800' }, DualLabel('Antecedent Modification Planner')),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.modify_the_environment_to_prevent_behaviors_before') || 'Modify the environment to prevent behaviors before they start')
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.modify_the_environment_to_prevent_behaviors_before', 'Modify the environment to prevent behaviors before they start'))
             ),
             // Antecedent patterns
             antecedentPatterns.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
@@ -12973,7 +13000,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
             aiSuggestions && h('div', { className: 'bg-white rounded-xl border border-amber-200 p-5 shadow-sm' },
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, aiSuggestions),
                 h('button', { "aria-label": "Copy Plan",
-                    onClick: () => { navigator.clipboard.writeText(aiSuggestions); if (addToast) addToast(t('behavior_lens.toast.copied') || 'Copied!', 'success'); },
+                    onClick: () => { navigator.clipboard.writeText(aiSuggestions); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
                     className: 'mt-3 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-[11px] font-bold hover:bg-amber-200'
                 }, '📋 Copy Plan')
             ),
@@ -12983,14 +13010,14 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                 h('input', {
                     value: newMod.setting,
                     onChange: e => setNewMod(prev => ({ ...prev, setting: e.target.value })),
-                    placeholder: t('behavior_lens.ph.setting_eg_math_class_cafeteria') || 'Setting (e.g., Math class, Cafeteria)',
+                    placeholder: tt('behavior_lens.ph.setting_eg_math_class_cafeteria', 'Setting (e.g., Math class, Cafeteria)'),
                     'aria-label': 'Modification setting',
                     className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-300 mb-2'
                 }),
                 h('textarea', {
                     value: newMod.change,
                     onChange: e => setNewMod(prev => ({ ...prev, change: e.target.value })),
-                    placeholder: t('behavior_lens.ph.what_environmental_change_will_you_make') || 'What environmental change will you make?',
+                    placeholder: tt('behavior_lens.ph.what_environmental_change_will_you_make', 'What environmental change will you make?'),
                     'aria-label': 'Environmental change description',
                     rows: 2,
                     className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-sm resize-none outline-none focus:ring-2 focus:ring-amber-300 mb-2'
@@ -12998,7 +13025,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                 h('input', {
                     value: newMod.rationale,
                     onChange: e => setNewMod(prev => ({ ...prev, rationale: e.target.value })),
-                    placeholder: t('behavior_lens.ph.rationale_which_antecedent_does_this_address') || 'Rationale (which antecedent does this address?)',
+                    placeholder: tt('behavior_lens.ph.rationale_which_antecedent_does_this_address', 'Rationale (which antecedent does this address?)'),
                     'aria-label': 'Modification rationale',
                     className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-300 mb-2'
                 }),
@@ -13050,7 +13077,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
 
         const startMic = useCallback(() => {
             if (!SpeechRecognition) {
-                if (addToast) addToast(t('behavior_lens.toast.speech_recognition_not_supported_in_this_browser') || 'Speech recognition not supported in this browser', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.speech_recognition_not_supported_in_this_browser', 'Speech recognition not supported in this browser'), 'error');
                 return;
             }
             // Phase 3v.M — shared module path with inline fallback.
@@ -13083,7 +13110,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                     onEnd: handleEnd
                 });
                 if (!ctrl.supported) {
-                    if (addToast) addToast(t('behavior_lens.toast.speech_recognition_not_supported_in_this_browser') || 'Speech recognition not supported in this browser', 'error');
+                    if (addToast) addToast(tt('behavior_lens.toast.speech_recognition_not_supported_in_this_browser', 'Speech recognition not supported in this browser'), 'error');
                     return;
                 }
                 if (ctrl.start()) {
@@ -13138,12 +13165,12 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
             };
             onUpdateNotes([newNote, ...(notes || [])]);
             setDraft('');
-            if (addToast) addToast(t('behavior_lens.toast.note_added_2') || 'Note added ✏️', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.note_added_2', 'Note added ✏️'), 'success');
         };
 
         const handleDelete = (id) => {
             onUpdateNotes((notes || []).filter(n => n.id !== id));
-            if (addToast) addToast(t('behavior_lens.toast.note_deleted') || 'Note deleted', 'info');
+            if (addToast) addToast(tt('behavior_lens.toast.note_deleted', 'Note deleted'), 'info');
         };
 
         const handleSaveEdit = (id) => {
@@ -13164,7 +13191,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
             // Header
             h('div', { className: 'flex items-center justify-between' },
                 h('h3', { className: 'text-lg font-black text-slate-800 flex items-center gap-2' },
-                    '📝 ', t('behavior_lens.session_notes') || 'Session Notes',
+                    '📝 ', tt('behavior_lens.session_notes', 'Session Notes'),
                     (notes || []).length > 0 && h('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200' },
                         `${(notes || []).length} notes`
                     )
@@ -13177,7 +13204,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                     h('textarea', {
                         value: draft,
                         onChange: (e) => setDraft(e.target.value),
-                        placeholder: t('behavior_lens.ph.type_your_observation_note_or_click_the_mic_to_dic') || 'Type your observation, note, or click the mic to dictate...',
+                        placeholder: tt('behavior_lens.ph.type_your_observation_note_or_click_the_mic_to_dic', 'Type your observation, note, or click the mic to dictate...'),
                         'aria-label': 'Observation note',
                         rows: 3,
                         className: 'flex-1 text-sm border border-slate-400 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-400 resize-none'
@@ -13209,8 +13236,8 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
             (notes || []).length === 0
                 ? h('div', { className: 'text-center py-12 text-slate-600' },
                     h('div', { className: 'text-4xl mb-3' }, '📝'),
-                    h('p', { className: 'text-sm font-medium' }, t('behavior_lens.no_session_notes') || 'No session notes yet'),
-                    h('p', { className: 'text-xs mt-1' }, t('behavior_lens.add_notes_hint') || 'Add notes above or use the mic to dictate')
+                    h('p', { className: 'text-sm font-medium' }, tt('behavior_lens.no_session_notes', 'No session notes yet')),
+                    h('p', { className: 'text-xs mt-1' }, tt('behavior_lens.add_notes_hint', 'Add notes above or use the mic to dictate'))
                 )
                 : h('div', { className: 'space-y-3' },
                     (notes || []).map(note =>
@@ -13228,11 +13255,11 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                                         h('button', { "aria-label": "Save Edit",
                                             onClick: () => handleSaveEdit(note.id),
                                             className: 'px-3 py-1 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-600'
-                                        }, '✅ ' + (t('common.save') || 'Save')),
+                                        }, '✅ ' + (tt('common.save', 'Save'))),
                                         h('button', { "aria-label": "Toggle editing id",
                                             onClick: () => { setEditingId(null); setEditText(''); },
                                             className: 'px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200'
-                                        }, t('common.cancel') || 'Cancel')
+                                        }, tt('common.cancel', 'Cancel'))
                                     )
                                 )
                                 : h('div', null,
@@ -13242,12 +13269,12 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                                             h('button', { "aria-label": "Toggle editing id",
                                                 onClick: () => { setEditingId(note.id); setEditText(note.text); },
                                                 className: 'p-1 hover:bg-slate-100 rounded text-xs',
-                                                title: (t('behavior_lens.raw.edit') || 'Edit')
+                                                title: (tt('behavior_lens.raw.edit', 'Edit'))
                                             }, '✏️'),
                                             h('button', { "aria-label": "Delete",
                                                 onClick: () => handleDelete(note.id),
                                                 className: 'p-1 hover:bg-red-50 rounded text-xs',
-                                                title: (t('behavior_lens.raw.delete') || 'Delete')
+                                                title: (tt('behavior_lens.raw.delete', 'Delete'))
                                             }, '🗑️')
                                         )
                                     ),
@@ -13303,7 +13330,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
 
         // Generate case narrative from template
         const generateCase = async () => {
-            if (!callGemini) { if (addToast) addToast(t('behavior_lens.toast.ai_not_available') || 'AI not available', 'error'); return; }
+            if (!callGemini) { if (addToast) addToast(tt('behavior_lens.toast.ai_not_available', 'AI not available'), 'error'); return; }
             setLoading(true);
             try {
                 const template = selectedTemplate;
@@ -13363,10 +13390,10 @@ Respond ONLY with the three sections above. No preamble.`;
                 setEvaluations({});
                 setShowResults(false);
                 setOverallScore(null);
-                if (addToast) addToast(t('behavior_lens.toast.case_study_generated_begin_phase_1') || 'Case study generated! Begin Phase 1.', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.case_study_generated_begin_phase_1', 'Case study generated! Begin Phase 1.'), 'success');
             } catch (err) {
                 warnLog('CaseStudyEngine error:', err);
-                if (addToast) addToast(t('behavior_lens.toast.failed_to_generate_case_study_try_again') || 'Failed to generate case study. Try again.', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.failed_to_generate_case_study_try_again', 'Failed to generate case study. Try again.'), 'error');
             }
             setLoading(false);
         };
@@ -13375,7 +13402,7 @@ Respond ONLY with the three sections above. No preamble.`;
         const evaluatePhase = async (phaseIdx) => {
             const phase = CASE_STUDY_PHASES[phaseIdx];
             const userResp = userResponses[phase.id] || '';
-            if (!userResp.trim()) { if (addToast) addToast(t('behavior_lens.toast.please_write_your_response_before_submitting') || 'Please write your response before submitting.', 'warning'); return; }
+            if (!userResp.trim()) { if (addToast) addToast(tt('behavior_lens.toast.please_write_your_response_before_submitting', 'Please write your response before submitting.'), 'warning'); return; }
             if (!callGemini) return;
             setLoading(true);
             try {
@@ -13428,7 +13455,7 @@ ${diffLabel === 'guided' ? '\nHINT FOR NEXT PHASE:\n[A helpful hint for what to 
                 if (addToast) addToast(t('behavior_lens.toast.phase_n_evaluated_n') || `Phase ${phaseIdx + 1} evaluated! ${score ? score + '/25' : ''}`, 'success');
             } catch (err) {
                 warnLog('CaseStudy evaluation error:', err);
-                if (addToast) addToast(t('behavior_lens.toast.evaluation_failed_try_again') || 'Evaluation failed. Try again.', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.evaluation_failed_try_again', 'Evaluation failed. Try again.'), 'error');
             }
             setLoading(false);
         };
@@ -13459,7 +13486,7 @@ Keep it encouraging and professional. Under 300 words.`;
                 const result = await callGemini(prompt, true);
                 setOverallScore({ total: totalScore, debrief: result });
                 setShowResults(true);
-                if (addToast) addToast(t('behavior_lens.toast.case_study_complete_review_your_debrief') || 'Case study complete! Review your debrief.', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.case_study_complete_review_your_debrief', 'Case study complete! Review your debrief.'), 'success');
             } catch (err) {
                 warnLog('Debrief error:', err);
             }
@@ -13511,7 +13538,7 @@ Keep it encouraging and professional. Under 300 words.`;
                             h('div', { key: p.id, className: 'bg-white rounded-lg p-3 border border-slate-400' },
                                 h('h4', { className: 'text-xs font-bold text-indigo-700 mb-1' }, `${p.icon} ${p.label}`),
                                 h('div', { className: 'text-[11px] text-slate-600 mb-2' },
-                                    h('strong', null, (t('behavior_lens.raw.your_response') || 'Your Response: ')),
+                                    h('strong', null, (tt('behavior_lens.raw.your_response', 'Your Response: '))),
                                     userResponses[p.id] || '(not completed)'
                                 ),
                                 evaluations[p.id] && h('div', { className: 'text-[11px] text-purple-700 bg-purple-50 rounded-lg p-2 whitespace-pre-wrap' }, evaluations[p.id].text)
@@ -13588,11 +13615,11 @@ Keep it encouraging and professional. Under 300 words.`;
 
                 // User response area
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
-                    h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2 block' }, t('behavior_lens.ui.your_response') || 'Your Response'),
+                    h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2 block' }, tt('behavior_lens.ui.your_response', 'Your Response')),
                     h('textarea', {
                         value: userResponses[phase.id] || '',
                         onChange: (e) => setUserResponses(prev => ({ ...prev, [phase.id]: e.target.value })),
-                        placeholder: t('behavior_lens.ph.type_your_response_here_be_thorough_and_use_profes') || 'Type your response here. Be thorough and use professional language...',
+                        placeholder: tt('behavior_lens.ph.type_your_response_here_be_thorough_and_use_profes', 'Type your response here. Be thorough and use professional language...'),
                         rows: 8,
                         className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-y leading-relaxed'
                     }),
@@ -13643,8 +13670,8 @@ Keep it encouraging and professional. Under 300 words.`;
             // Header
             h('div', { className: 'text-center py-4' },
                 h('div', { className: 'text-5xl mb-3' }, '🎓'),
-                h('h2', { className: 'text-xl font-black text-slate-800' }, t('behavior_lens.ui.aba_case_study_training') || 'ABA Case Study Training'),
-                h('p', { className: 'text-sm text-slate-600 mt-1' }, t('behavior_lens.ui.practice_clinical_reasoning_with_aigenerated_case') || 'Practice clinical reasoning with AI-generated case studies. Get expert-level feedback on your responses.')
+                h('h2', { className: 'text-xl font-black text-slate-800' }, tt('behavior_lens.ui.aba_case_study_training', 'ABA Case Study Training')),
+                h('p', { className: 'text-sm text-slate-600 mt-1' }, tt('behavior_lens.ui.practice_clinical_reasoning_with_aigenerated_case', 'Practice clinical reasoning with AI-generated case studies. Get expert-level feedback on your responses.'))
             ),
 
             // How it works
@@ -13658,7 +13685,7 @@ Keep it encouraging and professional. Under 300 words.`;
                         )
                     )
                 ),
-                h('p', { className: 'text-[11px] text-indigo-600 mt-2 text-center' }, t('behavior_lens.ui.at_each_phase_you') || 'At each phase you\'ll write your analysis, then receive AI evaluation with scoring and feedback.')
+                h('p', { className: 'text-[11px] text-indigo-600 mt-2 text-center' }, tt('behavior_lens.ui.at_each_phase_you', 'At each phase you\'ll write your analysis, then receive AI evaluation with scoring and feedback.'))
             ),
 
             // Step 1: Difficulty
@@ -13704,7 +13731,7 @@ Keep it encouraging and professional. Under 300 words.`;
                 selectedTemplate?.id === 'custom' && h('textarea', {
                     value: customPrompt,
                     onChange: (e) => setCustomPrompt(e.target.value),
-                    placeholder: t('behavior_lens.ph.describe_the_scenario_you_want_to_practice_with') || 'Describe the scenario you want to practice with...',
+                    placeholder: tt('behavior_lens.ph.describe_the_scenario_you_want_to_practice_with', 'Describe the scenario you want to practice with...'),
                     rows: 3,
                     className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-3 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-300'
                 })
@@ -13756,7 +13783,7 @@ Keep it encouraging and professional. Under 300 words.`;
             if (messages.length === 0) return;
             setMessages([]);
             try { localStorage.removeItem(chatLsKey); } catch { }
-            if (addToast) addToast(t('behavior_lens.toast.chat_cleared') || 'Chat cleared', 'info');
+            if (addToast) addToast(tt('behavior_lens.toast.chat_cleared', 'Chat cleared'), 'info');
         };
 
         const handleSend = async () => {
@@ -13803,7 +13830,7 @@ Respond helpfully and concisely as AlloBot:`;
             } catch (err) {
                 warnLog('AlloBotChat error:', err);
                 setMessages(prev => [...prev, { role: 'bot', content: 'Sorry, I encountered an error. Please try again.', ts: new Date().toISOString() }]);
-                if (addToast) addToast(t('behavior_lens.toast.allobot_response_failed') || 'AlloBot response failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.allobot_response_failed', 'AlloBot response failed'), 'error');
             } finally {
                 setIsSending(false);
             }
@@ -13814,24 +13841,24 @@ Respond helpfully and concisely as AlloBot:`;
             h('div', { className: 'flex items-center gap-3 mb-4' },
                 h('div', { className: 'w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-lg shadow-md' }, '🤖'),
                 h('div', { className: 'flex-1' },
-                    h('h3', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.allobot_chat.title') || 'Ask AlloBot'),
+                    h('h3', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.allobot_chat.title', 'Ask AlloBot')),
                     h('p', { className: 'text-xs text-slate-600' },
-                        (t('behavior_lens.allobot_chat.subtitle') || 'AI-powered behavioral analysis assistant'),
+                        (tt('behavior_lens.allobot_chat.subtitle', 'AI-powered behavioral analysis assistant')),
                         messages.length > 0 && ` · ${messages.length} messages`
                     )
                 ),
                 messages.length > 0 && h('button', { "aria-label": "Clear",
                     onClick: clearChat,
                     className: 'text-xs px-3 py-1.5 border border-red-600 text-red-500 rounded-lg hover:bg-red-50 transition-colors font-medium',
-                    title: (t('behavior_lens.raw.clear_chat_history') || 'Clear chat history')
+                    title: (tt('behavior_lens.raw.clear_chat_history', 'Clear chat history'))
                 }, '🗑️ Clear')
             ),
             // Chat messages
             h('div', { className: 'flex-1 overflow-y-auto space-y-3 bg-slate-50 rounded-xl border border-slate-400 p-4 mb-4' },
                 messages.length === 0 && h('div', { className: 'text-center py-12' },
                     h('div', { className: 'text-4xl mb-3' }, '🤖'),
-                    h('p', { className: 'text-sm font-bold text-slate-600' }, t('behavior_lens.allobot_chat.empty_title') || 'Ask me anything about behavior analysis!'),
-                    h('p', { className: 'text-xs text-slate-600 mt-1 max-w-md mx-auto' }, t('behavior_lens.allobot_chat.empty_desc') || 'I can help with FBA strategies, intervention ideas, data interpretation, de-escalation techniques, and more.'),
+                    h('p', { className: 'text-sm font-bold text-slate-600' }, tt('behavior_lens.allobot_chat.empty_title', 'Ask me anything about behavior analysis!')),
+                    h('p', { className: 'text-xs text-slate-600 mt-1 max-w-md mx-auto' }, tt('behavior_lens.allobot_chat.empty_desc', 'I can help with FBA strategies, intervention ideas, data interpretation, de-escalation techniques, and more.')),
                     h('div', { className: 'flex flex-wrap justify-center gap-2 mt-4' },
                         ['How do I interpret this ABC data?', 'Suggest replacement behaviors', 'Help me write a BIP goal', 'De-escalation strategies'].map((q, i) =>
                             h('button', { "aria-label": "Toggle input",
@@ -13861,7 +13888,7 @@ Respond helpfully and concisely as AlloBot:`;
                 isSending && h('div', { className: 'flex justify-start' },
                     h('div', { className: 'bg-white border border-slate-400 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm flex items-center gap-2' },
                         h('span', { className: 'text-xs font-black text-indigo-500' }, '🤖 AlloBot'),
-                        h('span', { className: 'text-sm text-slate-600 animate-pulse' }, t('behavior_lens.thinking') || 'Thinking...')
+                        h('span', { className: 'text-sm text-slate-600 animate-pulse' }, tt('behavior_lens.thinking', 'Thinking...'))
                     )
                 ),
                 h('div', { ref: chatEndRef })
@@ -13873,7 +13900,7 @@ Respond helpfully and concisely as AlloBot:`;
                     value: input,
                     onChange: (e) => setInput(e.target.value),
                     onKeyDown: (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } },
-                    placeholder: t('behavior_lens.allobot_chat.placeholder') || 'Ask about behaviors, strategies, FBA, BIP...',
+                    placeholder: tt('behavior_lens.allobot_chat.placeholder', 'Ask about behaviors, strategies, FBA, BIP...'),
                     'aria-label': 'Ask AlloBot about behavioral strategies',
                     disabled: isSending,
                     className: 'flex-1 text-sm border-2 border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 disabled:opacity-50'
@@ -13891,12 +13918,12 @@ Respond helpfully and concisely as AlloBot:`;
     const StudentProfileEditor = ({ profile, onChange, studentName, t }) => {
         const [isExpanded, setIsExpanded] = useState(false);
         const fields = [
-            { key: 'interests', label: t('behavior_lens.profile.interests') || 'Interests & Motivators', icon: '⭐', placeholder: 'e.g. Dinosaurs, Minecraft, art, music...' },
-            { key: 'strengths', label: t('behavior_lens.profile.strengths') || 'Strengths', icon: '💪', placeholder: 'e.g. Creative, empathetic, strong verbal skills...' },
-            { key: 'triggers', label: t('behavior_lens.profile.triggers') || 'Known Triggers', icon: '⚡', placeholder: 'e.g. Loud environments, unexpected transitions...' },
-            { key: 'goals', label: t('behavior_lens.profile.goals') || 'Goals', icon: '🎯', placeholder: 'e.g. Improve turn-taking, self-regulation during transitions...' },
-            { key: 'accommodations', label: t('behavior_lens.profile.accommodations') || 'Current Accommodations', icon: '🛡️', placeholder: 'e.g. Preferential seating, visual schedule, sensory breaks...' },
-            { key: 'notes', label: t('behavior_lens.profile.notes') || 'Additional Notes', icon: '📋', placeholder: 'e.g. Responds well to positive reinforcement, prefers 1:1...' },
+            { key: 'interests', label: tt('behavior_lens.profile.interests', 'Interests & Motivators'), icon: '⭐', placeholder: 'e.g. Dinosaurs, Minecraft, art, music...' },
+            { key: 'strengths', label: tt('behavior_lens.profile.strengths', 'Strengths'), icon: '💪', placeholder: 'e.g. Creative, empathetic, strong verbal skills...' },
+            { key: 'triggers', label: tt('behavior_lens.profile.triggers', 'Known Triggers'), icon: '⚡', placeholder: 'e.g. Loud environments, unexpected transitions...' },
+            { key: 'goals', label: tt('behavior_lens.profile.goals', 'Goals'), icon: '🎯', placeholder: 'e.g. Improve turn-taking, self-regulation during transitions...' },
+            { key: 'accommodations', label: tt('behavior_lens.profile.accommodations', 'Current Accommodations'), icon: '🛡️', placeholder: 'e.g. Preferential seating, visual schedule, sensory breaks...' },
+            { key: 'notes', label: tt('behavior_lens.profile.notes', 'Additional Notes'), icon: '📋', placeholder: 'e.g. Responds well to positive reinforcement, prefers 1:1...' },
         ];
         const filledCount = Object.values(profile).filter(v => v?.trim()).length;
 
@@ -13909,7 +13936,7 @@ Respond helpfully and concisely as AlloBot:`;
                 h('div', { className: 'flex items-center gap-2' },
                     h('span', { className: 'text-lg' }, '👤'),
                     h('span', { className: 'text-sm font-black text-teal-800' },
-                        t('behavior_lens.profile.title') || 'Student Profile'
+                        tt('behavior_lens.profile.title', 'Student Profile')
                     ),
                     studentName && h('span', { className: 'text-xs text-teal-600 font-medium' }, `— ${studentName}`),
                     filledCount > 0 && h('span', { className: 'text-[11px] bg-teal-200 text-teal-700 px-1.5 py-0.5 rounded-full font-bold' }, `${filledCount}/6`)
@@ -13919,7 +13946,7 @@ Respond helpfully and concisely as AlloBot:`;
             // Expanded fields
             isExpanded && h('div', { className: 'px-4 pb-4 space-y-3 border-t border-teal-200' },
                 h('p', { className: 'text-[11px] text-teal-600 mt-3 font-medium' },
-                    t('behavior_lens.profile.desc') || 'This information is automatically shared with all AI-powered tools to personalize recommendations.'
+                    tt('behavior_lens.profile.desc', 'This information is automatically shared with all AI-powered tools to personalize recommendations.')
                 ),
                 fields.map(f =>
                     h('div', { key: f.key },
@@ -13961,64 +13988,64 @@ Respond helpfully and concisely as AlloBot:`;
         const MODULE_CONTENT = {
             intro: {
                 sections: [
-                    { title: (t('behavior_lens.raw.what_is_an_fba') || 'What is an FBA?'), content: 'A Functional Behavior Assessment (FBA) is a systematic process for identifying WHY a behavior occurs. It looks at the relationship between the environment and behavior to determine what purpose (function) the behavior serves for the student.' },
-                    { title: (t('behavior_lens.raw.what_is_a_bip') || 'What is a BIP?'), content: 'A Behavior Intervention Plan (BIP) is the action plan built from FBA findings. It includes prevention strategies, replacement behaviors, teaching strategies, and how the team will respond to both appropriate and inappropriate behaviors.' },
-                    { title: (t('behavior_lens.raw.how_behaviorlens_helps') || 'How BehaviorLens Helps'), content: 'BehaviorLens provides 40+ interconnected tools that guide you through the entire FBA-BIP process: collecting data, analyzing patterns, building plans, and monitoring progress — all with AI-powered assistance.' },
+                    { title: (tt('behavior_lens.raw.what_is_an_fba', 'What is an FBA?')), content: 'A Functional Behavior Assessment (FBA) is a systematic process for identifying WHY a behavior occurs. It looks at the relationship between the environment and behavior to determine what purpose (function) the behavior serves for the student.' },
+                    { title: (tt('behavior_lens.raw.what_is_a_bip', 'What is a BIP?')), content: 'A Behavior Intervention Plan (BIP) is the action plan built from FBA findings. It includes prevention strategies, replacement behaviors, teaching strategies, and how the team will respond to both appropriate and inappropriate behaviors.' },
+                    { title: (tt('behavior_lens.raw.how_behaviorlens_helps', 'How BehaviorLens Helps')), content: 'BehaviorLens provides 40+ interconnected tools that guide you through the entire FBA-BIP process: collecting data, analyzing patterns, building plans, and monitoring progress — all with AI-powered assistance.' },
                 ],
-                quiz: { q: t('behavior_lens.quiz_fba_purpose') || 'What is the primary purpose of an FBA?', options: [t('behavior_lens.quiz_opt_punish') || 'To punish students', t('behavior_lens.quiz_opt_identify_why') || 'To identify WHY a behavior occurs', 'To diagnose disabilities', 'To rank student performance'], answer: 1 }
+                quiz: { q: tt('behavior_lens.quiz_fba_purpose', 'What is the primary purpose of an FBA?'), options: [tt('behavior_lens.quiz_opt_punish', 'To punish students'), tt('behavior_lens.quiz_opt_identify_why', 'To identify WHY a behavior occurs'), 'To diagnose disabilities', 'To rank student performance'], answer: 1 }
             },
             abc101: {
                 sections: [
-                    { title: (t('behavior_lens.raw.the_abc_model') || 'The ABC Model'), content: 'Every behavioral incident has three parts: the Antecedent (what happened before), the Behavior (what the student did), and the Consequence (what happened after). Recording all three helps reveal patterns.' },
-                    { title: (t('behavior_lens.raw.writing_observable_behaviors') || 'Writing Observable Behaviors'), content: 'Good: "Student threw pencil across room." Bad: "Student got angry." Behaviors must be observable and measurable — something anyone could see and count.' },
-                    { title: (t('behavior_lens.raw.tips_for_quality_data') || 'Tips for Quality Data'), content: 'Record as soon as possible after the incident. Include the time, setting, and any adults present. Be specific and objective. Avoid interpretations like "defiant" — describe what you actually saw.' },
+                    { title: (tt('behavior_lens.raw.the_abc_model', 'The ABC Model')), content: 'Every behavioral incident has three parts: the Antecedent (what happened before), the Behavior (what the student did), and the Consequence (what happened after). Recording all three helps reveal patterns.' },
+                    { title: (tt('behavior_lens.raw.writing_observable_behaviors', 'Writing Observable Behaviors')), content: 'Good: "Student threw pencil across room." Bad: "Student got angry." Behaviors must be observable and measurable — something anyone could see and count.' },
+                    { title: (tt('behavior_lens.raw.tips_for_quality_data', 'Tips for Quality Data')), content: 'Record as soon as possible after the incident. Include the time, setting, and any adults present. Be specific and objective. Avoid interpretations like "defiant" — describe what you actually saw.' },
                 ],
                 quiz: { q: 'Which is an observable behavior description?', options: ['"Was disrespectful"', '"Left seat 3 times during math"', '"Had a bad attitude"', '"Was non-compliant"'], answer: 1 }
             },
             function: {
                 sections: [
-                    { title: (t('behavior_lens.raw.the_4_functions') || 'The 4 Functions'), content: 'ALL behavior serves one or more functions: (1) Escape/Avoidance — get away from something aversive, (2) Attention — get noticed by adults or peers, (3) Tangible Access — get a desired item or activity, (4) Sensory/Automatic — the behavior itself feels good.' },
-                    { title: (t('behavior_lens.raw.why_function_matters') || 'Why Function Matters'), content: 'The same behavior (hitting) can serve different functions for different students. Without knowing the function, interventions are likely to fail or make things worse.' },
+                    { title: (tt('behavior_lens.raw.the_4_functions', 'The 4 Functions')), content: 'ALL behavior serves one or more functions: (1) Escape/Avoidance — get away from something aversive, (2) Attention — get noticed by adults or peers, (3) Tangible Access — get a desired item or activity, (4) Sensory/Automatic — the behavior itself feels good.' },
+                    { title: (tt('behavior_lens.raw.why_function_matters', 'Why Function Matters')), content: 'The same behavior (hitting) can serve different functions for different students. Without knowing the function, interventions are likely to fail or make things worse.' },
                 ],
                 quiz: { q: 'A student screams when asked to do math. Work is then removed. What is the likely function?', options: ['Attention', 'Sensory', 'Escape', 'Tangible'], answer: 2 }
             },
             observation: {
                 sections: [
-                    { title: (t('behavior_lens.raw.choosing_an_observation_method') || 'Choosing an Observation Method'), content: 'There are four core ways to measure behavior, each suited to different situations. Frequency counting tracks how often a behavior happens — ideal for discrete, countable actions like hand-raising or leaving the seat. Duration recording measures how long a behavior lasts from start to finish — useful for sustained behaviors like tantrums or on-task engagement. The best method depends on what you want to know: \"How often?\" → frequency. \"How long?\" → duration.' },
-                    { title: (t('behavior_lens.raw.interval_and_latency_recording') || 'Interval & Latency Recording'), content: 'Interval recording divides observation time into equal segments (e.g., every 30 seconds) and notes whether a behavior occurred within each interval. This works well in busy classrooms where continuous counting is impractical. Latency recording measures the time between a prompt and the student\'s response — helpful when you need to understand how quickly a student transitions or follows directions. Both methods give a fair snapshot without requiring constant attention.' },
-                    { title: (t('behavior_lens.raw.collecting_data_with_care') || 'Collecting Data with Care'), content: 'Remember: data collection is about understanding a student, not surveilling them. Keep notes objective (\"left seat 3 times\") rather than judgmental (\"was defiant\"). Record as soon as possible after observing. Be consistent with timing and settings so your data tells an honest story. And always ask: \"Am I capturing what matters to help this student succeed?\"' },
+                    { title: (tt('behavior_lens.raw.choosing_an_observation_method', 'Choosing an Observation Method')), content: 'There are four core ways to measure behavior, each suited to different situations. Frequency counting tracks how often a behavior happens — ideal for discrete, countable actions like hand-raising or leaving the seat. Duration recording measures how long a behavior lasts from start to finish — useful for sustained behaviors like tantrums or on-task engagement. The best method depends on what you want to know: \"How often?\" → frequency. \"How long?\" → duration.' },
+                    { title: (tt('behavior_lens.raw.interval_and_latency_recording', 'Interval & Latency Recording')), content: 'Interval recording divides observation time into equal segments (e.g., every 30 seconds) and notes whether a behavior occurred within each interval. This works well in busy classrooms where continuous counting is impractical. Latency recording measures the time between a prompt and the student\'s response — helpful when you need to understand how quickly a student transitions or follows directions. Both methods give a fair snapshot without requiring constant attention.' },
+                    { title: (tt('behavior_lens.raw.collecting_data_with_care', 'Collecting Data with Care')), content: 'Remember: data collection is about understanding a student, not surveilling them. Keep notes objective (\"left seat 3 times\") rather than judgmental (\"was defiant\"). Record as soon as possible after observing. Be consistent with timing and settings so your data tells an honest story. And always ask: \"Am I capturing what matters to help this student succeed?\"' },
                 ],
                 quiz: { q: 'A student\'s tantrum lasts varying lengths of time. Which observation method would be most useful?', options: ['Frequency counting', 'Duration recording', 'Interval recording', 'Latency recording'], answer: 1 }
             },
             reinforcement: {
                 sections: [
-                    { title: (t('behavior_lens.raw.what_is_reinforcement_really') || 'What is Reinforcement, Really?'), content: 'At its core, reinforcement is anything that makes a behavior more likely to happen again. It\'s not a reward \"given\" by adults — it\'s defined by its effect on the student. If a student receives praise and then volunteers more, that praise was reinforcement. If the praise has no effect, it wasn\'t reinforcement for that student. This distinction matters: we need to discover what is genuinely motivating for each individual, not assume.' },
-                    { title: (t('behavior_lens.raw.schedules_of_reinforcement') || 'Schedules of Reinforcement'), content: 'Fixed Ratio (FR): Reinforce after a set number of responses (e.g., every 3rd correct answer). Variable Ratio (VR): Reinforce after an unpredictable number of responses — this creates the most sustained engagement. Fixed Interval (FI): Reinforce after a set time period. Variable Interval (VI): Reinforce at unpredictable time intervals. When teaching a NEW skill, reinforce every time (continuous schedule). As the skill builds, gradually thin to a variable schedule so motivation is maintained naturally.' },
-                    { title: (t('behavior_lens.raw.differential_reinforcement') || 'Differential Reinforcement: The Affirming Approach'), content: 'DRA (Differential Reinforcement of Alternative behavior) means reinforcing a specific positive alternative. DRO (Differential Reinforcement of Other behavior) means reinforcing the ABSENCE of a challenging behavior during a time window — celebrating calm moments. DRI (Differential Reinforcement of Incompatible behavior) means reinforcing something physically incompatible with the problem behavior. These strategies focus on building what we WANT to see rather than punishing what we don\'t. That shift in mindset — from \"stop doing that\" to \"let me help you do this instead\" — is the heart of affirming ABA.' },
+                    { title: (tt('behavior_lens.raw.what_is_reinforcement_really', 'What is Reinforcement, Really?')), content: 'At its core, reinforcement is anything that makes a behavior more likely to happen again. It\'s not a reward \"given\" by adults — it\'s defined by its effect on the student. If a student receives praise and then volunteers more, that praise was reinforcement. If the praise has no effect, it wasn\'t reinforcement for that student. This distinction matters: we need to discover what is genuinely motivating for each individual, not assume.' },
+                    { title: (tt('behavior_lens.raw.schedules_of_reinforcement', 'Schedules of Reinforcement')), content: 'Fixed Ratio (FR): Reinforce after a set number of responses (e.g., every 3rd correct answer). Variable Ratio (VR): Reinforce after an unpredictable number of responses — this creates the most sustained engagement. Fixed Interval (FI): Reinforce after a set time period. Variable Interval (VI): Reinforce at unpredictable time intervals. When teaching a NEW skill, reinforce every time (continuous schedule). As the skill builds, gradually thin to a variable schedule so motivation is maintained naturally.' },
+                    { title: (tt('behavior_lens.raw.differential_reinforcement', 'Differential Reinforcement: The Affirming Approach')), content: 'DRA (Differential Reinforcement of Alternative behavior) means reinforcing a specific positive alternative. DRO (Differential Reinforcement of Other behavior) means reinforcing the ABSENCE of a challenging behavior during a time window — celebrating calm moments. DRI (Differential Reinforcement of Incompatible behavior) means reinforcing something physically incompatible with the problem behavior. These strategies focus on building what we WANT to see rather than punishing what we don\'t. That shift in mindset — from \"stop doing that\" to \"let me help you do this instead\" — is the heart of affirming ABA.' },
                 ],
                 quiz: { q: 'Which reinforcement approach focuses on celebrating calm moments when the challenging behavior is NOT occurring?', options: ['DRA (Alternative)', 'DRI (Incompatible)', 'DRO (Other)', 'Fixed Ratio'], answer: 2 }
             },
             replacement: {
                 sections: [
-                    { title: (t('behavior_lens.raw.what_is_a_replacement_behavior') || 'What is a Replacement Behavior?'), content: 'A replacement behavior is a new skill that serves the SAME function as the challenging behavior but in a more socially appropriate way. If a student screams to escape work (escape function), a replacement might be teaching them to use a \"break card\" or say \"I need help.\" The key insight: the student\'s need is valid — they need a better way to communicate it. We\'re not eliminating the need; we\'re teaching a more effective path to meeting it.' },
-                    { title: (t('behavior_lens.raw.choosing_effective_replacements') || 'Choosing Effective Replacements'), content: 'An effective replacement behavior must be: (1) Functionally equivalent — it gets the student the same outcome. (2) Equally or MORE efficient — it should be easier and faster than the challenging behavior. (3) Already in the student\'s repertoire or quickly teachable. If the replacement behavior is harder than the challenging behavior, the student will default to what works. Meet the student where they are and build from there.' },
-                    { title: (t('behavior_lens.raw.teaching_not_just_expecting') || 'Teaching, Not Just Expecting'), content: 'We can\'t expect students to use skills they haven\'t been taught. Replacement behaviors need explicit instruction: model the skill, practice it when the student is calm, role-play scenarios, and provide immediate reinforcement when the student uses it. Think of it like teaching any academic skill — you wouldn\'t expect a student to read without instruction. Behavioral skills deserve the same patience and scaffolding.' },
+                    { title: (tt('behavior_lens.raw.what_is_a_replacement_behavior', 'What is a Replacement Behavior?')), content: 'A replacement behavior is a new skill that serves the SAME function as the challenging behavior but in a more socially appropriate way. If a student screams to escape work (escape function), a replacement might be teaching them to use a \"break card\" or say \"I need help.\" The key insight: the student\'s need is valid — they need a better way to communicate it. We\'re not eliminating the need; we\'re teaching a more effective path to meeting it.' },
+                    { title: (tt('behavior_lens.raw.choosing_effective_replacements', 'Choosing Effective Replacements')), content: 'An effective replacement behavior must be: (1) Functionally equivalent — it gets the student the same outcome. (2) Equally or MORE efficient — it should be easier and faster than the challenging behavior. (3) Already in the student\'s repertoire or quickly teachable. If the replacement behavior is harder than the challenging behavior, the student will default to what works. Meet the student where they are and build from there.' },
+                    { title: (tt('behavior_lens.raw.teaching_not_just_expecting', 'Teaching, Not Just Expecting')), content: 'We can\'t expect students to use skills they haven\'t been taught. Replacement behaviors need explicit instruction: model the skill, practice it when the student is calm, role-play scenarios, and provide immediate reinforcement when the student uses it. Think of it like teaching any academic skill — you wouldn\'t expect a student to read without instruction. Behavioral skills deserve the same patience and scaffolding.' },
                 ],
                 quiz: { q: 'What is the MOST important quality of an effective replacement behavior?', options: ['It must be quiet', 'It must serve the same function as the challenging behavior', 'It must be adult-directed', 'It must eliminate the original behavior immediately'], answer: 1 }
             },
             collaboration: {
                 sections: [
-                    { title: (t('behavior_lens.raw.building_team_based_support') || 'Building Team-Based Support'), content: 'Effective behavior support is never a solo endeavor. Teachers, paraprofessionals, counselors, families, and — when available — Board Certified Behavior Analysts (BCBAs) all bring unique perspectives. Each team member sees different contexts: the classroom teacher sees academic triggers, the lunch aide sees social dynamics, and families see the student in their most comfortable environment. Sharing observations across settings gives the fullest picture.' },
-                    { title: (t('behavior_lens.raw.when_to_consult_specialists') || 'When to Consult Specialists'), content: 'Consider reaching out to a BCBA or behavior specialist when: (1) You\'ve collected data and the function isn\'t clear. (2) Interventions aren\'t showing progress after 2-4 weeks. (3) Safety is a concern. (4) You need help designing a more intensive plan. (5) You want someone to do a reliability check on your data collection. There is no shame in asking for support — it\'s a sign of professionalism and care for the student.' },
-                    { title: (t('behavior_lens.raw.partnering_with_families') || 'Partnering with Families'), content: 'Families are experts on their child. When sharing behavioral data, lead with strengths: \"Here\'s what\'s going well, and here\'s where we\'re focusing next.\" Use plain language, not clinical jargon. Share data visually when possible — graphs and charts help families see patterns. Ask families what works at home. Their strategies may reveal reinforcers or calming techniques that transfer to school. Always approach families as partners, never as the \"problem.\"' },
+                    { title: (tt('behavior_lens.raw.building_team_based_support', 'Building Team-Based Support')), content: 'Effective behavior support is never a solo endeavor. Teachers, paraprofessionals, counselors, families, and — when available — Board Certified Behavior Analysts (BCBAs) all bring unique perspectives. Each team member sees different contexts: the classroom teacher sees academic triggers, the lunch aide sees social dynamics, and families see the student in their most comfortable environment. Sharing observations across settings gives the fullest picture.' },
+                    { title: (tt('behavior_lens.raw.when_to_consult_specialists', 'When to Consult Specialists')), content: 'Consider reaching out to a BCBA or behavior specialist when: (1) You\'ve collected data and the function isn\'t clear. (2) Interventions aren\'t showing progress after 2-4 weeks. (3) Safety is a concern. (4) You need help designing a more intensive plan. (5) You want someone to do a reliability check on your data collection. There is no shame in asking for support — it\'s a sign of professionalism and care for the student.' },
+                    { title: (tt('behavior_lens.raw.partnering_with_families', 'Partnering with Families')), content: 'Families are experts on their child. When sharing behavioral data, lead with strengths: \"Here\'s what\'s going well, and here\'s where we\'re focusing next.\" Use plain language, not clinical jargon. Share data visually when possible — graphs and charts help families see patterns. Ask families what works at home. Their strategies may reveal reinforcers or calming techniques that transfer to school. Always approach families as partners, never as the \"problem.\"' },
                 ],
                 quiz: { q: 'When should you consider consulting a BCBA or behavior specialist?', options: ['Only after exhausting all your own ideas over 6+ months', 'When safety is a concern or data isn\'t clarifying the function', 'Never — teachers should handle behavior independently', 'Only when administration orders it'], answer: 1 }
             },
             ethics: {
                 sections: [
-                    { title: (t('behavior_lens.raw.bias_and_behavior') || 'Bias and Behavior: Looking Inward First'), content: 'Research consistently shows that students of color, students with disabilities, and students experiencing poverty are referred for behavioral intervention at disproportionate rates. Before recording a behavior, pause and ask: \"Am I observing this because it\'s genuinely impacting learning, or because it doesn\'t match my cultural expectations?\" A student avoiding eye contact may be showing respect in their culture, not defiance. A student who moves constantly may have sensory needs, not a behavior problem. Self-awareness is the first ethical obligation.' },
-                    { title: (t('behavior_lens.raw.person_first_always') || 'Person-First, Always'), content: 'Language shapes perception. Say \"a student who demonstrates difficulty with transitions\" instead of \"a non-compliant student.\" Say \"a student whose behavior communicates an unmet need\" instead of \"a behavior problem.\" This isn\'t political correctness — it\'s accuracy. The behavior is not the student. The behavior is information about what the student needs. When we use deficit-based language, we risk seeing the student as the problem instead of the environment, instruction, or support gap as the problem.' },
-                    { title: (t('behavior_lens.raw.restorative_over_punitive') || 'Restorative Over Punitive'), content: 'Traditional discipline (suspension, detention, loss of privileges) removes the student from the learning environment — the very place where we want them to build skills. Restorative approaches ask different questions: \"What happened? Who was affected? What needs to happen to make it right?\" These approaches maintain the student\'s dignity, preserve relationships, and — critically — teach the social-emotional skills that punitive approaches assume the student already has but is choosing not to use.' },
+                    { title: (tt('behavior_lens.raw.bias_and_behavior', 'Bias and Behavior: Looking Inward First')), content: 'Research consistently shows that students of color, students with disabilities, and students experiencing poverty are referred for behavioral intervention at disproportionate rates. Before recording a behavior, pause and ask: \"Am I observing this because it\'s genuinely impacting learning, or because it doesn\'t match my cultural expectations?\" A student avoiding eye contact may be showing respect in their culture, not defiance. A student who moves constantly may have sensory needs, not a behavior problem. Self-awareness is the first ethical obligation.' },
+                    { title: (tt('behavior_lens.raw.person_first_always', 'Person-First, Always')), content: 'Language shapes perception. Say \"a student who demonstrates difficulty with transitions\" instead of \"a non-compliant student.\" Say \"a student whose behavior communicates an unmet need\" instead of \"a behavior problem.\" This isn\'t political correctness — it\'s accuracy. The behavior is not the student. The behavior is information about what the student needs. When we use deficit-based language, we risk seeing the student as the problem instead of the environment, instruction, or support gap as the problem.' },
+                    { title: (tt('behavior_lens.raw.restorative_over_punitive', 'Restorative Over Punitive')), content: 'Traditional discipline (suspension, detention, loss of privileges) removes the student from the learning environment — the very place where we want them to build skills. Restorative approaches ask different questions: \"What happened? Who was affected? What needs to happen to make it right?\" These approaches maintain the student\'s dignity, preserve relationships, and — critically — teach the social-emotional skills that punitive approaches assume the student already has but is choosing not to use.' },
                 ],
                 quiz: { q: 'What should you ask YOURSELF before recording a behavioral concern?', options: ['\"How do I punish this effectively?\"', '\"Am I observing this because it impacts learning, or because it doesn\'t match my expectations?\"', '\"Which category of disability does this behavior suggest?\"', '\"Who else has complained about this student?\"'], answer: 1 }
             },
@@ -14029,7 +14056,7 @@ Respond helpfully and concisely as AlloBot:`;
         const handleComplete = (modId) => {
             if (!completedModules.includes(modId)) {
                 setCompletedModules(prev => [...prev, modId]);
-                if (addToast) addToast(t('behavior_lens.toast.module_completed') || 'Module completed! 🎓', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.module_completed', 'Module completed! 🎓'), 'success');
             }
             setActiveModule(null);
         };
@@ -14039,10 +14066,10 @@ Respond helpfully and concisely as AlloBot:`;
             if (!mod?.quiz) return;
             setQuizAnswers(prev => ({ ...prev, [modId]: answerIdx }));
             if (answerIdx === mod.quiz.answer) {
-                if (addToast) addToast(t('behavior_lens.toast.correct') || 'Correct! ✅', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.correct', 'Correct! ✅'), 'success');
                 handleComplete(modId);
             } else {
-                if (addToast) addToast(t('behavior_lens.toast.not_quite_try_again') || 'Not quite — try again!', 'warning');
+                if (addToast) addToast(tt('behavior_lens.toast.not_quite_try_again', 'Not quite — try again!'), 'warning');
             }
         };
 
@@ -14080,7 +14107,7 @@ Respond helpfully and concisely as AlloBot:`;
                             )
                         )
                     ) : h('div', { className: 'bg-slate-50 rounded-lg p-6 text-center' },
-                        h('p', { className: 'text-sm text-slate-600' }, t('behavior_lens.ui.read_through_the_module_content_above_then_click_c') || 'Read through the module content above, then click Complete below.'),
+                        h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.ui.read_through_the_module_content_above_then_click_c', 'Read through the module content above, then click Complete below.')),
                         h('button', { onClick: () => handleComplete(activeModule), className: 'mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700' }, '✅ Mark Complete')
                     ),
                     mod?.linkedTool && onOpenTool && h('button', { "aria-label": "On Open Tool",
@@ -14094,8 +14121,8 @@ Respond helpfully and concisely as AlloBot:`;
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🎓'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.pd_learning_path') || 'PD Learning Path'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.build_your_behavior_analysis_skills_step_by_step') || 'Build your behavior analysis skills step by step')
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.pd_learning_path', 'PD Learning Path')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.build_your_behavior_analysis_skills_step_by_step', 'Build your behavior analysis skills step by step'))
             ),
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('div', { className: 'flex items-center justify-between mb-2' },
@@ -14160,7 +14187,7 @@ Respond helpfully and concisely as AlloBot:`;
 
         const RESPONSE_OPTIONS = [
             { value: 'no', label: 'No', color: 'bg-green-100 border-green-300 text-green-800' },
-            { value: 'unsure', label: (t('behavior_lens.raw.unsure') || 'Unsure'), color: 'bg-amber-100 border-amber-300 text-amber-800' },
+            { value: 'unsure', label: (tt('behavior_lens.raw.unsure', 'Unsure')), color: 'bg-amber-100 border-amber-300 text-amber-800' },
             { value: 'yes', label: 'Yes', color: 'bg-red-100 border-red-300 text-red-800' },
         ];
 
@@ -14190,16 +14217,16 @@ Recent behavioral data: ${abcSummary || 'None collected'}
 
 Respond in 150 words or fewer. Use bullet points.`);
                 setAiInsight(result);
-            } catch (e) { if (addToast) addToast(t('behavior_lens.toast.ai_analysis_failed') || 'AI analysis failed', 'error'); }
+            } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.ai_analysis_failed', 'AI analysis failed'), 'error'); }
             setLoading(false);
         };
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🛡️'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.risk_screening_checklist') || 'Risk Screening Checklist'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.safety_reflection_checklist_subtitle') || 'Safety reflection checklist — not a validated threat assessment instrument'),
-                h('p', { className: 'text-[10px] text-slate-500 mt-0.5' }, t('behavior_lens.ui.formal_threat_assessment_note') || 'For formal threat assessment, refer to your district\'s protocol (VTA, STAG, or NTAC frameworks).')
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.risk_screening_checklist', 'Risk Screening Checklist')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.safety_reflection_checklist_subtitle', 'Safety reflection checklist — not a validated threat assessment instrument')),
+                h('p', { className: 'text-[10px] text-slate-500 mt-0.5' }, tt('behavior_lens.ui.formal_threat_assessment_note', 'For formal threat assessment, refer to your district\'s protocol (VTA, STAG, or NTAC frameworks).'))
             ),
             h('div', { className: 'bg-amber-50 rounded-xl border-2 border-amber-200 p-4' },
                 h('p', { className: 'text-xs font-bold text-amber-800' }, '⚠️ IMPORTANT: This tool is a screening aid only. It does NOT replace professional threat assessment. Always follow your district\'s safety protocols. If a student is in immediate danger, contact administration and/or 911 immediately.'),
@@ -14336,7 +14363,7 @@ Student codename: ${studentName}
 Format as a professional, structured report with clear sections and headers. Keep under 400 words.`);
                 setPacket(result);
                 setViewMode('packet');
-            } catch (e) { if (addToast) addToast(t('behavior_lens.toast.generation_failed') || 'Generation failed', 'error'); }
+            } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.generation_failed', 'Generation failed'), 'error'); }
             setLoading(false);
         };
 
@@ -14353,7 +14380,7 @@ Format as a professional, structured report with clear sections and headers. Kee
                 h('div', { className: 'flex items-center gap-2' },
                     h('span', { className: 'text-xl' }, '⚠️'),
                     h('div', null,
-                        h('p', { className: 'text-sm font-black text-amber-800' }, t('behavior_lens.ui.bcba_consultation_recommended') || 'BCBA Consultation Recommended'),
+                        h('p', { className: 'text-sm font-black text-amber-800' }, tt('behavior_lens.ui.bcba_consultation_recommended', 'BCBA Consultation Recommended')),
                         h('p', { className: 'text-xs text-amber-700 mt-1' }, `Based on ${dataStats.totalABC} data points: patterns suggest this case may benefit from BCBA oversight. Consider generating a handoff packet and scheduling a consultation.`)
                     )
                 )
@@ -14371,7 +14398,7 @@ Format as a professional, structured report with clear sections and headers. Kee
             // Dashboard view
             viewMode === 'dashboard' && h('div', { className: 'space-y-3' },
                 h('div', { className: 'grid grid-cols-3 gap-3' },
-                    [['📋', 'ABC Entries', dataStats.totalABC], ['🔍', 'Observations', dataStats.totalObs], ['📅', t('behavior_lens.date_range') || 'Date Range', dataStats.dateRange ? `${dataStats.dateRange.first?.slice(0, 10) || '?'} → ${dataStats.dateRange.last?.slice(0, 10) || '?'}` : 'N/A']].map(([icon, label, val]) =>
+                    [['📋', 'ABC Entries', dataStats.totalABC], ['🔍', 'Observations', dataStats.totalObs], ['📅', tt('behavior_lens.date_range', 'Date Range'), dataStats.dateRange ? `${dataStats.dateRange.first?.slice(0, 10) || '?'} → ${dataStats.dateRange.last?.slice(0, 10) || '?'}` : 'N/A']].map(([icon, label, val]) =>
                         h('div', { key: label, className: 'bg-white rounded-xl border border-slate-400 p-3 text-center shadow-sm' },
                             h('span', { className: 'text-lg' }, icon),
                             h('div', { className: 'text-lg font-black text-slate-800' }, val),
@@ -14537,7 +14564,7 @@ Format as a professional, structured report with clear sections and headers. Kee
                 packet && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
                     h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, packet),
                     h('div', { className: 'flex gap-2 mt-4 flex-wrap' },
-                        h('button', { onClick: () => { navigator.clipboard.writeText(packet); if (addToast) addToast(t('behavior_lens.toast.copied') || 'Copied!', 'success'); }, className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200' }, '📋 Copy Packet'),
+                        h('button', { onClick: () => { navigator.clipboard.writeText(packet); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }, className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200' }, '📋 Copy Packet'),
                         h('button', { onClick: () => window.print(), className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200' }, '🖨️ Print'),
                         h('button', { "aria-label": "Re-generate", onClick: () => { setPacket(''); setViewMode('template'); }, className: 'px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-[11px] font-bold hover:bg-slate-200' }, '🔄 Re-generate')
                     )
@@ -14556,7 +14583,7 @@ Format as a professional, structured report with clear sections and headers. Kee
         const QUESTIONS = [
             { q: 'What does the "B" in ABC data stand for?', opts: ['Baseline', 'Behavior', 'Bias', 'Boundary'], answer: 1 },
             { q: 'Which is NOT one of the 4 functions of behavior?', opts: ['Escape', 'Attention', 'Defiance', 'Sensory'], answer: 2 },
-            { q: t('behavior_lens.quiz_replacement') || 'What is a replacement behavior?', opts: [t('behavior_lens.quiz_opt_any_stops') || 'Any behavior that stops the problem', 'A socially appropriate behavior serving the SAME function', 'Ignoring the student', 'A consequence for misbehavior'], answer: 1 },
+            { q: tt('behavior_lens.quiz_replacement', 'What is a replacement behavior?'), opts: [tt('behavior_lens.quiz_opt_any_stops', 'Any behavior that stops the problem'), 'A socially appropriate behavior serving the SAME function', 'Ignoring the student', 'A consequence for misbehavior'], answer: 1 },
             { q: 'What is an extinction burst?', opts: ['When the behavior disappears immediately', 'A temporary INCREASE in behavior when reinforcement is withheld', 'A type of punishment', 'When the student gives up'], answer: 1 },
             { q: 'In a DRO schedule, reinforcement is delivered when:', opts: ['Every 5th response', 'The target behavior has NOT occurred for a set time', 'The student asks for it', 'A random interval passes'], answer: 1 },
             { q: 'What does FBA stand for?', opts: ['Functional Behavior Assessment', 'First Behavior Attempt', 'Future Behavior Analysis', 'Fixed Behavior Approach'], answer: 0 },
@@ -14616,8 +14643,8 @@ Format as a professional, structured report with clear sections and headers. Kee
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🧪'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.aba_knowledge_quiz') || 'ABA Knowledge Quiz'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.test_your_behavioral_analysis_knowledge_80_to_earn') || 'Test your behavioral analysis knowledge — 80% to earn your badge')
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.aba_knowledge_quiz', 'ABA Knowledge Quiz')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.test_your_behavioral_analysis_knowledge_80_to_earn', 'Test your behavioral analysis knowledge — 80% to earn your badge'))
             ),
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-2' },
                 h('div', { className: 'flex gap-1' },
@@ -15888,11 +15915,11 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         }, [elapsed, focusMode, sessionActive, intervalLength]);
 
         const DATA_TYPES = [
-            { id: 'frequency', label: (t('behavior_lens.raw.frequency_count') || 'Frequency Count'), icon: '🔢', unit: 'count' },
-            { id: 'rate', label: (t('behavior_lens.raw.rate_per_min') || 'Rate (per min)'), icon: '⚡', unit: '/min' },
-            { id: 'duration', label: (t('behavior_lens.raw.duration_sec') || 'Duration (sec)'), icon: '⏱️', unit: 'sec' },
-            { id: 'percentage', label: (t('behavior_lens.raw.percentage') || 'Percentage'), icon: '📊', unit: '%' },
-            { id: 'interval', label: (t('behavior_lens.raw.interval_yn') || 'Interval (Y/N)'), icon: '📋', unit: 'intervals' },
+            { id: 'frequency', label: (tt('behavior_lens.raw.frequency_count', 'Frequency Count')), icon: '🔢', unit: 'count' },
+            { id: 'rate', label: (tt('behavior_lens.raw.rate_per_min', 'Rate (per min)')), icon: '⚡', unit: '/min' },
+            { id: 'duration', label: (tt('behavior_lens.raw.duration_sec', 'Duration (sec)')), icon: '⏱️', unit: 'sec' },
+            { id: 'percentage', label: (tt('behavior_lens.raw.percentage', 'Percentage')), icon: '📊', unit: '%' },
+            { id: 'interval', label: (tt('behavior_lens.raw.interval_yn', 'Interval (Y/N)')), icon: '📋', unit: 'intervals' },
         ];
 
         // Elapsed timer
@@ -15913,7 +15940,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         }, [abcEntries]);
 
         const addTarget = () => {
-            if (targets.length >= 5) { if (addToast) addToast(t('behavior_lens.toast.max_5_target_behaviors') || 'Max 5 target behaviors', 'warning'); return; }
+            if (targets.length >= 5) { if (addToast) addToast(tt('behavior_lens.toast.max_5_target_behaviors', 'Max 5 target behaviors'), 'warning'); return; }
             setTargets(prev => [...prev, { id: 'b' + (prev.length + 1), name: '', type: 'frequency', count: 0, durations: [], intervals: [] }]);
         };
 
@@ -15924,7 +15951,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         };
 
         const startSession = () => {
-            if (targets.every(t => !t.name.trim())) { if (addToast) addToast(t('behavior_lens.toast.name_at_least_one_target_behavior') || 'Name at least one target behavior', 'warning'); return; }
+            if (targets.every(t => !t.name.trim())) { if (addToast) addToast(tt('behavior_lens.toast.name_at_least_one_target_behavior', 'Name at least one target behavior'), 'warning'); return; }
             setSessionActive(true);
             setSessionStart(Date.now());
             setElapsed(0);
@@ -15976,7 +16003,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 h('div', { className: 'text-center py-3' },
                     h('h2', { className: 'text-lg font-black text-slate-800' }, `📋 Session History (${sessionHistory.length})`),
                 ),
-                sessionHistory.length === 0 && h('p', { className: 'text-center text-sm text-slate-600 py-8' }, t('behavior_lens.ui.no_sessions_recorded_yet') || 'No sessions recorded yet.'),
+                sessionHistory.length === 0 && h('p', { className: 'text-center text-sm text-slate-600 py-8' }, tt('behavior_lens.ui.no_sessions_recorded_yet', 'No sessions recorded yet.')),
                 sessionHistory.map(s =>
                     h('div', { key: s.id, className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                         h('div', { className: 'flex justify-between items-center mb-2' },
@@ -16004,8 +16031,8 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '📋'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.session_data_tracker') || 'Session Data Tracker'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.systematic_behavioral_measurement_across_sessions') || 'Systematic behavioral measurement across sessions')
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.session_data_tracker', 'Session Data Tracker')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.systematic_behavioral_measurement_across_sessions', 'Systematic behavioral measurement across sessions'))
             ),
             // Session controls
             !sessionActive ? h('div', { className: 'space-y-3' },
@@ -16016,7 +16043,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                         h('button', { "aria-label": "+ Add", onClick: addTarget, className: 'text-[11px] px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg font-bold hover:bg-indigo-200' }, '+ Add')
                     ),
                     suggestedBehaviors.length > 0 && h('div', { className: 'flex flex-wrap gap-1' },
-                        h('span', { className: 'text-[11px] text-slate-600 font-medium' }, t('behavior_lens.ui.from_abc_data') || 'From ABC data:'),
+                        h('span', { className: 'text-[11px] text-slate-600 font-medium' }, tt('behavior_lens.ui.from_abc_data', 'From ABC data:')),
                         suggestedBehaviors.map(b =>
                             h('button', { key: b,
                                 onClick: () => {
@@ -16033,7 +16060,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                             h('input', {
                                 value: tgt.name,
                                 onChange: e => updateTarget(tgt.id, 'name', e.target.value),
-                                placeholder: t('behavior_lens.ph.behavior_name') || 'Behavior name...',
+                                placeholder: tt('behavior_lens.ph.behavior_name', 'Behavior name...'),
                                 'aria-label': 'Target behavior name',
                                 className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300'
                             }),
@@ -16087,7 +16114,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 h('div', { className: 'space-y-3' },
                     h('div', { className: 'bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-4 text-white text-center shadow-lg' },
                         h('div', { className: 'text-3xl font-black tabular-nums' }, fmtTime(elapsed)),
-                        h('p', { className: 'text-[11px] opacity-80 mt-1' }, t('behavior_lens.ui.session_active') || 'Session Active')
+                        h('p', { className: 'text-[11px] opacity-80 mt-1' }, tt('behavior_lens.ui.session_active', 'Session Active'))
                     ),
                     targets.filter(t => t.name.trim()).map(tgt => {
                         const isDurationActive = !!durationTimers[tgt.id];
@@ -16112,7 +16139,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                     h('div', null,
                                         h('p', { className: 'text-xs text-slate-600' }, `Episodes: ${tgt.count}`),
                                         tgt.durations?.length > 0 && h('p', { className: 'text-xs text-emerald-600 font-bold' }, `Avg: ${Math.round(tgt.durations.reduce((a, b) => a + b, 0) / tgt.durations.length)}s`),
-                                        isDurationActive && h('p', { className: 'text-xs text-red-600 font-bold animate-pulse' }, t('behavior_lens.ui.recording') || 'Recording...')
+                                        isDurationActive && h('p', { className: 'text-xs text-red-600 font-bold animate-pulse' }, tt('behavior_lens.ui.recording', 'Recording...'))
                                     )
                                 ) :
                                     tgt.type === 'interval' ? h('div', { className: 'space-y-2' },
@@ -16201,7 +16228,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         // ── Manual Data Helpers ──
         const addManualPoint = () => {
             const val = parseFloat(newPointValue);
-            if (isNaN(val) || val < 0) { if (addToast) addToast(t('behavior_lens.toast.enter_a_valid_number') || 'Enter a valid number', 'warning'); return; }
+            if (isNaN(val) || val < 0) { if (addToast) addToast(tt('behavior_lens.toast.enter_a_valid_number', 'Enter a valid number'), 'warning'); return; }
             setManualData(prev => [...prev, { session: prev.length + 1, value: val, date: new Date().toISOString().slice(0, 10) }]);
             setNewPointValue('');
         };
@@ -16224,7 +16251,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                 const match = line.match(/(?:session\s*\d*\s*[:=]\s*)?(\d+(?:\.\d+)?)/i);
                 if (match) parsed.push(parseFloat(match[1]));
             }
-            if (parsed.length === 0) { if (addToast) addToast(t('behavior_lens.toast.no_valid_data_found_in_csv') || 'No valid data found in CSV', 'warning'); return; }
+            if (parsed.length === 0) { if (addToast) addToast(tt('behavior_lens.toast.no_valid_data_found_in_csv', 'No valid data found in CSV'), 'warning'); return; }
             setManualData(parsed.map((v, i) => ({ session: i + 1, value: v, date: new Date().toISOString().slice(0, 10) })));
             setShowCsvImport(false);
             setCsvText('');
@@ -16259,7 +16286,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     trendSlope = (m2 - m1) / (values.length - 1);
                     trendIntercept = m1 - trendSlope * (half / 2);
                 }
-                return [{ label: (t('behavior_lens.raw.all_data') || 'All Data'), startIdx: 0, endIdx: dataSeries.length - 1, data: dataSeries, mean, trendSlope, trendIntercept }];
+                return [{ label: (tt('behavior_lens.raw.all_data', 'All Data')), startIdx: 0, endIdx: dataSeries.length - 1, data: dataSeries, mean, trendSlope, trendIntercept }];
             }
             return phases.map((p, pi) => {
                 const phaseData = dataSeries.filter(d => d.session >= p.startSession && d.session <= (phases[pi + 1]?.startSession - 1 || Infinity));
@@ -16719,8 +16746,8 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '📈'),
-                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_aba_graph_engine' }, t('behavior_lens.ui.aba_graph_engine') || 'ABA Graph Engine'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.publicationstandard_singlecase_design_graphs') || 'Publication-standard single-case design graphs')
+                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_aba_graph_engine' }, tt('behavior_lens.ui.aba_graph_engine', 'ABA Graph Engine')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.publicationstandard_singlecase_design_graphs', 'Publication-standard single-case design graphs'))
             ),
 
             // ── Data Source Toggle ──
@@ -16745,7 +16772,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                             className: 'px-3 py-1 bg-white border border-fuchsia-600 rounded-lg text-[11px] font-bold text-fuchsia-600 hover:bg-fuchsia-50'
                         }, showCsvImport ? '← Back' : '📋 Paste CSV'),
                         manualData.length > 0 && h('button', { "aria-label": "Clear",
-                            onClick: () => { setManualData([]); if (addToast) addToast(t('behavior_lens.toast.data_cleared') || 'Data cleared', 'info'); },
+                            onClick: () => { setManualData([]); if (addToast) addToast(tt('behavior_lens.toast.data_cleared', 'Data cleared'), 'info'); },
                             className: 'px-3 py-1 bg-white border border-red-600 rounded-lg text-[11px] font-bold text-red-500 hover:bg-red-50'
                         }, '🗑️ Clear')
                     )
@@ -16753,11 +16780,11 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
 
                 // CSV Import
                 showCsvImport && h('div', { className: 'bg-white rounded-lg border border-fuchsia-200 p-3 space-y-2' },
-                    h('p', { className: 'text-[11px] text-fuchsia-600' }, t('behavior_lens.ui.paste_one_value_per_line_supports_formats_5_sessio') || 'Paste one value per line. Supports formats: "5", "Session 1: 5", or "1,5"'),
+                    h('p', { className: 'text-[11px] text-fuchsia-600' }, tt('behavior_lens.ui.paste_one_value_per_line_supports_formats_5_sessio', 'Paste one value per line. Supports formats: "5", "Session 1: 5", or "1,5"')),
                     h('textarea', {
                         value: csvText,
                         onChange: (e) => setCsvText(e.target.value),
-                        placeholder: t('behavior_lens.ph.session_1_3nsession_2_7nsession_3_5n') || 'Session 1: 3\nSession 2: 7\nSession 3: 5\n...',
+                        placeholder: tt('behavior_lens.ph.session_1_3nsession_2_7nsession_3_5n', 'Session 1: 3\nSession 2: 7\nSession 3: 5\n...'),
                         rows: 5,
                         className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 bg-slate-50 font-mono focus:outline-none focus:ring-2 focus:ring-fuchsia-300'
                     }),
@@ -16777,7 +16804,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                             value: newPointValue,
                             onChange: (e) => setNewPointValue(e.target.value),
                             onKeyDown: (e) => { if (e.key === 'Enter') addManualPoint(); },
-                            placeholder: t('behavior_lens.ph.eg_5') || 'e.g. 5',
+                            placeholder: tt('behavior_lens.ph.eg_5', 'e.g. 5'),
                             'aria-label': 'New session data value',
                             min: 0,
                             step: 'any',
@@ -16796,9 +16823,9 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     h('table', { className: 'w-full text-[11px]' },
                         h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
                             h('tr', { className: 'bg-fuchsia-50' },
-                                h('th', { scope: 'col', className: 'px-3 py-1.5 text-start font-bold text-fuchsia-700' }, (t('behavior_lens.raw.session') || 'Session')),
-                                h('th', { scope: 'col', className: 'px-3 py-1.5 text-start font-bold text-fuchsia-700' }, (t('behavior_lens.raw.value') || 'Value')),
-                                h('th', { scope: 'col', className: 'px-3 py-1.5 text-end font-bold text-fuchsia-700' }, (t('behavior_lens.raw.actions') || 'Actions'))
+                                h('th', { scope: 'col', className: 'px-3 py-1.5 text-start font-bold text-fuchsia-700' }, (tt('behavior_lens.raw.session', 'Session'))),
+                                h('th', { scope: 'col', className: 'px-3 py-1.5 text-start font-bold text-fuchsia-700' }, (tt('behavior_lens.raw.value', 'Value'))),
+                                h('th', { scope: 'col', className: 'px-3 py-1.5 text-end font-bold text-fuchsia-700' }, (tt('behavior_lens.raw.actions', 'Actions')))
                             )
                         ),
                         h('tbody', null,
@@ -16827,13 +16854,13 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                         )
                     )
                 ),
-                !showCsvImport && manualData.length === 0 && h('p', { className: 'text-xs text-fuchsia-700 text-center py-3' }, t('behavior_lens.ui.add_data_points_above_or_paste_csv_data_to_get_sta') || 'Add data points above or paste CSV data to get started.')
+                !showCsvImport && manualData.length === 0 && h('p', { className: 'text-xs text-fuchsia-700 text-center py-3' }, tt('behavior_lens.ui.add_data_points_above_or_paste_csv_data_to_get_sta', 'Add data points above or paste CSV data to get started.'))
             ),
 
             // ── No data message (auto mode only) ──
             dataMode === 'auto' && dataSeries.length === 0 && h('div', { className: 'text-center py-8 bg-slate-50 rounded-xl border border-slate-400' },
-                h('p', { className: 'text-sm text-slate-600' }, t('behavior_lens.ui.no_session_data_recorded_yet') || 'No session data recorded yet.'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.record_sessions_with_the_session_data_tracker_or_s') || 'Record sessions with the Session Data Tracker, or switch to Manual Entry mode.'),
+                h('p', { className: 'text-sm text-slate-600' }, tt('behavior_lens.ui.no_session_data_recorded_yet', 'No session data recorded yet.')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.record_sessions_with_the_session_data_tracker_or_s', 'Record sessions with the Session Data Tracker, or switch to Manual Entry mode.')),
                 h('button', { "aria-label": "Switch to Manual Entry",
                     onClick: () => setDataMode('manual'),
                     className: 'mt-3 px-4 py-2 bg-fuchsia-600 text-white rounded-lg text-xs font-bold hover:bg-fuchsia-700'
@@ -16844,20 +16871,20 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             dataSeries.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.ui.graph_title') || 'Graph Title'),
-                        h('input', { value: graphTitle, onChange: e => setGraphTitle(e.target.value), 'aria-label': 'eg Off-Task Behavior', placeholder: t('behavior_lens.ph.eg_offtask_behavior_2') || 'e.g. Off-Task Behavior', className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.graph_title', 'Graph Title')),
+                        h('input', { value: graphTitle, onChange: e => setGraphTitle(e.target.value), 'aria-label': 'eg Off-Task Behavior', placeholder: tt('behavior_lens.ph.eg_offtask_behavior_2', 'e.g. Off-Task Behavior'), className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.ui.yaxis_label') || 'Y-Axis Label'),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.yaxis_label', 'Y-Axis Label')),
                         h('input', { value: yAxisLabel, onChange: e => setYAxisLabel(e.target.value), className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.ui.xaxis_label') || 'X-Axis Label'),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.xaxis_label', 'X-Axis Label')),
                         h('input', { value: xAxisLabel, onChange: e => setXAxisLabel(e.target.value), className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
                     ),
                 ),
                 dataMode === 'auto' && behaviorNames.length > 1 && h('div', { className: 'flex gap-2 mt-2' },
-                    h('span', { className: 'text-[11px] font-bold text-slate-600' }, t('behavior_lens.ui.behavior') || 'Behavior:'),
+                    h('span', { className: 'text-[11px] font-bold text-slate-600' }, tt('behavior_lens.ui.behavior', 'Behavior:')),
                     behaviorNames.map((bn, i) =>
                         h('button', { "aria-label": "Toggle selected behavior", key: bn, onClick: () => setSelectedBehavior(i), className: `px-2 py-1 rounded-lg text-[11px] font-bold border ${i === selectedBehavior ? 'bg-indigo-100 border-indigo-400 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}` }, bn)
                     )
@@ -17010,10 +17037,10 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     // Legend
                     h('g', { transform: `translate(${padL + plotW - 140}, ${padT + 5})` },
                         renderDataMarker(selectedBehavior, 5, 5, false, jabaMode),
-                        h('text', { x: 12, y: 9, fontSize: 8, fill: '#475569' }, (t('behavior_lens.raw.data_points') || 'Data Points')),
+                        h('text', { x: 12, y: 9, fontSize: 8, fill: '#475569' }, (tt('behavior_lens.raw.data_points', 'Data Points'))),
                         showLevel && h('g', null,
                             h('line', { x1: 0, y1: 18, x2: 10, y2: 18, stroke: jabaMode ? '#334155' : '#f59e0b', strokeWidth: 1.5, strokeDasharray: jabaMode ? '2,2' : '4,3' }),
-                            h('text', { x: 12, y: 21, fontSize: 8, fill: '#475569' }, (t('behavior_lens.raw.level_mean') || 'Level (Mean)'))
+                            h('text', { x: 12, y: 21, fontSize: 8, fill: '#475569' }, (tt('behavior_lens.raw.level_mean', 'Level (Mean)')))
                         ),
                         showTrend && h('g', null,
                             h('line', { x1: 0, y1: 30, x2: 10, y2: 30, stroke: jabaMode ? '#000000' : '#ef4444', strokeWidth: 1.5, strokeDasharray: jabaMode ? '8,2,2,2' : '8,4' }),
@@ -17077,7 +17104,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a'); a.href = url; a.download = `${(graphTitle || 'aba_graph').replace(/\s+/g, '_')}.svg`;
                         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                        if (addToast) addToast(t('behavior_lens.toast.svg_exported') || 'SVG exported!', 'success');
+                        if (addToast) addToast(tt('behavior_lens.toast.svg_exported', 'SVG exported!'), 'success');
                     },
                     className: 'flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200'
                 }, '💾 Export SVG')
@@ -17085,11 +17112,11 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             // ── Inter-tool Navigation ──
             dataSeries.length > 0 && phaseAnalysis.length >= 2 && setActivePanel && h('div', { className: 'flex gap-2' },
                 h('button', { "aria-label": "Send to Effect Size",
-                    onClick: () => { if (addToast) addToast(t('behavior_lens.toast.graph_data_ready_autofill_available_in_effect_size') || 'Graph data ready — auto-fill available in Effect Size!', 'success'); setActivePanel('effectsize'); },
+                    onClick: () => { if (addToast) addToast(tt('behavior_lens.toast.graph_data_ready_autofill_available_in_effect_size', 'Graph data ready — auto-fill available in Effect Size!'), 'success'); setActivePanel('effectsize'); },
                     className: 'flex-1 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl text-xs font-bold hover:from-indigo-600 hover:to-purple-600 shadow-md transition-all'
                 }, '📐 Send to Effect Size →'),
                 h('button', { "aria-label": "Send to IEP Prep",
-                    onClick: () => { if (addToast) addToast(t('behavior_lens.toast.graph_data_attached_to_iep_prep') || 'Graph data attached to IEP Prep!', 'success'); setActivePanel('iepprep'); },
+                    onClick: () => { if (addToast) addToast(tt('behavior_lens.toast.graph_data_attached_to_iep_prep', 'Graph data attached to IEP Prep!'), 'success'); setActivePanel('iepprep'); },
                     className: 'flex-1 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl text-xs font-bold hover:from-blue-600 hover:to-indigo-600 shadow-md transition-all'
                 }, '📄 Send to IEP Prep →')
             )
@@ -17172,7 +17199,7 @@ For your recommendation, provide:
 
 Keep under 200 words. Use bullet points.`);
                 setWizardResult(result);
-            } catch (e) { if (addToast) addToast(t('behavior_lens.toast.wizard_failed') || 'Wizard failed', 'error'); }
+            } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.wizard_failed', 'Wizard failed'), 'error'); }
             setWizardLoading(false);
         };
 
@@ -17180,14 +17207,14 @@ Keep under 200 words. Use bullet points.`);
             return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
                 h('div', { className: 'text-center py-3' },
                     h('div', { className: 'text-4xl mb-2' }, '🔬'),
-                    h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.singlecase_design_manager') || 'Single-Case Design Manager'),
-                    h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.select_a_research_design_to_structure_your_data_co') || 'Select a research design to structure your data collection')
+                    h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.singlecase_design_manager', 'Single-Case Design Manager')),
+                    h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.select_a_research_design_to_structure_your_data_co', 'Select a research design to structure your data collection'))
                 ),
                 // AI Design Wizard
                 h('div', { className: 'bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl border border-purple-200 p-4' },
                     h('h3', { className: 'text-sm font-bold text-purple-800 mb-2' }, '🧠 AI Design Wizard'),
-                    h('p', { className: 'text-[11px] text-purple-600 mb-2' }, t('behavior_lens.ui.describe_your_research_question_and_let_ai_recomme') || 'Describe your research question and let AI recommend the best design.'),
-                    h('textarea', { value: wizardQ, onChange: e => setWizardQ(e.target.value), placeholder: t('behavior_lens.ph.eg_does_a_token_economy_reduce_offtask_behavior_du') || 'e.g. "Does a token economy reduce off-task behavior during math instruction?"', rows: 2, className: 'w-full text-xs border border-purple-600 rounded-lg px-3 py-2 mb-2 bg-white' }),
+                    h('p', { className: 'text-[11px] text-purple-600 mb-2' }, tt('behavior_lens.ui.describe_your_research_question_and_let_ai_recomme', 'Describe your research question and let AI recommend the best design.')),
+                    h('textarea', { value: wizardQ, onChange: e => setWizardQ(e.target.value), placeholder: tt('behavior_lens.ph.eg_does_a_token_economy_reduce_offtask_behavior_du', 'e.g. "Does a token economy reduce off-task behavior during math instruction?"'), rows: 2, className: 'w-full text-xs border border-purple-600 rounded-lg px-3 py-2 mb-2 bg-white' }),
                     h('button', { onClick: handleWizard, disabled: wizardLoading || !wizardQ.trim(), className: 'px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 disabled:opacity-50' }, wizardLoading ? '⏳ Analyzing...' : '🧠 Get Recommendation'),
                     wizardResult && h('div', { className: 'mt-3 bg-white rounded-lg p-3 border border-purple-200 text-xs text-purple-700 whitespace-pre-wrap' }, wizardResult)
                 ),
@@ -17249,7 +17276,7 @@ Keep under 200 words. Use bullet points.`);
                             h('span', { className: `text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center ${i === currentPhase ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'}` }, i + 1),
                             h('span', { className: 'text-xs font-medium text-slate-700 flex-1' }, p.label),
                             h('div', { className: 'flex items-center gap-1' },
-                                h('span', { className: 'text-[11px] text-slate-600' }, t('behavior_lens.ui.starts_at_session') || 'Starts at session:'),
+                                h('span', { className: 'text-[11px] text-slate-600' }, tt('behavior_lens.ui.starts_at_session', 'Starts at session:')),
                                 h('input', {
                                     type: 'number', min: 1, value: p.startSession,
                                     onChange: e => updatePhaseStart(i, e.target.value),
@@ -17265,12 +17292,12 @@ Keep under 200 words. Use bullet points.`);
             // Multiple Baseline tiers (only for MB design)
             selectedDesign.id === 'MB' && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('h3', { className: 'text-sm font-bold text-slate-700 mb-3' }, '📐 Multiple Baseline Tiers'),
-                h('p', { className: 'text-[11px] text-slate-600 mb-3' }, t('behavior_lens.ui.define_the_behaviors_settings_or_students_for_stag') || 'Define the behaviors, settings, or students for staggered intervention.'),
+                h('p', { className: 'text-[11px] text-slate-600 mb-3' }, tt('behavior_lens.ui.define_the_behaviors_settings_or_students_for_stag', 'Define the behaviors, settings, or students for staggered intervention.')),
                 h('div', { className: 'space-y-2' },
                     mbTiers.map((tier, i) =>
                         h('div', { key: i, className: 'flex gap-2 items-center' },
                             h('span', { className: 'text-xs font-bold text-slate-600 w-14' }, tier.name),
-                            h('input', { value: tier.behavior, onChange: e => setMbTiers(prev => prev.map((t, j) => j === i ? { ...t, behavior: e.target.value } : t)), 'aria-label': 'eg Off-task behavior in math', placeholder: t('behavior_lens.ph.eg_offtask_behavior_in_math') || 'e.g. Off-task behavior in math', className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' })
+                            h('input', { value: tier.behavior, onChange: e => setMbTiers(prev => prev.map((t, j) => j === i ? { ...t, behavior: e.target.value } : t)), 'aria-label': 'eg Off-task behavior in math', placeholder: tt('behavior_lens.ph.eg_offtask_behavior_in_math', 'e.g. Off-task behavior in math'), className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' })
                         )
                     ),
                     mbTiers.length < 5 && h('button', { "aria-label": "+ Add Tier", onClick: () => setMbTiers(prev => [...prev, { name: `Tier ${prev.length + 1}`, behavior: '' }]), className: 'text-[11px] text-indigo-600 font-bold hover:underline' }, '+ Add Tier')
@@ -17279,15 +17306,15 @@ Keep under 200 words. Use bullet points.`);
             // Visual analysis checklist
             h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-4' },
                 h('h3', { className: 'text-sm font-bold text-emerald-800 mb-2' }, '📋 Visual Analysis Checklist'),
-                h('p', { className: 'text-[11px] text-emerald-600 mb-3' }, t('behavior_lens.ui.use_these_criteria_when_examining_your_graph') || 'Use these criteria when examining your graph:'),
+                h('p', { className: 'text-[11px] text-emerald-600 mb-3' }, tt('behavior_lens.ui.use_these_criteria_when_examining_your_graph', 'Use these criteria when examining your graph:')),
                 h('div', { className: 'grid grid-cols-2 gap-2' },
                     [
-                        { label: (t('behavior_lens.raw.level') || 'Level'), desc: 'Mean performance within a phase', icon: '━' },
-                        { label: (t('behavior_lens.raw.trend') || 'Trend'), desc: 'Slope/direction of data path within a phase', icon: '↗' },
-                        { label: (t('behavior_lens.raw.variability') || 'Variability'), desc: 'Range/consistency of data within a phase', icon: '〰️' },
-                        { label: (t('behavior_lens.raw.immediacy') || 'Immediacy'), desc: 'How quickly behavior changes between phases', icon: '⚡' },
-                        { label: (t('behavior_lens.raw.overlap') || 'Overlap'), desc: 'How much data between phases overlaps', icon: '🔗' },
-                        { label: (t('behavior_lens.raw.consistency') || 'Consistency'), desc: 'Similar patterns across attempts to replicate', icon: '🔄' },
+                        { label: (tt('behavior_lens.raw.level', 'Level')), desc: 'Mean performance within a phase', icon: '━' },
+                        { label: (tt('behavior_lens.raw.trend', 'Trend')), desc: 'Slope/direction of data path within a phase', icon: '↗' },
+                        { label: (tt('behavior_lens.raw.variability', 'Variability')), desc: 'Range/consistency of data within a phase', icon: '〰️' },
+                        { label: (tt('behavior_lens.raw.immediacy', 'Immediacy')), desc: 'How quickly behavior changes between phases', icon: '⚡' },
+                        { label: (tt('behavior_lens.raw.overlap', 'Overlap')), desc: 'How much data between phases overlaps', icon: '🔗' },
+                        { label: (tt('behavior_lens.raw.consistency', 'Consistency')), desc: 'Similar patterns across attempts to replicate', icon: '🔄' },
                     ].map(c =>
                         h('div', { key: c.label, className: 'bg-white rounded-lg p-2 border border-emerald-100' },
                             h('div', { className: 'flex items-center gap-1 mb-0.5' },
@@ -17317,7 +17344,7 @@ Keep under 200 words. Use bullet points.`);
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🎯'),
                 h('h2', { className: 'text-lg font-black text-slate-800' }, DualLabel('DR Strategy Selector')),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.choose_the_right_differential_reinforcement_strate') || 'Choose the right differential reinforcement strategy')
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.choose_the_right_differential_reinforcement_strate', 'Choose the right differential reinforcement strategy'))
             ),
             h('div', { className: 'space-y-3' },
                 STRATEGIES.map(s =>
@@ -17398,7 +17425,7 @@ Use clinical, professional tone, suitable for an IEP team. Keep it structured an
                 setPlan(result);
                 setEditedPlan(result);
             } catch (e) {
-                if (addToast) addToast(t('behavior_lens.toast.generation_failed') || 'Generation failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.generation_failed', 'Generation failed'), 'error');
             }
             setLoading(false);
         };
@@ -17433,7 +17460,7 @@ Use clinical, professional tone, suitable for an IEP team. Keep it structured an
                 h('h3', { className: 'text-sm font-bold text-slate-800 mb-4 border-b pb-2' }, `Formal BIP: ${studentName}`),
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, plan),
                 h('div', { className: 'flex gap-2 mt-6 pt-4 border-t border-slate-100' },
-                    h('button', { onClick: () => { navigator.clipboard.writeText(plan); if (addToast) addToast(t('behavior_lens.toast.copied') || 'Copied!', 'success'); }, className: 'px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100' }, '📋 Copy to Clipboard'),
+                    h('button', { onClick: () => { navigator.clipboard.writeText(plan); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }, className: 'px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100' }, '📋 Copy to Clipboard'),
                     h('button', { "aria-label": "Print Document", onClick: () => window.print(), className: 'px-4 py-2 bg-slate-50 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-100' }, '🖨️ Print Document')
                 )
             ),
@@ -17463,19 +17490,19 @@ Use clinical, professional tone, suitable for an IEP team. Keep it structured an
         const [loading, setLoading] = useState(false);
 
         const FUNCTIONS = [
-            { id: 'escape', label: (t('behavior_lens.raw.escapeavoidance') || 'Escape/Avoidance'), icon: '🚪', desc: 'Student wants to get away from something', phrase: 'I need a break' },
-            { id: 'attention', label: (t('behavior_lens.raw.attention') || 'Attention'), icon: '👋', desc: 'Student wants social interaction', phrase: 'Can I talk to you?' },
-            { id: 'tangible', label: (t('behavior_lens.raw.tangibleaccess') || 'Tangible/Access'), icon: '🎁', desc: 'Student wants an item or activity', phrase: 'Can I have ___?' },
-            { id: 'sensory', label: (t('behavior_lens.raw.sensoryautomatic') || 'Sensory/Automatic'), icon: '🌀', desc: 'Student seeks sensory input', phrase: 'I need my fidget' },
+            { id: 'escape', label: (tt('behavior_lens.raw.escapeavoidance', 'Escape/Avoidance')), icon: '🚪', desc: 'Student wants to get away from something', phrase: 'I need a break' },
+            { id: 'attention', label: (tt('behavior_lens.raw.attention', 'Attention')), icon: '👋', desc: 'Student wants social interaction', phrase: 'Can I talk to you?' },
+            { id: 'tangible', label: (tt('behavior_lens.raw.tangibleaccess', 'Tangible/Access')), icon: '🎁', desc: 'Student wants an item or activity', phrase: 'Can I have ___?' },
+            { id: 'sensory', label: (tt('behavior_lens.raw.sensoryautomatic', 'Sensory/Automatic')), icon: '🌀', desc: 'Student seeks sensory input', phrase: 'I need my fidget' },
         ];
 
         const MODALITIES = [
-            { id: 'verbal', label: (t('behavior_lens.raw.verbal') || 'Verbal'), icon: '🗣️', desc: 'Spoken words or phrases' },
-            { id: 'sign', label: (t('behavior_lens.raw.sign_language') || 'Sign Language'), icon: '🤟', desc: 'Manual signs (ASL or simplified)' },
-            { id: 'pecs', label: (t('behavior_lens.raw.pecspicture_card') || 'PECS/Picture Card'), icon: '🖼️', desc: 'Picture Exchange Communication System' },
-            { id: 'aac', label: (t('behavior_lens.raw.aac_device') || 'AAC Device'), icon: '📱', desc: 'Augmentative and Alternative Communication device' },
-            { id: 'gesture', label: (t('behavior_lens.raw.gesture') || 'Gesture'), icon: '☝️', desc: 'Pointing, head nod, raising hand' },
-            { id: 'written', label: (t('behavior_lens.raw.written') || 'Written'), icon: '✏️', desc: 'Written notes or typing' },
+            { id: 'verbal', label: (tt('behavior_lens.raw.verbal', 'Verbal')), icon: '🗣️', desc: 'Spoken words or phrases' },
+            { id: 'sign', label: (tt('behavior_lens.raw.sign_language', 'Sign Language')), icon: '🤟', desc: 'Manual signs (ASL or simplified)' },
+            { id: 'pecs', label: (tt('behavior_lens.raw.pecspicture_card', 'PECS/Picture Card')), icon: '🖼️', desc: 'Picture Exchange Communication System' },
+            { id: 'aac', label: (tt('behavior_lens.raw.aac_device', 'AAC Device')), icon: '📱', desc: 'Augmentative and Alternative Communication device' },
+            { id: 'gesture', label: (tt('behavior_lens.raw.gesture', 'Gesture')), icon: '☝️', desc: 'Pointing, head nod, raising hand' },
+            { id: 'written', label: (tt('behavior_lens.raw.written', 'Written')), icon: '✏️', desc: 'Written notes or typing' },
         ];
 
         const handleGenerate = async () => {
@@ -17500,7 +17527,7 @@ Provide a structured plan with:
 
 Keep under 250 words. Use clear sections.`);
                 setPlan(result);
-            } catch (e) { if (addToast) addToast(t('behavior_lens.toast.generation_failed') || 'Generation failed', 'error'); }
+            } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.generation_failed', 'Generation failed'), 'error'); }
             setLoading(false);
         };
 
@@ -17508,12 +17535,12 @@ Keep under 250 words. Use clear sections.`);
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '💬'),
                 h('h2', { className: 'text-lg font-black text-slate-800' }, DualLabel('FCT Template')),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.functional_communication_training_planning_tool') || 'Functional Communication Training planning tool')
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.functional_communication_training_planning_tool', 'Functional Communication Training planning tool'))
             ),
             // Current behavior
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('label', { className: 'text-xs font-bold text-slate-600' }, '🎯 Current Challenging Behavior'),
-                h('input', { value: currentBehavior, onChange: e => setCurrentBehavior(e.target.value), 'aria-label': 'eg Hitting peers when frustrated', placeholder: t('behavior_lens.ph.eg_hitting_peers_when_frustrated') || 'e.g. Hitting peers when frustrated', className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
+                h('input', { value: currentBehavior, onChange: e => setCurrentBehavior(e.target.value), 'aria-label': 'eg Hitting peers when frustrated', placeholder: tt('behavior_lens.ph.eg_hitting_peers_when_frustrated', 'e.g. Hitting peers when frustrated'), className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
             ),
             // Function selection
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
@@ -17555,7 +17582,7 @@ Keep under 250 words. Use clear sections.`);
             // Target phrase
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('label', { className: 'text-xs font-bold text-slate-600' }, '💬 Target Communication Response'),
-                h('input', { value: targetPhrase, onChange: e => setTargetPhrase(e.target.value), 'aria-label': 'eg I need a break', placeholder: t('behavior_lens.ph.eg_i_need_a_break') || 'e.g. "I need a break"', className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
+                h('input', { value: targetPhrase, onChange: e => setTargetPhrase(e.target.value), 'aria-label': 'eg I need a break', placeholder: tt('behavior_lens.ph.eg_i_need_a_break', 'e.g. "I need a break"'), className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
             ),
             // Generate button
             h('button', { onClick: handleGenerate,
@@ -17567,7 +17594,7 @@ Keep under 250 words. Use clear sections.`);
                 h('h3', { className: 'text-sm font-bold text-slate-800 mb-3' }, '📋 FCT Implementation Plan'),
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, plan),
                 h('div', { className: 'flex gap-2 mt-4' },
-                    h('button', { onClick: () => { navigator.clipboard.writeText(plan); if (addToast) addToast(t('behavior_lens.toast.copied') || 'Copied!', 'success'); }, className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold' }, '📋 Copy'),
+                    h('button', { onClick: () => { navigator.clipboard.writeText(plan); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }, className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold' }, '📋 Copy'),
                     h('button', { "aria-label": "Print", onClick: () => window.print(), className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold' }, '🖨️ Print')
                 )
             )
@@ -17741,7 +17768,7 @@ Keep under 250 words. Use clear sections.`);
 
         const startAssessment = () => {
             if (validItems.length < 3) {
-                if (addToast) addToast(t('behavior_lens.toast.need_3_items') || 'Please enter at least 3 items', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.need_3_items', 'Please enter at least 3 items'), 'error');
                 return;
             }
             if (mode === 'mswo') {
@@ -17833,7 +17860,7 @@ Keep it under 150 words.`);
                 h('div', { className: 'text-center py-4' },
                     h('div', { className: 'text-4xl mb-2' }, '🏆'),
                     h('h2', { className: 'text-xl font-black text-slate-800 flex items-center justify-center' }, 
-                        t('behavior_lens.ui.preference_assessment_wizard') || 'Preference Assessment Wizard',
+                        tt('behavior_lens.ui.preference_assessment_wizard', 'Preference Assessment Wizard'),
                         h(InfoTooltip, { text: "Preference assessments systematically identify items or activities a student is highly motivated by, which can then be used as effective reinforcers." })
                     ),
                     h('p', { className: 'text-sm text-slate-600 mt-2' }, 'Systematically identify potent reinforcers')
@@ -19258,18 +19285,18 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     throw new Error("Could not parse steps");
                 }
             } catch (e) {
-                if (addToast) addToast(t('behavior_lens.toast.generation_failed') || 'Generation failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.generation_failed', 'Generation failed'), 'error');
             }
             setGeneratingAi(false);
         };
 
         const PROMPT_LEVELS = [
-            { id: 'I', label: (t('behavior_lens.raw.independent') || 'Independent'), color: 'green', icon: '🟢' },
-            { id: 'G', label: (t('behavior_lens.raw.gestural') || 'Gestural'), color: 'teal', icon: '🟡' },
-            { id: 'V', label: (t('behavior_lens.raw.verbal') || 'Verbal'), color: 'blue', icon: '🔵' },
-            { id: 'M', label: (t('behavior_lens.raw.model') || 'Model'), color: 'purple', icon: '🟣' },
-            { id: 'PP', label: (t('behavior_lens.raw.partial_physical') || 'Partial Physical'), color: 'amber', icon: '🟠' },
-            { id: 'FP', label: (t('behavior_lens.raw.full_physical') || 'Full Physical'), color: 'red', icon: '🔴' },
+            { id: 'I', label: (tt('behavior_lens.raw.independent', 'Independent')), color: 'green', icon: '🟢' },
+            { id: 'G', label: (tt('behavior_lens.raw.gestural', 'Gestural')), color: 'teal', icon: '🟡' },
+            { id: 'V', label: (tt('behavior_lens.raw.verbal', 'Verbal')), color: 'blue', icon: '🔵' },
+            { id: 'M', label: (tt('behavior_lens.raw.model', 'Model')), color: 'purple', icon: '🟣' },
+            { id: 'PP', label: (tt('behavior_lens.raw.partial_physical', 'Partial Physical')), color: 'amber', icon: '🟠' },
+            { id: 'FP', label: (tt('behavior_lens.raw.full_physical', 'Full Physical')), color: 'red', icon: '🔴' },
         ];
 
         const CHAINING = [
@@ -19304,7 +19331,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
                 h('button', { "aria-label": "Back", onClick: () => setShowHistory(false), className: 'text-xs text-indigo-600 font-bold hover:underline' }, '← Back'),
                 h('h2', { className: 'text-lg font-black text-slate-800 text-center' }, `📋 Session History (${sessions.length})`),
-                sessions.length === 0 ? h('p', { className: 'text-center text-sm text-slate-600 py-8' }, t('behavior_lens.ui.no_sessions_yet') || 'No sessions yet.') :
+                sessions.length === 0 ? h('p', { className: 'text-center text-sm text-slate-600 py-8' }, tt('behavior_lens.ui.no_sessions_yet', 'No sessions yet.')) :
                     sessions.map(s => h('div', { key: s.id, className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                         h('div', { className: 'flex justify-between items-center mb-2' },
                             h('span', { className: 'text-xs font-bold text-slate-600' }, new Date(s.date).toLocaleString()),
@@ -19324,20 +19351,20 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '📝'),
                 h('h2', { className: 'text-lg font-black text-slate-800 flex items-center justify-center' }, 
-                    t('behavior_lens.ui.task_analysis') || 'Task Analysis',
+                    tt('behavior_lens.ui.task_analysis', 'Task Analysis'),
                     h(InfoTooltip, { text: "Task analysis breaks down a complex skill into smaller, teachable steps, allowing for systematic prompting and fading." })
                 ),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.break_skills_into_teachable_steps_with_chaining_an') || 'Break skills into teachable steps with chaining and prompt tracking')
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.break_skills_into_teachable_steps_with_chaining_an', 'Break skills into teachable steps with chaining and prompt tracking'))
             ),
             // Task setup
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm space-y-3' },
                 h('div', null,
-                    h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.ui.taskskill_name') || 'Task/Skill Name'),
-                    h('input', { value: taskName, onChange: e => setTaskName(e.target.value), 'aria-label': 'eg Handwashing, Tying Shoes, Morning Routine', placeholder: t('behavior_lens.ph.eg_handwashing_tying_shoes_morning_routine') || 'e.g. Handwashing, Tying Shoes, Morning Routine', className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
+                    h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.taskskill_name', 'Task/Skill Name')),
+                    h('input', { value: taskName, onChange: e => setTaskName(e.target.value), 'aria-label': 'eg Handwashing, Tying Shoes, Morning Routine', placeholder: tt('behavior_lens.ph.eg_handwashing_tying_shoes_morning_routine', 'e.g. Handwashing, Tying Shoes, Morning Routine'), className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
                 ),
                 h('div', null,
                     h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2 inline-flex items-center' }, 
-                        t('behavior_lens.ui.chaining_method') || 'Chaining Method',
+                        tt('behavior_lens.ui.chaining_method', 'Chaining Method'),
                         h(InfoTooltip, { text: "Forward chaining teaches the first step independently. Backward chaining teaches the last step first. Total task requires the student to complete every step with prompting as needed." })
                     ),
                     h('div', { className: 'flex gap-2' },
@@ -19348,7 +19375,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     )
                 ),
                 h('div', { className: 'flex items-center gap-2' },
-                    h('label', { className: 'text-[11px] font-bold text-slate-600' }, t('behavior_lens.ui.mastery_independent_for') || 'Mastery: Independent for'),
+                    h('label', { className: 'text-[11px] font-bold text-slate-600' }, tt('behavior_lens.ui.mastery_independent_for', 'Mastery: Independent for')),
                     h('input', { type: 'number', min: 1, max: 10, value: masteryCriteria, onChange: e => setMasteryCriteria(parseInt(e.target.value) || 3), 'aria-label': 'Mastery consecutive sessions', className: 'w-12 text-xs border border-slate-400 rounded px-2 py-1 text-center' }),
                     h('span', { className: 'text-[11px] text-slate-600' }, 'consecutive sessions')
                 )
@@ -19371,7 +19398,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                         const mastered = isMastered(idx);
                         return h('div', { key: step.id, className: `flex items-center gap-2 p-2 rounded-lg ${mastered ? 'bg-green-50 border border-green-200' : 'bg-slate-50'}` },
                             h('span', { className: 'text-xs font-bold text-slate-600 w-6 text-center' }, idx + 1),
-                            h('input', { value: step.desc, onChange: e => updateStep(step.id, 'desc', e.target.value), 'aria-label': 'Step description', placeholder: t('behavior_lens.ph.step_description') || 'Step description...', className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5 bg-white' }),
+                            h('input', { value: step.desc, onChange: e => updateStep(step.id, 'desc', e.target.value), 'aria-label': 'Step description', placeholder: tt('behavior_lens.ph.step_description', 'Step description...'), className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5 bg-white' }),
                             h('select', { value: step.promptLevel, onChange: e => updateStep(step.id, 'promptLevel', e.target.value), 'aria-label': 'Prompt level for this step', className: 'text-[11px] border border-slate-400 rounded-lg px-1 py-1.5 bg-white font-medium' },
                                 PROMPT_LEVELS.map(p => h('option', { key: p.id, value: p.id }, `${p.icon} ${p.label}`))
                             ),
@@ -19417,10 +19444,10 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         const [sessionActive, setSessionActive] = useState(false);
 
         const RESPONSES = [
-            { id: '+', label: (t('behavior_lens.raw.correct') || 'Correct'), color: 'green', icon: '✓' },
-            { id: '-', label: (t('behavior_lens.raw.incorrect') || 'Incorrect'), color: 'red', icon: '✗' },
-            { id: 'P', label: (t('behavior_lens.raw.prompted') || 'Prompted'), color: 'amber', icon: 'P' },
-            { id: 'NR', label: (t('behavior_lens.raw.no_response') || 'No Response'), color: 'slate', icon: '—' },
+            { id: '+', label: (tt('behavior_lens.raw.correct', 'Correct')), color: 'green', icon: '✓' },
+            { id: '-', label: (tt('behavior_lens.raw.incorrect', 'Incorrect')), color: 'red', icon: '✗' },
+            { id: 'P', label: (tt('behavior_lens.raw.prompted', 'Prompted')), color: 'amber', icon: 'P' },
+            { id: 'NR', label: (tt('behavior_lens.raw.no_response', 'No Response')), color: 'slate', icon: '—' },
         ];
 
         const program = programs.find(p => p.id === activeProgram);
@@ -19469,8 +19496,8 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🎯'),
-                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_dtt_data_sheet' }, t('behavior_lens.ui.dtt_data_sheet') || 'DTT Data Sheet'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.discrete_trial_training_with_mastery_tracking_and') || 'Discrete Trial Training with mastery tracking and auto-advance')
+                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_dtt_data_sheet' }, tt('behavior_lens.ui.dtt_data_sheet', 'DTT Data Sheet')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.discrete_trial_training_with_mastery_tracking_and', 'Discrete Trial Training with mastery tracking and auto-advance'))
             ),
             // Program tabs
             h('div', { className: 'flex gap-1 overflow-x-auto pb-1' },
@@ -19483,16 +19510,16 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             program && !sessionActive && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm space-y-3' },
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.ui.program_name') || 'Program Name'),
-                        h('input', { value: program.name, onChange: e => updateProgram(program.id, 'name', e.target.value), 'aria-label': 'eg Receptive ID Colors', placeholder: t('behavior_lens.ph.eg_receptive_id_colors') || 'e.g. Receptive ID Colors', className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.program_name', 'Program Name')),
+                        h('input', { value: program.name, onChange: e => updateProgram(program.id, 'name', e.target.value), 'aria-label': 'eg Receptive ID Colors', placeholder: tt('behavior_lens.ph.eg_receptive_id_colors', 'e.g. Receptive ID Colors'), className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.ui.current_target') || 'Current Target'),
-                        h('input', { value: program.target, onChange: e => updateProgram(program.id, 'target', e.target.value), 'aria-label': 'eg Touch red', placeholder: t('behavior_lens.ph.eg_touch_red') || 'e.g. Touch "red"', className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.current_target', 'Current Target')),
+                        h('input', { value: program.target, onChange: e => updateProgram(program.id, 'target', e.target.value), 'aria-label': 'eg Touch red', placeholder: tt('behavior_lens.ph.eg_touch_red', 'e.g. Touch "red"'), className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
                     ),
                 ),
                 h('div', { className: 'flex items-center gap-3' },
-                    h('span', { className: 'text-[11px] font-bold text-slate-600' }, t('behavior_lens.ui.mastery') || 'Mastery:'),
+                    h('span', { className: 'text-[11px] font-bold text-slate-600' }, tt('behavior_lens.ui.mastery', 'Mastery:')),
                     h('input', { type: 'number', min: 50, max: 100, value: program.masteryCriteria.pct, onChange: e => updateProgram(program.id, 'masteryCriteria', { ...program.masteryCriteria, pct: parseInt(e.target.value) || 80 }), 'aria-label': 'Mastery percentage', className: 'w-14 text-xs border border-slate-400 rounded px-2 py-1 text-center' }),
                     h('span', { className: 'text-[11px] text-slate-600' }, '% across'),
                     h('input', { type: 'number', min: 1, max: 10, value: program.masteryCriteria.sessions, onChange: e => updateProgram(program.id, 'masteryCriteria', { ...program.masteryCriteria, sessions: parseInt(e.target.value) || 3 }), 'aria-label': 'Mastery consecutive sessions', className: 'w-12 text-xs border border-slate-400 rounded px-2 py-1 text-center' }),
@@ -19500,7 +19527,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 ),
                 program.status === 'mastered' && h('div', { className: 'bg-green-50 rounded-lg p-3 border border-green-200 text-center' },
                     h('span', { className: 'text-2xl' }, '🏆'),
-                    h('p', { className: 'text-xs font-bold text-green-700 mt-1' }, t('behavior_lens.ui.mastered') || 'MASTERED!'),
+                    h('p', { className: 'text-xs font-bold text-green-700 mt-1' }, tt('behavior_lens.ui.mastered', 'MASTERED!')),
                     h('p', { className: 'text-[11px] text-green-600' }, `Met criterion across ${program.masteryCriteria.sessions} sessions`)
                 ),
                 h('div', { className: 'flex items-center justify-between bg-indigo-50 rounded-lg p-2' },
@@ -19587,7 +19614,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         }, [freeOpActive]);
 
         const startMSWO = () => {
-            if (validItems.length < 3) { if (addToast) addToast(t('behavior_lens.toast.need_at_least_3_items') || 'Need at least 3 items', 'warning'); return; }
+            if (validItems.length < 3) { if (addToast) addToast(tt('behavior_lens.toast.need_at_least_3_items', 'Need at least 3 items'), 'warning'); return; }
             setMswoRemaining([...validItems]);
             setTrialActive(true);
             setTrials([]);
@@ -19605,7 +19632,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         };
 
         const startPaired = () => {
-            if (validItems.length < 3) { if (addToast) addToast(t('behavior_lens.toast.need_at_least_3_items') || 'Need at least 3 items', 'warning'); return; }
+            if (validItems.length < 3) { if (addToast) addToast(tt('behavior_lens.toast.need_at_least_3_items', 'Need at least 3 items'), 'warning'); return; }
             setTrialActive(true);
             setTrials([]);
             nextPair(0, 1, []);
@@ -19633,7 +19660,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         };
 
         const startFreeOp = () => {
-            if (validItems.length < 2) { if (addToast) addToast(t('behavior_lens.toast.need_at_least_2_items') || 'Need at least 2 items', 'warning'); return; }
+            if (validItems.length < 2) { if (addToast) addToast(tt('behavior_lens.toast.need_at_least_2_items', 'Need at least 2 items'), 'warning'); return; }
             setFreeOpData(Object.fromEntries(validItems.map(i => [i, 0])));
             setFreeOpTimer(0);
             setFreeOpActive(true);
@@ -19669,7 +19696,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 h('button', { "aria-label": "New Assessment", onClick: () => { setResults(null); setTrials([]); }, className: 'text-xs text-indigo-600 font-bold hover:underline' }, '← New Assessment'),
                 h('div', { className: 'text-center py-3' },
                     h('div', { className: 'text-4xl mb-2' }, '📊'),
-                    h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.preference_hierarchy') || 'Preference Hierarchy'),
+                    h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.preference_hierarchy', 'Preference Hierarchy')),
                 ),
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                     h('div', { className: 'space-y-2' },
@@ -19701,8 +19728,8 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '⭐'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.preference_assessment') || 'Preference Assessment'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.systematic_reinforcer_identification_using_evidenc') || 'Systematic reinforcer identification using evidence-based protocols')
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.preference_assessment', 'Preference Assessment')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.systematic_reinforcer_identification_using_evidenc', 'Systematic reinforcer identification using evidence-based protocols'))
             ),
             !trialActive && h('div', { className: 'space-y-4' },
                 // Method
@@ -19750,7 +19777,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             trialActive && method === 'freeop' && h('div', { className: 'space-y-3' },
                 h('div', { className: 'bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl p-4 text-white text-center' },
                     h('div', { className: 'text-3xl font-black tabular-nums' }, `${Math.floor(freeOpTimer / 60)}:${(freeOpTimer % 60).toString().padStart(2, '0')}`),
-                    h('p', { className: 'text-[11px] opacity-80' }, t('behavior_lens.ui.tap_each_item_when_student_engages_with_it') || 'Tap each item when student engages with it')
+                    h('p', { className: 'text-[11px] opacity-80' }, tt('behavior_lens.ui.tap_each_item_when_student_engages_with_it', 'Tap each item when student engages with it'))
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-2' },
                     validItems.map(item => h('button', { "aria-label": "Record Free Op", key: item, onClick: () => recordFreeOp(item), className: 'py-4 bg-white rounded-xl border-2 border-slate-200 hover:border-amber-400 text-sm font-bold text-slate-800 relative' },
@@ -19831,12 +19858,12 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '📅'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.scatterplot_analysis') || 'Scatterplot Analysis'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.identify_temporal_patterns_in_behavior_occurrence') || 'Identify temporal patterns in behavior occurrence')
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.scatterplot_analysis', 'Scatterplot Analysis')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.identify_temporal_patterns_in_behavior_occurrence', 'Identify temporal patterns in behavior occurrence'))
             ),
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('div', { className: 'flex items-center gap-2 mb-3' },
-                    h('input', { value: behaviorName, onChange: e => setBehaviorName(e.target.value), 'aria-label': 'Behavior name', placeholder: t('behavior_lens.ph.behavior_name') || 'Behavior name...', className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' }),
+                    h('input', { value: behaviorName, onChange: e => setBehaviorName(e.target.value), 'aria-label': 'Behavior name', placeholder: tt('behavior_lens.ph.behavior_name', 'Behavior name...'), className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' }),
                     abcEntries.length > 0 && h('button', { "aria-label": "Auto-fill from ABC", onClick: autoPopulate, className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold' }, '🔄 Auto-fill from ABC')
                 ),
                 // Grid
@@ -19844,7 +19871,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     h('table', { className: 'w-full border-collapse' },
                         h('caption', { className: 'sr-only' }, 'behavior lens module data table'), h('thead', null,
                             h('tr', null,
-                                h('th', { scope: 'col', className: 'text-[11px] text-slate-600 font-bold p-1 text-start' }, (t('behavior_lens.raw.time') || 'Time')),
+                                h('th', { scope: 'col', className: 'text-[11px] text-slate-600 font-bold p-1 text-start' }, (tt('behavior_lens.raw.time', 'Time'))),
                                 ...DAY_LABELS.slice(0, days).map(d => h('th', { scope: 'col', key: d, className: 'text-[11px] text-slate-600 font-bold p-1 text-center' }, d))
                             )
                         ),
@@ -19864,9 +19891,9 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     )
                 ),
                 h('div', { className: 'flex gap-3 mt-2 text-[11px] text-slate-600' },
-                    h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-3 bg-white border border-slate-400 rounded' }), t('behavior_lens.ui.no_occurrence') || 'No occurrence'),
-                    h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-3 bg-amber-200 rounded' }), t('behavior_lens.ui.some') || 'Some'),
-                    h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-3 bg-red-400 rounded' }), t('behavior_lens.ui.high') || 'High')
+                    h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-3 bg-white border border-slate-400 rounded' }), tt('behavior_lens.ui.no_occurrence', 'No occurrence')),
+                    h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-3 bg-amber-200 rounded' }), tt('behavior_lens.ui.some', 'Some')),
+                    h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'w-3 h-3 bg-red-400 rounded' }), tt('behavior_lens.ui.high', 'High'))
                 )
             ),
             patterns.totalOccurrences > 0 && h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-4' },
@@ -19903,7 +19930,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 duration: `${trials.length} trials`,
                 source: 'latency-recorder'
             });
-            if (addToast) addToast(t('behavior_lens.toast.saved_to_session_history') || 'Saved to session history!', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.saved_to_session_history', 'Saved to session history!'), 'success');
         };
 
         const presentStimulus = () => {
@@ -19965,15 +19992,15 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '⏱️'),
-                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_latency_recorder' }, t('behavior_lens.ui.latency_recorder') || 'Latency Recorder'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.measure_time_between_stimulus_presentation_and_beh') || 'Measure time between stimulus presentation and behavioral response')
+                h('h2', { className: 'text-lg font-black text-slate-800', 'data-help-key': 'bl_latency_recorder' }, tt('behavior_lens.ui.latency_recorder', 'Latency Recorder')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.measure_time_between_stimulus_presentation_and_beh', 'Measure time between stimulus presentation and behavioral response'))
             ),
             // Setup
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('div', { className: 'grid grid-cols-2 gap-3' },
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.ui.behavior_2') || 'Behavior'),
-                        h('input', { value: behaviorName, onChange: e => setBehaviorName(e.target.value), 'aria-label': 'eg Responding to name', placeholder: t('behavior_lens.ph.eg_responding_to_name') || 'e.g. Responding to name', className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.behavior_2', 'Behavior')),
+                        h('input', { value: behaviorName, onChange: e => setBehaviorName(e.target.value), 'aria-label': 'eg Responding to name', placeholder: tt('behavior_lens.ph.eg_responding_to_name', 'e.g. Responding to name'), className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
                     ),
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Goal (seconds)'),
@@ -19998,9 +20025,9 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 h('h3', { className: 'text-xs font-bold text-slate-600' }, `📊 Results (${trials.length} trials)`),
                 // Stats cards
                 h('div', { className: 'grid grid-cols-4 gap-2' },
-                    h('div', { className: 'bg-indigo-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[11px] text-indigo-600' }, t('behavior_lens.ui.mean') || 'Mean'), h('p', { className: 'text-lg font-black text-indigo-800' }, `${mean}s`)),
-                    h('div', { className: 'bg-purple-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[11px] text-purple-600' }, t('behavior_lens.ui.median') || 'Median'), h('p', { className: 'text-lg font-black text-purple-800' }, `${median}s`)),
-                    h('div', { className: 'bg-emerald-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[11px] text-emerald-600' }, t('behavior_lens.ui.range') || 'Range'), h('p', { className: 'text-lg font-black text-emerald-800' }, range)),
+                    h('div', { className: 'bg-indigo-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[11px] text-indigo-600' }, tt('behavior_lens.ui.mean', 'Mean')), h('p', { className: 'text-lg font-black text-indigo-800' }, `${mean}s`)),
+                    h('div', { className: 'bg-purple-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[11px] text-purple-600' }, tt('behavior_lens.ui.median', 'Median')), h('p', { className: 'text-lg font-black text-purple-800' }, `${median}s`)),
+                    h('div', { className: 'bg-emerald-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[11px] text-emerald-600' }, tt('behavior_lens.ui.range', 'Range')), h('p', { className: 'text-lg font-black text-emerald-800' }, range)),
                     h('div', { className: 'bg-amber-50 rounded-lg p-2.5 text-center' }, h('p', { className: 'text-[11px] text-amber-600' }, 'SD'), h('p', { className: 'text-lg font-black text-amber-800' }, `${sdVal.toFixed(2)}s`))
                 ),
                 // SVG Trial Graph
@@ -20563,7 +20590,7 @@ Keep the language professional but accessible.`;
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '🔄'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.maintenance_generalization') || 'Maintenance & Generalization'),
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.maintenance_generalization', 'Maintenance & Generalization')),
                 h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Track skill retention with scheduled probes, sparkline trends, and generalization')
             ),
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
@@ -20705,7 +20732,7 @@ Keep the language professional but accessible.`;
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '📈'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.cumulative_record') || 'Cumulative Record'),
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.cumulative_record', 'Cumulative Record')),
                 h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Skinner-style cumulative frequency display with phase analysis')
             ),
             // Controls
@@ -20720,15 +20747,15 @@ Keep the language professional but accessible.`;
                     h('label', { className: 'flex items-center gap-1 text-[11px] font-medium text-slate-600 cursor-pointer' },
                         h('input', { type: 'checkbox', checked: jabaMode, onChange: () => setJabaMode(!jabaMode), className: 'accent-slate-600' }), 'JABA B\u0026W'
                     ),
-                    !showManual && h('input', { value: behaviorName, onChange: e => setBehaviorName(e.target.value), 'aria-label': 'Behavior name from sessions', placeholder: t('behavior_lens.ph.behavior_name_from_sessions') || 'Behavior name (from sessions)...', className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' }),
-                    showManual && h('input', { value: manualData, onChange: e => setManualData(e.target.value), 'aria-label': 'Counts per session 3, 5, 2, 8, 4', placeholder: t('behavior_lens.ph.counts_per_session_3_5_2_8_4') || 'Counts per session: 3, 5, 2, 8, 4...', className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' })
+                    !showManual && h('input', { value: behaviorName, onChange: e => setBehaviorName(e.target.value), 'aria-label': 'Behavior name from sessions', placeholder: tt('behavior_lens.ph.behavior_name_from_sessions', 'Behavior name (from sessions)...'), className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' }),
+                    showManual && h('input', { value: manualData, onChange: e => setManualData(e.target.value), 'aria-label': 'Counts per session 3, 5, 2, 8, 4', placeholder: tt('behavior_lens.ph.counts_per_session_3_5_2_8_4', 'Counts per session: 3, 5, 2, 8, 4...'), className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' })
                 ),
                 // SVG Graph
                 dataPoints.length > 0 ? h('svg', { ref: svgRef, viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { maxHeight: '320px', fontFamily: 'Arial, sans-serif' } },
                     h('rect', { x: 0, y: 0, width: W, height: H, fill: 'white' }),
-                    h('text', { x: W / 2, y: 16, textAnchor: 'middle', fontSize: 12, fontWeight: 'bold', fill: '#1e293b' }, (t('behavior_lens.raw.cumulative_record') || 'Cumulative Record')),
-                    h('text', { x: 12, y: H / 2, textAnchor: 'middle', fontSize: 10, fill: '#64748b', transform: `rotate(-90, 12, ${H / 2})` }, (t('behavior_lens.raw.cumulative_responses') || 'Cumulative Responses')),
-                    h('text', { x: W / 2, y: H - 5, textAnchor: 'middle', fontSize: 10, fill: '#64748b' }, (t('behavior_lens.raw.sessions') || 'Sessions')),
+                    h('text', { x: W / 2, y: 16, textAnchor: 'middle', fontSize: 12, fontWeight: 'bold', fill: '#1e293b' }, (tt('behavior_lens.raw.cumulative_record', 'Cumulative Record'))),
+                    h('text', { x: 12, y: H / 2, textAnchor: 'middle', fontSize: 10, fill: '#64748b', transform: `rotate(-90, 12, ${H / 2})` }, (tt('behavior_lens.raw.cumulative_responses', 'Cumulative Responses'))),
+                    h('text', { x: W / 2, y: H - 5, textAnchor: 'middle', fontSize: 10, fill: '#64748b' }, (tt('behavior_lens.raw.sessions', 'Sessions'))),
                     h('line', { x1: padL, y1: padT, x2: padL, y2: padT + plotH, stroke: '#1e293b', strokeWidth: 1.5 }),
                     h('line', { x1: padL, y1: padT + plotH, x2: padL + plotW, y2: padT + plotH, stroke: '#1e293b', strokeWidth: 1.5 }),
                     // Y-axis ticks
@@ -20755,7 +20782,7 @@ Keep the language professional but accessible.`;
                     h('path', { d: pathD + ` L ${toX(dataPoints[dataPoints.length - 1].session)} ${padT + plotH} L ${toX(1)} ${padT + plotH} Z`, fill: fillColor }),
                     h('path', { d: pathD, fill: 'none', stroke: lineColor, strokeWidth: 2.5, strokeLinejoin: 'round' }),
                     ...dataPoints.map(d => h('circle', { key: d.session, cx: toX(d.session), cy: toY(d.cumulative), r: 3, fill: dotFill, stroke: lineColor, strokeWidth: 2 }))
-                ) : h('p', { className: 'text-center text-sm text-slate-600 py-8' }, t('behavior_lens.ui.enter_data_or_record_sessions_to_generate_a_cumula') || 'Enter data or record sessions to generate a cumulative record.')
+                ) : h('p', { className: 'text-center text-sm text-slate-600 py-8' }, tt('behavior_lens.ui.enter_data_or_record_sessions_to_generate_a_cumula', 'Enter data or record sessions to generate a cumulative record.'))
             ),
             // Phase management + export
             dataPoints.length > 0 && h('div', { className: 'flex flex-wrap gap-2' },
@@ -20878,7 +20905,7 @@ Keep the language professional but accessible.`;
         return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '📐'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.conditional_probability') || 'Conditional Probability'),
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.conditional_probability', 'Conditional Probability')),
                 h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Full 3-term contingency analysis with heatmap matrix')
             ),
             // View mode tabs
@@ -20956,13 +20983,13 @@ Keep the language professional but accessible.`;
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                     h('div', { className: 'grid grid-cols-2 gap-3' },
                         h('div', null,
-                            h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, t('behavior_lens.ui.target_behavior') || 'Target Behavior'),
+                            h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.ui.target_behavior', 'Target Behavior')),
                             h('div', { className: 'flex flex-wrap gap-1' },
                                 behaviors.slice(0, 6).map(b => h('button', { "aria-label": "Toggle selected behavior", key: b, onClick: () => setSelectedBehavior(b), className: `px-2 py-1 rounded-lg text-[11px] font-medium border ${selectedBehavior === b ? 'bg-indigo-100 border-indigo-400 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}` }, b))
                             )
                         ),
                         h('div', null,
-                            h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, t('behavior_lens.ui.antecedent') || 'Antecedent'),
+                            h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.ui.antecedent', 'Antecedent')),
                             h('div', { className: 'flex flex-wrap gap-1' },
                                 antecedents.slice(0, 6).map(a => h('button', { "aria-label": "Toggle selected antecedent", key: a, onClick: () => setSelectedAntecedent(a), className: `px-2 py-1 rounded-lg text-[11px] font-medium border ${selectedAntecedent === a ? 'bg-purple-100 border-purple-400 text-purple-700' : 'bg-white border-slate-200 text-slate-600'}` }, a))
                             )
@@ -21075,12 +21102,12 @@ Keep the language professional but accessible.`;
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
             h('div', { className: 'text-center py-3' },
                 h('div', { className: 'text-4xl mb-2' }, '✅'),
-                h('h2', { className: 'text-lg font-black text-slate-800' }, t('behavior_lens.ui.treatment_integrity') || 'Treatment Integrity'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.document_whether_interventions_are_implemented_as') || 'Document whether interventions are implemented as designed')
+                h('h2', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.ui.treatment_integrity', 'Treatment Integrity')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.document_whether_interventions_are_implemented_as', 'Document whether interventions are implemented as designed'))
             ),
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
-                h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, t('behavior_lens.ui.interventionbip_name') || 'Intervention/BIP Name'),
-                h('input', { value: interventionName, onChange: e => setInterventionName(e.target.value), 'aria-label': 'eg Token Economy  FCT Protocol', placeholder: t('behavior_lens.ph.eg_token_economy_fct_protocol') || 'e.g. Token Economy + FCT Protocol', className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
+                h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.interventionbip_name', 'Intervention/BIP Name')),
+                h('input', { value: interventionName, onChange: e => setInterventionName(e.target.value), 'aria-label': 'eg Token Economy  FCT Protocol', placeholder: tt('behavior_lens.ph.eg_token_economy_fct_protocol', 'e.g. Token Economy + FCT Protocol'), className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 mt-1' })
             ),
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('div', { className: 'flex items-center justify-between mb-3' },
@@ -21123,10 +21150,10 @@ Keep the language professional but accessible.`;
                 avgIntegrity < 80 && h('div', { className: 'mt-3 bg-amber-50 rounded-lg p-3 border border-amber-200' },
                     h('p', { className: 'text-[11px] font-bold text-amber-800 mb-1' }, '⚠️ Below 80% Threshold'),
                     h('ul', { className: 'text-[11px] text-amber-700 space-y-0.5 list-disc ps-4' },
-                        h('li', null, t('behavior_lens.fidelity_tip_1') || 'Review implementation procedures with staff'),
-                        h('li', null, t('behavior_lens.fidelity_tip_2') || 'Provide additional BST (Behavioral Skills Training)'),
-                        h('li', null, t('behavior_lens.fidelity_tip_3') || 'Simplify procedures if too complex'),
-                        h('li', null, t('behavior_lens.fidelity_tip_4') || 'Consider environmental barriers to implementation')
+                        h('li', null, tt('behavior_lens.fidelity_tip_1', 'Review implementation procedures with staff')),
+                        h('li', null, tt('behavior_lens.fidelity_tip_2', 'Provide additional BST (Behavioral Skills Training)')),
+                        h('li', null, tt('behavior_lens.fidelity_tip_3', 'Simplify procedures if too complex')),
+                        h('li', null, tt('behavior_lens.fidelity_tip_4', 'Consider environmental barriers to implementation'))
                     )
                 )
             )
@@ -21174,7 +21201,7 @@ Keep the language professional but accessible.`;
 
                 }
 
-            } catch (err) { if (addToast) addToast(t('behavior_lens.toast.failed_to_parse_notes') || 'Failed to parse notes.', 'error'); }
+            } catch (err) { if (addToast) addToast(tt('behavior_lens.toast.failed_to_parse_notes', 'Failed to parse notes.'), 'error'); }
 
             setParsing(false);
 
@@ -21190,7 +21217,7 @@ Keep the language professional but accessible.`;
 
             setParsedEntries(prev => prev.filter(e => e !== entry));
 
-            if (addToast) addToast(t('behavior_lens.toast.entry_added') || 'Entry added!', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.entry_added', 'Entry added!'), 'success');
 
         };
 
@@ -21226,9 +21253,9 @@ Keep the language professional but accessible.`;
 
             h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl p-4 border border-violet-200' },
 
-                h('div', { className: 'flex items-center gap-2 mb-1', 'data-help-key': 'bl_natural_language_abc' }, h('span', { className: 'text-2xl' }, '✏️'), h('h3', { className: 'text-lg font-black text-violet-800' }, t('behavior_lens.ui.natural_language_abc_entry') || 'Natural Language ABC Entry')),
+                h('div', { className: 'flex items-center gap-2 mb-1', 'data-help-key': 'bl_natural_language_abc' }, h('span', { className: 'text-2xl' }, '✏️'), h('h3', { className: 'text-lg font-black text-violet-800' }, tt('behavior_lens.ui.natural_language_abc_entry', 'Natural Language ABC Entry'))),
 
-                h('p', { className: 'text-xs text-violet-600' }, t('behavior_lens.ui.type_or_paste_your_observation_notes_in_everyday_e') || 'Type or paste your observation notes in everyday English. AI will structure them into proper ABC entries.')
+                h('p', { className: 'text-xs text-violet-600' }, tt('behavior_lens.ui.type_or_paste_your_observation_notes_in_everyday_e', 'Type or paste your observation notes in everyday English. AI will structure them into proper ABC entries.'))
 
             ),
 
@@ -21236,7 +21263,7 @@ Keep the language professional but accessible.`;
 
                 h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider' }, '📝 Your Observation Notes'),
 
-                h('textarea', { value: rawText, onChange: (e) => setRawText(e.target.value), placeholder: (t('behavior_lens.raw.example_during_math_class_when_asked_to_complete_worksheet_p') || 'Example: During math class, when asked to complete worksheet problems, Johnny pushed his papers off the desk...'), 'aria-label': 'Raw behavior observation text', className: 'w-full h-40 p-3 border border-slate-400 rounded-lg text-sm resize-y focus:ring-2 focus:ring-violet-400 focus:border-violet-400', rows: 6 }),
+                h('textarea', { value: rawText, onChange: (e) => setRawText(e.target.value), placeholder: (tt('behavior_lens.raw.example_during_math_class_when_asked_to_complete_worksheet_p', 'Example: During math class, when asked to complete worksheet problems, Johnny pushed his papers off the desk...')), 'aria-label': 'Raw behavior observation text', className: 'w-full h-40 p-3 border border-slate-400 rounded-lg text-sm resize-y focus:ring-2 focus:ring-violet-400 focus:border-violet-400', rows: 6 }),
 
                 h('div', { className: 'flex items-center justify-between' },
 
@@ -21298,7 +21325,7 @@ Keep the language professional but accessible.`;
 
                                 h('select', { value: entry.function || 'unknown', onChange: (e) => updateParsed(idx, 'function', e.target.value), 'aria-label': (t && t('behavior_lens.aria.behavior_function')) || 'Behavior function', className: 'px-2 py-1 border border-slate-400 rounded text-xs' }, ['escape', 'attention', 'tangible', 'sensory', 'unknown'].map(f => h('option', { key: f, value: f }, f.charAt(0).toUpperCase() + f.slice(1)))),
 
-                                h('select', { value: entry.intensity || 3, onChange: (e) => updateParsed(idx, 'intensity', parseInt(e.target.value)), 'aria-label': 'Behavior intensity', className: 'px-2 py-1 border border-slate-400 rounded text-xs' }, [1, 2, 3, 4, 5].map(v => h('option', { key: v, value: v }, (t('behavior_lens.raw.intensity') || 'Intensity ') + v)))
+                                h('select', { value: entry.intensity || 3, onChange: (e) => updateParsed(idx, 'intensity', parseInt(e.target.value)), 'aria-label': 'Behavior intensity', className: 'px-2 py-1 border border-slate-400 rounded text-xs' }, [1, 2, 3, 4, 5].map(v => h('option', { key: v, value: v }, (tt('behavior_lens.raw.intensity', 'Intensity ')) + v)))
 
                             )
 
@@ -21324,13 +21351,13 @@ Keep the language professional but accessible.`;
 
                 h('ul', { className: 'text-xs text-amber-600 space-y-1 list-disc list-inside' },
 
-                    h('li', null, t('behavior_lens.record_tip_1') || 'Include what happened before, during, and after the behavior'),
+                    h('li', null, tt('behavior_lens.record_tip_1', 'Include what happened before, during, and after the behavior')),
 
-                    h('li', null, t('behavior_lens.record_tip_2') || 'Mention the setting/location when possible'),
+                    h('li', null, tt('behavior_lens.record_tip_2', 'Mention the setting/location when possible')),
 
-                    h('li', null, t('behavior_lens.record_tip_3') || 'You can paste multiple incidents'),
+                    h('li', null, tt('behavior_lens.record_tip_3', 'You can paste multiple incidents')),
 
-                    h('li', null, t('behavior_lens.record_tip_4') || 'Use specific, observable descriptions')
+                    h('li', null, tt('behavior_lens.record_tip_4', 'Use specific, observable descriptions'))
 
                 )
 
@@ -21384,9 +21411,9 @@ Keep the language professional but accessible.`;
 
                 const obj = parseJsonBlobFromText(aiResult);
 
-                if (obj) { setResult(obj); if (addToast) addToast(t('behavior_lens.toast.iep_goals_generated') || 'IEP goals generated!', 'success'); }
+                if (obj) { setResult(obj); if (addToast) addToast(tt('behavior_lens.toast.iep_goals_generated', 'IEP goals generated!'), 'success'); }
 
-            } catch (err) { if (addToast) addToast(t('behavior_lens.toast.generation_failed_2') || 'Generation failed.', 'error'); }
+            } catch (err) { if (addToast) addToast(tt('behavior_lens.toast.generation_failed_2', 'Generation failed.'), 'error'); }
 
             setGenerating(false);
 
@@ -21408,7 +21435,7 @@ Keep the language professional but accessible.`;
 
             navigator.clipboard.writeText(text);
 
-            if (addToast) addToast(t('behavior_lens.toast.copied') || 'Copied!', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success');
 
         };
 
@@ -21416,9 +21443,9 @@ Keep the language professional but accessible.`;
 
             h('div', { className: 'bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200' },
 
-                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '📄'), h('h3', { className: 'text-lg font-black text-blue-800' }, t('behavior_lens.ui.iep_behavior_goal_generator') || 'IEP Behavior Goal Generator')),
+                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '📄'), h('h3', { className: 'text-lg font-black text-blue-800' }, tt('behavior_lens.ui.iep_behavior_goal_generator', 'IEP Behavior Goal Generator'))),
 
-                h('p', { className: 'text-xs text-blue-600' }, t('behavior_lens.ui.generate_compliant_iep_behavioral_goals_from_obser') || 'Generate compliant IEP behavioral goals from observation data with present levels, SMART goals, and progress monitoring.')
+                h('p', { className: 'text-xs text-blue-600' }, tt('behavior_lens.ui.generate_compliant_iep_behavioral_goals_from_obser', 'Generate compliant IEP behavioral goals from observation data with present levels, SMART goals, and progress monitoring.'))
 
             ),
 
@@ -21428,7 +21455,7 @@ Keep the language professional but accessible.`;
 
                 h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' }, goalTypes.map(gt => h('button', { "aria-label": "Toggle goal type", key: gt.id, onClick: () => setGoalType(gt.id), className: 'p-3 rounded-lg border-2 text-start transition-all ' + (goalType === gt.id ? 'border-blue-400 bg-blue-50' : 'border-slate-200 hover:border-slate-300') }, h('div', { className: 'text-sm font-bold' }, gt.label), h('div', { className: 'text-[11px] text-slate-600' }, gt.desc)))),
 
-                h('textarea', { value: customContext, onChange: (e) => setCustomContext(e.target.value), placeholder: (t('behavior_lens.raw.additional_context') || 'Additional context...'), className: 'w-full p-2 border border-slate-400 rounded-lg text-xs resize-none', rows: 3 }),
+                h('textarea', { value: customContext, onChange: (e) => setCustomContext(e.target.value), placeholder: (tt('behavior_lens.raw.additional_context', 'Additional context...')), className: 'w-full p-2 border border-slate-400 rounded-lg text-xs resize-none', rows: 3 }),
 
                 h('div', { className: 'flex items-center justify-between bg-slate-50 rounded-lg p-3' },
 
@@ -21480,9 +21507,9 @@ Keep the language professional but accessible.`;
 
                     h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
 
-                        h('div', null, h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, t('behavior_lens.ui.accommodations') || 'Accommodations'), (result.accommodations || []).map((a, i) => h('div', { key: i, className: 'text-xs text-slate-700 mb-1' }, '• ' + a))),
+                        h('div', null, h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, tt('behavior_lens.ui.accommodations', 'Accommodations')), (result.accommodations || []).map((a, i) => h('div', { key: i, className: 'text-xs text-slate-700 mb-1' }, '• ' + a))),
 
-                        h('div', null, h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, t('behavior_lens.ui.interventions') || 'Interventions'), (result.suggestedInterventions || []).map((s, i) => h('div', { key: i, className: 'text-xs text-slate-700 mb-1' }, '• ' + s)))
+                        h('div', null, h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, tt('behavior_lens.ui.interventions', 'Interventions')), (result.suggestedInterventions || []).map((s, i) => h('div', { key: i, className: 'text-xs text-slate-700 mb-1' }, '• ' + s)))
 
                     )
 
@@ -21546,7 +21573,7 @@ Keep the language professional but accessible.`;
 
         }, [dashboardData, abcEntries]);
 
-        const statusConfig = { urgent: { emoji: '🔴', label: (t('behavior_lens.raw.urgent') || 'Urgent'), bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-700' }, needs_attention: { emoji: '🟡', label: (t('behavior_lens.raw.needs_attention') || 'Needs Attention'), bg: 'bg-amber-50', border: 'border-amber-300', text: 'text-amber-700' }, on_track: { emoji: '🟢', label: (t('behavior_lens.raw.on_track') || 'On Track'), bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-700' } };
+        const statusConfig = { urgent: { emoji: '🔴', label: (tt('behavior_lens.raw.urgent', 'Urgent')), bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-700' }, needs_attention: { emoji: '🟡', label: (tt('behavior_lens.raw.needs_attention', 'Needs Attention')), bg: 'bg-amber-50', border: 'border-amber-300', text: 'text-amber-700' }, on_track: { emoji: '🟢', label: (tt('behavior_lens.raw.on_track', 'On Track')), bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-700' } };
 
         const filtered = filterStatus === 'all' ? studentCaseData : studentCaseData.filter(s => s.status === filterStatus);
 
@@ -21580,9 +21607,9 @@ Keep the language professional but accessible.`;
 
                 setCaseloadSummary(result);
 
-                if (addToast) addToast(t('behavior_lens.toast.summary_generated') || 'Summary generated!', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.summary_generated', 'Summary generated!'), 'success');
 
-            } catch (e) { if (addToast) addToast(t('behavior_lens.toast.failed_to_generate_summary') || 'Failed to generate summary', 'error'); }
+            } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.failed_to_generate_summary', 'Failed to generate summary'), 'error'); }
 
             setSummaryLoading(false);
 
@@ -21598,7 +21625,7 @@ Keep the language professional but accessible.`;
 
             h('div', { className: 'bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl p-4 border border-teal-200' },
 
-                h('div', { className: 'flex items-center gap-2 mb-1', 'data-help-key': 'bl_caseload_dashboard' }, h('span', { className: 'text-2xl' }, '👥'), h('h3', { className: 'text-lg font-black text-teal-800' }, t('behavior_lens.ui.caseload_dashboard') || 'Caseload Dashboard')),
+                h('div', { className: 'flex items-center gap-2 mb-1', 'data-help-key': 'bl_caseload_dashboard' }, h('span', { className: 'text-2xl' }, '👥'), h('h3', { className: 'text-lg font-black text-teal-800' }, tt('behavior_lens.ui.caseload_dashboard', 'Caseload Dashboard'))),
 
                 h('p', { className: 'text-xs text-teal-600' }, "Bird's-eye view of your caseload with status indicators, trends, and AI summary.")
 
@@ -21626,7 +21653,7 @@ Keep the language professional but accessible.`;
 
             h('div', { className: 'bg-white rounded-xl border border-slate-400 overflow-hidden' },
 
-                sorted.length === 0 ? h('div', { className: 'p-8 text-center text-sm text-slate-600 italic' }, t('behavior_lens.ui.no_students_in_caseload') || 'No students in caseload.') :
+                sorted.length === 0 ? h('div', { className: 'p-8 text-center text-sm text-slate-600 italic' }, tt('behavior_lens.ui.no_students_in_caseload', 'No students in caseload.')) :
 
                     sorted.map((s, idx) => {
 
@@ -21678,7 +21705,7 @@ Keep the language professional but accessible.`;
 
         const setTier = (name, tier) => setTiers(prev => ({ ...prev, [name]: tier }));
 
-        const tierConfig = { 1: { label: (t('behavior_lens.raw.tier_1_universal') || 'Tier 1 — Universal'), color: 'emerald', emoji: '🟢', pct: '80%' }, 2: { label: (t('behavior_lens.raw.tier_2_targeted') || 'Tier 2 — Targeted'), color: 'amber', emoji: '🟡', pct: '15%' }, 3: { label: (t('behavior_lens.raw.tier_3_intensive') || 'Tier 3 — Intensive'), color: 'red', emoji: '🔴', pct: '5%' } };
+        const tierConfig = { 1: { label: (tt('behavior_lens.raw.tier_1_universal', 'Tier 1 — Universal')), color: 'emerald', emoji: '🟢', pct: '80%' }, 2: { label: (tt('behavior_lens.raw.tier_2_targeted', 'Tier 2 — Targeted')), color: 'amber', emoji: '🟡', pct: '15%' }, 3: { label: (tt('behavior_lens.raw.tier_3_intensive', 'Tier 3 — Intensive')), color: 'red', emoji: '🔴', pct: '5%' } };
 
         const handleAiRecommendations = async () => {
 
@@ -21696,9 +21723,9 @@ Keep the language professional but accessible.`;
 
                 const obj = parseJsonBlobFromText(result);
 
-                if (obj) { setAiRecs(obj); if (addToast) addToast(t('behavior_lens.toast.recommendations_generated') || 'Recommendations generated!', 'success'); }
+                if (obj) { setAiRecs(obj); if (addToast) addToast(tt('behavior_lens.toast.recommendations_generated', 'Recommendations generated!'), 'success'); }
 
-            } catch (e) { if (addToast) addToast(t('behavior_lens.toast.failed') || 'Failed', 'error'); }
+            } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.failed', 'Failed'), 'error'); }
 
             setRecsLoading(false);
 
@@ -21722,7 +21749,7 @@ Keep the language professional but accessible.`;
 
                 ),
 
-                tierStudents.length === 0 ? h('p', { className: 'text-xs text-' + tc.color + '-400 italic text-center py-2' }, t('behavior_lens.ui.no_students') || 'No students') :
+                tierStudents.length === 0 ? h('p', { className: 'text-xs text-' + tc.color + '-400 italic text-center py-2' }, tt('behavior_lens.ui.no_students', 'No students')) :
 
                     h('div', { className: 'flex flex-wrap gap-2' }, tierStudents.map(name => h('div', { key: name, className: 'flex items-center gap-1 bg-white rounded-lg px-3 py-1.5 border border-' + tc.color + '-200' },
 
@@ -21740,9 +21767,9 @@ Keep the language professional but accessible.`;
 
             h('div', { className: 'bg-gradient-to-r from-orange-50 to-rose-50 rounded-xl p-4 border border-orange-200' },
 
-                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '🏗️'), h('h3', { className: 'text-lg font-black text-orange-800' }, t('behavior_lens.ui.mtssrti_tier_manager') || 'MTSS/RTI Tier Manager')),
+                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '🏗️'), h('h3', { className: 'text-lg font-black text-orange-800' }, tt('behavior_lens.ui.mtssrti_tier_manager', 'MTSS/RTI Tier Manager'))),
 
-                h('p', { className: 'text-xs text-orange-600' }, t('behavior_lens.ui.visual_multitiered_system_of_supports_assign_stude') || 'Visual multi-tiered system of supports. Assign students to tiers, get AI-powered placement recommendations.')
+                h('p', { className: 'text-xs text-orange-600' }, tt('behavior_lens.ui.visual_multitiered_system_of_supports_assign_stude', 'Visual multi-tiered system of supports. Assign students to tiers, get AI-powered placement recommendations.'))
 
             ),
 
@@ -21790,7 +21817,7 @@ Keep the language professional but accessible.`;
         // Auto-fill from graph phase data
         const handleAutoFill = () => {
             if (!graphExport?.phaseAnalysis || graphExport.phaseAnalysis.length < 2) {
-                if (addToast) addToast(t('behavior_lens.toast.need_at_least_2_phases_in_the_graph_baseline_inter') || 'Need at least 2 phases in the Graph (baseline + intervention)', 'warning');
+                if (addToast) addToast(tt('behavior_lens.toast.need_at_least_2_phases_in_the_graph_baseline_inter', 'Need at least 2 phases in the Graph (baseline + intervention)'), 'warning');
                 return;
             }
             const baseline = graphExport.phaseAnalysis[0];
@@ -21798,7 +21825,7 @@ Keep the language professional but accessible.`;
             const baseVals = baseline.data.map(d => d.value);
             const intVals = intervention.data.map(d => d.value);
             if (baseVals.length < 2 || intVals.length < 2) {
-                if (addToast) addToast(t('behavior_lens.toast.each_phase_needs_at_least_2_data_points') || 'Each phase needs at least 2 data points', 'warning');
+                if (addToast) addToast(tt('behavior_lens.toast.each_phase_needs_at_least_2_data_points', 'Each phase needs at least 2 data points'), 'warning');
                 return;
             }
             setBaselineData(baseVals.join(', '));
@@ -21813,7 +21840,7 @@ Keep the language professional but accessible.`;
             const baseEntries = abcEntries.filter(e => e.phase === 'baseline' || !e.phase);
             const intEntries = abcEntries.filter(e => e.phase && e.phase !== 'baseline');
             if (baseEntries.length < 2 || intEntries.length < 2) {
-                if (addToast) addToast(t('behavior_lens.toast.need_2_baseline_2_intervention_entries_with_phase_tags') || 'Need at least 2 baseline + 2 intervention entries with phase tags', 'warning');
+                if (addToast) addToast(tt('behavior_lens.toast.need_2_baseline_2_intervention_entries_with_phase_tags', 'Need at least 2 baseline + 2 intervention entries with phase tags'), 'warning');
                 return;
             }
             const baseVals = baseEntries.map(e => e.intensity || 3);
@@ -21829,7 +21856,7 @@ Keep the language professional but accessible.`;
 
             const intervention = parseData(interventionData);
 
-            if (baseline.length < 2 || intervention.length < 2) { if (addToast) addToast(t('behavior_lens.toast.need_at_least_2_data_points_per_phase') || 'Need at least 2 data points per phase', 'error'); return; }
+            if (baseline.length < 2 || intervention.length < 2) { if (addToast) addToast(tt('behavior_lens.toast.need_at_least_2_data_points_per_phase', 'Need at least 2 data points per phase'), 'error'); return; }
 
             const baseMax = Math.max(...baseline);
 
@@ -21880,7 +21907,7 @@ Keep the language professional but accessible.`;
                 tauInterp: Math.abs(tauU) >= 0.8 ? 'Large' : Math.abs(tauU) >= 0.5 ? 'Medium' : Math.abs(tauU) >= 0.2 ? 'Small' : 'Negligible',
             });
 
-            if (addToast) addToast(t('behavior_lens.toast.effect_sizes_calculated') || 'Effect sizes calculated!', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.effect_sizes_calculated', 'Effect sizes calculated!'), 'success');
 
         };
 
@@ -21888,9 +21915,9 @@ Keep the language professional but accessible.`;
 
             h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-200' },
 
-                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '📐'), h('h3', { className: 'text-lg font-black text-indigo-800' }, t('behavior_lens.ui.effect_size_calculator') || 'Effect Size Calculator')),
+                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '📐'), h('h3', { className: 'text-lg font-black text-indigo-800' }, tt('behavior_lens.ui.effect_size_calculator', 'Effect Size Calculator'))),
 
-                h('p', { className: 'text-xs text-indigo-600' }, t('behavior_lens.ui.calculate_tauu_nap_and_pnd_to_quantify_interventio') || 'Calculate Tau-U, NAP, and PND to quantify intervention effectiveness.')
+                h('p', { className: 'text-xs text-indigo-600' }, tt('behavior_lens.ui.calculate_tauu_nap_and_pnd_to_quantify_interventio', 'Calculate Tau-U, NAP, and PND to quantify intervention effectiveness.'))
 
             ),
 
@@ -21911,9 +21938,9 @@ Keep the language professional but accessible.`;
                     className: 'w-full py-2 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-600 transition-all mb-2'
                 }, '📈 Open ABA Graph to enable auto-fill'),
 
-                h('div', null, h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider' }, '📊 Baseline Phase (A)'), h('input', { value: baselineData, onChange: e => setBaselineData(e.target.value), 'aria-label': 'eg 12, 15, 14, 13, 16', placeholder: t('behavior_lens.ph.eg_12_15_14_13_16') || 'e.g. 12, 15, 14, 13, 16', className: 'w-full mt-1 p-2 border border-slate-400 rounded-lg text-xs' })),
+                h('div', null, h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider' }, '📊 Baseline Phase (A)'), h('input', { value: baselineData, onChange: e => setBaselineData(e.target.value), 'aria-label': 'eg 12, 15, 14, 13, 16', placeholder: tt('behavior_lens.ph.eg_12_15_14_13_16', 'e.g. 12, 15, 14, 13, 16'), className: 'w-full mt-1 p-2 border border-slate-400 rounded-lg text-xs' })),
 
-                h('div', null, h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider' }, '📈 Intervention Phase (B)'), h('input', { value: interventionData, onChange: e => setInterventionData(e.target.value), 'aria-label': 'eg 8, 6, 5, 4, 3', placeholder: t('behavior_lens.ph.eg_8_6_5_4_3') || 'e.g. 8, 6, 5, 4, 3', className: 'w-full mt-1 p-2 border border-slate-400 rounded-lg text-xs' })),
+                h('div', null, h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider' }, '📈 Intervention Phase (B)'), h('input', { value: interventionData, onChange: e => setInterventionData(e.target.value), 'aria-label': 'eg 8, 6, 5, 4, 3', placeholder: tt('behavior_lens.ph.eg_8_6_5_4_3', 'e.g. 8, 6, 5, 4, 3'), className: 'w-full mt-1 p-2 border border-slate-400 rounded-lg text-xs' })),
 
                 h('button', { "aria-label": "Calculate Effect Sizes", onClick: calculate, className: 'px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-lg text-sm hover:from-indigo-700 hover:to-purple-700 transition-all' }, '📐 Calculate Effect Sizes')
 
@@ -21945,7 +21972,7 @@ Keep the language professional but accessible.`;
 
                 // Inter-tool: Send to IEP
                 setActivePanel && h('button', { "aria-label": "Send Effect Sizes to IEP Prep",
-                    onClick: () => { if (addToast) addToast(t('behavior_lens.toast.effect_sizes_attached_to_iep_prep') || 'Effect sizes attached to IEP Prep!', 'success'); setActivePanel('iepprep'); },
+                    onClick: () => { if (addToast) addToast(tt('behavior_lens.toast.effect_sizes_attached_to_iep_prep', 'Effect sizes attached to IEP Prep!'), 'success'); setActivePanel('iepprep'); },
                     className: 'w-full py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl text-xs font-bold hover:from-blue-600 hover:to-indigo-600 shadow-md transition-all'
                 }, '📄 Send Effect Sizes to IEP Prep →')
 
@@ -21989,9 +22016,9 @@ Keep the language professional but accessible.`;
 
                 const obj = parseJsonBlobFromText(result);
 
-                if (obj) { setCoaching(obj); setDismissed(new Set()); if (addToast) addToast(t('behavior_lens.toast.coaching_tips_generated') || 'Coaching tips generated!', 'success'); }
+                if (obj) { setCoaching(obj); setDismissed(new Set()); if (addToast) addToast(tt('behavior_lens.toast.coaching_tips_generated', 'Coaching tips generated!'), 'success'); }
 
-            } catch (e) { if (addToast) addToast(t('behavior_lens.toast.coaching_failed') || 'Coaching failed.', 'error'); }
+            } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.coaching_failed', 'Coaching failed.'), 'error'); }
 
             setLoading(false);
 
@@ -22005,9 +22032,9 @@ Keep the language professional but accessible.`;
 
             h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200' },
 
-                h('div', { className: 'flex items-center gap-2 mb-1', 'data-help-key': 'bl_ai_observation_coach' }, h('span', { className: 'text-2xl' }, '🎓'), h('h3', { className: 'text-lg font-black text-amber-800' }, t('behavior_lens.ui.ai_observation_coach') || 'AI Observation Coach')),
+                h('div', { className: 'flex items-center gap-2 mb-1', 'data-help-key': 'bl_ai_observation_coach' }, h('span', { className: 'text-2xl' }, '🎓'), h('h3', { className: 'text-lg font-black text-amber-800' }, tt('behavior_lens.ui.ai_observation_coach', 'AI Observation Coach'))),
 
-                h('p', { className: 'text-xs text-amber-600' }, t('behavior_lens.ui.get_ai_coaching_on_data_collection_quality_identif') || 'Get AI coaching on data collection quality. Identifies gaps, suggests improvements, rates your data.')
+                h('p', { className: 'text-xs text-amber-600' }, tt('behavior_lens.ui.get_ai_coaching_on_data_collection_quality_identif', 'Get AI coaching on data collection quality. Identifies gaps, suggests improvements, rates your data.'))
 
             ),
 
@@ -22029,7 +22056,7 @@ Keep the language professional but accessible.`;
 
                     h('div', { className: 'w-16 h-16 rounded-full flex items-center justify-center text-2xl font-black border-4 ' + (coaching.overallScore >= 7 ? 'border-emerald-400 text-emerald-700 bg-emerald-50' : coaching.overallScore >= 4 ? 'border-amber-400 text-amber-700 bg-amber-50' : 'border-red-400 text-red-700 bg-red-50') }, coaching.overallScore + '/10'),
 
-                    h('div', null, h('h4', { className: 'text-sm font-bold text-slate-800' }, t('behavior_lens.ui.data_quality_score') || 'Data Quality Score'), h('p', { className: 'text-xs text-slate-600' }, coaching.overallFeedback))
+                    h('div', null, h('h4', { className: 'text-sm font-bold text-slate-800' }, tt('behavior_lens.ui.data_quality_score', 'Data Quality Score')), h('p', { className: 'text-xs text-slate-600' }, coaching.overallFeedback))
 
                 ),
 
@@ -22144,7 +22171,7 @@ Keep the language professional but accessible.`;
                 const prompt = `You are a school BCBA comparing multiple students in your caseload. Analyze the following student data and provide insights:\n\n${data}\n\nProvide: 1) Which students need most urgent attention and why, 2) Common patterns across students, 3) Students who might benefit from group interventions, 4) Data collection recommendations. Keep response concise (150-200 words).`;
                 const result = await callGemini(prompt);
                 setCompareAnalysis(result);
-            } catch (e) { if (addToast) addToast(t('behavior_lens.toast.failed_to_generate_comparison') || 'Failed to generate comparison', 'error'); }
+            } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.failed_to_generate_comparison', 'Failed to generate comparison'), 'error'); }
             setCompareLoading(false);
         };
 
@@ -22162,8 +22189,8 @@ Keep the language professional but accessible.`;
         return h('div', { className: 'space-y-4' },
             // Header
             h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl p-4 border border-violet-200' },
-                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '📊'), h('h3', { className: 'text-lg font-black text-violet-800' }, t('behavior_lens.ui.crossstudent_comparison') || 'Cross-Student Comparison')),
-                h('p', { className: 'text-xs text-violet-600' }, t('behavior_lens.ui.load_multiple_student_workspace_files_to_compare_b') || 'Load multiple student workspace files to compare behavior patterns, intensity levels, and trends side-by-side.')
+                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '📊'), h('h3', { className: 'text-lg font-black text-violet-800' }, tt('behavior_lens.ui.crossstudent_comparison', 'Cross-Student Comparison'))),
+                h('p', { className: 'text-xs text-violet-600' }, tt('behavior_lens.ui.load_multiple_student_workspace_files_to_compare_b', 'Load multiple student workspace files to compare behavior patterns, intensity levels, and trends side-by-side.'))
             ),
 
             // File loader
@@ -22180,8 +22207,8 @@ Keep the language professional but accessible.`;
             // Empty state
             comparisonWorkspaces.length === 0 && h('div', { className: 'bg-slate-50 rounded-xl border border-dashed border-slate-300 p-10 text-center' },
                 h('div', { className: 'text-3xl mb-2' }, '📁'),
-                h('p', { className: 'text-sm text-slate-600 font-bold' }, t('behavior_lens.ui.no_workspaces_loaded_yet') || 'No workspaces loaded yet'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.click_load_student_workspaces_and_select_multiple') || 'Click "Load Student Workspaces" and select multiple .json files saved from BehaviorLens')
+                h('p', { className: 'text-sm text-slate-600 font-bold' }, tt('behavior_lens.ui.no_workspaces_loaded_yet', 'No workspaces loaded yet')),
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.click_load_student_workspaces_and_select_multiple', 'Click "Load Student Workspaces" and select multiple .json files saved from BehaviorLens'))
             ),
 
             // Summary table
@@ -22191,9 +22218,9 @@ Keep the language professional but accessible.`;
                     h('div', { className: 'w-16 text-center cursor-pointer hover:text-slate-700', onClick: () => toggleSort('abcCount') }, 'ABCs', sortKey === 'abcCount' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''),
                     h('div', { className: 'w-16 text-center cursor-pointer hover:text-slate-700', onClick: () => toggleSort('sessionCount') }, 'Sessions', sortKey === 'sessionCount' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''),
                     h('div', { className: 'w-20 text-center cursor-pointer hover:text-slate-700', onClick: () => toggleSort('avgIntensity') }, 'Avg Intensity', sortKey === 'avgIntensity' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''),
-                    h('div', { className: 'w-16 text-center' }, t('behavior_lens.ui.trend') || 'Trend'),
-                    h('div', { className: 'w-32 text-center' }, t('behavior_lens.ui.top_behavior') || 'Top Behavior'),
-                    h('div', { className: 'w-24 text-center' }, t('behavior_lens.ui.last_entry') || 'Last Entry'),
+                    h('div', { className: 'w-16 text-center' }, tt('behavior_lens.ui.trend', 'Trend')),
+                    h('div', { className: 'w-32 text-center' }, tt('behavior_lens.ui.top_behavior', 'Top Behavior')),
+                    h('div', { className: 'w-24 text-center' }, tt('behavior_lens.ui.last_entry', 'Last Entry')),
                     h('div', { className: 'w-8' })
                 ),
                 sorted.map((w, i) => h('div', { key: i, className: 'flex items-center px-4 py-3 border-b border-slate-100 hover:bg-violet-50/30 transition-all gap-4 text-xs' },
@@ -22212,7 +22239,7 @@ Keep the language professional but accessible.`;
                     switchToStudent && h('button', { "aria-label": "Switch",
                         onClick: () => switchToStudent(w.student),
                         className: 'px-2 py-1 bg-violet-100 text-violet-700 rounded-lg text-[11px] font-bold hover:bg-violet-200 transition-all',
-                        title: (t('behavior_lens.raw.switch_workspace_to_this_student') || 'Switch workspace to this student')
+                        title: (tt('behavior_lens.raw.switch_workspace_to_this_student', 'Switch workspace to this student'))
                     }, '⇄ Switch'),
                     h('button', { onClick: () => removeStudent(w.student), title: 'Close', 'aria-label': 'Close', className: 'w-8 text-center text-red-600 hover:text-red-500 text-sm' }, '✕')
                 ))
@@ -22362,8 +22389,8 @@ Keep the language professional but accessible.`;
 
         return h('div', { className: 'space-y-4' },
             h('div', { className: 'bg-gradient-to-r from-cyan-50 to-sky-50 rounded-xl p-4 border border-cyan-200' },
-                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '📂'), h('h3', { className: 'text-lg font-black text-cyan-800' }, t('behavior_lens.ui.batch_import') || 'Batch Import')),
-                h('p', { className: 'text-xs text-cyan-600' }, t('behavior_lens.ui.import_student_profiles_or_historical_abc_data_fro') || 'Import student profiles or historical ABC data from CSV files. Onboard 10-15 students at once.')
+                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '📂'), h('h3', { className: 'text-lg font-black text-cyan-800' }, tt('behavior_lens.ui.batch_import', 'Batch Import'))),
+                h('p', { className: 'text-xs text-cyan-600' }, tt('behavior_lens.ui.import_student_profiles_or_historical_abc_data_fro', 'Import student profiles or historical ABC data from CSV files. Onboard 10-15 students at once.'))
             ),
             // Mode toggle
             h('div', { className: 'flex gap-2' },
@@ -22410,7 +22437,7 @@ Keep the language professional but accessible.`;
             // Success message
             imported && h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center' },
                 h('span', { className: 'text-2xl' }, '✅'),
-                h('p', { className: 'text-sm font-bold text-emerald-800 mt-1' }, t('behavior_lens.ui.import_complete') || 'Import Complete!'),
+                h('p', { className: 'text-sm font-bold text-emerald-800 mt-1' }, tt('behavior_lens.ui.import_complete', 'Import Complete!')),
                 h('p', { className: 'text-xs text-emerald-600' }, `${parsedRows.filter(r => !r._error).length} ${importMode === 'abc' ? 'ABC entries added to current dataset' : 'students added to roster'}.`)
             )
         );
@@ -22422,7 +22449,7 @@ Keep the language professional but accessible.`;
         const [targetBehavior, setTargetBehavior] = useState('');
         const [goalCount, setGoalCount] = useState(0);
         const [goalDate, setGoalDate] = useState('');
-        const [phases, setPhases] = useState([{ label: (t('behavior_lens.raw.baseline') || 'Baseline'), startDate: '', color: '#6366f1' }]);
+        const [phases, setPhases] = useState([{ label: (tt('behavior_lens.raw.baseline', 'Baseline')), startDate: '', color: '#6366f1' }]);
         const [showPhaseEditor, setShowPhaseEditor] = useState(false);
 
         // Extract unique behaviors from ABC entries
@@ -22467,8 +22494,8 @@ Keep the language professional but accessible.`;
         const renderChart = () => {
             if (dailyData.length === 0) return h('div', { className: 'bg-slate-50 rounded-xl border border-dashed border-slate-300 p-10 text-center' },
                 h('div', { className: 'text-3xl mb-2' }, '📊'),
-                h('p', { className: 'text-sm text-slate-600 font-bold' }, t('behavior_lens.ui.no_data_yet') || 'No data yet'),
-                h('p', { className: 'text-xs text-slate-600' }, t('behavior_lens.ui.add_abc_entries_to_see_progress_over_time') || 'Add ABC entries to see progress over time')
+                h('p', { className: 'text-sm text-slate-600 font-bold' }, tt('behavior_lens.ui.no_data_yet', 'No data yet')),
+                h('p', { className: 'text-xs text-slate-600' }, tt('behavior_lens.ui.add_abc_entries_to_see_progress_over_time', 'Add ABC entries to see progress over time'))
             );
             const maxCount = Math.max(...dailyData.map(d => d.count), goalCount || 1, 1);
             const chartW = W - PAD * 2, chartH = H - PAD * 2;
@@ -22504,8 +22531,8 @@ Keep the language professional but accessible.`;
                 // Data points
                 ...dailyData.map((d, i) => h('circle', { key: 'dp' + i, cx: xScale(i), cy: yScale(d.count), r: 4, fill: '#6366f1', stroke: '#fff', strokeWidth: 2 })),
                 // Axis labels
-                h('text', { x: W / 2, y: H - 2, textAnchor: 'middle', fill: '#64748b', fontSize: 11, fontWeight: 'bold' }, (t('behavior_lens.raw.date') || 'Date')),
-                h('text', { x: 12, y: H / 2, textAnchor: 'middle', fill: '#64748b', fontSize: 11, fontWeight: 'bold', transform: `rotate(-90, 12, ${H / 2})` }, (t('behavior_lens.raw.frequency') || 'Frequency'))
+                h('text', { x: W / 2, y: H - 2, textAnchor: 'middle', fill: '#64748b', fontSize: 11, fontWeight: 'bold' }, (tt('behavior_lens.raw.date', 'Date'))),
+                h('text', { x: 12, y: H / 2, textAnchor: 'middle', fill: '#64748b', fontSize: 11, fontWeight: 'bold', transform: `rotate(-90, 12, ${H / 2})` }, (tt('behavior_lens.raw.frequency', 'Frequency')))
             );
         };
 
@@ -22514,16 +22541,16 @@ Keep the language professional but accessible.`;
 
         return h('div', { className: 'space-y-4' },
             h('div', { className: 'bg-gradient-to-r from-indigo-50 to-violet-50 rounded-xl p-4 border border-indigo-200' },
-                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '📈'), h('h3', { className: 'text-lg font-black text-indigo-800' }, t('behavior_lens.ui.progress_monitoring_dashboard') || 'Progress Monitoring Dashboard')),
-                h('p', { className: 'text-xs text-indigo-600' }, t('behavior_lens.ui.track_behavior_frequency_over_time_with_aim_lines') || 'Track behavior frequency over time with aim lines, phase changes, and trend analysis.')
+                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '📈'), h('h3', { className: 'text-lg font-black text-indigo-800' }, tt('behavior_lens.ui.progress_monitoring_dashboard', 'Progress Monitoring Dashboard'))),
+                h('p', { className: 'text-xs text-indigo-600' }, tt('behavior_lens.ui.track_behavior_frequency_over_time_with_aim_lines', 'Track behavior frequency over time with aim lines, phase changes, and trend analysis.'))
             ),
             // Controls
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 space-y-3' },
                 h('div', { className: 'grid grid-cols-3 gap-3' },
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, t('behavior_lens.ui.target_behavior') || 'Target Behavior'),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.ui.target_behavior', 'Target Behavior')),
                         h('select', { value: targetBehavior, onChange: e => setTargetBehavior(e.target.value), 'aria-label': 'Target behavior to track', className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-xs bg-white' },
-                            h('option', { value: '' }, (t('behavior_lens.raw.all_behaviors') || 'All Behaviors')),
+                            h('option', { value: '' }, (tt('behavior_lens.raw.all_behaviors', 'All Behaviors'))),
                             allBehaviors.map(b => h('option', { key: b, value: b }, b))
                         )
                     ),
@@ -22543,7 +22570,7 @@ Keep the language professional but accessible.`;
                 ),
                 showPhaseEditor && h('div', { className: 'space-y-2 bg-slate-50 rounded-lg p-3' },
                     phases.map((p, i) => h('div', { key: i, className: 'flex items-center gap-2' },
-                        h('input', { type: 'text', value: p.label, 'aria-label': 'Phase label', placeholder: t('behavior_lens.ph.phase_label') || 'Phase label', onChange: e => setPhases(prev => prev.map((pp, j) => j === i ? { ...pp, label: e.target.value } : pp)), className: 'px-2 py-1.5 border border-slate-400 rounded text-xs flex-1' }),
+                        h('input', { type: 'text', value: p.label, 'aria-label': 'Phase label', placeholder: tt('behavior_lens.ph.phase_label', 'Phase label'), onChange: e => setPhases(prev => prev.map((pp, j) => j === i ? { ...pp, label: e.target.value } : pp)), className: 'px-2 py-1.5 border border-slate-400 rounded text-xs flex-1' }),
                         h('input', { type: 'date', value: p.startDate, onChange: e => setPhases(prev => prev.map((pp, j) => j === i ? { ...pp, startDate: e.target.value } : pp)), 'aria-label': 'Phase start date', className: 'px-2 py-1.5 border border-slate-400 rounded text-xs' }),
                         h('input', { type: 'color', value: p.color, onChange: e => setPhases(prev => prev.map((pp, j) => j === i ? { ...pp, color: e.target.value } : pp)), 'aria-label': 'Phase color', className: 'w-8 h-8 border-0 rounded cursor-pointer' }),
                         h('button', { onClick: () => setPhases(prev => prev.filter((_, j) => j !== i)), title: 'Close', className: 'text-red-600 hover:text-red-600 text-sm' }, '✕')
@@ -22623,18 +22650,18 @@ Keep the language professional but accessible.`;
                 if (result == null) { setParsing(false); return; }
                 const match = result.match(/\[[\s\S]*\]/);
                 if (!match) {
-                    if (addToast) addToast(t('behavior_lens.toast.transcript_no_json') || 'AI did not return a parseable list of entries.', 'error');
+                    if (addToast) addToast(tt('behavior_lens.toast.transcript_no_json', 'AI did not return a parseable list of entries.'), 'error');
                     setParsing(false);
                     return;
                 }
                 let entries;
                 try { entries = JSON.parse(match[0]); } catch {
-                    if (addToast) addToast(t('behavior_lens.toast.transcript_bad_json') || 'AI returned malformed JSON; please rephrase the transcript and try again.', 'error');
+                    if (addToast) addToast(tt('behavior_lens.toast.transcript_bad_json', 'AI returned malformed JSON; please rephrase the transcript and try again.'), 'error');
                     setParsing(false);
                     return;
                 }
                 if (!Array.isArray(entries)) {
-                    if (addToast) addToast(t('behavior_lens.toast.transcript_not_array') || 'AI returned a single object instead of an entry list; wrapping it for review.', 'warning');
+                    if (addToast) addToast(tt('behavior_lens.toast.transcript_not_array', 'AI returned a single object instead of an entry list; wrapping it for review.'), 'warning');
                     entries = [entries];
                 }
                 // Per-entry sanitization: strict types, no nulls/undefined fields,
@@ -22654,13 +22681,13 @@ Keep the language professional but accessible.`;
                         _selected: true
                     }));
                 if (safeEntries.length === 0) {
-                    if (addToast) addToast(t('behavior_lens.toast.transcript_no_valid_entries') || 'AI list contained no valid ABC entries.', 'error');
+                    if (addToast) addToast(tt('behavior_lens.toast.transcript_no_valid_entries', 'AI list contained no valid ABC entries.'), 'error');
                     setParsing(false);
                     return;
                 }
                 setParsedEntries(safeEntries);
                 if (addToast) addToast(t('behavior_lens.toast.parsed_n_abc_entries_from_transcript') || `Parsed ${safeEntries.length} ABC entries from transcript!`, 'success');
-            } catch (e) { if (addToast) addToast(t('behavior_lens.toast.failed_to_parse_transcript') || 'Failed to parse transcript', 'error'); }
+            } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.failed_to_parse_transcript', 'Failed to parse transcript'), 'error'); }
             setParsing(false);
         };
 
@@ -22675,13 +22702,13 @@ Keep the language professional but accessible.`;
 
         return h('div', { className: 'space-y-4' },
             h('div', { className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200' },
-                h('div', { className: 'flex items-center gap-2 mb-1', 'data-help-key': 'bl_voice_to_abc' }, h('span', { className: 'text-2xl' }, '🎙️'), h('h3', { className: 'text-lg font-black text-rose-800' }, t('behavior_lens.ui.voicetoabc') || 'Voice-to-ABC')),
-                h('p', { className: 'text-xs text-rose-600' }, t('behavior_lens.ui.speak_your_observations_naturally_ai_will_extract') || 'Speak your observations naturally. AI will extract structured ABC entries from your transcript.')
+                h('div', { className: 'flex items-center gap-2 mb-1', 'data-help-key': 'bl_voice_to_abc' }, h('span', { className: 'text-2xl' }, '🎙️'), h('h3', { className: 'text-lg font-black text-rose-800' }, tt('behavior_lens.ui.voicetoabc', 'Voice-to-ABC'))),
+                h('p', { className: 'text-xs text-rose-600' }, tt('behavior_lens.ui.speak_your_observations_naturally_ai_will_extract', 'Speak your observations naturally. AI will extract structured ABC entries from your transcript.'))
             ),
             // Not supported fallback
             !supported && h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-4 text-center' },
                 h('p', { className: 'text-sm font-bold text-amber-800' }, '⚠️ Speech Recognition Not Supported'),
-                h('p', { className: 'text-xs text-amber-600 mt-1' }, t('behavior_lens.ui.please_use_chrome_edge_or_safari_for_voice_input') || 'Please use Chrome, Edge, or Safari for voice input.')
+                h('p', { className: 'text-xs text-amber-600 mt-1' }, tt('behavior_lens.ui.please_use_chrome_edge_or_safari_for_voice_input', 'Please use Chrome, Edge, or Safari for voice input.'))
             ),
             // Record controls
             supported && h('div', { className: 'flex items-center gap-3' },
@@ -22691,7 +22718,7 @@ Keep the language professional but accessible.`;
                 }, isRecording ? '⏹️ Stop Recording' : '🎙️ Start Recording'),
                 isRecording && h('div', { className: 'flex items-center gap-2' },
                     h('div', { className: 'w-3 h-3 bg-red-500 rounded-full animate-pulse' }),
-                    h('span', { className: 'text-xs text-red-600 font-bold' }, t('behavior_lens.ui.recording') || 'Recording...')
+                    h('span', { className: 'text-xs text-red-600 font-bold' }, tt('behavior_lens.ui.recording', 'Recording...'))
                 )
             ),
             // Transcript
@@ -22712,7 +22739,7 @@ Keep the language professional but accessible.`;
             }, '🤖 Parse ABC Entries from Transcript'),
             parsing && h('div', { className: 'text-center py-4' },
                 h('div', { className: 'text-lg animate-spin inline-block' }, '⏳'),
-                h('p', { className: 'text-xs text-slate-600 mt-1' }, t('behavior_lens.ui.ai_is_analyzing_your_transcript') || 'AI is analyzing your transcript...')
+                h('p', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.ui.ai_is_analyzing_your_transcript', 'AI is analyzing your transcript...'))
             ),
             // Parsed entries for review
             parsedEntries.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 overflow-hidden' },
@@ -22790,8 +22817,8 @@ Keep the language professional but accessible.`;
                 }
                 setShareCode(encoded);
                 navigator.clipboard.writeText(encoded);
-                if (addToast) addToast(t('behavior_lens.toast.share_code_copied_to_clipboard') || 'Share code copied to clipboard!', 'success');
-            } catch (e) { if (addToast) addToast(t('behavior_lens.toast.failed_to_generate_share_code') || 'Failed to generate share code', 'error'); }
+                if (addToast) addToast(tt('behavior_lens.toast.share_code_copied_to_clipboard', 'Share code copied to clipboard!'), 'success');
+            } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.failed_to_generate_share_code', 'Failed to generate share code'), 'error'); }
         };
 
         const handleDownloadShare = () => {
@@ -22802,7 +22829,7 @@ Keep the language professional but accessible.`;
             a.download = `behaviorlens_share_${selectedStudent || 'student'}_${shareRole}_${new Date().toISOString().split('T')[0]}.json`;
             a.click();
             URL.revokeObjectURL(a.href);
-            if (addToast) addToast(t('behavior_lens.toast.share_file_downloaded') || 'Share file downloaded!', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.share_file_downloaded', 'Share file downloaded!'), 'success');
         };
 
         const handleImportCode = () => {
@@ -22810,7 +22837,7 @@ Keep the language professional but accessible.`;
                 const decoded = JSON.parse(decodeURIComponent(escape(atob(importCode.trim()))));
                 setImportedData(decoded);
             } catch {
-                if (addToast) addToast(t('behavior_lens.toast.invalid_share_code') || 'Invalid share code', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.invalid_share_code', 'Invalid share code'), 'error');
             }
         };
 
@@ -22821,7 +22848,7 @@ Keep the language professional but accessible.`;
             reader.onload = (ev) => {
                 try {
                     setImportedData(JSON.parse(ev.target.result));
-                } catch { if (addToast) addToast(t('behavior_lens.toast.invalid_share_file') || 'Invalid share file', 'error'); }
+                } catch { if (addToast) addToast(tt('behavior_lens.toast.invalid_share_file', 'Invalid share file'), 'error'); }
             };
             reader.readAsText(file);
             e.target.value = '';
@@ -22831,8 +22858,8 @@ Keep the language professional but accessible.`;
 
         return h('div', { className: 'space-y-4' },
             h('div', { className: 'bg-gradient-to-r from-blue-50 to-sky-50 rounded-xl p-4 border border-blue-200' },
-                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '🤝'), h('h3', { className: 'text-lg font-black text-blue-800' }, t('behavior_lens.ui.workspace_sharing') || 'Workspace Sharing')),
-                h('p', { className: 'text-xs text-blue-600' }, t('behavior_lens.ui.share_workspace_data_with_team_members_rolebased_v') || 'Share workspace data with team members. Role-based views filter data appropriately for BCBAs, teachers, and parents.')
+                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '🤝'), h('h3', { className: 'text-lg font-black text-blue-800' }, tt('behavior_lens.ui.workspace_sharing', 'Workspace Sharing'))),
+                h('p', { className: 'text-xs text-blue-600' }, tt('behavior_lens.ui.share_workspace_data_with_team_members_rolebased_v', 'Share workspace data with team members. Role-based views filter data appropriately for BCBAs, teachers, and parents.'))
             ),
             // Share section
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 space-y-3' },
@@ -22860,7 +22887,7 @@ Keep the language professional but accessible.`;
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 space-y-3' },
                 h('h4', { className: 'text-xs font-bold text-slate-700 uppercase tracking-wider' }, '📥 Import Shared Workspace'),
                 h('div', { className: 'flex gap-2' },
-                    h('input', { type: 'text', value: importCode, onChange: e => setImportCode(e.target.value), 'aria-label': 'Paste share code here', placeholder: t('behavior_lens.ph.paste_share_code_here') || 'Paste share code here...', className: 'flex-1 px-3 py-2 border border-slate-400 rounded-lg text-xs' }),
+                    h('input', { type: 'text', value: importCode, onChange: e => setImportCode(e.target.value), 'aria-label': 'Paste share code here', placeholder: tt('behavior_lens.ph.paste_share_code_here', 'Paste share code here...'), className: 'flex-1 px-3 py-2 border border-slate-400 rounded-lg text-xs' }),
                     h('button', { onClick: handleImportCode, disabled: !importCode.trim(), className: 'px-3 py-2 bg-emerald-700 text-white font-bold rounded-lg text-xs hover:bg-emerald-700 disabled:opacity-40 transition-all' }, '📋 Load'),
                     h('button', { "aria-label": "File", onClick: () => importFileRef.current?.click(), className: 'px-3 py-2 bg-white border border-slate-400 text-slate-600 font-bold rounded-lg text-xs hover:bg-slate-50 transition-all' }, '📁 File'),
                     h('input', { ref: importFileRef, type: 'file', accept: '.json', onChange: handleImportFile, className: 'hidden' })
@@ -22870,12 +22897,12 @@ Keep the language professional but accessible.`;
             importedData && h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-4 space-y-2' },
                 h('h4', { className: 'text-xs font-bold text-emerald-800 uppercase' }, '✅ Imported Workspace Preview'),
                 h('div', { className: 'grid grid-cols-2 gap-2 text-xs' },
-                    h('div', null, h('span', { className: 'text-slate-600' }, t('behavior_lens.ui.student') || 'Student: '), h('span', { className: 'font-bold text-slate-800' }, importedData.student || 'Unknown')),
-                    h('div', null, h('span', { className: 'text-slate-600' }, t('behavior_lens.ui.role') || 'Role: '), h('span', { className: 'font-bold text-slate-800' }, importedData.role || 'N/A')),
-                    h('div', null, h('span', { className: 'text-slate-600' }, t('behavior_lens.ui.generated') || 'Generated: '), h('span', { className: 'font-bold text-slate-800' }, importedData.generatedAt ? new Date(importedData.generatedAt).toLocaleDateString() : 'N/A')),
-                    importedData.abcEntries && h('div', null, h('span', { className: 'text-slate-600' }, t('behavior_lens.ui.abc_entries_2') || 'ABC Entries: '), h('span', { className: 'font-bold text-slate-800' }, importedData.abcEntries.length)),
-                    importedData.totalEntries && h('div', null, h('span', { className: 'text-slate-600' }, t('behavior_lens.ui.total_entries') || 'Total entries: '), h('span', { className: 'font-bold text-slate-800' }, importedData.totalEntries)),
-                    importedData.summary && h('div', { className: 'col-span-2' }, h('span', { className: 'text-slate-600' }, t('behavior_lens.ui.summary') || 'Summary: '), h('span', { className: 'font-bold text-slate-800' }, `${importedData.summary.totalEntries} entries, ${importedData.summary.sessions} sessions`))
+                    h('div', null, h('span', { className: 'text-slate-600' }, tt('behavior_lens.ui.student', 'Student: ')), h('span', { className: 'font-bold text-slate-800' }, importedData.student || 'Unknown')),
+                    h('div', null, h('span', { className: 'text-slate-600' }, tt('behavior_lens.ui.role', 'Role: ')), h('span', { className: 'font-bold text-slate-800' }, importedData.role || 'N/A')),
+                    h('div', null, h('span', { className: 'text-slate-600' }, tt('behavior_lens.ui.generated', 'Generated: ')), h('span', { className: 'font-bold text-slate-800' }, importedData.generatedAt ? new Date(importedData.generatedAt).toLocaleDateString() : 'N/A')),
+                    importedData.abcEntries && h('div', null, h('span', { className: 'text-slate-600' }, tt('behavior_lens.ui.abc_entries_2', 'ABC Entries: ')), h('span', { className: 'font-bold text-slate-800' }, importedData.abcEntries.length)),
+                    importedData.totalEntries && h('div', null, h('span', { className: 'text-slate-600' }, tt('behavior_lens.ui.total_entries', 'Total entries: ')), h('span', { className: 'font-bold text-slate-800' }, importedData.totalEntries)),
+                    importedData.summary && h('div', { className: 'col-span-2' }, h('span', { className: 'text-slate-600' }, tt('behavior_lens.ui.summary', 'Summary: ')), h('span', { className: 'font-bold text-slate-800' }, `${importedData.summary.totalEntries} entries, ${importedData.summary.sessions} sessions`))
                 ),
                 importedData.aiAnalysis && h('div', { className: 'bg-white rounded-lg p-3 mt-2' },
                     h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, '🧠 Analysis'),
@@ -23051,9 +23078,9 @@ Format as a numbered list. Be concise but specific.`;
             });
             // Axis labels
             svg += `<text x="${W / 2}" y="${H - 0}" text-anchor="middle" fill="#64748b" font-size="11" font-weight="bold">Date</text>`;
-            svg += `<text x="12" y="${H / 2}" text-anchor="middle" fill="#64748b" font-size="11" font-weight="bold" transform="rotate(-90, 12, ${H / 2})">${esc(t('bl.frequency') || 'Frequency')}</text>`;
+            svg += `<text x="12" y="${H / 2}" text-anchor="middle" fill="#64748b" font-size="11" font-weight="bold" transform="rotate(-90, 12, ${H / 2})">${esc(tt('bl.frequency', 'Frequency'))}</text>`;
             // Legend
-            svg += `<circle cx="${PAD + 10}" cy="${PAD - 12}" r="4" fill="#6366f1"/><text x="${PAD + 18}" y="${PAD - 8}" fill="#64748b" font-size="9">${esc(t('bl.daily_count') || 'Daily Count')}</text>`;
+            svg += `<circle cx="${PAD + 10}" cy="${PAD - 12}" r="4" fill="#6366f1"/><text x="${PAD + 18}" y="${PAD - 8}" fill="#64748b" font-size="9">${esc(tt('bl.daily_count', 'Daily Count'))}</text>`;
             if (analytics.trend) {
                 svg += `<line x1="${PAD + 110}" y1="${PAD - 12}" x2="${PAD + 130}" y2="${PAD - 12}" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,2"/>`;
                 const dir = analytics.trend.slope > 0.1 ? '↑ Increasing' : analytics.trend.slope < -0.1 ? '↓ Decreasing' : '→ Stable';
@@ -23067,7 +23094,7 @@ Format as a numbered list. Be concise but specific.`;
         const buildFreqTable = (items, label) => {
             if (items.length === 0) return '';
             let html = `<table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:12px;">`;
-            html += `<tr style="background:#f1f5f9;"><th style="text-align:left;padding:6px 10px;border-bottom:2px solid #e2e8f0;">${esc(label)}</th><th style="text-align:right;padding:6px 10px;border-bottom:2px solid #e2e8f0;">${esc(t('bl.count') || 'Count')}</th><th style="text-align:right;padding:6px 10px;border-bottom:2px solid #e2e8f0;">%</th></tr>`;
+            html += `<tr style="background:#f1f5f9;"><th style="text-align:left;padding:6px 10px;border-bottom:2px solid #e2e8f0;">${esc(label)}</th><th style="text-align:right;padding:6px 10px;border-bottom:2px solid #e2e8f0;">${esc(tt('bl.count', 'Count'))}</th><th style="text-align:right;padding:6px 10px;border-bottom:2px solid #e2e8f0;">%</th></tr>`;
             const total = items.reduce((s, [, c]) => s + c, 0);
             items.forEach(([name, count]) => {
                 const pct = ((count / total) * 100).toFixed(1);
@@ -23141,7 +23168,7 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
                 html += `<div class="cover-header">
                     <div style="font-size:28px;margin-bottom:8px;">📊</div>
                     <h1>${esc(audienceLabel)}</h1>
-                    <div class="subtitle">${esc(t('bl.progress_documentation') || 'BehaviorLens Progress Documentation')}</div>
+                    <div class="subtitle">${esc(tt('bl.progress_documentation', 'BehaviorLens Progress Documentation'))}</div>
                     <div class="cover-meta">
                         <span>👤 <strong>${esc(student)}</strong></span>
                         <span>📅 ${esc(dateStr)}</span>
@@ -23177,25 +23204,25 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
             if (sections.abcSummary) {
                 html += `<h2>📋 Behavioral Data Summary</h2>`;
                 html += `<div class="stat-grid">
-                    <div class="stat-card"><div class="val">${analytics.totalEntries}</div><div class="lbl">${esc(t('bl.abc_entries') || 'ABC Entries')}</div></div>
-                    <div class="stat-card"><div class="val">${analytics.avgIntensity}</div><div class="lbl">${esc(t('bl.avg_intensity') || 'Avg Intensity')}</div></div>
-                    <div class="stat-card"><div class="val">${analytics.dailyData.length}</div><div class="lbl">${esc(t('bl.days_observed') || 'Days Observed')}</div></div>
-                    <div class="stat-card"><div class="val">${esc(trendLabel)}</div><div class="lbl">${esc(t('bl.overall_trend') || 'Overall Trend')}</div></div>
+                    <div class="stat-card"><div class="val">${analytics.totalEntries}</div><div class="lbl">${esc(tt('bl.abc_entries', 'ABC Entries'))}</div></div>
+                    <div class="stat-card"><div class="val">${analytics.avgIntensity}</div><div class="lbl">${esc(tt('bl.avg_intensity', 'Avg Intensity'))}</div></div>
+                    <div class="stat-card"><div class="val">${analytics.dailyData.length}</div><div class="lbl">${esc(tt('bl.days_observed', 'Days Observed'))}</div></div>
+                    <div class="stat-card"><div class="val">${esc(trendLabel)}</div><div class="lbl">${esc(tt('bl.overall_trend', 'Overall Trend'))}</div></div>
                 </div>`;
                 if (analytics.topBehaviors.length > 0) {
-                    html += `<h3>${esc(t('bl.target_behaviors_frequency') || 'Target Behaviors by Frequency')}</h3>`;
+                    html += `<h3>${esc(tt('bl.target_behaviors_frequency', 'Target Behaviors by Frequency'))}</h3>`;
                     html += buildFreqTable(analytics.topBehaviors, 'Behavior');
                 }
                 if (audience !== 'parent' && analytics.topAntecedents.length > 0) {
-                    html += `<h3>${esc(t('bl.common_antecedents') || 'Common Antecedents')}</h3>`;
+                    html += `<h3>${esc(tt('bl.common_antecedents', 'Common Antecedents'))}</h3>`;
                     html += buildFreqTable(analytics.topAntecedents, 'Antecedent');
                 }
                 if (audience !== 'parent' && analytics.topConsequences.length > 0) {
-                    html += `<h3>${esc(t('bl.common_consequences') || 'Common Consequences')}</h3>`;
+                    html += `<h3>${esc(tt('bl.common_consequences', 'Common Consequences'))}</h3>`;
                     html += buildFreqTable(analytics.topConsequences, 'Consequence');
                 }
                 if (analytics.topSettings.length > 0) {
-                    html += `<h3>${esc(t('bl.settings_label') || 'Settings')}</h3>`;
+                    html += `<h3>${esc(tt('bl.settings_label', 'Settings'))}</h3>`;
                     html += buildFreqTable(analytics.topSettings, 'Setting');
                 }
             }
@@ -23214,10 +23241,10 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
             if (sections.observations && analytics.totalSessions > 0) {
                 html += `<h2>🔬 Observation Sessions</h2>`;
                 html += `<div class="stat-grid">
-                    <div class="stat-card"><div class="val">${analytics.totalSessions}</div><div class="lbl">${esc(t('bl.total_sessions') || 'Total Sessions')}</div></div>
-                    <div class="stat-card"><div class="val">${analytics.freqSessions.length}</div><div class="lbl">${esc(t('bl.frequency') || 'Frequency')}</div></div>
-                    <div class="stat-card"><div class="val">${analytics.intervalSessions.length}</div><div class="lbl">${esc(t('bl.interval') || 'Interval')}</div></div>
-                    <div class="stat-card"><div class="val">${analytics.durationSessions.length}</div><div class="lbl">${esc(t('bl.duration') || 'Duration')}</div></div>
+                    <div class="stat-card"><div class="val">${analytics.totalSessions}</div><div class="lbl">${esc(tt('bl.total_sessions', 'Total Sessions'))}</div></div>
+                    <div class="stat-card"><div class="val">${analytics.freqSessions.length}</div><div class="lbl">${esc(tt('bl.frequency', 'Frequency'))}</div></div>
+                    <div class="stat-card"><div class="val">${analytics.intervalSessions.length}</div><div class="lbl">${esc(tt('bl.interval', 'Interval'))}</div></div>
+                    <div class="stat-card"><div class="val">${analytics.durationSessions.length}</div><div class="lbl">${esc(tt('bl.duration', 'Duration'))}</div></div>
                 </div>`;
                 if (analytics.freqSessions.length > 0) {
                     const avgRate = (analytics.freqSessions.reduce((s, ses) => s + (ses.data?.rate || 0), 0) / analytics.freqSessions.length).toFixed(1);
@@ -23234,14 +23261,14 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
                 const _bcbaBucket = aiConfidenceBucket(aiAnalysis.hypothesizedFunction ? aiAnalysis.confidence : null);
                 html += `<h2>🧠 AI-Assisted Functional Behavior Analysis</h2>`;
                 html += `<div class="stat-grid" style="grid-template-columns:1fr 1fr;">
-                    <div class="stat-card"><div class="val">${esc(aiAnalysis.hypothesizedFunction) || '—'}</div><div class="lbl">${esc(t('bl.hypothesized_function') || 'Hypothesized Function')}</div></div>
-                    <div class="stat-card"><div class="val">${esc(_bcbaBucket.label)}</div><div class="lbl">${esc(t('bl.ai_estimate_confidence') || 'AI estimate: confidence')}</div></div>
+                    <div class="stat-card"><div class="val">${esc(aiAnalysis.hypothesizedFunction) || '—'}</div><div class="lbl">${esc(tt('bl.hypothesized_function', 'Hypothesized Function'))}</div></div>
+                    <div class="stat-card"><div class="val">${esc(_bcbaBucket.label)}</div><div class="lbl">${esc(tt('bl.ai_estimate_confidence', 'AI estimate: confidence'))}</div></div>
                 </div>`;
                 if (aiAnalysis.summary) {
                     html += `<p style="margin-top:8px;">${esc(aiAnalysis.summary)}</p>`;
                 }
                 if (audience === 'clinical' && aiAnalysis.patterns) {
-                    html += `<h3>${esc(t('bl.identified_patterns') || 'Identified Patterns')}</h3><ul style="font-size:12px;padding-left:20px;">`;
+                    html += `<h3>${esc(tt('bl.identified_patterns', 'Identified Patterns'))}</h3><ul style="font-size:12px;padding-left:20px;">`;
                     (Array.isArray(aiAnalysis.patterns) ? aiAnalysis.patterns : [aiAnalysis.patterns]).forEach(p => {
                         html += `<li style="margin-bottom:4px;">${esc(typeof p === 'string' ? p : JSON.stringify(p))}</li>`;
                     });
@@ -23275,7 +23302,7 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
             if (win) {
                 win.document.write(html);
                 win.document.close();
-                if (addToast) addToast(t('behavior_lens.toast.report_generated_use_printsave_as_pdf_in_the_new_t') || 'Report generated — use Print/Save as PDF in the new tab!', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.report_generated_use_printsave_as_pdf_in_the_new_t', 'Report generated — use Print/Save as PDF in the new tab!'), 'success');
             } else {
                 // Fallback: download as HTML
                 const blob = new Blob([html], { type: 'text/html' });
@@ -23284,7 +23311,7 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
                 a.download = `progress_report_${(student || 'student').replace(/\s/g, '_')}.html`;
                 a.click();
                 URL.revokeObjectURL(a.href);
-                if (addToast) addToast(t('behavior_lens.toast.popups_blocked_downloaded_as_html_file_instead') || 'Pop-ups blocked — downloaded as HTML file instead.', 'info');
+                if (addToast) addToast(tt('behavior_lens.toast.popups_blocked_downloaded_as_html_file_instead', 'Pop-ups blocked — downloaded as HTML file instead.'), 'info');
             }
             setGenerating(false);
         };
@@ -23301,8 +23328,8 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
         return h('div', { className: 'space-y-4' },
             // Header
             h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border border-emerald-200' },
-                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '📄'), h('h3', { className: 'text-lg font-black text-emerald-800' }, t('behavior_lens.ui.progress_report_generator') || 'Progress Report Generator')),
-                h('p', { className: 'text-xs text-emerald-600' }, t('behavior_lens.ui.generate_a_professional_printready_progress_report') || 'Generate a professional, print-ready progress report with inline charts, data summaries, and AI recommendations. One-click PDF export via browser print.')
+                h('div', { className: 'flex items-center gap-2 mb-1' }, h('span', { className: 'text-2xl' }, '📄'), h('h3', { className: 'text-lg font-black text-emerald-800' }, tt('behavior_lens.ui.progress_report_generator', 'Progress Report Generator'))),
+                h('p', { className: 'text-xs text-emerald-600' }, tt('behavior_lens.ui.generate_a_professional_printready_progress_report', 'Generate a professional, print-ready progress report with inline charts, data summaries, and AI recommendations. One-click PDF export via browser print.'))
             ),
 
             // Audience selector
@@ -23327,20 +23354,20 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, '📅 Date Range'),
                         h('select', { value: dateRange, onChange: e => setDateRange(e.target.value), 'aria-label': 'Date range for report', className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-xs bg-white' },
-                            h('option', { value: 'all' }, (t('behavior_lens.raw.all_available_data') || 'All Available Data')),
-                            h('option', { value: 'week' }, (t('behavior_lens.raw.last_7_days') || 'Last 7 Days')),
-                            h('option', { value: 'month' }, (t('behavior_lens.raw.last_30_days') || 'Last 30 Days')),
-                            h('option', { value: 'custom' }, (t('behavior_lens.raw.custom_range') || 'Custom Range'))
+                            h('option', { value: 'all' }, (tt('behavior_lens.raw.all_available_data', 'All Available Data'))),
+                            h('option', { value: 'week' }, (tt('behavior_lens.raw.last_7_days', 'Last 7 Days'))),
+                            h('option', { value: 'month' }, (tt('behavior_lens.raw.last_30_days', 'Last 30 Days'))),
+                            h('option', { value: 'custom' }, (tt('behavior_lens.raw.custom_range', 'Custom Range')))
                         )
                     ),
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, '🎓 BCBA / Preparer Name'),
-                        h('input', { type: 'text', value: bcbaName, onChange: e => setBcbaName(e.target.value), 'aria-label': 'Optional', placeholder: t('behavior_lens.ph.optional') || 'Optional', className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-xs' })
+                        h('input', { type: 'text', value: bcbaName, onChange: e => setBcbaName(e.target.value), 'aria-label': 'Optional', placeholder: tt('behavior_lens.ph.optional', 'Optional'), className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-xs' })
                     )
                 ),
                 dateRange === 'custom' && h('div', { className: 'grid grid-cols-2 gap-4 mt-2' },
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, t('behavior_lens.ui.from') || 'From'),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.ui.from', 'From')),
                         h('input', { type: 'date', value: customFrom, onChange: e => setCustomFrom(e.target.value), className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-xs' })
                     ),
                     h('div', null,
@@ -23369,7 +23396,7 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
                 h('div', { className: 'flex items-center justify-between' },
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block' }, '🤖 AI-Generated Recommendations'),
-                        h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, t('behavior_lens.ui.generate_tailored_recommendations_based_on_the_beh') || 'Generate tailored recommendations based on the behavioral data and selected audience.')
+                        h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, tt('behavior_lens.ui.generate_tailored_recommendations_based_on_the_beh', 'Generate tailored recommendations based on the behavioral data and selected audience.'))
                     ),
                     h('button', { "aria-label": "Generate Recs",
                         onClick: generateRecs, disabled: recsLoading || !callGemini || analytics.totalEntries === 0,
@@ -23413,8 +23440,8 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
             // No data warning
             analytics.totalEntries === 0 && h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-4 text-center' },
                 h('span', { className: 'text-2xl' }, '⚠️'),
-                h('p', { className: 'text-sm font-bold text-amber-800 mt-1' }, t('behavior_lens.ui.no_behavioral_data_recorded') || 'No behavioral data recorded'),
-                h('p', { className: 'text-xs text-amber-600' }, t('behavior_lens.ui.add_abc_entries_before_generating_a_report') || 'Add ABC entries before generating a report.')
+                h('p', { className: 'text-sm font-bold text-amber-800 mt-1' }, tt('behavior_lens.ui.no_behavioral_data_recorded', 'No behavioral data recorded')),
+                h('p', { className: 'text-xs text-amber-600' }, tt('behavior_lens.ui.add_abc_entries_before_generating_a_report', 'Add ABC entries before generating a report.'))
             )
         );
     };
@@ -23436,9 +23463,9 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
         const [aiTopicInput, setAiTopicInput] = useState('');
 
         const METHODS = [
-            { id: 'mts', label: (t('behavior_lens.raw.momentary_time_sampling') || 'Momentary Time Sampling (MTS)'), icon: '⏱️', desc: 'Record whether the behavior is occurring at the exact END of each interval', color: 'indigo' },
-            { id: 'partial', label: (t('behavior_lens.raw.partial_interval') || 'Partial Interval Recording'), icon: '📊', desc: 'Record YES if the behavior occurred at ANY point during the interval', color: 'amber' },
-            { id: 'whole', label: (t('behavior_lens.raw.whole_interval') || 'Whole Interval Recording'), icon: '📐', desc: 'Record YES only if the behavior occurred for the ENTIRE interval', color: 'emerald' },
+            { id: 'mts', label: (tt('behavior_lens.raw.momentary_time_sampling', 'Momentary Time Sampling (MTS)')), icon: '⏱️', desc: 'Record whether the behavior is occurring at the exact END of each interval', color: 'indigo' },
+            { id: 'partial', label: (tt('behavior_lens.raw.partial_interval', 'Partial Interval Recording')), icon: '📊', desc: 'Record YES if the behavior occurred at ANY point during the interval', color: 'amber' },
+            { id: 'whole', label: (tt('behavior_lens.raw.whole_interval', 'Whole Interval Recording')), icon: '📐', desc: 'Record YES only if the behavior occurred for the ENTIRE interval', color: 'emerald' },
         ];
 
         // 5 realistic observation scenarios, each with 10 intervals and expert answer keys
@@ -23684,7 +23711,7 @@ IMPORTANT rules for expert keys:
                 h('div', { className: 'text-center py-4' },
                     h('div', { className: 'text-5xl mb-3' }, '🎬'),
                     h('h2', { className: 'text-xl font-black text-slate-800 flex items-center justify-center' },
-                        t('behavior_lens.ui.virtual_practicum') || 'Virtual Practicum',
+                        tt('behavior_lens.ui.virtual_practicum', 'Virtual Practicum'),
                         h(InfoTooltip, { text: 'Practice ABA data collection methods with simulated classroom scenarios. Your accuracy is compared against an expert answer key.' })
                     ),
                     h('p', { className: 'text-sm text-slate-600 mt-2' }, 'Interactive training for data collection accuracy')
@@ -24004,6 +24031,48 @@ IMPORTANT rules for expert keys:
         firebaseAuth,
         isCanvasEnv
     }) => {
+
+        // ── UI localization state (drives tt()/trRuntime declared above) ──
+        // Publishes the current UI language, per-device cache, and the pack
+        // lookup `t` to module scope so tt() works in render, handlers, and the
+        // module-scope print/export helpers. The effect batch-translates the
+        // English fallbacks that tt() collected this render into the viewer's
+        // language via the raw callGemini prop (translation is a benign utility,
+        // deliberately NOT behind the AI-analysis consent gate), chunked so the
+        // ~1.6k labels don't go out in one oversized prompt.
+        const llLangCtx = React.useContext(LANG_CTX);
+        const uiLang = (llLangCtx && llLangCtx.currentUiLanguage) || (typeof window !== 'undefined' && window.__alloTextLanguage) || 'English';
+        const llCacheRef = useRef(llLoad());
+        const llAttemptedRef = useRef({});
+        const [, setLlTick] = useState(0);
+        LL_CUR.lang = uiLang; LL_CUR.cache = llCacheRef.current; LL_CUR.t = t;
+        const llTranslateChunk = (list) => {
+            if (typeof callGemini !== 'function' || !list.length) return;
+            const lang = uiLang;
+            const att = llAttemptedRef.current[lang] || (llAttemptedRef.current[lang] = {});
+            list.forEach((k) => { att[k] = true; });
+            Promise.resolve().then(() => callGemini(llPrompt(lang, list))).then((raw) => {
+                let pack = null;
+                try { pack = llSanitize(JSON.parse(llCleanJson(raw)), list); } catch (_) { pack = null; }
+                if (pack) {
+                    const next = Object.assign({}, llCacheRef.current);
+                    next[lang] = Object.assign({}, next[lang] || {}, pack);
+                    llCacheRef.current = next; llStore(next);
+                    setLlTick((n) => n + 1);
+                }
+            }).catch(() => {});
+        };
+        useEffect(() => {
+            if (uiLang === 'English' || typeof callGemini !== 'function') return undefined;
+            const cache = llCacheRef.current[uiLang] || {}, attempted = llAttemptedRef.current[uiLang] || {};
+            const missing = Object.keys(STR_REG).filter((k) => !cache[k] && !attempted[k]);
+            if (!missing.length) return undefined;
+            const CHUNK = 40;
+            const to = setTimeout(() => {
+                for (let i = 0; i < missing.length; i += CHUNK) llTranslateChunk(missing.slice(i, i + CHUNK));
+            }, 400);
+            return () => clearTimeout(to);
+        });
 
         // ─── Cloud Sync — Firebase cloud persistence (flattened hooks) ─────
         // Hooks are declared directly in the component body to comply with
@@ -24495,7 +24564,7 @@ IMPORTANT rules for expert keys:
             setAiAnalysis(null);
             setIsPracticeMode(false);
             setPracticeScenarioName('');
-            if (addToast) addToast(t('behavior_lens.toast.practice_data_cleared') || 'Practice data cleared', 'info');
+            if (addToast) addToast(tt('behavior_lens.toast.practice_data_cleared', 'Practice data cleared'), 'info');
         };
 
         // ── JSON Workspace Save/Load ──
@@ -24538,10 +24607,10 @@ IMPORTANT rules for expert keys:
             // Cloud write-through on manual save
             if (cloudSync.userId && !isCanvasEnv && selectedStudent) {
                 cloudSync.saveToCloud(selectedStudent, workspace).then(ok => {
-                    if (ok && addToast) addToast(t('behavior_lens.toast.also_synced_to_cloud') || '☁️ Also synced to cloud!', 'success');
+                    if (ok && addToast) addToast(tt('behavior_lens.toast.also_synced_to_cloud', '☁️ Also synced to cloud!'), 'success');
                 }).catch(() => {});
             }
-            if (addToast) addToast(t('behavior_lens.toast_workspace_saved') || 'Workspace saved to file 💾', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast_workspace_saved', 'Workspace saved to file 💾'), 'success');
         };
 
         const handleLoadWorkspace = (e) => {
@@ -24574,7 +24643,7 @@ IMPORTANT rules for expert keys:
                     if (addToast) addToast(t('behavior_lens.toast.workspace_loaded_n_entries_n_notes') || `Workspace loaded (${(data.abcEntries || []).length} entries, ${(data.sessionNotes || []).length} notes) 📂`, 'success');
                 } catch (err) {
                     warnLog('Failed to parse workspace file:', err);
-                    if (addToast) addToast(t('behavior_lens.toast_invalid_file') || 'Invalid workspace file — must be BehaviorLens JSON', 'error');
+                    if (addToast) addToast(tt('behavior_lens.toast_invalid_file', 'Invalid workspace file — must be BehaviorLens JSON'), 'error');
                 }
             };
             reader.readAsText(file);
@@ -24681,7 +24750,7 @@ IMPORTANT rules for expert keys:
         const callGeminiGuarded = useCallback(async (prompt, jsonMode) => {
             if (!callGemini) return null;
             if (!aiConsent) {
-                if (addToast) addToast(t('behavior_lens.toast.ai_disabled') || '🤖 AI is off — toggle it on in the header to use this feature', 'info');
+                if (addToast) addToast(tt('behavior_lens.toast.ai_disabled', '🤖 AI is off — toggle it on in the header to use this feature'), 'info');
                 return null;
             }
             return callGemini(prompt, jsonMode);
@@ -24785,10 +24854,10 @@ Use professional language. Refer to "the student" (not the codename).`;
                 const result = await callGeminiGuarded(prompt, true);
                 if (result == null) { setSummaryLoading(false); return; }
                 setFullSummary(result);
-                if (addToast) addToast(t('behavior_lens.toast.student_summary_generated') || 'Student summary generated ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.student_summary_generated', 'Student summary generated ✨'), 'success');
             } catch (err) {
                 warnLog('Full summary failed:', err);
-                if (addToast) addToast(t('behavior_lens.toast.summary_generation_failed') || 'Summary generation failed', 'error');
+                if (addToast) addToast(tt('behavior_lens.toast.summary_generation_failed', 'Summary generation failed'), 'error');
             } finally { setSummaryLoading(false); }
         };
 
@@ -24849,7 +24918,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                             if (cloudData.designPhases) setDesignPhases(cloudData.designPhases);
                             if (cloudData.favorites) setFavorites(cloudData.favorites);
                             debugLog('BehaviorLens: loaded data from cloud for', selectedStudent);
-                            if (addToast) addToast(t('behavior_lens.toast.data_loaded_from_cloud') || '☁️ Data loaded from cloud', 'success');
+                            if (addToast) addToast(tt('behavior_lens.toast.data_loaded_from_cloud', '☁️ Data loaded from cloud'), 'success');
                             return; // Cloud data loaded, skip localStorage
                         }
                     } catch (e) {
@@ -24946,7 +25015,7 @@ Use professional language. Refer to "the student" (not the codename).`;
             if (!dataChangedSinceSave) return;
             const timer = setTimeout(() => {
                 if (dataChangedSinceSave && addToast) {
-                    addToast(t('behavior_lens.toast.you_have_unsaved_changes_consider_saving_your_work') || '💡 You have unsaved changes — consider saving your workspace.', 'info');
+                    addToast(tt('behavior_lens.toast.you_have_unsaved_changes_consider_saving_your_work', '💡 You have unsaved changes — consider saving your workspace.'), 'info');
                 }
             }, 10 * 60 * 1000);
             return () => clearTimeout(timer);
@@ -24974,7 +25043,7 @@ Use professional language. Refer to "the student" (not the codename).`;
         const handleAiAnalyze = async () => {
             if (!callGemini || abcEntries.length < 3) return;
             if (!aiConsent) {
-                if (addToast) addToast(t('behavior_lens.toast.ai_disabled') || '🤖 AI is off — toggle it on in the header to use this feature', 'info');
+                if (addToast) addToast(tt('behavior_lens.toast.ai_disabled', '🤖 AI is off — toggle it on in the header to use this feature'), 'info');
                 return;
             }
             setAnalyzing(true);
@@ -25014,10 +25083,10 @@ Analyze this data and return ONLY valid JSON:
                     else throw new Error('Could not parse AI response');
                 }
                 setAiAnalysis(parsed);
-                if (addToast) addToast(t('behavior_lens.abc.analysis_complete') || 'Analysis complete ✨', 'success');
+                if (addToast) addToast(tt('behavior_lens.abc.analysis_complete', 'Analysis complete ✨'), 'success');
             } catch (err) {
                 warnLog("AI Analysis failed:", err);
-                if (addToast) addToast(t('behavior_lens.abc.analysis_failed') || 'Analysis failed — try again', 'error');
+                if (addToast) addToast(tt('behavior_lens.abc.analysis_failed', 'Analysis failed — try again'), 'error');
             } finally {
                 setAnalyzing(false);
             }
@@ -25087,7 +25156,7 @@ Analyze this data and return ONLY valid JSON:
 
         const exportSvgAsPng = (filename) => {
             const svgEl = document.querySelector('.flex-1.overflow-y-auto svg');
-            if (!svgEl) { if (addToast) addToast(t('behavior_lens.toast.no_graph_found_to_export') || 'No graph found to export', 'error'); return; }
+            if (!svgEl) { if (addToast) addToast(tt('behavior_lens.toast.no_graph_found_to_export', 'No graph found to export'), 'error'); return; }
             const svgData = new XMLSerializer().serializeToString(svgEl);
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -25105,10 +25174,10 @@ Analyze this data and return ONLY valid JSON:
                     a.download = filename || 'behaviorlens-graph.png';
                     a.click();
                     URL.revokeObjectURL(a.href);
-                    if (addToast) addToast(t('behavior_lens.toast.png_exported') || 'PNG exported!', 'success');
+                    if (addToast) addToast(tt('behavior_lens.toast.png_exported', 'PNG exported!'), 'success');
                 }, 'image/png');
             };
-            img.onerror = () => { if (addToast) addToast(t('behavior_lens.toast.png_export_failed') || 'PNG export failed', 'error'); };
+            img.onerror = () => { if (addToast) addToast(tt('behavior_lens.toast.png_export_failed', 'PNG export failed'), 'error'); };
             img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
         };
 
@@ -25143,7 +25212,7 @@ Analyze this data and return ONLY valid JSON:
         const handleCopyToolText = () => {
             const text = getToolExportData(activePanel);
             navigator.clipboard.writeText(text).then(() => {
-                if (addToast) addToast(t('behavior_lens.toast.copied_to_clipboard') || 'Copied to clipboard!', 'success');
+                if (addToast) addToast(tt('behavior_lens.toast.copied_to_clipboard', 'Copied to clipboard!'), 'success');
             });
             setShowExportMenu(false);
         };
@@ -25170,7 +25239,7 @@ Analyze this data and return ONLY valid JSON:
             a.download = `behaviorlens-${activePanel}-${studentLabel.replace(/\s+/g, '_')}.csv`;
             a.click();
             URL.revokeObjectURL(a.href);
-            if (addToast) addToast(t('behavior_lens.toast.csv_downloaded') || 'CSV downloaded!', 'success');
+            if (addToast) addToast(tt('behavior_lens.toast.csv_downloaded', 'CSV downloaded!'), 'success');
             setShowExportMenu(false);
         };
 
@@ -25192,24 +25261,24 @@ Analyze this data and return ONLY valid JSON:
                 {
                     id: 'abc',
                     icon: '📋',
-                    title: t('behavior_lens.hub.abc_title') || 'ABC Data Collection',
-                    desc: t('behavior_lens.hub.abc_desc') || 'Record antecedent-behavior-consequence data for functional analysis',
+                    title: tt('behavior_lens.hub.abc_title', 'ABC Data Collection'),
+                    desc: tt('behavior_lens.hub.abc_desc', 'Record antecedent-behavior-consequence data for functional analysis'),
                     color: 'indigo',
                     badge: abcEntries.length > 0 ? `${abcEntries.length} entries` : null,
                 },
                 {
                     id: 'observation',
                     icon: '🔍',
-                    title: t('behavior_lens.hub.obs_title') || 'Live Observation',
-                    desc: t('behavior_lens.hub.obs_desc') || 'Fullscreen observation mode with frequency, duration, interval, and latency recording',
+                    title: tt('behavior_lens.hub.obs_title', 'Live Observation'),
+                    desc: tt('behavior_lens.hub.obs_desc', 'Fullscreen observation mode with frequency, duration, interval, and latency recording'),
                     color: 'emerald',
                     badge: observationSessions.length > 0 ? `${observationSessions.length} sessions` : null,
                 },
                 {
                     id: 'analysis',
                     icon: '🧠',
-                    title: t('behavior_lens.hub.analysis_title') || 'AI Pattern Analysis',
-                    desc: t('behavior_lens.hub.analysis_desc') || 'AI-powered functional behavior analysis based on your collected data',
+                    title: tt('behavior_lens.hub.analysis_title', 'AI Pattern Analysis'),
+                    desc: tt('behavior_lens.hub.analysis_desc', 'AI-powered functional behavior analysis based on your collected data'),
                     color: 'purple',
                     badge: aiAnalysis ? 'Ready' : null,
                     disabled: abcEntries.length < 3,
@@ -25217,60 +25286,60 @@ Analyze this data and return ONLY valid JSON:
                 {
                     id: 'overview',
                     icon: '📊',
-                    title: t('behavior_lens.hub.overview_title') || 'Behavior Overview',
-                    desc: t('behavior_lens.hub.overview_desc') || 'Visual dashboard with trends, heatmap, and data summaries',
+                    title: tt('behavior_lens.hub.overview_title', 'Behavior Overview'),
+                    desc: tt('behavior_lens.hub.overview_desc', 'Visual dashboard with trends, heatmap, and data summaries'),
                     color: 'sky',
                     badge: (abcEntries.length + observationSessions.length) > 0 ? `${abcEntries.length + observationSessions.length} records` : null,
                 },
                 {
                     id: 'frequency',
                     icon: '🔢',
-                    title: t('behavior_lens.hub.freq_title') || 'Frequency Counter',
-                    desc: t('behavior_lens.hub.freq_desc') || 'Quick-click tap counter for rapid in-class behavior tallying',
+                    title: tt('behavior_lens.hub.freq_title', 'Frequency Counter'),
+                    desc: tt('behavior_lens.hub.freq_desc', 'Quick-click tap counter for rapid in-class behavior tallying'),
                     color: 'amber',
                 },
                 {
                     id: 'interval',
                     icon: '⏱️',
-                    title: t('behavior_lens.hub.interval_title') || 'Interval Recording',
-                    desc: t('behavior_lens.hub.interval_desc') || 'Visual grid with partial, whole, and momentary recording modes',
+                    title: tt('behavior_lens.hub.interval_title', 'Interval Recording'),
+                    desc: tt('behavior_lens.hub.interval_desc', 'Visual grid with partial, whole, and momentary recording modes'),
                     color: 'teal',
                 },
                 {
                     id: 'token',
                     icon: '⭐',
-                    title: t('behavior_lens.hub.token_title') || 'Token Board',
-                    desc: t('behavior_lens.hub.token_desc') || 'Visual reinforcement tracker for positive behavior support',
+                    title: tt('behavior_lens.hub.token_title', 'Token Board'),
+                    desc: tt('behavior_lens.hub.token_desc', 'Visual reinforcement tracker for positive behavior support'),
                     color: 'rose',
                 },
                 {
                     id: 'hotspot',
                     icon: '🗓️',
-                    title: t('behavior_lens.hub.hotspot_title') || 'Routine Hotspot Matrix',
-                    desc: t('behavior_lens.hub.hotspot_desc') || 'Map behavioral patterns to daily routine periods with AI analysis',
+                    title: tt('behavior_lens.hub.hotspot_title', 'Routine Hotspot Matrix'),
+                    desc: tt('behavior_lens.hub.hotspot_desc', 'Map behavioral patterns to daily routine periods with AI analysis'),
                     color: 'orange',
                     badge: abcEntries.length > 0 ? `📋 ${abcEntries.length} entries` : null,
                 },
                 {
                     id: 'export',
                     icon: '📥',
-                    title: t('behavior_lens.hub.export_title') || 'Export Reports',
-                    desc: t('behavior_lens.hub.export_desc') || 'Download data as JSON, CSV, text reports, or printable PDF portfolio',
+                    title: tt('behavior_lens.hub.export_title', 'Export Reports'),
+                    desc: tt('behavior_lens.hub.export_desc', 'Download data as JSON, CSV, text reports, or printable PDF portfolio'),
                     color: 'slate',
                     badge: (abcEntries.length + observationSessions.length) > 0 ? `${abcEntries.length + observationSessions.length} records` : null,
                 },
                 {
                     id: 'record',
                     icon: '📄',
-                    title: t('behavior_lens.hub.record_title') || 'Record Review',
-                    desc: t('behavior_lens.hub.record_desc') || 'Paste IEP/eval text for AI-powered structured summary',
+                    title: tt('behavior_lens.hub.record_title', 'Record Review'),
+                    desc: tt('behavior_lens.hub.record_desc', 'Paste IEP/eval text for AI-powered structured summary'),
                     color: 'cyan',
                 },
                 {
                     id: 'hypothesis',
                     icon: '🔗',
-                    title: t('behavior_lens.hub.hypothesis_title') || 'Hypothesis Diagram',
-                    desc: t('behavior_lens.hub.hypothesis_desc') || 'Visual function hypothesis flow from ABC data with AI generation',
+                    title: tt('behavior_lens.hub.hypothesis_title', 'Hypothesis Diagram'),
+                    desc: tt('behavior_lens.hub.hypothesis_desc', 'Visual function hypothesis flow from ABC data with AI generation'),
                     color: 'violet',
                     disabled: abcEntries.length < 2,
                     badge: abcEntries.length >= 2 ? `📋 ${abcEntries.length} ABC entries` : null,
@@ -25278,199 +25347,199 @@ Analyze this data and return ONLY valid JSON:
                 {
                     id: 'goals',
                     icon: '🎯',
-                    title: t('behavior_lens.hub.goals_title') || 'SMART Goal Builder',
-                    desc: t('behavior_lens.hub.goals_desc') || 'Step-by-step behavioral goal construction with AI suggestions',
+                    title: tt('behavior_lens.hub.goals_title', 'SMART Goal Builder'),
+                    desc: tt('behavior_lens.hub.goals_desc', 'Step-by-step behavioral goal construction with AI suggestions'),
                     color: 'lime',
                 },
                 {
                     id: 'contract',
                     icon: '📜',
-                    title: t('behavior_lens.hub.contract_title') || 'Behavior Contract',
-                    desc: t('behavior_lens.hub.contract_desc') || 'AI-drafted contract with student and teacher sections',
+                    title: tt('behavior_lens.hub.contract_title', 'Behavior Contract'),
+                    desc: tt('behavior_lens.hub.contract_desc', 'AI-drafted contract with student and teacher sections'),
                     color: 'fuchsia',
                 },
                 {
                     id: 'cycle',
                     icon: '🔄',
-                    title: t('behavior_lens.hub.cycle_title') || 'Escalation Cycle',
-                    desc: t('behavior_lens.hub.cycle_desc') || 'Colvin & Sugai 7-phase emotional regulation model with personalized strategies',
+                    title: tt('behavior_lens.hub.cycle_title', 'Escalation Cycle'),
+                    desc: tt('behavior_lens.hub.cycle_desc', 'Colvin & Sugai 7-phase emotional regulation model with personalized strategies'),
                     color: 'red',
                 },
                 {
                     id: 'reinforcer',
                     icon: '🏆',
-                    title: t('behavior_lens.hub.reinforcer_title') || 'Reinforcer Assessment',
-                    desc: t('behavior_lens.hub.reinforcer_desc') || 'Preference inventory with AI-recommended reinforcers',
+                    title: tt('behavior_lens.hub.reinforcer_title', 'Reinforcer Assessment'),
+                    desc: tt('behavior_lens.hub.reinforcer_desc', 'Preference inventory with AI-recommended reinforcers'),
                     color: 'pink',
                 },
                 {
                     id: 'choice',
                     icon: '🃏',
-                    title: t('behavior_lens.hub.choice_title') || 'Choice Board',
-                    desc: t('behavior_lens.hub.choice_desc') || 'Fullscreen student-facing visual choice overlay',
+                    title: tt('behavior_lens.hub.choice_title', 'Choice Board'),
+                    desc: tt('behavior_lens.hub.choice_desc', 'Fullscreen student-facing visual choice overlay'),
                     color: 'emerald',
                 },
                 {
                     id: 'audit',
                     icon: '🏫',
-                    title: t('behavior_lens.hub.audit_title') || 'Environment Audit',
-                    desc: t('behavior_lens.hub.audit_desc') || '8-item classroom environment checklist with AI recommendations',
+                    title: tt('behavior_lens.hub.audit_title', 'Environment Audit'),
+                    desc: tt('behavior_lens.hub.audit_desc', '8-item classroom environment checklist with AI recommendations'),
                     color: 'blue',
                 },
                 {
                     id: 'triangulation',
                     icon: '🔺',
-                    title: t('behavior_lens.hub.triangulation_title') || 'Data Triangulation',
-                    desc: t('behavior_lens.hub.triangulation_desc') || 'Cross-reference ABC, observations, and AI analysis for convergence',
+                    title: tt('behavior_lens.hub.triangulation_title', 'Data Triangulation'),
+                    desc: tt('behavior_lens.hub.triangulation_desc', 'Cross-reference ABC, observations, and AI analysis for convergence'),
                     color: 'zinc',
                     badge: (abcEntries.length > 0 && observationSessions.length > 0) ? '✅ Multi-source data' : null,
                 },
                 {
                     id: 'impact',
                     icon: '⏱️',
-                    title: t('behavior_lens.hub.impact_title') || 'Impact Calculator',
-                    desc: t('behavior_lens.hub.impact_desc') || 'Quantify lost instructional time and estimated annual cost',
+                    title: tt('behavior_lens.hub.impact_title', 'Impact Calculator'),
+                    desc: tt('behavior_lens.hub.impact_desc', 'Quantify lost instructional time and estimated annual cost'),
                     color: 'yellow',
                 },
                 {
                     id: 'crisis',
                     icon: '🚨',
-                    title: t('behavior_lens.hub.crisis_title') || 'Crisis Plan',
-                    desc: t('behavior_lens.hub.crisis_desc') || '3-tier emergency protocol with AI-drafted safety plan',
+                    title: tt('behavior_lens.hub.crisis_title', 'Crisis Plan'),
+                    desc: tt('behavior_lens.hub.crisis_desc', '3-tier emergency protocol with AI-drafted safety plan'),
                     color: 'stone',
                 },
                 {
                     id: 'traffic',
                     icon: '🚦',
-                    title: t('behavior_lens.hub.traffic_title') || 'Traffic Light',
-                    desc: t('behavior_lens.hub.traffic_desc') || 'Student-facing red/yellow/green behavior zone poster',
+                    title: tt('behavior_lens.hub.traffic_title', 'Traffic Light'),
+                    desc: tt('behavior_lens.hub.traffic_desc', 'Student-facing red/yellow/green behavior zone poster'),
                     color: 'green',
                 },
                 {
                     id: 'datasheet',
                     icon: '📋',
-                    title: t('behavior_lens.hub.datasheet_title') || 'Data Sheet',
-                    desc: t('behavior_lens.hub.datasheet_desc') || 'Printable frequency, duration, ABC, or latency data sheets',
+                    title: tt('behavior_lens.hub.datasheet_title', 'Data Sheet'),
+                    desc: tt('behavior_lens.hub.datasheet_desc', 'Printable frequency, duration, ABC, or latency data sheets'),
                     color: 'neutral',
                 },
                 {
                     id: 'homenote',
                     icon: '📝',
-                    title: t('behavior_lens.hub.homenote_title') || 'Home Note',
-                    desc: t('behavior_lens.hub.homenote_desc') || 'AI-drafted parent communication with tone selector',
+                    title: tt('behavior_lens.hub.homenote_title', 'Home Note'),
+                    desc: tt('behavior_lens.hub.homenote_desc', 'AI-drafted parent communication with tone selector'),
                     color: 'warmGray',
                 },
                 {
                     id: 'fidelity',
                     icon: '✅',
-                    title: t('behavior_lens.hub.fidelity_title') || 'Fidelity Checklist',
-                    desc: t('behavior_lens.hub.fidelity_desc') || 'AI-generated daily BIP implementation checklist',
+                    title: tt('behavior_lens.hub.fidelity_title', 'Fidelity Checklist'),
+                    desc: tt('behavior_lens.hub.fidelity_desc', 'AI-generated daily BIP implementation checklist'),
                     color: 'coolGray',
                 },
                 {
                     id: 'feasibility',
                     icon: '⚖️',
-                    title: t('behavior_lens.hub.feasibility_title') || 'Feasibility Check',
-                    desc: t('behavior_lens.hub.feasibility_desc') || '5-question contextual fit assessment with AI recommendations',
+                    title: tt('behavior_lens.hub.feasibility_title', 'Feasibility Check'),
+                    desc: tt('behavior_lens.hub.feasibility_desc', '5-question contextual fit assessment with AI recommendations'),
                     color: 'trueGray',
                 },
                 {
                     id: 'gas',
                     icon: '📐',
-                    title: t('behavior_lens.hub.gas_title') || 'GAS Rubric',
-                    desc: t('behavior_lens.hub.gas_desc') || 'Goal Attainment Scaling with AI-generated descriptors',
+                    title: tt('behavior_lens.hub.gas_title', 'GAS Rubric'),
+                    desc: tt('behavior_lens.hub.gas_desc', 'Goal Attainment Scaling with AI-generated descriptors'),
                     color: 'blueGray',
                 },
                 {
                     id: 'pocket',
                     icon: '📇',
-                    title: t('behavior_lens.hub.pocket_title') || 'Pocket BIP',
-                    desc: t('behavior_lens.hub.pocket_desc') || 'Compact index-card BIP summary for clipboard carry',
+                    title: tt('behavior_lens.hub.pocket_title', 'Pocket BIP'),
+                    desc: tt('behavior_lens.hub.pocket_desc', 'Compact index-card BIP summary for clipboard carry'),
                     color: 'darkGray',
                 },
                 {
                     id: 'abaguide',
                     icon: '📚',
-                    title: t('behavior_lens.hub.abaguide_title') || 'ABA Quick Guide',
-                    desc: t('behavior_lens.hub.abaguide_desc') || 'Searchable glossary, reinforcement schedules, decision tree & common mistakes',
+                    title: tt('behavior_lens.hub.abaguide_title', 'ABA Quick Guide'),
+                    desc: tt('behavior_lens.hub.abaguide_desc', 'Searchable glossary, reinforcement schedules, decision tree & common mistakes'),
                     color: 'indigo',
                 },
                 {
                     id: 'counseling',
                     icon: '🎭',
-                    title: t('behavior_lens.hub.counseling_title') || 'Counseling Simulation',
-                    desc: t('behavior_lens.hub.counseling_desc') || 'AI role-play with student personas for counseling practice',
+                    title: tt('behavior_lens.hub.counseling_title', 'Counseling Simulation'),
+                    desc: tt('behavior_lens.hub.counseling_desc', 'AI role-play with student personas for counseling practice'),
                     color: 'teal',
                 },
                 {
                     id: 'snapshot',
                     icon: '📦',
-                    title: t('behavior_lens.hub.snapshot_title') || 'Student Snapshot Exchange',
-                    desc: t('behavior_lens.hub.snapshot_desc') || 'Export & import JSON snapshots for parent–teacher data exchange',
+                    title: tt('behavior_lens.hub.snapshot_title', 'Student Snapshot Exchange'),
+                    desc: tt('behavior_lens.hub.snapshot_desc', 'Export & import JSON snapshots for parent–teacher data exchange'),
                     color: 'cyan',
                 },
                 {
                     id: 'consent',
                     icon: '📋',
-                    title: t('behavior_lens.hub.consent_title') || 'FERPA Consent Manager',
-                    desc: t('behavior_lens.hub.consent_desc') || 'Customizable consent form for parent data exchange — edit, print, share as JSON',
+                    title: tt('behavior_lens.hub.consent_title', 'FERPA Consent Manager'),
+                    desc: tt('behavior_lens.hub.consent_desc', 'Customizable consent form for parent data exchange — edit, print, share as JSON'),
                     color: 'rose',
                 },
                 {
                     id: 'homelog',
                     icon: '🏠',
-                    title: t('behavior_lens.hub.homelog_title') || 'Home Behavior Log',
-                    desc: t('behavior_lens.hub.homelog_desc') || 'Simplified parent-friendly behavior logging with everyday language',
+                    title: tt('behavior_lens.hub.homelog_title', 'Home Behavior Log'),
+                    desc: tt('behavior_lens.hub.homelog_desc', 'Simplified parent-friendly behavior logging with everyday language'),
                     color: 'blue',
                 },
                 {
                     id: 'selfcheck',
                     icon: '🪞',
-                    title: t('behavior_lens.hub.selfcheck_title') || 'Student Self-Check',
-                    desc: t('behavior_lens.hub.selfcheck_desc') || 'Student-facing mood check-in and reflection journal — capturing their voice',
+                    title: tt('behavior_lens.hub.selfcheck_title', 'Student Self-Check'),
+                    desc: tt('behavior_lens.hub.selfcheck_desc', 'Student-facing mood check-in and reflection journal — capturing their voice'),
                     color: 'violet',
                 },
                 {
                     id: 'intervention',
                     icon: '📋',
-                    title: t('behavior_lens.hub.intervention_title') || 'Intervention Plan',
-                    desc: t('behavior_lens.hub.intervention_desc') || 'AI-generated multi-week intervention plan with measurable goals and milestones',
+                    title: tt('behavior_lens.hub.intervention_title', 'Intervention Plan'),
+                    desc: tt('behavior_lens.hub.intervention_desc', 'AI-generated multi-week intervention plan with measurable goals and milestones'),
                     color: 'purple',
                 },
                 {
                     id: 'progress',
                     icon: '📈',
-                    title: t('behavior_lens.hub.progress_title') || 'Progress Narrative',
-                    desc: t('behavior_lens.hub.progress_desc') || 'IEP-ready progress monitoring paragraphs from accumulated behavioral data',
+                    title: tt('behavior_lens.hub.progress_title', 'Progress Narrative'),
+                    desc: tt('behavior_lens.hub.progress_desc', 'IEP-ready progress monitoring paragraphs from accumulated behavioral data'),
                     color: 'emerald',
                 },
                 {
                     id: 'sandbox',
                     icon: '🎓',
-                    title: t('behavior_lens.hub.sandbox_title') || 'Practice Sandbox',
-                    desc: t('behavior_lens.hub.sandbox_desc') || 'Load simulated student data for PD, pre-service training, or learning ABA without real students',
+                    title: tt('behavior_lens.hub.sandbox_title', 'Practice Sandbox'),
+                    desc: tt('behavior_lens.hub.sandbox_desc', 'Load simulated student data for PD, pre-service training, or learning ABA without real students'),
                     color: 'amber',
                     badge: isPracticeMode ? '🔶 ACTIVE' : null,
                 },
                 {
                     id: 'glossary',
                     icon: '📖',
-                    title: t('behavior_lens.hub.glossary_title') || 'ABA Concept Glossary',
-                    desc: t('behavior_lens.hub.glossary_desc') || '25+ searchable ABA terms with plain-language definitions and real-world examples',
+                    title: tt('behavior_lens.hub.glossary_title', 'ABA Concept Glossary'),
+                    desc: tt('behavior_lens.hub.glossary_desc', '25+ searchable ABA terms with plain-language definitions and real-world examples'),
                     color: 'sky',
                 },
                 {
                     id: 'fbaworkflow',
                     icon: '🧭',
-                    title: t('behavior_lens.hub.fbaworkflow_title') || 'Guided Workflows',
-                    desc: t('behavior_lens.hub.fbaworkflow_desc') || 'Step-by-step guided workflows for FBA, BIP, and RTI behavior tiers with AI coaching',
+                    title: tt('behavior_lens.hub.fbaworkflow_title', 'Guided Workflows'),
+                    desc: tt('behavior_lens.hub.fbaworkflow_desc', 'Step-by-step guided workflows for FBA, BIP, and RTI behavior tiers with AI coaching'),
                     color: 'lime',
                 },
                 {
                     id: 'qualitycheck',
                     icon: '✅',
-                    title: t('behavior_lens.hub.qualitycheck_title') || 'Data Quality Check',
-                    desc: t('behavior_lens.hub.qualitycheck_desc') || 'AI-powered review of your ABC entries with specific improvement suggestions',
+                    title: tt('behavior_lens.hub.qualitycheck_title', 'Data Quality Check'),
+                    desc: tt('behavior_lens.hub.qualitycheck_desc', 'AI-powered review of your ABC entries with specific improvement suggestions'),
                     color: 'green',
                     badge: (() => {
                         if (abcEntries.length === 0) return null;
@@ -25486,102 +25555,102 @@ Analyze this data and return ONLY valid JSON:
                 {
                     id: 'trends',
                     icon: '📊',
-                    title: t('behavior_lens.hub.trends_title') || 'Trend Dashboard',
-                    desc: t('behavior_lens.hub.trends_desc') || 'SVG charts showing intensity trends, setting frequency, and day/time heatmap',
+                    title: tt('behavior_lens.hub.trends_title', 'Trend Dashboard'),
+                    desc: tt('behavior_lens.hub.trends_desc', 'SVG charts showing intensity trends, setting frequency, and day/time heatmap'),
                     color: 'indigo',
                     badge: abcEntries.length > 0 ? `${abcEntries.length} entries` : null,
                 },
                 {
                     id: 'teamnotes',
                     icon: '🤝',
-                    title: t('behavior_lens.hub.teamnotes_title') || 'Team Notes',
-                    desc: t('behavior_lens.hub.teamnotes_desc') || 'Multi-role timestamped collaboration thread for teachers, paras, counselors, and parents',
+                    title: tt('behavior_lens.hub.teamnotes_title', 'Team Notes'),
+                    desc: tt('behavior_lens.hub.teamnotes_desc', 'Multi-role timestamped collaboration thread for teachers, paras, counselors, and parents'),
                     color: 'teal',
                 },
                 {
                     id: 'iepprep',
                     icon: '📄',
-                    title: t('behavior_lens.hub.iepprep_title') || 'IEP Meeting Prep',
-                    desc: t('behavior_lens.hub.iepprep_desc') || 'AI-generated meeting preparation packet with data summary, talking points, and next steps',
+                    title: tt('behavior_lens.hub.iepprep_title', 'IEP Meeting Prep'),
+                    desc: tt('behavior_lens.hub.iepprep_desc', 'AI-generated meeting preparation packet with data summary, talking points, and next steps'),
                     color: 'blue',
                     badge: abcEntries.length >= 3 ? '📋 Data ready' : null,
                 },
                 {
                     id: 'predict',
                     icon: '🔮',
-                    title: t('behavior_lens.hub.predict_title') || 'Predictive Insights',
-                    desc: t('behavior_lens.hub.predict_desc') || 'AI-powered pattern analysis predicting when, where, and what triggers behaviors — with prevention strategies',
+                    title: tt('behavior_lens.hub.predict_title', 'Predictive Insights'),
+                    desc: tt('behavior_lens.hub.predict_desc', 'AI-powered pattern analysis predicting when, where, and what triggers behaviors — with prevention strategies'),
                     color: 'fuchsia',
                     badge: abcEntries.length >= 5 ? '📋 Data ready' : null,
                 },
                 {
                     id: 'gamify',
                     icon: '🎮',
-                    title: t('behavior_lens.hub.gamify_title') || 'My Progress Quest',
-                    desc: t('behavior_lens.hub.gamify_desc') || 'Student-facing mood tracker with streaks, badges, quests, and reflection journal',
+                    title: tt('behavior_lens.hub.gamify_title', 'My Progress Quest'),
+                    desc: tt('behavior_lens.hub.gamify_desc', 'Student-facing mood tracker with streaks, badges, quests, and reflection journal'),
                     color: 'orange',
                 },
                 {
                     id: 'cultural',
                     icon: '🌍',
-                    title: t('behavior_lens.hub.cultural_title') || 'Cultural Context Reflection',
-                    desc: t('behavior_lens.hub.cultural_desc') || '8-question pause-and-reflect checklist before interpreting behavior through a cultural humility lens',
+                    title: tt('behavior_lens.hub.cultural_title', 'Cultural Context Reflection'),
+                    desc: tt('behavior_lens.hub.cultural_desc', '8-question pause-and-reflect checklist before interpreting behavior through a cultural humility lens'),
                     color: 'teal',
                 },
                 {
                     id: 'reframe',
                     icon: '✨',
-                    title: t('behavior_lens.hub.reframe_title') || 'Strength-Based Reframe',
-                    desc: t('behavior_lens.hub.reframe_desc') || 'AI rewrites deficit-based descriptions into asset-focused, strengths-based language',
+                    title: tt('behavior_lens.hub.reframe_title', 'Strength-Based Reframe'),
+                    desc: tt('behavior_lens.hub.reframe_desc', 'AI rewrites deficit-based descriptions into asset-focused, strengths-based language'),
                     color: 'emerald',
                 },
                 {
                     id: 'biascheck',
                     icon: '🪞',
-                    title: t('behavior_lens.hub.biascheck_title') || 'Bias Reflection Monitor',
-                    desc: t('behavior_lens.hub.biascheck_desc') || 'Gently surfaces patterns in your data for reflection on potential implicit bias — growth, not guilt',
+                    title: tt('behavior_lens.hub.biascheck_title', 'Bias Reflection Monitor'),
+                    desc: tt('behavior_lens.hub.biascheck_desc', 'Gently surfaces patterns in your data for reflection on potential implicit bias — growth, not guilt'),
                     color: 'cyan',
                 },
                 {
                     id: 'restorative',
                     icon: '💛',
-                    title: t('behavior_lens.hub.restorative_title') || 'Restorative Conversation Guide',
-                    desc: t('behavior_lens.hub.restorative_desc') || 'Step-by-step scripts for harm repair, community circles, and reintegration conferences',
+                    title: tt('behavior_lens.hub.restorative_title', 'Restorative Conversation Guide'),
+                    desc: tt('behavior_lens.hub.restorative_desc', 'Step-by-step scripts for harm repair, community circles, and reintegration conferences'),
                     color: 'amber',
                 },
                 {
                     id: 'relmap',
                     icon: '🗺️',
-                    title: t('behavior_lens.hub.relmap_title') || 'Relationship Map',
-                    desc: t('behavior_lens.hub.relmap_desc') || 'Visual diagram of student connections — trusted adults, peers, family, mentors — with gap analysis',
+                    title: tt('behavior_lens.hub.relmap_title', 'Relationship Map'),
+                    desc: tt('behavior_lens.hub.relmap_desc', 'Visual diagram of student connections — trusted adults, peers, family, mentors — with gap analysis'),
                     color: 'purple',
                 },
                 {
                     id: 'familyvoice',
                     icon: '👪',
-                    title: t('behavior_lens.hub.familyvoice_title') || 'Family Voice',
-                    desc: t('behavior_lens.hub.familyvoice_desc') || 'Structured form for families to share observations, cultural insights, and celebrations — with AI translation',
+                    title: tt('behavior_lens.hub.familyvoice_title', 'Family Voice'),
+                    desc: tt('behavior_lens.hub.familyvoice_desc', 'Structured form for families to share observations, cultural insights, and celebrations — with AI translation'),
                     color: 'indigo',
                 },
                 {
                     id: 'commlog',
                     icon: '📞',
-                    title: t('behavior_lens.hub.commlog_title') || 'Communication Log',
-                    desc: t('behavior_lens.hub.commlog_desc') || 'Two-way family contact tracker with follow-ups — ensure no family falls through the cracks',
+                    title: tt('behavior_lens.hub.commlog_title', 'Communication Log'),
+                    desc: tt('behavior_lens.hub.commlog_desc', 'Two-way family contact tracker with follow-ups — ensure no family falls through the cracks'),
                     color: 'sky',
                 },
                 {
                     id: 'deescalate',
                     icon: '🧘',
-                    title: t('behavior_lens.hub.deescalate_title') || 'De-escalation Toolkit',
-                    desc: t('behavior_lens.hub.deescalate_desc') || 'Breathing exercises, visual timers, sensory breaks, and grounding — real-time calming support',
+                    title: tt('behavior_lens.hub.deescalate_title', 'De-escalation Toolkit'),
+                    desc: tt('behavior_lens.hub.deescalate_desc', 'Breathing exercises, visual timers, sensory breaks, and grounding — real-time calming support'),
                     color: 'cyan',
                 },
                 {
                     id: 'replacebehavior',
                     icon: '🔄',
-                    title: t('behavior_lens.hub.replacebehavior_title') || 'Replacement Behavior Planner',
-                    desc: t('behavior_lens.hub.replacebehavior_desc') || 'Map behaviors of concern to functionally equivalent replacements with teaching strategies',
+                    title: tt('behavior_lens.hub.replacebehavior_title', 'Replacement Behavior Planner'),
+                    desc: tt('behavior_lens.hub.replacebehavior_desc', 'Map behaviors of concern to functionally equivalent replacements with teaching strategies'),
                     color: 'rose',
                 },
                 {
@@ -25611,23 +25680,23 @@ Analyze this data and return ONLY valid JSON:
                 {
                     id: 'reinforcement',
                     icon: '⭐',
-                    title: t('behavior_lens.hub.reinforcement_title') || 'Reinforcement Inventory',
-                    desc: t('behavior_lens.hub.reinforcement_desc') || 'Structured motivation survey — identify what drives each student across 6 categories',
+                    title: tt('behavior_lens.hub.reinforcement_title', 'Reinforcement Inventory'),
+                    desc: tt('behavior_lens.hub.reinforcement_desc', 'Structured motivation survey — identify what drives each student across 6 categories'),
                     color: 'amber',
                 },
                 {
                     id: 'antecedentmod',
                     icon: '🛠️',
-                    title: t('behavior_lens.hub.antecedentmod_title') || 'Antecedent Modification Planner',
-                    desc: t('behavior_lens.hub.antecedentmod_desc') || 'AI-powered environmental change recommendations to prevent behaviors before they start',
+                    title: tt('behavior_lens.hub.antecedentmod_title', 'Antecedent Modification Planner'),
+                    desc: tt('behavior_lens.hub.antecedentmod_desc', 'AI-powered environmental change recommendations to prevent behaviors before they start'),
                     color: 'orange',
                     cat: 'environment',
                 },
                 {
                     id: 'sessionnotes',
                     icon: '📝',
-                    title: t('behavior_lens.hub.sessionnotes_title') || 'Session Notes',
-                    desc: t('behavior_lens.hub.sessionnotes_desc') || 'Timestamped observation notes with voice dictation — capture context as it happens',
+                    title: tt('behavior_lens.hub.sessionnotes_title', 'Session Notes'),
+                    desc: tt('behavior_lens.hub.sessionnotes_desc', 'Timestamped observation notes with voice dictation — capture context as it happens'),
                     color: 'teal',
                     badge: sessionNotes.length > 0 ? `${sessionNotes.length} notes` : null,
                     cat: 'utilities',
@@ -25635,196 +25704,196 @@ Analyze this data and return ONLY valid JSON:
                 {
                     id: 'alloBotChat',
                     icon: '🤖',
-                    title: t('behavior_lens.allobot_chat.title') || 'Ask AlloBot',
-                    desc: t('behavior_lens.allobot_chat.card_desc') || 'Chat with AI about behavior strategies, FBA, BIP, and intervention planning',
+                    title: tt('behavior_lens.allobot_chat.title', 'Ask AlloBot'),
+                    desc: tt('behavior_lens.allobot_chat.card_desc', 'Chat with AI about behavior strategies, FBA, BIP, and intervention planning'),
                     color: 'purple',
                     cat: 'analysis',
                 },
                 {
                     id: 'pdpath',
                     icon: '🎓',
-                    title: t('behavior_lens.hub.pdpath_title') || 'PD Learning Path',
-                    desc: t('behavior_lens.hub.pdpath_desc') || 'Guided onboarding modules for building ABA skills step-by-step',
+                    title: tt('behavior_lens.hub.pdpath_title', 'PD Learning Path'),
+                    desc: tt('behavior_lens.hub.pdpath_desc', 'Guided onboarding modules for building ABA skills step-by-step'),
                     color: 'indigo',
                 },
                 {
                     id: 'abaquiz',
                     icon: '🧪',
-                    title: t('behavior_lens.hub.abaquiz_title') || 'ABA Knowledge Quiz',
-                    desc: t('behavior_lens.hub.abaquiz_desc') || 'Test your ABA knowledge — earn a competency badge at 80%+',
+                    title: tt('behavior_lens.hub.abaquiz_title', 'ABA Knowledge Quiz'),
+                    desc: tt('behavior_lens.hub.abaquiz_desc', 'Test your ABA knowledge — earn a competency badge at 80%+'),
                     color: 'purple',
                 },
                 {
                     id: 'functionquiz',
                     icon: '🧠',
                     title: t('behavior_lens.hub.functionquiz_title') || "What's the Function?",
-                    desc: t('behavior_lens.hub.functionquiz_desc') || 'Interactive clinical scenarios to practice identifying behavioral functions via the AC model',
+                    desc: tt('behavior_lens.hub.functionquiz_desc', 'Interactive clinical scenarios to practice identifying behavioral functions via the AC model'),
                     color: 'indigo',
                 },
                 {
                     id: 'practicum',
                     icon: '🎬',
-                    title: t('behavior_lens.hub.practicum_title') || 'Virtual Practicum',
-                    desc: t('behavior_lens.hub.practicum_desc') || 'Practice MTS, Partial, and Whole Interval recording against simulated scenarios with accuracy grading',
+                    title: tt('behavior_lens.hub.practicum_title', 'Virtual Practicum'),
+                    desc: tt('behavior_lens.hub.practicum_desc', 'Practice MTS, Partial, and Whole Interval recording against simulated scenarios with accuracy grading'),
                     color: 'violet',
                 },
                 {
                     id: 'casestudy',
                     icon: '🎓',
-                    title: t('behavior_lens.hub.casestudy_title') || 'ABA Case Study Training',
-                    desc: t('behavior_lens.hub.casestudy_desc') || 'AI-generated case studies with 4-phase clinical reasoning and scoring',
+                    title: tt('behavior_lens.hub.casestudy_title', 'ABA Case Study Training'),
+                    desc: tt('behavior_lens.hub.casestudy_desc', 'AI-generated case studies with 4-phase clinical reasoning and scoring'),
                     color: 'fuchsia',
                 },
                 {
                     id: 'bcbahandoff',
                     icon: '📊',
-                    title: t('behavior_lens.hub.bcbahandoff_title') || 'BCBA Consultation',
-                    desc: t('behavior_lens.hub.bcbahandoff_desc') || 'Data dashboard for BCBAs + printable handoff packet for consultation',
+                    title: tt('behavior_lens.hub.bcbahandoff_title', 'BCBA Consultation'),
+                    desc: tt('behavior_lens.hub.bcbahandoff_desc', 'Data dashboard for BCBAs + printable handoff packet for consultation'),
                     color: 'sky',
                     badge: abcEntries.length >= 5 ? '📋 Data Ready' : null,
                 },
                 {
                     id: 'riskscreen',
                     icon: '🛡️',
-                    title: t('behavior_lens.hub.riskscreen_title') || 'Risk Screening',
-                    desc: t('behavior_lens.hub.riskscreen_desc_v2') || 'Safety reflection checklist + AI pattern detection (not a formal threat-assessment instrument)',
+                    title: tt('behavior_lens.hub.riskscreen_title', 'Risk Screening'),
+                    desc: tt('behavior_lens.hub.riskscreen_desc_v2', 'Safety reflection checklist + AI pattern detection (not a formal threat-assessment instrument)'),
                     color: 'red',
                 },
                 {
                     id: 'sessiontracker',
                     icon: '📋',
-                    title: t('behavior_lens.hub.sessiontracker_title') || 'Session Data Tracker',
-                    desc: t('behavior_lens.hub.sessiontracker_desc') || 'Systematic session-based behavioral measurement with rate calculation',
+                    title: tt('behavior_lens.hub.sessiontracker_title', 'Session Data Tracker'),
+                    desc: tt('behavior_lens.hub.sessiontracker_desc', 'Systematic session-based behavioral measurement with rate calculation'),
                     color: 'emerald',
                     badge: sessionHistory.length > 0 ? `${sessionHistory.length} sessions` : null,
                 },
                 {
                     id: 'abagraph',
                     icon: '📈',
-                    title: t('behavior_lens.hub.abagraph_title') || 'ABA Graph Engine',
-                    desc: t('behavior_lens.hub.abagraph_desc') || 'Publication-standard graphs with phase lines, trend lines, and visual analysis',
+                    title: tt('behavior_lens.hub.abagraph_title', 'ABA Graph Engine'),
+                    desc: tt('behavior_lens.hub.abagraph_desc', 'Publication-standard graphs with phase lines, trend lines, and visual analysis'),
                     color: 'indigo',
                     badge: sessionHistory.length >= 3 ? '📊 Ready' : null,
                 },
                 {
                     id: 'scdmanager',
                     icon: '🔬',
-                    title: t('behavior_lens.hub.scdmanager_title') || 'Single-Case Design',
-                    desc: t('behavior_lens.hub.scdmanager_desc') || 'AB, ABAB, Multiple Baseline, Alternating Treatments, Changing Criterion',
+                    title: tt('behavior_lens.hub.scdmanager_title', 'Single-Case Design'),
+                    desc: tt('behavior_lens.hub.scdmanager_desc', 'AB, ABAB, Multiple Baseline, Alternating Treatments, Changing Criterion'),
                     color: 'purple',
                 },
                 {
                     id: 'bipgen',
                     icon: '📄',
-                    title: t('behavior_lens.hub.bipgen_title') || 'BIP Generator',
-                    desc: t('behavior_lens.hub.bipgen_desc') || 'Synthesize ABC and preference data into a formal, editable BIP document',
+                    title: tt('behavior_lens.hub.bipgen_title', 'BIP Generator'),
+                    desc: tt('behavior_lens.hub.bipgen_desc', 'Synthesize ABC and preference data into a formal, editable BIP document'),
                     color: 'indigo',
                 },
                 {
                     id: 'drstrategy',
                     icon: '🎯',
-                    title: t('behavior_lens.hub.drstrategy_title') || 'DR Strategy Selector',
-                    desc: t('behavior_lens.hub.drstrategy_desc') || 'Choose the right differential reinforcement strategy (DRA, DRI, DRO, DRL)',
+                    title: tt('behavior_lens.hub.drstrategy_title', 'DR Strategy Selector'),
+                    desc: tt('behavior_lens.hub.drstrategy_desc', 'Choose the right differential reinforcement strategy (DRA, DRI, DRO, DRL)'),
                     color: 'amber',
                 },
                 {
                     id: 'fcttemplate',
                     icon: '💬',
-                    title: t('behavior_lens.hub.fcttemplate_title') || 'FCT Template',
-                    desc: t('behavior_lens.hub.fcttemplate_desc') || 'Functional Communication Training planning with modality selection',
+                    title: tt('behavior_lens.hub.fcttemplate_title', 'FCT Template'),
+                    desc: tt('behavior_lens.hub.fcttemplate_desc', 'Functional Communication Training planning with modality selection'),
                     color: 'teal',
                 },
                 {
                     id: 'ioacalc',
                     icon: '🤝',
-                    title: t('behavior_lens.hub.ioacalc_title') || 'IOA Calculator',
-                    desc: t('behavior_lens.hub.ioacalc_desc') || 'Inter-Observer Agreement with 6 methods — point-by-point, interval, scored/unscored, exact count',
+                    title: tt('behavior_lens.hub.ioacalc_title', 'IOA Calculator'),
+                    desc: tt('behavior_lens.hub.ioacalc_desc', 'Inter-Observer Agreement with 6 methods — point-by-point, interval, scored/unscored, exact count'),
                     color: 'indigo',
                 },
                 {
                     id: 'taskanalysis',
                     icon: '📝',
-                    title: t('behavior_lens.hub.taskanalysis_title') || 'Task Analysis',
-                    desc: t('behavior_lens.hub.taskanalysis_desc') || 'Break skills into teachable steps with forward, backward, or total-task chaining and prompt tracking',
+                    title: tt('behavior_lens.hub.taskanalysis_title', 'Task Analysis'),
+                    desc: tt('behavior_lens.hub.taskanalysis_desc', 'Break skills into teachable steps with forward, backward, or total-task chaining and prompt tracking'),
                     color: 'emerald',
                 },
                 {
                     id: 'dtt',
                     icon: '🎯',
-                    title: t('behavior_lens.hub.dtt_title') || 'DTT Data Sheet',
-                    desc: t('behavior_lens.hub.dtt_desc') || 'Discrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance',
+                    title: tt('behavior_lens.hub.dtt_title', 'DTT Data Sheet'),
+                    desc: tt('behavior_lens.hub.dtt_desc', 'Discrete Trial Training — trial-by-trial recording with mastery criteria and auto-advance'),
                     color: 'purple',
                 },
                 {
                     id: 'prefassess',
                     icon: '⭐',
-                    title: t('behavior_lens.hub.prefassess_title') || 'Preference Assessment',
-                    desc: t('behavior_lens.hub.prefassess_desc') || 'Systematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols',
+                    title: tt('behavior_lens.hub.prefassess_title', 'Preference Assessment'),
+                    desc: tt('behavior_lens.hub.prefassess_desc', 'Systematic reinforcer identification — MSWO, Paired Stimulus, and Free Operant protocols'),
                     color: 'amber',
                 },
                 {
                     id: 'scatterplot',
                     icon: '📅',
-                    title: t('behavior_lens.hub.scatterplot_title') || 'Scatterplot Analysis',
-                    desc: t('behavior_lens.hub.scatterplot_desc') || 'Time-of-day × behavior grid to identify temporal patterns — auto-populates from ABC data',
+                    title: tt('behavior_lens.hub.scatterplot_title', 'Scatterplot Analysis'),
+                    desc: tt('behavior_lens.hub.scatterplot_desc', 'Time-of-day × behavior grid to identify temporal patterns — auto-populates from ABC data'),
                     color: 'orange',
                     badge: abcEntries.length > 0 ? `📋 ${abcEntries.length} entries` : null,
                 },
                 {
                     id: 'latency',
                     icon: '⏱️',
-                    title: t('behavior_lens.hub.latency_title') || 'Latency Recorder',
-                    desc: t('behavior_lens.hub.latency_desc') || 'Stimulus-to-response time measurement with mean, median, and range statistics',
+                    title: tt('behavior_lens.hub.latency_title', 'Latency Recorder'),
+                    desc: tt('behavior_lens.hub.latency_desc', 'Stimulus-to-response time measurement with mean, median, and range statistics'),
                     color: 'teal',
                 },
                 {
                     id: 'socialvalidity',
                     icon: '📋',
-                    title: t('behavior_lens.hub.socialvalidity_title') || 'Social Validity',
-                    desc: t('behavior_lens.hub.socialvalidity_desc') || 'TARF and IRP-15 scales for measuring treatment acceptability — required for publication',
+                    title: tt('behavior_lens.hub.socialvalidity_title', 'Social Validity'),
+                    desc: tt('behavior_lens.hub.socialvalidity_desc', 'TARF and IRP-15 scales for measuring treatment acceptability — required for publication'),
                     color: 'sky',
                 },
                 {
                     id: 'maintenance',
                     icon: '🔄',
-                    title: t('behavior_lens.hub.maintenance_title') || 'Maintenance & Generalization',
-                    desc: t('behavior_lens.hub.maintenance_desc') || 'Track skill retention post-mastery and generalization across settings, people, and materials',
+                    title: tt('behavior_lens.hub.maintenance_title', 'Maintenance & Generalization'),
+                    desc: tt('behavior_lens.hub.maintenance_desc', 'Track skill retention post-mastery and generalization across settings, people, and materials'),
                     color: 'lime',
                 },
                 {
                     id: 'cumrecord',
                     icon: '📈',
-                    title: t('behavior_lens.hub.cumrecord_title') || 'Cumulative Record',
-                    desc: t('behavior_lens.hub.cumrecord_desc') || 'Classic Skinner-style cumulative frequency graph — the heritage of ABA data display',
+                    title: tt('behavior_lens.hub.cumrecord_title', 'Cumulative Record'),
+                    desc: tt('behavior_lens.hub.cumrecord_desc', 'Classic Skinner-style cumulative frequency graph — the heritage of ABA data display'),
                     color: 'violet',
                 },
                 {
                     id: 'condprob',
                     icon: '📐',
-                    title: t('behavior_lens.hub.condprob_title') || 'Conditional Probability',
-                    desc: t('behavior_lens.hub.condprob_desc') || 'Foreground vs background probability analysis to validate ABC hypotheses with data',
+                    title: tt('behavior_lens.hub.condprob_title', 'Conditional Probability'),
+                    desc: tt('behavior_lens.hub.condprob_desc', 'Foreground vs background probability analysis to validate ABC hypotheses with data'),
                     color: 'rose',
                     badge: abcEntries.length >= 3 ? `📋 ${abcEntries.length} entries` : null,
                 },
                 {
                     id: 'treatintegrity',
                     icon: '✅',
-                    title: t('behavior_lens.hub.treatintegrity_title') || 'Treatment Integrity',
-                    desc: t('behavior_lens.hub.treatintegrity_desc') || 'Document whether interventions are implemented as designed — component-level fidelity tracking',
+                    title: tt('behavior_lens.hub.treatintegrity_title', 'Treatment Integrity'),
+                    desc: tt('behavior_lens.hub.treatintegrity_desc', 'Document whether interventions are implemented as designed — component-level fidelity tracking'),
                     color: 'cyan',
                 },
                 {
                     id: 'nlabc',
                     icon: '✏️',
-                    title: t('behavior_lens.hub.nlabc_title') || 'Natural Language ABC',
-                    desc: t('behavior_lens.hub.nlabc_desc') || 'Type or paste observation notes in everyday English — AI structures them into ABC entries automatically',
+                    title: tt('behavior_lens.hub.nlabc_title', 'Natural Language ABC'),
+                    desc: tt('behavior_lens.hub.nlabc_desc', 'Type or paste observation notes in everyday English — AI structures them into ABC entries automatically'),
                     color: 'violet',
                 },
                 {
                     id: 'iepgoals',
                     icon: '📄',
-                    title: t('behavior_lens.hub.iepgoals_title') || 'IEP Goal Generator',
-                    desc: t('behavior_lens.hub.iepgoals_desc') || 'AI-generated present levels, SMART goals, objectives, accommodations, and progress monitoring plans',
+                    title: tt('behavior_lens.hub.iepgoals_title', 'IEP Goal Generator'),
+                    desc: tt('behavior_lens.hub.iepgoals_desc', 'AI-generated present levels, SMART goals, objectives, accommodations, and progress monitoring plans'),
                     color: 'sky',
                     disabled: abcEntries.length < 1,
                     badge: abcEntries.length >= 1 ? `📋 ${abcEntries.length} entries` : null,
@@ -25832,14 +25901,14 @@ Analyze this data and return ONLY valid JSON:
                 {
                     id: 'caseload',
                     icon: '👥',
-                    title: t('behavior_lens.hub.caseload_title') || 'Caseload Dashboard',
-                    desc: t('behavior_lens.hub.caseload_desc') || 'Bird\'s-eye overview of all students — status indicators, trends, safety alerts, and AI caseload summary',
+                    title: tt('behavior_lens.hub.caseload_title', 'Caseload Dashboard'),
+                    desc: tt('behavior_lens.hub.caseload_desc', 'Bird\'s-eye overview of all students — status indicators, trends, safety alerts, and AI caseload summary'),
                     color: 'teal',
                 },
                 {
                     id: 'compare',
                     icon: '📊',
-                    title: (t('behavior_lens.raw.crossstudent_comparison') || 'Cross-Student Comparison'),
+                    title: (tt('behavior_lens.raw.crossstudent_comparison', 'Cross-Student Comparison')),
                     desc: 'Load multiple student workspaces to compare behavior patterns, intensity levels, and trends side-by-side with AI analysis',
                     color: 'violet',
                     badge: comparisonWorkspaces.length > 0 ? `👤 ${comparisonWorkspaces.length} loaded` : null,
@@ -25847,44 +25916,44 @@ Analyze this data and return ONLY valid JSON:
                 {
                     id: 'mtss',
                     icon: '🏗️',
-                    title: t('behavior_lens.hub.mtss_title') || 'MTSS/RTI Tiers',
-                    desc: t('behavior_lens.hub.mtss_desc') || 'Visual 3-tier pyramid for managing multi-tiered supports with AI-powered tier placement recommendations',
+                    title: tt('behavior_lens.hub.mtss_title', 'MTSS/RTI Tiers'),
+                    desc: tt('behavior_lens.hub.mtss_desc', 'Visual 3-tier pyramid for managing multi-tiered supports with AI-powered tier placement recommendations'),
                     color: 'orange',
                 },
                 {
                     id: 'progressreport',
                     icon: '📊',
-                    title: t('behavior_lens.hub.progressreport_title') || 'Progress Reports',
-                    desc: t('behavior_lens.hub.progressreport_desc') || 'AI-generated progress reports with data summaries, trend analysis, goal progress, and parent-friendly language option',
+                    title: tt('behavior_lens.hub.progressreport_title', 'Progress Reports'),
+                    desc: tt('behavior_lens.hub.progressreport_desc', 'AI-generated progress reports with data summaries, trend analysis, goal progress, and parent-friendly language option'),
                     color: 'emerald',
                     badge: (abcEntries.length + sessionHistory.length) > 0 ? `${abcEntries.length + sessionHistory.length} data points` : null,
                 },
                 {
                     id: 'effectsize',
                     icon: '📐',
-                    title: t('behavior_lens.hub.effectsize_title') || 'Effect Size Calculator',
-                    desc: t('behavior_lens.hub.effectsize_desc') || 'Calculate Tau-U, NAP, and PND to quantify intervention effectiveness with visual phase comparison',
+                    title: tt('behavior_lens.hub.effectsize_title', 'Effect Size Calculator'),
+                    desc: tt('behavior_lens.hub.effectsize_desc', 'Calculate Tau-U, NAP, and PND to quantify intervention effectiveness with visual phase comparison'),
                     color: 'indigo',
                     badge: sessionHistory.length >= 3 ? '📊 Data ready' : null,
                 },
                 {
                     id: 'obscoach',
                     icon: '🎓',
-                    title: t('behavior_lens.hub.obscoach_title') || 'AI Observation Coach',
-                    desc: t('behavior_lens.hub.obscoach_desc') || 'Real-time coaching on your data collection quality — identifies gaps, suggests improvements, and rates your data',
+                    title: tt('behavior_lens.hub.obscoach_title', 'AI Observation Coach'),
+                    desc: tt('behavior_lens.hub.obscoach_desc', 'Real-time coaching on your data collection quality — identifies gaps, suggests improvements, and rates your data'),
                     color: 'amber',
                 },
                 {
                     id: 'batchimport',
                     icon: '📥',
-                    title: (t('behavior_lens.raw.batch_import') || 'Batch Import'),
+                    title: (tt('behavior_lens.raw.batch_import', 'Batch Import')),
                     desc: 'Import historical ABC data or student profiles from CSV files — validates, previews, and merges with existing data',
                     color: 'teal',
                 },
                 {
                     id: 'progressmonitor',
                     icon: '📈',
-                    title: (t('behavior_lens.raw.progress_monitor') || 'Progress Monitor'),
+                    title: (tt('behavior_lens.raw.progress_monitor', 'Progress Monitor')),
                     desc: 'Track behavior frequency over time with aim lines, phase change markers, trend analysis, and daily summary stats',
                     color: 'indigo',
                     badge: abcEntries.length > 0 ? `📊 ${abcEntries.length} entries` : null,
@@ -25892,29 +25961,29 @@ Analyze this data and return ONLY valid JSON:
                 {
                     id: 'voiceabc',
                     icon: '🎙️',
-                    title: (t('behavior_lens.raw.voicetoabc') || 'Voice-to-ABC'),
+                    title: (tt('behavior_lens.raw.voicetoabc', 'Voice-to-ABC')),
                     desc: 'Speak your observations naturally — AI extracts structured ABC entries from your real-time voice transcript',
                     color: 'rose',
                 },
                 {
                     id: 'sharing',
                     icon: '🤝',
-                    title: (t('behavior_lens.raw.workspace_sharing') || 'Workspace Sharing'),
+                    title: (tt('behavior_lens.raw.workspace_sharing', 'Workspace Sharing')),
                     desc: 'Share workspace data with team members using role-based views — BCBA, teacher, or parent-friendly exports',
                     color: 'blue',
                 },
                 {
                     id: 'printreport',
                     icon: '📄',
-                    title: (t('behavior_lens.raw.print_report') || 'Print-Ready Report'),
+                    title: (tt('behavior_lens.raw.print_report', 'Print-Ready Report')),
                     desc: 'Generate a professional, print-ready progress report with inline charts, AI recommendations, and audience-specific language',
                     color: 'teal',
                 },
                 {
                     id: 'competingpathways',
                     icon: '🔀',
-                    title: t('behavior_lens.hub.competingpathways_title') || 'Competing Pathways',
-                    desc: t('behavior_lens.hub.competingpathways_desc') || 'Visual model mapping problem, replacement, and competing behaviors for FBA/BIP planning',
+                    title: tt('behavior_lens.hub.competingpathways_title', 'Competing Pathways'),
+                    desc: tt('behavior_lens.hub.competingpathways_desc', 'Visual model mapping problem, replacement, and competing behaviors for FBA/BIP planning'),
                     color: 'violet',
                     badge: abcEntries.length >= 3 ? '🧠 AI Ready' : null,
                 },
@@ -25922,23 +25991,23 @@ Analyze this data and return ONLY valid JSON:
                     id: 'cantdowontdo',
                     icon: '🔍',
                     title: t('behavior_lens.hub.cantdowontdo_title') || "Can't Do / Won't Do",
-                    desc: t('behavior_lens.hub.cantdowontdo_desc') || 'Skill deficit vs performance deficit assessment through structured probes',
+                    desc: tt('behavior_lens.hub.cantdowontdo_desc', 'Skill deficit vs performance deficit assessment through structured probes'),
                     color: 'orange',
                     badge: abcEntries.length >= 3 ? '🧠 AI Ready' : null,
                 },
                 {
                     id: 'mipractice',
                     icon: '🗣️',
-                    title: t('behavior_lens.hub.mipractice_title') || 'MI Practice Simulator',
-                    desc: t('behavior_lens.hub.mipractice_desc') || 'Practice motivational interviewing with AI-powered student simulations',
+                    title: tt('behavior_lens.hub.mipractice_title', 'MI Practice Simulator'),
+                    desc: tt('behavior_lens.hub.mipractice_desc', 'Practice motivational interviewing with AI-powered student simulations'),
                     color: 'teal',
                     badge: '🎮 Interactive',
                 },
                 {
                     id: 'replacementbehavior',
                     icon: '🔄',
-                    title: t('behavior_lens.hub.replacementbehavior_title') || 'Replacement Behavior Tracker',
-                    desc: t('behavior_lens.hub.replacementbehavior_desc') || 'Track teaching trials and monitor acquisition of replacement behaviors',
+                    title: tt('behavior_lens.hub.replacementbehavior_title', 'Replacement Behavior Tracker'),
+                    desc: tt('behavior_lens.hub.replacementbehavior_desc', 'Track teaching trials and monitor acquisition of replacement behaviors'),
                     color: 'lime',
                     badge: null,
                 },
@@ -25953,8 +26022,8 @@ Analyze this data and return ONLY valid JSON:
                 {
                     id: 'opdef',
                     icon: '🔬',
-                    title: t('behavior_lens.hub.opdef_title') || 'Operational Definition Builder',
-                    desc: t('behavior_lens.hub.opdef_desc_v2') || 'Turn vague descriptions into observable, measurable definitions using standard ABA dimensions + the Dead Man\'s Test (AI-assisted, not a BACB-credentialed output)',
+                    title: tt('behavior_lens.hub.opdef_title', 'Operational Definition Builder'),
+                    desc: tt('behavior_lens.hub.opdef_desc_v2', 'Turn vague descriptions into observable, measurable definitions using standard ABA dimensions + the Dead Man\'s Test (AI-assisted, not a BACB-credentialed output)'),
                     color: 'indigo',
                 },
                 {
@@ -26073,11 +26142,11 @@ Analyze this data and return ONLY valid JSON:
                 // Student selector
                 h('div', { className: 'mb-6 bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                     h('label', { className: 'block text-xs font-bold text-slate-600 mb-2 uppercase tracking-wide' },
-                        '👤 ', t('behavior_lens.hub.select_student') || 'Select Student'
+                        '👤 ', tt('behavior_lens.hub.select_student', 'Select Student')
                     ),
                     // Role Selector
                     h('div', { className: 'flex items-center gap-2 mt-2 mb-1' },
-                        h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, t('behavior_lens.ui.your_role_2') || 'Your Role:'),
+                        h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, tt('behavior_lens.ui.your_role_2', 'Your Role:')),
                         ['teacher', 'parent', 'bcba'].map(role =>
                             h('button', { "aria-label": "Toggle user role",
                                 key: role,
@@ -26095,7 +26164,7 @@ Analyze this data and return ONLY valid JSON:
                                 'aria-label': 'Choose a student',
                                 className: 'flex-1 text-sm border border-slate-400 rounded-lg px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 font-medium'
                             },
-                                h('option', { value: '' }, t('behavior_lens.hub.choose_student') || '— Choose a student —'),
+                                h('option', { value: '' }, tt('behavior_lens.hub.choose_student', '— Choose a student —')),
                                 studentOptions.map(name => h('option', { key: name, value: name }, name))
                             ),
                             selectedStudent && h('div', { className: 'flex items-center gap-1 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200' },
@@ -26115,7 +26184,7 @@ Analyze this data and return ONLY valid JSON:
                                     'aria-label': 'Pick codename adjective',
                                     className: 'w-1/2 p-2 rounded-lg border border-indigo-600 text-indigo-900 font-bold text-sm focus:ring-2 focus:ring-indigo-400 outline-none cursor-pointer bg-white'
                                 },
-                                    h('option', { value: '' }, t('behavior_lens.hub.pick_adjective') || '— Adjective —'),
+                                    h('option', { value: '' }, tt('behavior_lens.hub.pick_adjective', '— Adjective —')),
                                     adjectives.map((adj, i) => h('option', { key: i, value: adj }, adj))
                                 ),
                                 h('select', {
@@ -26127,18 +26196,18 @@ Analyze this data and return ONLY valid JSON:
                                     'aria-label': 'Pick codename animal',
                                     className: 'w-1/2 p-2 rounded-lg border border-indigo-600 text-indigo-900 font-bold text-sm focus:ring-2 focus:ring-indigo-400 outline-none cursor-pointer bg-white'
                                 },
-                                    h('option', { value: '' }, t('behavior_lens.hub.pick_animal') || '— Animal —'),
+                                    h('option', { value: '' }, tt('behavior_lens.hub.pick_animal', '— Animal —')),
                                     animals.map((anim, i) => h('option', { key: i, value: anim }, anim))
                                 )
                             ),
                             h('div', { className: 'flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-indigo-100' },
                                 h('div', { className: 'text-xl font-black text-indigo-600 tracking-tight truncate me-2' },
-                                    selectedAdj && selectedAnimal ? `${selectedAdj} ${selectedAnimal}` : (t('behavior_lens.hub.no_codename') || 'Pick a codename...')
+                                    selectedAdj && selectedAnimal ? `${selectedAdj} ${selectedAnimal}` : (tt('behavior_lens.hub.no_codename', 'Pick a codename...'))
                                 ),
                                 h('button', { "aria-label": "Randomize Name",
                                     onClick: randomizeName,
                                     className: 'p-2 bg-indigo-100 text-indigo-600 rounded-full hover:bg-indigo-200 hover:scale-110 transition-all shrink-0',
-                                    title: t('behavior_lens.hub.randomize') || 'Randomize'
+                                    title: tt('behavior_lens.hub.randomize', 'Randomize')
                                 }, '🎲')
                             ),
                             // ── Sandbox Config ──
@@ -26182,12 +26251,12 @@ Analyze this data and return ONLY valid JSON:
                     h('div', { className: 'flex items-center justify-between mb-2' },
                         h('div', { className: 'flex items-center gap-1.5' },
                             h('span', { className: 'text-sm' }, '⇄'),
-                            h('span', { className: 'text-[11px] font-black text-slate-600 uppercase tracking-wider' }, t('behavior_lens.ui.quick_switch') || 'Quick Switch')
+                            h('span', { className: 'text-[11px] font-black text-slate-600 uppercase tracking-wider' }, tt('behavior_lens.ui.quick_switch', 'Quick Switch'))
                         ),
                         h('button', { "aria-label": "Toggle student roster",
-                            onClick: () => { setStudentRoster([]); if (addToast) addToast(t('behavior_lens.toast.roster_cleared') || 'Roster cleared', 'info'); },
+                            onClick: () => { setStudentRoster([]); if (addToast) addToast(tt('behavior_lens.toast.roster_cleared', 'Roster cleared'), 'info'); },
                             className: 'text-[11px] text-slate-600 hover:text-red-400 transition-colors'
-                        }, (t('behavior_lens.raw.clear') || 'Clear'))
+                        }, (tt('behavior_lens.raw.clear', 'Clear')))
                     ),
                     h('div', { className: 'flex flex-wrap gap-1.5' },
                         studentRoster.filter(r => r.name !== selectedStudent).slice(0, 6).map(r =>
@@ -26254,8 +26323,8 @@ Analyze this data and return ONLY valid JSON:
                         h('div', { className: 'flex items-center gap-3' },
                             h('div', { className: 'w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-lg' }, '🧠'),
                             h('div', null,
-                                h('h4', { className: 'text-sm font-black text-purple-800' }, t('behavior_lens.ui.full_student_summary') || 'Full Student Summary'),
-                                h('p', { className: 'text-[11px] text-purple-500' }, t('behavior_lens.ui.aisynthesized_behavioral_profile_from_all_data_sou') || 'AI-synthesized behavioral profile from all data sources')
+                                h('h4', { className: 'text-sm font-black text-purple-800' }, tt('behavior_lens.ui.full_student_summary', 'Full Student Summary')),
+                                h('p', { className: 'text-[11px] text-purple-500' }, tt('behavior_lens.ui.aisynthesized_behavioral_profile_from_all_data_sou', 'AI-synthesized behavioral profile from all data sources'))
                             )
                         ),
                         h('span', { className: 'text-purple-700 text-xs font-bold' }, summaryLoading ? '⏳ Generating...' : fullSummary ? '▴ Collapse' : '▾ Generate')
@@ -26264,7 +26333,7 @@ Analyze this data and return ONLY valid JSON:
                         h('div', { className: 'bg-white rounded-xl border border-purple-200 p-4 text-xs text-slate-700 whitespace-pre-wrap leading-relaxed max-h-96 overflow-y-auto' }, fullSummary),
                         h('div', { className: 'flex gap-2 mt-3' },
                             h('button', { "aria-label": "Copy",
-                                onClick: () => { navigator.clipboard.writeText(fullSummary); if (addToast) addToast(t('behavior_lens.toast.copied') || 'Copied!', 'success'); },
+                                onClick: () => { navigator.clipboard.writeText(fullSummary); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); },
                                 className: 'px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-[11px] font-bold hover:bg-purple-200'
                             }, '📋 Copy'),
                             h('button', { "aria-label": "Print",
@@ -26341,21 +26410,21 @@ Analyze this data and return ONLY valid JSON:
                     // Smart recommendations
                     const recs = [];
                     if (abcEntries.length >= 3 && !visitedPanels.has('analysis'))
-                        recs.push({ icon: '🧠', label: (t('behavior_lens.raw.you_have_enough_data_for_ai_analysis') || 'You have enough data for AI analysis'), target: 'analysis' });
+                        recs.push({ icon: '🧠', label: (tt('behavior_lens.raw.you_have_enough_data_for_ai_analysis', 'You have enough data for AI analysis')), target: 'analysis' });
                     if (abcEntries.length >= 5 && !visitedPanels.has('hypothesis'))
-                        recs.push({ icon: '🔗', label: (t('behavior_lens.raw.ready_to_generate_hypothesis_diagram') || 'Ready to generate hypothesis diagram'), target: 'hypothesis' });
+                        recs.push({ icon: '🔗', label: (tt('behavior_lens.raw.ready_to_generate_hypothesis_diagram', 'Ready to generate hypothesis diagram')), target: 'hypothesis' });
                     if (abcEntries.length >= 3 && !visitedPanels.has('trends'))
-                        recs.push({ icon: '📊', label: (t('behavior_lens.raw.view_trend_dashboard_with_your_data') || 'View trend dashboard with your data'), target: 'trends' });
+                        recs.push({ icon: '📊', label: (tt('behavior_lens.raw.view_trend_dashboard_with_your_data', 'View trend dashboard with your data')), target: 'trends' });
                     if (visitedPanels.has('analysis') && !visitedPanels.has('goals'))
-                        recs.push({ icon: '🎯', label: (t('behavior_lens.raw.build_smart_goals_from_analysis') || 'Build SMART goals from analysis'), target: 'goals' });
+                        recs.push({ icon: '🎯', label: (tt('behavior_lens.raw.build_smart_goals_from_analysis', 'Build SMART goals from analysis')), target: 'goals' });
                     if (visitedPanels.has('goals') && !visitedPanels.has('contract'))
-                        recs.push({ icon: '📜', label: (t('behavior_lens.raw.create_a_behavior_contract') || 'Create a behavior contract'), target: 'contract' });
+                        recs.push({ icon: '📜', label: (tt('behavior_lens.raw.create_a_behavior_contract', 'Create a behavior contract')), target: 'contract' });
                     if (visitedPanels.has('goals') && !visitedPanels.has('intervention'))
-                        recs.push({ icon: '📋', label: (t('behavior_lens.raw.generate_an_intervention_plan') || 'Generate an intervention plan'), target: 'intervention' });
+                        recs.push({ icon: '📋', label: (tt('behavior_lens.raw.generate_an_intervention_plan', 'Generate an intervention plan')), target: 'intervention' });
                     if (observationSessions.length >= 2 && !visitedPanels.has('triangulation'))
-                        recs.push({ icon: '🔺', label: (t('behavior_lens.raw.triangulate_with_observation_data') || 'Triangulate with observation data'), target: 'triangulation' });
+                        recs.push({ icon: '🔺', label: (tt('behavior_lens.raw.triangulate_with_observation_data', 'Triangulate with observation data')), target: 'triangulation' });
                     if (abcEntries.length >= 2 && !visitedPanels.has('progress'))
-                        recs.push({ icon: '📈', label: (t('behavior_lens.raw.draft_progress_narrative') || 'Draft progress narrative'), target: 'progress' });
+                        recs.push({ icon: '📈', label: (tt('behavior_lens.raw.draft_progress_narrative', 'Draft progress narrative')), target: 'progress' });
 
                     const renderCard = (tool) => {
                         const cc = colorClasses[tool.color];
@@ -26390,13 +26459,13 @@ Analyze this data and return ONLY valid JSON:
                             h('button', { "aria-label": "Dismiss Welcome",
                                 onClick: dismissWelcome,
                                 className: 'absolute top-3 right-3 text-white/60 hover:text-white transition-colors text-lg',
-                                title: (t('behavior_lens.raw.dismiss') || 'Dismiss')
+                                title: (tt('behavior_lens.raw.dismiss', 'Dismiss'))
                             }, '✕'),
                             // Content
                             h('div', { className: 'relative' },
                                 h('div', { className: 'flex items-center gap-2 mb-2' },
                                     h('span', { className: 'text-2xl' }, '👋'),
-                                    h('h2', { className: 'text-lg font-black' }, t('behavior_lens.ui.welcome_to_behaviorlens') || 'Welcome to BehaviorLens')
+                                    h('h2', { className: 'text-lg font-black' }, tt('behavior_lens.ui.welcome_to_behaviorlens', 'Welcome to BehaviorLens'))
                                 ),
                                 h('p', { className: 'text-sm text-indigo-100 mb-4 max-w-lg' },
                                     '80+ clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:'
@@ -26405,20 +26474,20 @@ Analyze this data and return ONLY valid JSON:
                                     h('button', { "aria-label": "Dismiss Welcome",
                                         onClick: () => { dismissWelcome(); handleToolOpen('abc'); },
                                         className: 'flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95'
-                                    }, h('span', { className: 'text-lg' }, '👩‍🏫'), h('div', { className: 'text-start' }, h('div', { className: 'text-xs font-black' }, t('behavior_lens.ui.teacher') || 'Teacher'), h('div', { className: 'text-[11px] text-indigo-200 font-medium' }, t('behavior_lens.ui.start_with_abc_data') || 'Start with ABC Data'))),
+                                    }, h('span', { className: 'text-lg' }, '👩‍🏫'), h('div', { className: 'text-start' }, h('div', { className: 'text-xs font-black' }, tt('behavior_lens.ui.teacher', 'Teacher')), h('div', { className: 'text-[11px] text-indigo-200 font-medium' }, tt('behavior_lens.ui.start_with_abc_data', 'Start with ABC Data')))),
                                     h('button', { "aria-label": "Dismiss Welcome",
                                         onClick: () => { dismissWelcome(); handleToolOpen('homelog'); },
                                         className: 'flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95'
-                                    }, h('span', { className: 'text-lg' }, '👪'), h('div', { className: 'text-start' }, h('div', { className: 'text-xs font-black' }, t('behavior_lens.ui.parent') || 'Parent'), h('div', { className: 'text-[11px] text-indigo-200 font-medium' }, t('behavior_lens.ui.home_behavior_log') || 'Home Behavior Log'))),
+                                    }, h('span', { className: 'text-lg' }, '👪'), h('div', { className: 'text-start' }, h('div', { className: 'text-xs font-black' }, tt('behavior_lens.ui.parent', 'Parent')), h('div', { className: 'text-[11px] text-indigo-200 font-medium' }, tt('behavior_lens.ui.home_behavior_log', 'Home Behavior Log')))),
                                     h('button', { "aria-label": "Dismiss Welcome",
                                         onClick: () => { dismissWelcome(); handleToolOpen('abagraph'); },
                                         className: 'flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95'
-                                    }, h('span', { className: 'text-lg' }, '📊'), h('div', { className: 'text-start' }, h('div', { className: 'text-xs font-black' }, t('behavior_lens.ui.bcba_specialist') || 'BCBA / Specialist'), h('div', { className: 'text-[11px] text-indigo-200 font-medium' }, t('behavior_lens.ui.aba_graph_engine') || 'ABA Graph Engine')))
+                                    }, h('span', { className: 'text-lg' }, '📊'), h('div', { className: 'text-start' }, h('div', { className: 'text-xs font-black' }, tt('behavior_lens.ui.bcba_specialist', 'BCBA / Specialist')), h('div', { className: 'text-[11px] text-indigo-200 font-medium' }, tt('behavior_lens.ui.aba_graph_engine', 'ABA Graph Engine'))))
                                 ),
                                 h('button', { "aria-label": "Dismiss Welcome",
                                     onClick: () => { dismissWelcome(); handleToolOpen('pdpath'); },
                                     className: 'flex items-center gap-1.5 text-[11px] text-indigo-200 hover:text-white transition-colors font-medium'
-                                }, h('span', null, '🎓'), t('behavior_lens.ui.or_explore_the_pd_learning_path') || 'Or explore the PD Learning Path →')
+                                }, h('span', null, '🎓'), tt('behavior_lens.ui.or_explore_the_pd_learning_path', 'Or explore the PD Learning Path →'))
                             ),
                             // Quick-Start Onboarding Pathways
                             h('div', { className: 'mt-4 pt-4 border-t border-white/20' },
@@ -26463,7 +26532,7 @@ Analyze this data and return ONLY valid JSON:
                                 type: 'text',
                                 value: searchQuery,
                                 onChange: (e) => setSearchQuery(e.target.value),
-                                placeholder: t('behavior_lens.ph.search_81_tools') || '🔍  Search 80+ tools…',
+                                placeholder: tt('behavior_lens.ph.search_81_tools', '🔍  Search 80+ tools…'),
                                 'aria-label': 'Search BehaviorLens tools',
                                 className: 'w-full px-4 py-3 ps-10 bg-white rounded-xl border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm'
                             }),
@@ -26490,18 +26559,18 @@ Analyze this data and return ONLY valid JSON:
                             h('div', { className: 'flex items-center justify-between mb-3' },
                                 h('div', { className: 'flex items-center gap-2' },
                                     h('span', { className: 'text-white text-lg' }, '⚡'),
-                                    h('span', { className: 'text-white text-xs font-black uppercase tracking-wider' }, t('behavior_lens.hub.quick_launch') || 'Quick Launch')
+                                    h('span', { className: 'text-white text-xs font-black uppercase tracking-wider' }, tt('behavior_lens.hub.quick_launch', 'Quick Launch'))
                                 ),
-                                h('span', { className: 'text-indigo-200 text-[11px] font-medium' }, t('behavior_lens.hub.quick_launch_hint') || 'Core clinical tools — one tap access')
+                                h('span', { className: 'text-indigo-200 text-[11px] font-medium' }, tt('behavior_lens.hub.quick_launch_hint', 'Core clinical tools — one tap access'))
                             ),
                             h('div', { className: 'flex flex-wrap gap-2' },
                                 [
-                                    { id: 'wizard', icon: '🧭', label: t('behavior_lens.hub.wizard_title') || 'Tool Wizard', shortLabel: 'Tool Wizard', isWizard: true },
-                                    { id: 'abc', icon: '📝', label: t('behavior_lens.hub.abc_title') || 'ABC Data Collection', shortLabel: 'ABC Data' },
-                                    { id: 'abagraph', icon: '📊', label: t('behavior_lens.hub.abagraph_title') || 'ABA Graph Engine', shortLabel: 'JABA Graphs' },
-                                    { id: 'scdmanager', icon: '🔬', label: t('behavior_lens.hub.scdmanager_title') || 'SCD Manager', shortLabel: 'SCD Manager' },
-                                    { id: 'effectsize', icon: '📐', label: t('behavior_lens.hub.effectsize_title') || 'Effect Size Calculator', shortLabel: 'Effect Size' },
-                                    { id: 'hypothesis', icon: '🔗', label: t('behavior_lens.hub.hypothesis_title') || 'Hypothesis Diagram', shortLabel: 'Hypothesis' },
+                                    { id: 'wizard', icon: '🧭', label: tt('behavior_lens.hub.wizard_title', 'Tool Wizard'), shortLabel: 'Tool Wizard', isWizard: true },
+                                    { id: 'abc', icon: '📝', label: tt('behavior_lens.hub.abc_title', 'ABC Data Collection'), shortLabel: 'ABC Data' },
+                                    { id: 'abagraph', icon: '📊', label: tt('behavior_lens.hub.abagraph_title', 'ABA Graph Engine'), shortLabel: 'JABA Graphs' },
+                                    { id: 'scdmanager', icon: '🔬', label: tt('behavior_lens.hub.scdmanager_title', 'SCD Manager'), shortLabel: 'SCD Manager' },
+                                    { id: 'effectsize', icon: '📐', label: tt('behavior_lens.hub.effectsize_title', 'Effect Size Calculator'), shortLabel: 'Effect Size' },
+                                    { id: 'hypothesis', icon: '🔗', label: tt('behavior_lens.hub.hypothesis_title', 'Hypothesis Diagram'), shortLabel: 'Hypothesis' },
                                 ].map(q => h('button', { "aria-label": "Tool Open",
                                     key: 'ql-' + q.id,
                                     onClick: () => handleToolOpen(q.id),
@@ -26515,18 +26584,18 @@ Analyze this data and return ONLY valid JSON:
                         h('div', { className: 'flex flex-wrap items-center gap-2' },
                             h('button', { onClick: handleSaveWorkspace,
                                 className: `flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataChangedSinceSave ? 'bg-amber-50 border-2 border-amber-600 text-amber-700 hover:bg-amber-100 animate-pulse' : 'bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100'}`
-                            }, dataChangedSinceSave ? '🔴 ' : '💾 ', t('behavior_lens.hub.save_workspace') || 'Save Workspace'),
+                            }, dataChangedSinceSave ? '🔴 ' : '💾 ', tt('behavior_lens.hub.save_workspace', 'Save Workspace')),
                             h('button', { "aria-label": "Tool Open",
                                 onClick: () => fileInputRef.current?.click(),
                                 className: 'flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all'
-                            }, '📂 ', t('behavior_lens.hub.load_workspace') || 'Load Workspace'),
+                            }, '📂 ', tt('behavior_lens.hub.load_workspace', 'Load Workspace')),
                             h('input', { ref: fileInputRef, type: 'file', accept: '.json', onChange: handleLoadWorkspace, className: 'hidden' }),
                             lastSavedAt && h('span', { className: 'text-[11px] text-slate-600 italic' }, `Last saved: ${new Date(lastSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`)
                         ),
 
                         // ── Favorites Bar ──
                         favTools.length > 0 && h('div', { className: 'bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl border border-yellow-200 p-3' },
-                            h('div', { className: 'text-[11px] font-black text-yellow-600 uppercase tracking-wider mb-2' }, '⭐ ', t('behavior_lens.hub.favorites') || 'Favorites'),
+                            h('div', { className: 'text-[11px] font-black text-yellow-600 uppercase tracking-wider mb-2' }, '⭐ ', tt('behavior_lens.hub.favorites', 'Favorites')),
                             h('div', { className: 'flex flex-wrap gap-2' },
                                 favTools.map(tool => h('button', { "aria-label": "Tool Open",
                                     key: 'fav-' + tool.id,
@@ -26552,21 +26621,21 @@ Analyze this data and return ONLY valid JSON:
                             h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
                                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                                     h('div', { className: 'text-lg font-black text-indigo-600' }, abcEntries.length),
-                                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, t('behavior_lens.hub.abc_entries') || 'ABC Entries')
+                                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, tt('behavior_lens.hub.abc_entries', 'ABC Entries'))
                                 ),
                                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                                     h('div', { className: 'text-lg font-black text-emerald-600' }, observationSessions.length),
-                                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, t('behavior_lens.hub.observations') || 'Observations')
+                                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, tt('behavior_lens.hub.observations', 'Observations'))
                                 ),
                                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                                     h('div', { className: 'text-lg font-black text-amber-600' }, sessionNotes.length),
-                                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, t('behavior_lens.hub.notes') || 'Notes')
+                                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, tt('behavior_lens.hub.notes', 'Notes'))
                                 ),
                                 h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },
                                     h('div', { className: 'text-lg font-black text-purple-600' },
                                         abcEntries.length > 0 ? (abcEntries.reduce((s, e) => s + (e.intensity || 3), 0) / abcEntries.length).toFixed(1) : '—'
                                     ),
-                                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, t('behavior_lens.hub.avg_intensity') || 'Avg Intensity')
+                                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, tt('behavior_lens.hub.avg_intensity', 'Avg Intensity'))
                                 )
                             )
                         ),
@@ -26595,7 +26664,7 @@ Analyze this data and return ONLY valid JSON:
 
                         // ── Smart Recommendations ──
                         recs.length > 0 && h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-3' },
-                            h('div', { className: 'text-[11px] font-black text-emerald-600 uppercase tracking-wider mb-2' }, '💡 ', t('behavior_lens.hub.recommended_next') || 'Recommended Next Steps'),
+                            h('div', { className: 'text-[11px] font-black text-emerald-600 uppercase tracking-wider mb-2' }, '💡 ', tt('behavior_lens.hub.recommended_next', 'Recommended Next Steps')),
                             h('div', { className: 'flex flex-wrap gap-2' },
                                 recs.slice(0, 3).map((r, i) => h('button', { "aria-label": "Tool Open",
                                     key: 'rec-' + i,
@@ -26643,11 +26712,11 @@ Analyze this data and return ONLY valid JSON:
                         h('div', { className: 'flex flex-wrap items-center gap-2 pt-2' },
                             h('button', { onClick: handleSaveWorkspace,
                                 className: `flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataChangedSinceSave ? 'bg-amber-50 border-2 border-amber-600 text-amber-700 hover:bg-amber-100 animate-pulse' : 'bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100'}`
-                            }, dataChangedSinceSave ? '🔴 ' : '💾 ', t('behavior_lens.hub.save_workspace') || 'Save Workspace'),
+                            }, dataChangedSinceSave ? '🔴 ' : '💾 ', tt('behavior_lens.hub.save_workspace', 'Save Workspace')),
                             h('button', { "aria-label": "Toggle ai analysis",
                                 onClick: () => fileInputRef.current?.click(),
                                 className: 'flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all'
-                            }, '📂 ', t('behavior_lens.hub.load_workspace') || 'Load Workspace'),
+                            }, '📂 ', tt('behavior_lens.hub.load_workspace', 'Load Workspace')),
                             h('input', { ref: fileInputRef, type: 'file', accept: '.json', onChange: handleLoadWorkspace, className: 'hidden' }),
                             h('input', { ref: compareFileInputRef, type: 'file', accept: '.json', multiple: true, onChange: handleLoadComparisonFiles, className: 'hidden' }),
                             lastSavedAt && h('span', { className: 'text-[11px] text-slate-600 italic' }, `Last saved: ${new Date(lastSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`)
@@ -26657,7 +26726,7 @@ Analyze this data and return ONLY valid JSON:
                 // AI Analysis results
                 aiAnalysis && h('div', { className: 'mt-6 bg-white rounded-xl border border-purple-200 p-5 shadow-sm animate-in slide-in-from-bottom-4 duration-300' },
                     h('div', { className: 'flex items-center justify-between mb-4' },
-                        h('h3', { className: 'text-lg font-black text-slate-800 flex items-center gap-2' }, '🧠 ', t('behavior_lens.analysis.title_v2') || 'AI-Assisted Analysis'),
+                        h('h3', { className: 'text-lg font-black text-slate-800 flex items-center gap-2' }, '🧠 ', tt('behavior_lens.analysis.title_v2', 'AI-Assisted Analysis')),
                         h('button', { "aria-label": "Toggle ai analysis",
                             onClick: () => setAiAnalysis(null),
                             className: 'text-xs text-slate-600 hover:text-slate-600 p-1'
@@ -26684,7 +26753,7 @@ Analyze this data and return ONLY valid JSON:
                         },
                             h('div', null,
                                 h('div', { className: 'text-xs font-bold uppercase tracking-wide', style: { color: fc.text } },
-                                    t('behavior_lens.analysis.hypothesized_function') || 'Hypothesized Function'
+                                    tt('behavior_lens.analysis.hypothesized_function', 'Hypothesized Function')
                                 ),
                                 h('div', { className: 'text-lg font-black mt-0.5', style: { color: fc.text } },
                                     fc.emoji, ' ', aiAnalysis.hypothesizedFunction
@@ -26692,13 +26761,13 @@ Analyze this data and return ONLY valid JSON:
                             ),
                             h('div', { className: 'text-end', title: 'Heuristic AI estimate — not a clinical conclusion' },
                                 h('div', { className: 'text-xl font-black', style: { color: fc.text } }, aiConfidenceBucket(aiAnalysis.confidence).label),
-                                h('div', { className: 'text-[11px] font-bold', style: { color: fc.text } }, t('behavior_lens.analysis.ai_estimate') || 'AI estimate')
+                                h('div', { className: 'text-[11px] font-bold', style: { color: fc.text } }, tt('behavior_lens.analysis.ai_estimate', 'AI estimate'))
                             )
                         );
                     })(),
                     // Patterns
                     aiAnalysis.patterns && aiAnalysis.patterns.length > 0 && h('div', { className: 'mb-4' },
-                        h('h4', { className: 'text-xs font-bold text-slate-600 uppercase mb-2' }, '📊 ', t('behavior_lens.analysis.patterns') || 'Patterns Identified'),
+                        h('h4', { className: 'text-xs font-bold text-slate-600 uppercase mb-2' }, '📊 ', tt('behavior_lens.analysis.patterns', 'Patterns Identified')),
                         h('div', { className: 'space-y-2' },
                             aiAnalysis.patterns.map((p, i) =>
                                 h('div', { key: i, className: 'text-xs p-3 bg-slate-50 rounded-lg border border-slate-100' },
@@ -26710,7 +26779,7 @@ Analyze this data and return ONLY valid JSON:
                     ),
                     // Recommendations
                     aiAnalysis.recommendations && aiAnalysis.recommendations.length > 0 && h('div', null,
-                        h('h4', { className: 'text-xs font-bold text-slate-600 uppercase mb-2' }, '💡 ', t('behavior_lens.analysis.recommendations') || 'Recommendations'),
+                        h('h4', { className: 'text-xs font-bold text-slate-600 uppercase mb-2' }, '💡 ', tt('behavior_lens.analysis.recommendations', 'Recommendations')),
                         h('ul', { className: 'space-y-1.5' },
                             aiAnalysis.recommendations.map((rec, i) =>
                                 h('li', { key: i, className: 'text-xs text-slate-600 flex items-start gap-2' },
@@ -26724,7 +26793,7 @@ Analyze this data and return ONLY valid JSON:
                 // Recent observation sessions
                 observationSessions.length > 0 && h('div', { className: 'mt-6 bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
                     h('h3', { className: 'text-sm font-black text-slate-800 mb-3' },
-                        '📊 ', t('behavior_lens.hub.recent_sessions') || 'Recent Observation Sessions'
+                        '📊 ', tt('behavior_lens.hub.recent_sessions', 'Recent Observation Sessions')
                     ),
                     h('div', { className: 'space-y-2' },
                         observationSessions.slice(0, 5).map(session =>
@@ -26748,7 +26817,7 @@ Analyze this data and return ONLY valid JSON:
                 !selectedStudent && h('div', { className: 'mt-6 text-center py-8 bg-amber-50 rounded-xl border border-amber-200' },
                     h('div', { className: 'text-3xl mb-2' }, '👆'),
                     h('p', { className: 'text-sm font-bold text-amber-700' },
-                        t('behavior_lens.hub.select_student_first') || 'Select a student above to get started'
+                        tt('behavior_lens.hub.select_student_first', 'Select a student above to get started')
                     )
                 )
             );
@@ -26771,63 +26840,63 @@ Analyze this data and return ONLY valid JSON:
                         ),
                         h('div', null,
                             h('h2', { className: 'text-xl font-black text-slate-800' },
-                                t('behavior_lens.title') || 'BehaviorLens'
+                                tt('behavior_lens.title', 'BehaviorLens')
                             ),
                             h('p', { className: 'text-xs text-slate-600' },
                                 ({
-                                    hub: t('behavior_lens.subtitle') || 'Behavioral Observation & Analysis',
-                                    abc: DualLabel(t('behavior_lens.abc.title') || 'ABC Data Collection'),
-                                    overview: t('behavior_lens.overview.title') || 'Behavior Overview',
-                                    token: DualLabel(t('behavior_lens.token.title') || 'Token Board'),
-                                    hotspot: t('behavior_lens.hotspot.title') || 'Routine Hotspot Matrix',
-                                    export: t('behavior_lens.export.title') || 'Export Reports',
-                                    record: t('behavior_lens.record.title') || 'Record Review',
-                                    hypothesis: t('behavior_lens.hypothesis.title') || 'Hypothesis Diagram',
-                                    goals: t('behavior_lens.goals.title') || 'SMART Goal Builder',
-                                    contract: DualLabel(t('behavior_lens.contract.title') || 'Behavior Contract'),
-                                    cycle: DualLabel(t('behavior_lens.cycle.title') || 'Escalation Cycle'),
-                                    reinforcer: DualLabel(t('behavior_lens.reinforcer.title') || 'Reinforcer Assessment'),
-                                    audit: t('behavior_lens.audit.title') || 'Environment Audit',
-                                    triangulation: t('behavior_lens.triangulation.title') || 'Data Triangulation',
-                                    impact: t('behavior_lens.impact.title') || 'Impact Calculator',
-                                    crisis: t('behavior_lens.crisis.title') || 'Crisis Plan',
-                                    traffic: t('behavior_lens.traffic.title') || 'Traffic Light',
-                                    datasheet: t('behavior_lens.datasheet.title') || 'Data Sheet Generator',
-                                    homenote: t('behavior_lens.homenote.title') || 'Home Note',
-                                    fidelity: t('behavior_lens.fidelity.title') || 'Fidelity Checklist',
-                                    feasibility: t('behavior_lens.feasibility.title') || 'Feasibility Check',
-                                    gas: t('behavior_lens.gas.title') || 'GAS Rubric',
-                                    pocket: t('behavior_lens.pocket.title') || 'Pocket BIP',
-                                    abaguide: t('behavior_lens.abaguide.title') || 'ABA Quick Guide',
-                                    counseling: DualLabel(t('behavior_lens.counseling.title') || 'Counseling Simulation'),
-                                    snapshot: t('behavior_lens.snapshot.title') || 'Student Snapshot Exchange',
-                                    consent: t('behavior_lens.consent.title') || 'FERPA Consent Manager',
-                                    homelog: t('behavior_lens.homelog.title') || 'Home Behavior Log',
-                                    selfcheck: t('behavior_lens.selfcheck.title') || 'Student Self-Check',
-                                    intervention: t('behavior_lens.hub.intervention_title') || 'Intervention Plan',
-                                    progress: t('behavior_lens.hub.progress_title') || 'Progress Narrative',
-                                    sandbox: t('behavior_lens.hub.sandbox_title') || 'Practice Sandbox',
-                                    glossary: t('behavior_lens.hub.glossary_title') || 'ABA Concept Glossary',
-                                    fbaworkflow: t('behavior_lens.hub.fbaworkflow_title') || 'FBA Workflow Guide',
-                                    qualitycheck: t('behavior_lens.hub.qualitycheck_title') || 'Data Quality Check',
-                                    trends: t('behavior_lens.hub.trends_title') || 'Trend Dashboard',
-                                    teamnotes: t('behavior_lens.hub.teamnotes_title') || 'Team Notes',
-                                    iepprep: t('behavior_lens.hub.iepprep_title') || 'IEP Meeting Prep',
-                                    predict: t('behavior_lens.hub.predict_title') || 'Predictive Insights',
-                                    gamify: t('behavior_lens.hub.gamify_title') || 'My Progress Quest',
-                                    cultural: t('behavior_lens.hub.cultural_title') || 'Cultural Context Reflection',
-                                    reframe: t('behavior_lens.hub.reframe_title') || 'Strength-Based Reframe',
-                                    biascheck: DualLabel(t('behavior_lens.hub.biascheck_title') || 'Bias Reflection Monitor'),
-                                    restorative: t('behavior_lens.hub.restorative_title') || 'Restorative Conversation Guide',
-                                    relmap: t('behavior_lens.hub.relmap_title') || 'Relationship Map',
-                                    familyvoice: t('behavior_lens.hub.familyvoice_title') || 'Family Voice',
-                                    commlog: t('behavior_lens.hub.commlog_title') || 'Communication Log',
-                                    deescalate: DualLabel(t('behavior_lens.hub.deescalate_title') || 'De-escalation Toolkit'),
-                                    replacebehavior: DualLabel(t('behavior_lens.hub.replacebehavior_title') || 'Replacement Behavior Planner'),
-                                    reinforcement: DualLabel(t('behavior_lens.hub.reinforcement_title') || 'Reinforcement Inventory'),
-                                    antecedentmod: DualLabel(t('behavior_lens.hub.antecedentmod_title') || 'Antecedent Modification Planner'),
-                                    sessionnotes: t('behavior_lens.hub.sessionnotes_title') || 'Session Notes',
-                                    alloBotChat: t('behavior_lens.allobot_chat.title') || 'Ask AlloBot',
+                                    hub: tt('behavior_lens.subtitle', 'Behavioral Observation & Analysis'),
+                                    abc: DualLabel(tt('behavior_lens.abc.title', 'ABC Data Collection')),
+                                    overview: tt('behavior_lens.overview.title', 'Behavior Overview'),
+                                    token: DualLabel(tt('behavior_lens.token.title', 'Token Board')),
+                                    hotspot: tt('behavior_lens.hotspot.title', 'Routine Hotspot Matrix'),
+                                    export: tt('behavior_lens.export.title', 'Export Reports'),
+                                    record: tt('behavior_lens.record.title', 'Record Review'),
+                                    hypothesis: tt('behavior_lens.hypothesis.title', 'Hypothesis Diagram'),
+                                    goals: tt('behavior_lens.goals.title', 'SMART Goal Builder'),
+                                    contract: DualLabel(tt('behavior_lens.contract.title', 'Behavior Contract')),
+                                    cycle: DualLabel(tt('behavior_lens.cycle.title', 'Escalation Cycle')),
+                                    reinforcer: DualLabel(tt('behavior_lens.reinforcer.title', 'Reinforcer Assessment')),
+                                    audit: tt('behavior_lens.audit.title', 'Environment Audit'),
+                                    triangulation: tt('behavior_lens.triangulation.title', 'Data Triangulation'),
+                                    impact: tt('behavior_lens.impact.title', 'Impact Calculator'),
+                                    crisis: tt('behavior_lens.crisis.title', 'Crisis Plan'),
+                                    traffic: tt('behavior_lens.traffic.title', 'Traffic Light'),
+                                    datasheet: tt('behavior_lens.datasheet.title', 'Data Sheet Generator'),
+                                    homenote: tt('behavior_lens.homenote.title', 'Home Note'),
+                                    fidelity: tt('behavior_lens.fidelity.title', 'Fidelity Checklist'),
+                                    feasibility: tt('behavior_lens.feasibility.title', 'Feasibility Check'),
+                                    gas: tt('behavior_lens.gas.title', 'GAS Rubric'),
+                                    pocket: tt('behavior_lens.pocket.title', 'Pocket BIP'),
+                                    abaguide: tt('behavior_lens.abaguide.title', 'ABA Quick Guide'),
+                                    counseling: DualLabel(tt('behavior_lens.counseling.title', 'Counseling Simulation')),
+                                    snapshot: tt('behavior_lens.snapshot.title', 'Student Snapshot Exchange'),
+                                    consent: tt('behavior_lens.consent.title', 'FERPA Consent Manager'),
+                                    homelog: tt('behavior_lens.homelog.title', 'Home Behavior Log'),
+                                    selfcheck: tt('behavior_lens.selfcheck.title', 'Student Self-Check'),
+                                    intervention: tt('behavior_lens.hub.intervention_title', 'Intervention Plan'),
+                                    progress: tt('behavior_lens.hub.progress_title', 'Progress Narrative'),
+                                    sandbox: tt('behavior_lens.hub.sandbox_title', 'Practice Sandbox'),
+                                    glossary: tt('behavior_lens.hub.glossary_title', 'ABA Concept Glossary'),
+                                    fbaworkflow: tt('behavior_lens.hub.fbaworkflow_title', 'FBA Workflow Guide'),
+                                    qualitycheck: tt('behavior_lens.hub.qualitycheck_title', 'Data Quality Check'),
+                                    trends: tt('behavior_lens.hub.trends_title', 'Trend Dashboard'),
+                                    teamnotes: tt('behavior_lens.hub.teamnotes_title', 'Team Notes'),
+                                    iepprep: tt('behavior_lens.hub.iepprep_title', 'IEP Meeting Prep'),
+                                    predict: tt('behavior_lens.hub.predict_title', 'Predictive Insights'),
+                                    gamify: tt('behavior_lens.hub.gamify_title', 'My Progress Quest'),
+                                    cultural: tt('behavior_lens.hub.cultural_title', 'Cultural Context Reflection'),
+                                    reframe: tt('behavior_lens.hub.reframe_title', 'Strength-Based Reframe'),
+                                    biascheck: DualLabel(tt('behavior_lens.hub.biascheck_title', 'Bias Reflection Monitor')),
+                                    restorative: tt('behavior_lens.hub.restorative_title', 'Restorative Conversation Guide'),
+                                    relmap: tt('behavior_lens.hub.relmap_title', 'Relationship Map'),
+                                    familyvoice: tt('behavior_lens.hub.familyvoice_title', 'Family Voice'),
+                                    commlog: tt('behavior_lens.hub.commlog_title', 'Communication Log'),
+                                    deescalate: DualLabel(tt('behavior_lens.hub.deescalate_title', 'De-escalation Toolkit')),
+                                    replacebehavior: DualLabel(tt('behavior_lens.hub.replacebehavior_title', 'Replacement Behavior Planner')),
+                                    reinforcement: DualLabel(tt('behavior_lens.hub.reinforcement_title', 'Reinforcement Inventory')),
+                                    antecedentmod: DualLabel(tt('behavior_lens.hub.antecedentmod_title', 'Antecedent Modification Planner')),
+                                    sessionnotes: tt('behavior_lens.hub.sessionnotes_title', 'Session Notes'),
+                                    alloBotChat: tt('behavior_lens.allobot_chat.title', 'Ask AlloBot'),
                                     skilltracker: 'Skill Tracker & Mentorship',
                                     heatmap: 'Behavior Timeline Heatmap',
                                 })[activePanel] || ''
@@ -26857,7 +26926,7 @@ Analyze this data and return ONLY valid JSON:
                         ),
                         isCanvasEnv && h('div', {
                             className: 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border bg-slate-50 border-slate-200 text-slate-600',
-                            title: (t('behavior_lens.raw.canvas_environment_local_storage_only') || 'Canvas environment — local storage only')
+                            title: (tt('behavior_lens.raw.canvas_environment_local_storage_only', 'Canvas environment — local storage only'))
                         }, '💾 Local only'),
                         // ─── AI consent toggle (FERPA gate for Gemini API) ──
                         h('button', {
@@ -26866,15 +26935,15 @@ Analyze this data and return ONLY valid JSON:
                             onClick: () => {
                                 if (aiConsent) {
                                     setAiConsent(false);
-                                    if (addToast) addToast(t('behavior_lens.toast.ai_turned_off') || '🤖 AI turned OFF — no student data will be sent to Gemini', 'info');
+                                    if (addToast) addToast(tt('behavior_lens.toast.ai_turned_off', '🤖 AI turned OFF — no student data will be sent to Gemini'), 'info');
                                 } else {
                                     setShowAiConsentModal(true);
                                 }
                             },
                             className: `flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all ${aiConsent ? 'bg-emerald-50 border-emerald-400 text-emerald-700 hover:bg-emerald-100' : 'bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100'}`,
                             title: aiConsent
-                                ? (t('behavior_lens.ai.toggle_title_on') || 'AI ON — student data is sent to Gemini for analysis. Click to turn off.')
-                                : (t('behavior_lens.ai.toggle_title_off') || 'AI OFF — no student data leaves this browser. Click to enable.')
+                                ? (tt('behavior_lens.ai.toggle_title_on', 'AI ON — student data is sent to Gemini for analysis. Click to turn off.'))
+                                : (tt('behavior_lens.ai.toggle_title_off', 'AI OFF — no student data leaves this browser. Click to enable.'))
                         }, aiConsent ? '🤖 AI: ON' : '🤖 AI: OFF'),
                         // Parent Mode toggle
                         activePanel === 'hub' && h('button', { "aria-label": "Toggle is parent mode",
@@ -26882,7 +26951,7 @@ Analyze this data and return ONLY valid JSON:
                             className: `px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${isParentMode
                                 ? 'bg-blue-700 text-white border-blue-500 shadow-md'
                                 : 'bg-white text-slate-600 border-slate-200 hover:border-blue-600 hover:text-blue-500'}`
-                        }, isParentMode ? '👨‍👩‍👧 ' + (t('behavior_lens.family_mode') || 'Family Mode') : '👨‍👩‍👧 ' + (t('behavior_lens.family') || 'Family')),
+                        }, isParentMode ? '👨‍👩‍👧 ' + (tt('behavior_lens.family_mode', 'Family Mode')) : '👨‍👩‍👧 ' + (tt('behavior_lens.family', 'Family'))),
                         // Per-tool export button (all non-hub panels)
                         activePanel !== 'hub' && h('div', { className: 'relative' },
                             h('button', { "aria-label": "Toggle show export menu",
@@ -27499,57 +27568,57 @@ Analyze this data and return ONLY valid JSON:
                     if (activePanel === 'hub') return null;
                     const relatedToolsMap = {
                         abc: [
-                            { id: 'hypothesis', icon: '🔗', label: (t('behavior_lens.raw.hypothesis_diagram') || 'Hypothesis Diagram') },
-                            { id: 'condprob', icon: '📐', label: (t('behavior_lens.raw.conditional_probability') || 'Conditional Probability') },
-                            { id: 'nlabc', icon: '✏️', label: (t('behavior_lens.raw.natural_language_abc') || 'Natural Language ABC') },
-                            { id: 'analysis', icon: '🧠', label: (t('behavior_lens.raw.ai_analysis') || 'AI Analysis') },
-                            { id: 'trends', icon: '📊', label: (t('behavior_lens.raw.trend_dashboard') || 'Trend Dashboard') },
-                            { id: 'scatterplot', icon: '📅', label: (t('behavior_lens.raw.scatterplot') || 'Scatterplot') },
+                            { id: 'hypothesis', icon: '🔗', label: (tt('behavior_lens.raw.hypothesis_diagram', 'Hypothesis Diagram')) },
+                            { id: 'condprob', icon: '📐', label: (tt('behavior_lens.raw.conditional_probability', 'Conditional Probability')) },
+                            { id: 'nlabc', icon: '✏️', label: (tt('behavior_lens.raw.natural_language_abc', 'Natural Language ABC')) },
+                            { id: 'analysis', icon: '🧠', label: (tt('behavior_lens.raw.ai_analysis', 'AI Analysis')) },
+                            { id: 'trends', icon: '📊', label: (tt('behavior_lens.raw.trend_dashboard', 'Trend Dashboard')) },
+                            { id: 'scatterplot', icon: '📅', label: (tt('behavior_lens.raw.scatterplot', 'Scatterplot')) },
                         ],
                         analysis: [
-                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
-                            { id: 'hypothesis', icon: '🔗', label: (t('behavior_lens.raw.hypothesis_diagram') || 'Hypothesis Diagram') },
-                            { id: 'iepgoals', icon: '📄', label: (t('behavior_lens.raw.iep_goals') || 'IEP Goals') },
-                            { id: 'intervention', icon: '📋', label: (t('behavior_lens.raw.intervention_plan') || 'Intervention Plan') },
+                            { id: 'abc', icon: '📋', label: (tt('behavior_lens.raw.abc_data', 'ABC Data')) },
+                            { id: 'hypothesis', icon: '🔗', label: (tt('behavior_lens.raw.hypothesis_diagram', 'Hypothesis Diagram')) },
+                            { id: 'iepgoals', icon: '📄', label: (tt('behavior_lens.raw.iep_goals', 'IEP Goals')) },
+                            { id: 'intervention', icon: '📋', label: (tt('behavior_lens.raw.intervention_plan', 'Intervention Plan')) },
                         ],
                         hypothesis: [
-                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
-                            { id: 'condprob', icon: '📐', label: (t('behavior_lens.raw.conditional_probability') || 'Conditional Probability') },
-                            { id: 'analysis', icon: '🧠', label: (t('behavior_lens.raw.ai_analysis') || 'AI Analysis') },
-                            { id: 'replacebehavior', icon: '🔄', label: (t('behavior_lens.raw.replacement_behavior') || 'Replacement Behavior') },
+                            { id: 'abc', icon: '📋', label: (tt('behavior_lens.raw.abc_data', 'ABC Data')) },
+                            { id: 'condprob', icon: '📐', label: (tt('behavior_lens.raw.conditional_probability', 'Conditional Probability')) },
+                            { id: 'analysis', icon: '🧠', label: (tt('behavior_lens.raw.ai_analysis', 'AI Analysis')) },
+                            { id: 'replacebehavior', icon: '🔄', label: (tt('behavior_lens.raw.replacement_behavior', 'Replacement Behavior')) },
                         ],
                         sessiontracker: [
-                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
-                            { id: 'cumrecord', icon: '📈', label: (t('behavior_lens.raw.cumulative_record') || 'Cumulative Record') },
-                            { id: 'trends', icon: '📊', label: (t('behavior_lens.raw.trend_dashboard') || 'Trend Dashboard') },
-                            { id: 'effectsize', icon: '📐', label: (t('behavior_lens.raw.effect_size') || 'Effect Size') },
+                            { id: 'abagraph', icon: '📈', label: (tt('behavior_lens.raw.aba_graph_engine', 'ABA Graph Engine')) },
+                            { id: 'cumrecord', icon: '📈', label: (tt('behavior_lens.raw.cumulative_record', 'Cumulative Record')) },
+                            { id: 'trends', icon: '📊', label: (tt('behavior_lens.raw.trend_dashboard', 'Trend Dashboard')) },
+                            { id: 'effectsize', icon: '📐', label: (tt('behavior_lens.raw.effect_size', 'Effect Size')) },
                         ],
                         abagraph: [
-                            { id: 'sessiontracker', icon: '📋', label: (t('behavior_lens.raw.session_tracker') || 'Session Tracker') },
-                            { id: 'effectsize', icon: '📐', label: (t('behavior_lens.raw.effect_size') || 'Effect Size') },
-                            { id: 'scdmanager', icon: '🔬', label: (t('behavior_lens.raw.scd_manager') || 'SCD Manager') },
-                            { id: 'iepprep', icon: '📄', label: (t('behavior_lens.raw.iep_prep') || 'IEP Prep') },
-                            { id: 'progressreport', icon: '📊', label: (t('behavior_lens.raw.progress_reports') || 'Progress Reports') },
+                            { id: 'sessiontracker', icon: '📋', label: (tt('behavior_lens.raw.session_tracker', 'Session Tracker')) },
+                            { id: 'effectsize', icon: '📐', label: (tt('behavior_lens.raw.effect_size', 'Effect Size')) },
+                            { id: 'scdmanager', icon: '🔬', label: (tt('behavior_lens.raw.scd_manager', 'SCD Manager')) },
+                            { id: 'iepprep', icon: '📄', label: (tt('behavior_lens.raw.iep_prep', 'IEP Prep')) },
+                            { id: 'progressreport', icon: '📊', label: (tt('behavior_lens.raw.progress_reports', 'Progress Reports')) },
                         ],
                         scdmanager: [
-                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
-                            { id: 'effectsize', icon: '📐', label: (t('behavior_lens.raw.effect_size') || 'Effect Size') },
-                            { id: 'sessiontracker', icon: '📋', label: (t('behavior_lens.raw.session_tracker') || 'Session Tracker') },
+                            { id: 'abagraph', icon: '📈', label: (tt('behavior_lens.raw.aba_graph_engine', 'ABA Graph Engine')) },
+                            { id: 'effectsize', icon: '📐', label: (tt('behavior_lens.raw.effect_size', 'Effect Size')) },
+                            { id: 'sessiontracker', icon: '📋', label: (tt('behavior_lens.raw.session_tracker', 'Session Tracker')) },
                         ],
                         effectsize: [
-                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
-                            { id: 'scdmanager', icon: '🔬', label: (t('behavior_lens.raw.scd_manager') || 'SCD Manager') },
-                            { id: 'progressreport', icon: '📊', label: (t('behavior_lens.raw.progress_reports') || 'Progress Reports') },
+                            { id: 'abagraph', icon: '📈', label: (tt('behavior_lens.raw.aba_graph_engine', 'ABA Graph Engine')) },
+                            { id: 'scdmanager', icon: '🔬', label: (tt('behavior_lens.raw.scd_manager', 'SCD Manager')) },
+                            { id: 'progressreport', icon: '📊', label: (tt('behavior_lens.raw.progress_reports', 'Progress Reports')) },
                         ],
                         condprob: [
-                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
-                            { id: 'hypothesis', icon: '🔗', label: (t('behavior_lens.raw.hypothesis_diagram') || 'Hypothesis Diagram') },
-                            { id: 'scatterplot', icon: '📅', label: (t('behavior_lens.raw.scatterplot') || 'Scatterplot') },
+                            { id: 'abc', icon: '📋', label: (tt('behavior_lens.raw.abc_data', 'ABC Data')) },
+                            { id: 'hypothesis', icon: '🔗', label: (tt('behavior_lens.raw.hypothesis_diagram', 'Hypothesis Diagram')) },
+                            { id: 'scatterplot', icon: '📅', label: (tt('behavior_lens.raw.scatterplot', 'Scatterplot')) },
                         ],
                         scatterplot: [
-                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
-                            { id: 'condprob', icon: '📐', label: (t('behavior_lens.raw.conditional_probability') || 'Conditional Probability') },
-                            { id: 'hotspot', icon: '🗓️', label: (t('behavior_lens.raw.hotspot_matrix') || 'Hotspot Matrix') },
+                            { id: 'abc', icon: '📋', label: (tt('behavior_lens.raw.abc_data', 'ABC Data')) },
+                            { id: 'condprob', icon: '📐', label: (tt('behavior_lens.raw.conditional_probability', 'Conditional Probability')) },
+                            { id: 'hotspot', icon: '🗓️', label: (tt('behavior_lens.raw.hotspot_matrix', 'Hotspot Matrix')) },
                         ],
                         opdef: [
                             { id: 'abc', icon: '📋', label: 'ABC Data' },
@@ -28007,135 +28076,135 @@ Analyze this data and return ONLY valid JSON:
                             { id: 'progressmonitor', icon: '📈', label: 'Progress Monitor' },
                         ],
                         trends: [
-                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
-                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
-                            { id: 'predict', icon: '🔮', label: (t('behavior_lens.raw.predictive_insights') || 'Predictive Insights') },
+                            { id: 'abc', icon: '📋', label: (tt('behavior_lens.raw.abc_data', 'ABC Data')) },
+                            { id: 'abagraph', icon: '📈', label: (tt('behavior_lens.raw.aba_graph_engine', 'ABA Graph Engine')) },
+                            { id: 'predict', icon: '🔮', label: (tt('behavior_lens.raw.predictive_insights', 'Predictive Insights')) },
                         ],
                         latency: [
-                            { id: 'sessiontracker', icon: '📋', label: (t('behavior_lens.raw.session_tracker') || 'Session Tracker') },
-                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
+                            { id: 'sessiontracker', icon: '📋', label: (tt('behavior_lens.raw.session_tracker', 'Session Tracker')) },
+                            { id: 'abagraph', icon: '📈', label: (tt('behavior_lens.raw.aba_graph_engine', 'ABA Graph Engine')) },
                         ],
                         iepgoals: [
-                            { id: 'goals', icon: '🎯', label: (t('behavior_lens.raw.smart_goals') || 'SMART Goals') },
-                            { id: 'progressreport', icon: '📊', label: (t('behavior_lens.raw.progress_reports') || 'Progress Reports') },
-                            { id: 'iepprep', icon: '📄', label: (t('behavior_lens.raw.iep_prep') || 'IEP Prep') },
+                            { id: 'goals', icon: '🎯', label: (tt('behavior_lens.raw.smart_goals', 'SMART Goals')) },
+                            { id: 'progressreport', icon: '📊', label: (tt('behavior_lens.raw.progress_reports', 'Progress Reports')) },
+                            { id: 'iepprep', icon: '📄', label: (tt('behavior_lens.raw.iep_prep', 'IEP Prep')) },
                         ],
                         goals: [
-                            { id: 'iepgoals', icon: '📄', label: (t('behavior_lens.raw.iep_goal_generator') || 'IEP Goal Generator') },
-                            { id: 'contract', icon: '📜', label: (t('behavior_lens.raw.behavior_contract') || 'Behavior Contract') },
-                            { id: 'intervention', icon: '📋', label: (t('behavior_lens.raw.intervention_plan') || 'Intervention Plan') },
-                            { id: 'gas', icon: '📐', label: (t('behavior_lens.raw.gas_rubric') || 'GAS Rubric') },
+                            { id: 'iepgoals', icon: '📄', label: (tt('behavior_lens.raw.iep_goal_generator', 'IEP Goal Generator')) },
+                            { id: 'contract', icon: '📜', label: (tt('behavior_lens.raw.behavior_contract', 'Behavior Contract')) },
+                            { id: 'intervention', icon: '📋', label: (tt('behavior_lens.raw.intervention_plan', 'Intervention Plan')) },
+                            { id: 'gas', icon: '📐', label: (tt('behavior_lens.raw.gas_rubric', 'GAS Rubric')) },
                         ],
                         iepprep: [
-                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
-                            { id: 'iepgoals', icon: '📄', label: (t('behavior_lens.raw.iep_goals') || 'IEP Goals') },
-                            { id: 'progress', icon: '📈', label: (t('behavior_lens.raw.progress_narrative') || 'Progress Narrative') },
-                            { id: 'bcbahandoff', icon: '📊', label: (t('behavior_lens.raw.bcba_consultation') || 'BCBA Consultation') },
+                            { id: 'abagraph', icon: '📈', label: (tt('behavior_lens.raw.aba_graph_engine', 'ABA Graph Engine')) },
+                            { id: 'iepgoals', icon: '📄', label: (tt('behavior_lens.raw.iep_goals', 'IEP Goals')) },
+                            { id: 'progress', icon: '📈', label: (tt('behavior_lens.raw.progress_narrative', 'Progress Narrative')) },
+                            { id: 'bcbahandoff', icon: '📊', label: (tt('behavior_lens.raw.bcba_consultation', 'BCBA Consultation')) },
                         ],
                         progressreport: [
-                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
-                            { id: 'iepgoals', icon: '📄', label: (t('behavior_lens.raw.iep_goals') || 'IEP Goals') },
-                            { id: 'treatintegrity', icon: '✅', label: (t('behavior_lens.raw.treatment_integrity') || 'Treatment Integrity') },
+                            { id: 'abagraph', icon: '📈', label: (tt('behavior_lens.raw.aba_graph_engine', 'ABA Graph Engine')) },
+                            { id: 'iepgoals', icon: '📄', label: (tt('behavior_lens.raw.iep_goals', 'IEP Goals')) },
+                            { id: 'treatintegrity', icon: '✅', label: (tt('behavior_lens.raw.treatment_integrity', 'Treatment Integrity')) },
                         ],
                         treatintegrity: [
-                            { id: 'progressreport', icon: '📊', label: (t('behavior_lens.raw.progress_reports') || 'Progress Reports') },
-                            { id: 'bcbahandoff', icon: '📊', label: (t('behavior_lens.raw.bcba_consultation') || 'BCBA Consultation') },
-                            { id: 'fidelity', icon: '✅', label: (t('behavior_lens.raw.fidelity_checklist') || 'Fidelity Checklist') },
+                            { id: 'progressreport', icon: '📊', label: (tt('behavior_lens.raw.progress_reports', 'Progress Reports')) },
+                            { id: 'bcbahandoff', icon: '📊', label: (tt('behavior_lens.raw.bcba_consultation', 'BCBA Consultation')) },
+                            { id: 'fidelity', icon: '✅', label: (tt('behavior_lens.raw.fidelity_checklist', 'Fidelity Checklist')) },
                         ],
                         ioacalc: [
-                            { id: 'qualitycheck', icon: '✅', label: (t('behavior_lens.raw.data_quality_check') || 'Data Quality Check') },
-                            { id: 'socialvalidity', icon: '📋', label: (t('behavior_lens.raw.social_validity') || 'Social Validity') },
+                            { id: 'qualitycheck', icon: '✅', label: (tt('behavior_lens.raw.data_quality_check', 'Data Quality Check')) },
+                            { id: 'socialvalidity', icon: '📋', label: (tt('behavior_lens.raw.social_validity', 'Social Validity')) },
                         ],
                         prefassess: [
-                            { id: 'reinforcement', icon: '⭐', label: (t('behavior_lens.raw.reinforcement_inventory') || 'Reinforcement Inventory') },
-                            { id: 'reinforcer', icon: '🏆', label: (t('behavior_lens.raw.reinforcer_assessment') || 'Reinforcer Assessment') },
+                            { id: 'reinforcement', icon: '⭐', label: (tt('behavior_lens.raw.reinforcement_inventory', 'Reinforcement Inventory')) },
+                            { id: 'reinforcer', icon: '🏆', label: (tt('behavior_lens.raw.reinforcer_assessment', 'Reinforcer Assessment')) },
                         ],
                         taskanalysis: [
-                            { id: 'dtt', icon: '🎯', label: (t('behavior_lens.raw.dtt_data_sheet') || 'DTT Data Sheet') },
-                            { id: 'maintenance', icon: '🔄', label: (t('behavior_lens.raw.maintenance_tracker') || 'Maintenance Tracker') },
+                            { id: 'dtt', icon: '🎯', label: (tt('behavior_lens.raw.dtt_data_sheet', 'DTT Data Sheet')) },
+                            { id: 'maintenance', icon: '🔄', label: (tt('behavior_lens.raw.maintenance_tracker', 'Maintenance Tracker')) },
                         ],
                         dtt: [
-                            { id: 'taskanalysis', icon: '📝', label: (t('behavior_lens.raw.task_analysis') || 'Task Analysis') },
-                            { id: 'maintenance', icon: '🔄', label: (t('behavior_lens.raw.maintenance_tracker') || 'Maintenance Tracker') },
+                            { id: 'taskanalysis', icon: '📝', label: (tt('behavior_lens.raw.task_analysis', 'Task Analysis')) },
+                            { id: 'maintenance', icon: '🔄', label: (tt('behavior_lens.raw.maintenance_tracker', 'Maintenance Tracker')) },
                         ],
                         predict: [
-                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
-                            { id: 'trends', icon: '📊', label: (t('behavior_lens.raw.trend_dashboard') || 'Trend Dashboard') },
-                            { id: 'antecedentmod', icon: '🛠️', label: (t('behavior_lens.raw.antecedent_modification') || 'Antecedent Modification') },
+                            { id: 'abc', icon: '📋', label: (tt('behavior_lens.raw.abc_data', 'ABC Data')) },
+                            { id: 'trends', icon: '📊', label: (tt('behavior_lens.raw.trend_dashboard', 'Trend Dashboard')) },
+                            { id: 'antecedentmod', icon: '🛠️', label: (tt('behavior_lens.raw.antecedent_modification', 'Antecedent Modification')) },
                         ],
                         hotspot: [
-                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
-                            { id: 'scatterplot', icon: '📅', label: (t('behavior_lens.raw.scatterplot') || 'Scatterplot') },
-                            { id: 'antecedentmod', icon: '🛠️', label: (t('behavior_lens.raw.antecedent_modification') || 'Antecedent Modification') },
+                            { id: 'abc', icon: '📋', label: (tt('behavior_lens.raw.abc_data', 'ABC Data')) },
+                            { id: 'scatterplot', icon: '📅', label: (tt('behavior_lens.raw.scatterplot', 'Scatterplot')) },
+                            { id: 'antecedentmod', icon: '🛠️', label: (tt('behavior_lens.raw.antecedent_modification', 'Antecedent Modification')) },
                         ],
                         cumrecord: [
-                            { id: 'sessiontracker', icon: '📋', label: (t('behavior_lens.raw.session_tracker') || 'Session Tracker') },
-                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
+                            { id: 'sessiontracker', icon: '📋', label: (tt('behavior_lens.raw.session_tracker', 'Session Tracker')) },
+                            { id: 'abagraph', icon: '📈', label: (tt('behavior_lens.raw.aba_graph_engine', 'ABA Graph Engine')) },
                         ],
                         bcbahandoff: [
-                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
-                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
-                            { id: 'treatintegrity', icon: '✅', label: (t('behavior_lens.raw.treatment_integrity') || 'Treatment Integrity') },
-                            { id: 'iepprep', icon: '📄', label: (t('behavior_lens.raw.iep_prep') || 'IEP Prep') },
+                            { id: 'abc', icon: '📋', label: (tt('behavior_lens.raw.abc_data', 'ABC Data')) },
+                            { id: 'abagraph', icon: '📈', label: (tt('behavior_lens.raw.aba_graph_engine', 'ABA Graph Engine')) },
+                            { id: 'treatintegrity', icon: '✅', label: (tt('behavior_lens.raw.treatment_integrity', 'Treatment Integrity')) },
+                            { id: 'iepprep', icon: '📄', label: (tt('behavior_lens.raw.iep_prep', 'IEP Prep')) },
                         ],
                         nlabc: [
-                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
-                            { id: 'analysis', icon: '🧠', label: (t('behavior_lens.raw.ai_analysis') || 'AI Analysis') },
+                            { id: 'abc', icon: '📋', label: (tt('behavior_lens.raw.abc_data', 'ABC Data')) },
+                            { id: 'analysis', icon: '🧠', label: (tt('behavior_lens.raw.ai_analysis', 'AI Analysis')) },
                         ],
                         maintenance: [
-                            { id: 'abagraph', icon: '📈', label: (t('behavior_lens.raw.aba_graph_engine') || 'ABA Graph Engine') },
-                            { id: 'taskanalysis', icon: '📝', label: (t('behavior_lens.raw.task_analysis') || 'Task Analysis') },
+                            { id: 'abagraph', icon: '📈', label: (tt('behavior_lens.raw.aba_graph_engine', 'ABA Graph Engine')) },
+                            { id: 'taskanalysis', icon: '📝', label: (tt('behavior_lens.raw.task_analysis', 'Task Analysis')) },
                         ],
                         overview: [
-                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
-                            { id: 'trends', icon: '📊', label: (t('behavior_lens.raw.trend_dashboard') || 'Trend Dashboard') },
-                            { id: 'analysis', icon: '🧠', label: (t('behavior_lens.raw.ai_analysis') || 'AI Analysis') },
+                            { id: 'abc', icon: '📋', label: (tt('behavior_lens.raw.abc_data', 'ABC Data')) },
+                            { id: 'trends', icon: '📊', label: (tt('behavior_lens.raw.trend_dashboard', 'Trend Dashboard')) },
+                            { id: 'analysis', icon: '🧠', label: (tt('behavior_lens.raw.ai_analysis', 'AI Analysis')) },
                         ],
                         compare: [
-                            { id: 'caseload', icon: '👥', label: (t('behavior_lens.raw.caseload_dashboard') || 'Caseload Dashboard') },
-                            { id: 'trends', icon: '📊', label: (t('behavior_lens.raw.trend_dashboard') || 'Trend Dashboard') },
-                            { id: 'progressreport', icon: '📊', label: (t('behavior_lens.raw.progress_reports') || 'Progress Reports') },
+                            { id: 'caseload', icon: '👥', label: (tt('behavior_lens.raw.caseload_dashboard', 'Caseload Dashboard')) },
+                            { id: 'trends', icon: '📊', label: (tt('behavior_lens.raw.trend_dashboard', 'Trend Dashboard')) },
+                            { id: 'progressreport', icon: '📊', label: (tt('behavior_lens.raw.progress_reports', 'Progress Reports')) },
                         ],
                         caseload: [
-                            { id: 'compare', icon: '⚖️', label: (t('behavior_lens.raw.student_comparison') || 'Student Comparison') },
-                            { id: 'mtss', icon: '🏗️', label: (t('behavior_lens.raw.mtss_tiers') || 'MTSS Tiers') },
-                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
+                            { id: 'compare', icon: '⚖️', label: (tt('behavior_lens.raw.student_comparison', 'Student Comparison')) },
+                            { id: 'mtss', icon: '🏗️', label: (tt('behavior_lens.raw.mtss_tiers', 'MTSS Tiers')) },
+                            { id: 'abc', icon: '📋', label: (tt('behavior_lens.raw.abc_data', 'ABC Data')) },
                         ],
                         mtss: [
-                            { id: 'caseload', icon: '👥', label: (t('behavior_lens.raw.caseload_dashboard') || 'Caseload Dashboard') },
-                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
-                            { id: 'iepgoals', icon: '📄', label: (t('behavior_lens.raw.iep_goals') || 'IEP Goals') },
+                            { id: 'caseload', icon: '👥', label: (tt('behavior_lens.raw.caseload_dashboard', 'Caseload Dashboard')) },
+                            { id: 'abc', icon: '📋', label: (tt('behavior_lens.raw.abc_data', 'ABC Data')) },
+                            { id: 'iepgoals', icon: '📄', label: (tt('behavior_lens.raw.iep_goals', 'IEP Goals')) },
                         ],
                         replacebehavior: [
-                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
-                            { id: 'hypothesis', icon: '🔗', label: (t('behavior_lens.raw.hypothesis_diagram') || 'Hypothesis Diagram') },
-                            { id: 'reinforcement', icon: '⭐', label: (t('behavior_lens.raw.reinforcement_inventory') || 'Reinforcement Inventory') },
-                            { id: 'antecedentmod', icon: '🛠️', label: (t('behavior_lens.raw.antecedent_modification') || 'Antecedent Modification') },
+                            { id: 'abc', icon: '📋', label: (tt('behavior_lens.raw.abc_data', 'ABC Data')) },
+                            { id: 'hypothesis', icon: '🔗', label: (tt('behavior_lens.raw.hypothesis_diagram', 'Hypothesis Diagram')) },
+                            { id: 'reinforcement', icon: '⭐', label: (tt('behavior_lens.raw.reinforcement_inventory', 'Reinforcement Inventory')) },
+                            { id: 'antecedentmod', icon: '🛠️', label: (tt('behavior_lens.raw.antecedent_modification', 'Antecedent Modification')) },
                         ],
                         drstrategy: [
-                            { id: 'replacebehavior', icon: '🔄', label: (t('behavior_lens.raw.replacement_behavior') || 'Replacement Behavior') },
-                            { id: 'reinforcement', icon: '⭐', label: (t('behavior_lens.raw.reinforcement_inventory') || 'Reinforcement Inventory') },
-                            { id: 'sessiontracker', icon: '📋', label: (t('behavior_lens.raw.session_tracker') || 'Session Tracker') },
+                            { id: 'replacebehavior', icon: '🔄', label: (tt('behavior_lens.raw.replacement_behavior', 'Replacement Behavior')) },
+                            { id: 'reinforcement', icon: '⭐', label: (tt('behavior_lens.raw.reinforcement_inventory', 'Reinforcement Inventory')) },
+                            { id: 'sessiontracker', icon: '📋', label: (tt('behavior_lens.raw.session_tracker', 'Session Tracker')) },
                         ],
                         fcttemplate: [
-                            { id: 'replacebehavior', icon: '🔄', label: (t('behavior_lens.raw.replacement_behavior') || 'Replacement Behavior') },
-                            { id: 'drstrategy', icon: '📐', label: (t('behavior_lens.raw.dr_strategy') || 'DR Strategy') },
-                            { id: 'reinforcement', icon: '⭐', label: (t('behavior_lens.raw.reinforcement_inventory') || 'Reinforcement Inventory') },
-                            { id: 'socialvalidity', icon: '📋', label: (t('behavior_lens.raw.social_validity') || 'Social Validity') },
+                            { id: 'replacebehavior', icon: '🔄', label: (tt('behavior_lens.raw.replacement_behavior', 'Replacement Behavior')) },
+                            { id: 'drstrategy', icon: '📐', label: (tt('behavior_lens.raw.dr_strategy', 'DR Strategy')) },
+                            { id: 'reinforcement', icon: '⭐', label: (tt('behavior_lens.raw.reinforcement_inventory', 'Reinforcement Inventory')) },
+                            { id: 'socialvalidity', icon: '📋', label: (tt('behavior_lens.raw.social_validity', 'Social Validity')) },
                         ],
                         intervention: [
-                            { id: 'abc', icon: '📋', label: (t('behavior_lens.raw.abc_data') || 'ABC Data') },
-                            { id: 'hypothesis', icon: '🔗', label: (t('behavior_lens.raw.hypothesis_diagram') || 'Hypothesis Diagram') },
-                            { id: 'fidelity', icon: '✅', label: (t('behavior_lens.raw.fidelity_checklist') || 'Fidelity Checklist') },
-                            { id: 'progressreport', icon: '📊', label: (t('behavior_lens.raw.progress_reports') || 'Progress Reports') },
+                            { id: 'abc', icon: '📋', label: (tt('behavior_lens.raw.abc_data', 'ABC Data')) },
+                            { id: 'hypothesis', icon: '🔗', label: (tt('behavior_lens.raw.hypothesis_diagram', 'Hypothesis Diagram')) },
+                            { id: 'fidelity', icon: '✅', label: (tt('behavior_lens.raw.fidelity_checklist', 'Fidelity Checklist')) },
+                            { id: 'progressreport', icon: '📊', label: (tt('behavior_lens.raw.progress_reports', 'Progress Reports')) },
                         ],
                     };
                     const related = relatedToolsMap[activePanel];
                     // ── Intervention Workflow Chain ───────────────────
                     const interventionChain = [
-                        { id: 'analysis', icon: '🧠', label: (t('behavior_lens.raw.analyze') || 'Analyze') },
-                        { id: 'replacebehavior', icon: '🔄', label: (t('behavior_lens.raw.replace') || 'Replace') },
-                        { id: 'drstrategy', icon: '📐', label: (t('behavior_lens.raw.dr_schedule') || 'DR Schedule') },
+                        { id: 'analysis', icon: '🧠', label: (tt('behavior_lens.raw.analyze', 'Analyze')) },
+                        { id: 'replacebehavior', icon: '🔄', label: (tt('behavior_lens.raw.replace', 'Replace')) },
+                        { id: 'drstrategy', icon: '📐', label: (tt('behavior_lens.raw.dr_schedule', 'DR Schedule')) },
                         { id: 'fcttemplate', icon: '🗣️', label: 'FCT' },
                         { id: 'intervention', icon: '📋', label: 'BIP' },
                     ];
@@ -28235,49 +28304,49 @@ Analyze this data and return ONLY valid JSON:
                 h('div', { className: 'bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto' },
                     h('div', { className: 'p-6 border-b border-slate-200' },
                         h('h2', { id: 'bl-ai-consent-title', className: 'text-xl font-black text-slate-800 flex items-center gap-2' },
-                            '🤖 ', t('behavior_lens.ai.consent_title') || 'Enable AI assistance?'
+                            '🤖 ', tt('behavior_lens.ai.consent_title', 'Enable AI assistance?')
                         ),
                         h('p', { className: 'text-sm text-slate-600 mt-2' },
-                            t('behavior_lens.ai.consent_subtitle') || 'Before turning on AI features, please read what gets sent to Google Gemini.'
+                            tt('behavior_lens.ai.consent_subtitle', 'Before turning on AI features, please read what gets sent to Google Gemini.')
                         )
                     ),
                     h('div', { className: 'p-6 space-y-4 text-sm text-slate-700' },
                         h('div', { className: 'bg-amber-50 border border-amber-200 rounded-lg p-4' },
-                            h('div', { className: 'font-bold text-amber-800 mb-1' }, '⚠️ ', t('behavior_lens.ai.consent_what_sent_heading') || 'What gets sent to Gemini'),
+                            h('div', { className: 'font-bold text-amber-800 mb-1' }, '⚠️ ', tt('behavior_lens.ai.consent_what_sent_heading', 'What gets sent to Gemini')),
                             h('ul', { className: 'list-disc pl-5 space-y-1 text-amber-900' },
-                                h('li', null, t('behavior_lens.ai.consent_li_abc') || 'ABC entries (antecedent, behavior, consequence, intensity, notes, setting) — for the active student'),
-                                h('li', null, t('behavior_lens.ai.consent_li_profile') || 'Student profile (strengths, interests, triggers, goals, accommodations, notes)'),
-                                h('li', null, t('behavior_lens.ai.consent_li_obs') || 'Observation session summaries and recent session notes'),
-                                h('li', null, t('behavior_lens.ai.consent_li_codename') || 'The student codename you have chosen (NOT a real name unless you typed one in)')
+                                h('li', null, tt('behavior_lens.ai.consent_li_abc', 'ABC entries (antecedent, behavior, consequence, intensity, notes, setting) — for the active student')),
+                                h('li', null, tt('behavior_lens.ai.consent_li_profile', 'Student profile (strengths, interests, triggers, goals, accommodations, notes)')),
+                                h('li', null, tt('behavior_lens.ai.consent_li_obs', 'Observation session summaries and recent session notes')),
+                                h('li', null, tt('behavior_lens.ai.consent_li_codename', 'The student codename you have chosen (NOT a real name unless you typed one in)'))
                             )
                         ),
                         h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-lg p-4' },
-                            h('div', { className: 'font-bold text-emerald-800 mb-1' }, '✓ ', t('behavior_lens.ai.consent_what_not_sent_heading') || 'What does NOT get sent'),
+                            h('div', { className: 'font-bold text-emerald-800 mb-1' }, '✓ ', tt('behavior_lens.ai.consent_what_not_sent_heading', 'What does NOT get sent')),
                             h('ul', { className: 'list-disc pl-5 space-y-1 text-emerald-900' },
                                 h('li', null, t('behavior_lens.ai.consent_li_no_other_students') || "Data for any student other than the active one"),
-                                h('li', null, t('behavior_lens.ai.consent_li_no_cloud_creds') || 'Your Firebase/cloud credentials, school account, or device identifiers'),
-                                h('li', null, t('behavior_lens.ai.consent_li_no_real_names') || 'Real student names (unless you typed one into the codename field)')
+                                h('li', null, tt('behavior_lens.ai.consent_li_no_cloud_creds', 'Your Firebase/cloud credentials, school account, or device identifiers')),
+                                h('li', null, tt('behavior_lens.ai.consent_li_no_real_names', 'Real student names (unless you typed one into the codename field)'))
                             )
                         ),
                         h('p', { className: 'text-xs text-slate-600 italic' },
-                            t('behavior_lens.ai.consent_ferpa_note') || 'FERPA reminder: do not type students\' real names into BehaviorLens. Use a codename (e.g. "Brave Otter"). You can revoke this consent at any time by clicking the AI toggle in the header.'
+                            tt('behavior_lens.ai.consent_ferpa_note', 'FERPA reminder: do not type students\' real names into BehaviorLens. Use a codename (e.g. "Brave Otter"). You can revoke this consent at any time by clicking the AI toggle in the header.')
                         )
                     ),
                     h('div', { className: 'p-6 border-t border-slate-200 flex justify-end gap-2' },
                         h('button', {
-                            'aria-label': t('behavior_lens.ai.consent_decline_aria') || 'Decline — keep AI off',
+                            'aria-label': tt('behavior_lens.ai.consent_decline_aria', 'Decline — keep AI off'),
                             onClick: () => setShowAiConsentModal(false),
                             className: 'px-4 py-2 rounded-lg text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors'
-                        }, t('behavior_lens.ai.consent_decline') || 'Keep AI off'),
+                        }, tt('behavior_lens.ai.consent_decline', 'Keep AI off')),
                         h('button', {
-                            'aria-label': t('behavior_lens.ai.consent_accept_aria') || 'Enable AI and continue',
+                            'aria-label': tt('behavior_lens.ai.consent_accept_aria', 'Enable AI and continue'),
                             onClick: () => {
                                 setAiConsent(true);
                                 setShowAiConsentModal(false);
-                                if (addToast) addToast(t('behavior_lens.toast.ai_turned_on') || '🤖 AI turned ON — student data will be sent to Gemini for analysis', 'success');
+                                if (addToast) addToast(tt('behavior_lens.toast.ai_turned_on', '🤖 AI turned ON — student data will be sent to Gemini for analysis'), 'success');
                             },
                             className: 'px-4 py-2 rounded-lg text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors'
-                        }, t('behavior_lens.ai.consent_accept') || 'Enable AI')
+                        }, tt('behavior_lens.ai.consent_accept', 'Enable AI'))
                     )
                 )
             )
