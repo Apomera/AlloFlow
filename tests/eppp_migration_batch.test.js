@@ -18,12 +18,12 @@ beforeAll(() => {
 });
 
 describe('EPPP traced migration batch', () => {
-  it('adds nine re-authored source-reviewed items per domain', () => {
+  it('adds thirteen re-authored source-reviewed items per domain', () => {
     const migrated = eppp.items.filter((item) => item.legacySourceId);
 
-    expect(eppp.version).toBe('0.7.0');
-    expect(eppp.items).toHaveLength(80);
-    expect(migrated).toHaveLength(72);
+    expect(eppp.version).toBe('0.9.0');
+    expect(eppp.items).toHaveLength(112);
+    expect(migrated).toHaveLength(104);
     expect(new Set(migrated.map((item) => item.domainId))).toEqual(new Set(eppp.domains.map((domain) => domain.id)));
     expect(migrated.every((item) => item.reviewStatus === 'source-reviewed')).toBe(true);
     expect(migrated.every((item) => item.migrationStatus === 're-authored-source-reviewed')).toBe(true);
@@ -51,7 +51,7 @@ describe('EPPP traced migration batch', () => {
       return counts;
     }, {});
 
-    expect(distribution).toEqual({ 0: 20, 1: 20, 2: 20, 3: 20 });
+    expect(distribution).toEqual({ 0: 28, 1: 28, 2: 28, 3: 28 });
   });
 
   it('does not make migrated correct choices conspicuously longer than every distractor', () => {

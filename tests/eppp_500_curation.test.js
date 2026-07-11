@@ -11,15 +11,15 @@ describe('EPPP 500-question curation milestone', () => {
     const report = read('test_prep/eppp_legacy/curation_500.json');
     expect(report.summary).toMatchObject({
       targetSlots: 500,
-      qaPassed: 80,
-      selectedPendingQa: 420,
+      qaPassed: 112,
+      selectedPendingQa: 388,
       legacySourceSlots: 492,
       nativeOriginalSlots: 8,
     });
     expect(report.domainSummary.map((domain) => domain.target)).toEqual([50, 65, 55, 60, 80, 75, 35, 80]);
     expect(report.domainSummary.reduce((sum, domain) => sum + domain.target, 0)).toBe(500);
-    expect(report.slots.filter((slot) => slot.status === 'qa-passed')).toHaveLength(80);
-    expect(report.slots.filter((slot) => slot.status === 'curation-selected')).toHaveLength(420);
+    expect(report.slots.filter((slot) => slot.status === 'qa-passed')).toHaveLength(112);
+    expect(report.slots.filter((slot) => slot.status === 'curation-selected')).toHaveLength(388);
     expect(report.slots.filter((slot) => slot.status === 'curation-selected').every((slot) => slot.nativeItemId === null)).toBe(true);
   });
 
@@ -27,7 +27,7 @@ describe('EPPP 500-question curation milestone', () => {
     const report = read('test_prep/eppp_legacy/curation_500.json');
     const bank = read('test_prep/eppp_native_items.json');
     const passedIds = new Set(report.slots.filter((slot) => slot.status === 'qa-passed').map((slot) => slot.nativeItemId));
-    expect(bank).toHaveLength(80);
+    expect(bank).toHaveLength(112);
     expect(bank.every((item) => passedIds.has(item.id))).toBe(true);
     const source = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/curation_500.json'), 'utf8');
     const deployed = fs.readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/test_prep/eppp_legacy/curation_500.json'), 'utf8');

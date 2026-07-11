@@ -35,14 +35,14 @@ describe('EPPP learning-library inventory and full-review program', () => {
     const targets = report.nativeRoadmap.domainTargets;
 
     expect(report.summary).toMatchObject({
-      nativeQaQuestions: 80,
+      nativeQaQuestions: 112,
       nativeOriginalQaQuestions: 8,
-      legacyReviewPassedQuestions: 72,
+      legacyReviewPassedQuestions: 104,
       nativeTargetQuestions: 2933,
-      nativeRemainingToTarget: 2861,
+      nativeRemainingToTarget: 2829,
     });
     expect(targets.reduce((sum, domain) => sum + domain.target, 0)).toBe(2933);
-    expect(targets.reduce((sum, domain) => sum + domain.currentQaPassed, 0)).toBe(72);
+    expect(targets.reduce((sum, domain) => sum + domain.currentQaPassed, 0)).toBe(104);
     expect(report.nativeRoadmap.stages).toEqual([100, 300, 1000, 2000, 2933]);
     expect(report.nativeRoadmap.practiceSampling).toContain('blueprint weights');
   });
@@ -52,15 +52,15 @@ describe('EPPP learning-library inventory and full-review program', () => {
 
     expect(ledger.summary).toMatchObject({
       legacyReviewUniverse: 2933,
-      legacyItemsMigratedToNativeQa: 72,
-      legacyItemsStillQuarantined: 2861,
+      legacyItemsMigratedToNativeQa: 104,
+      legacyItemsStillQuarantined: 2829,
       nativeOriginalQaItems: 8,
-      totalNativeQaItems: 80,
+      totalNativeQaItems: 112,
       independentExpertValidatedItems: 0,
       productionValidatedItems: 0,
     });
-    expect(ledger.items.filter((item) => item.workflowStage === 'native-content-qa-passed')).toHaveLength(72);
-    expect(ledger.items.filter((item) => item.workflowStage === 'legacy-quarantine')).toHaveLength(2861);
+    expect(ledger.items.filter((item) => item.workflowStage === 'native-content-qa-passed')).toHaveLength(104);
+    expect(ledger.items.filter((item) => item.workflowStage === 'legacy-quarantine')).toHaveLength(2829);
     expect(ledger.requiredGates).toContain('independent qualified psychology/assessment review before production validation');
   });
 

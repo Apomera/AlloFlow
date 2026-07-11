@@ -1922,5 +1922,773 @@
       "https://www.apa.org/ethics/code"
     ],
     "legacySourceFile": "js/data_batch22.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b005-biological-1",
+    "domainId": "biological",
+    "legacySourceId": "legacy-c9e228584adf0bfd",
+    "prompt": "Which set consists of three executive functions distinguished in Miyake and colleagues’ latent-variable model?",
+    "choices": [
+      "Shifting, updating, and inhibition",
+      "Sensation, transduction, and adaptation",
+      "Encoding, storage, and retrieval",
+      "Assimilation, accommodation, and equilibration"
+    ],
+    "answerIndex": 0,
+    "rationale": "The model examined mental-set shifting, updating and monitoring working-memory representations, and inhibiting prepotent responses. The functions were related but empirically distinguishable rather than a single indivisible process.",
+    "references": [
+      "https://doi.org/10.1006/cogp.1999.0734"
+    ],
+    "legacySourceFile": "js/data_batch17.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b005-biological-2",
+    "domainId": "biological",
+    "legacySourceId": "legacy-a85e7a213331e169",
+    "prompt": "Despite comprising a much smaller share of total brain mass, approximately what proportion of the human brain’s neurons are located in the cerebellum?",
+    "choices": [
+      "Approximately 20 percent",
+      "Approximately 40 percent",
+      "Approximately 80 percent",
+      "Approximately 100 percent"
+    ],
+    "answerIndex": 2,
+    "rationale": "Cell-count estimates place roughly 69 billion of about 86 billion human brain neurons in the cerebellum, or close to 80%. Most are very small, densely packed granule cells.",
+    "references": [
+      "https://doi.org/10.3389/neuro.09.031.2009"
+    ],
+    "legacySourceFile": "js/data_batch16.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b005-cognitive-1",
+    "domainId": "cognitive-affective",
+    "legacySourceId": "legacy-53d5b7f197b27b6e",
+    "prompt": "Self-determination theory identifies which three basic psychological needs as central to motivation and well-being?",
+    "choices": [
+      "Power, status, and certainty",
+      "Autonomy, competence, and relatedness",
+      "Novelty, arousal, and dominance",
+      "Approval, wealth, and competition"
+    ],
+    "answerIndex": 1,
+    "rationale": "Self-determination theory identifies autonomy, competence, and relatedness as basic psychological needs. Contexts that support these needs can promote more self-determined motivation and psychological well-being.",
+    "references": [
+      "https://doi.org/10.1207/S15327965PLI1104_01"
+    ],
+    "legacySourceFile": "js/data_batch18.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b005-cognitive-2",
+    "domainId": "cognitive-affective",
+    "legacySourceId": "legacy-82384406b0e1b9e1",
+    "prompt": "A person in a sad mood recalls a greater proportion of negatively toned personal experiences than positively toned experiences. This pattern best illustrates:",
+    "choices": [
+      "State-dependent learning",
+      "Proactive interference",
+      "The spacing effect",
+      "Mood-congruent memory"
+    ],
+    "answerIndex": 3,
+    "rationale": "Mood-congruent memory refers to enhanced accessibility or recall of material whose emotional tone matches the person’s current mood. It differs from state-dependent memory, which concerns matching internal states at encoding and retrieval.",
+    "references": [
+      "https://doi.org/10.1037/0003-066X.36.2.129"
+    ],
+    "legacySourceFile": "js/data_batch18.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b005-social-1",
+    "domainId": "social-cultural",
+    "legacySourceId": "legacy-d14c26de4aa41b53",
+    "prompt": "System-justification theory was introduced partly to explain why people may defend existing social arrangements even when those arrangements disadvantage their own group. This is described as:",
+    "choices": [
+      "System-justifying motivation",
+      "Simple exposure learning",
+      "Informational conformity",
+      "Reciprocal altruism"
+    ],
+    "answerIndex": 0,
+    "rationale": "System justification refers to psychological processes that legitimize and preserve existing social arrangements, potentially even at the expense of personal or group interests. It is distinct from ego- and group-justification motives.",
+    "references": [
+      "https://doi.org/10.1111/j.2044-8309.1994.tb01008.x"
+    ],
+    "legacySourceFile": "js/data_batch15.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b005-social-2",
+    "domainId": "social-cultural",
+    "legacySourceId": "legacy-206b0166156e0eba",
+    "prompt": "A group task pools everyone’s output so that no member’s contribution can be identified. Compared with working alone, members reduce their individual effort. This is:",
+    "choices": [
+      "Group polarization",
+      "Minority influence",
+      "Social loafing",
+      "Social facilitation"
+    ],
+    "answerIndex": 2,
+    "rationale": "Social loafing is a reduction in individual effort when contributions are combined in a group task. Low identifiability and reduced evaluation potential are common conditions that permit the effect.",
+    "references": [
+      "https://doi.org/10.1037/0022-3514.37.6.822"
+    ],
+    "legacySourceFile": "js/data_batch17.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b005-lifespan-1",
+    "domainId": "lifespan",
+    "legacySourceId": "legacy-b1d570e69fed17de",
+    "prompt": "Which ability is the clearest example of fluid intelligence?",
+    "choices": [
+      "Recalling vocabulary acquired through years of education",
+      "Solving a novel pattern problem with little learned knowledge",
+      "Naming historical events learned in a classroom",
+      "Applying a well-practiced professional procedure"
+    ],
+    "answerIndex": 1,
+    "rationale": "Fluid intelligence concerns reasoning and solving novel problems with relatively little dependence on previously acquired knowledge. Crystallized intelligence reflects accumulated knowledge and learned skills.",
+    "references": [
+      "https://doi.org/10.1016/0001-6918(67)90011-X"
+    ],
+    "legacySourceFile": "js/data_batch18.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b005-lifespan-2",
+    "domainId": "lifespan",
+    "legacySourceId": "legacy-abb84eede8dabe01",
+    "prompt": "Which neuroendocrine sequence is central to reactivation of the hypothalamic-pituitary-gonadal axis at puberty?",
+    "choices": [
+      "Pituitary GnRH stimulates hypothalamic cortisol release",
+      "Adrenal ACTH suppresses all gonadal steroid production",
+      "Gonadal FSH directly prevents hypothalamic signaling",
+      "Hypothalamic GnRH stimulates pituitary LH and FSH release"
+    ],
+    "answerIndex": 3,
+    "rationale": "At puberty, pulsatile hypothalamic gonadotropin-releasing hormone stimulates anterior-pituitary secretion of luteinizing hormone and follicle-stimulating hormone, which act on the gonads.",
+    "references": [
+      "https://doi.org/10.1038/nn1326"
+    ],
+    "legacySourceFile": "js/data_batch19.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b005-assessment-1",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-0f70388357165d1b",
+    "prompt": "What historical finding is referred to as the Flynn effect?",
+    "choices": [
+      "Average intelligence-test scores rose across many twentieth-century cohorts",
+      "Every cognitive ability increases continuously throughout adulthood",
+      "An individual’s retest score always rises by one standard deviation",
+      "Intelligence-test scores are unaffected by environmental change"
+    ],
+    "answerIndex": 0,
+    "rationale": "The Flynn effect refers to substantial secular gains in average intelligence-test performance documented across many countries and cohorts. The size and direction vary by test, period, and location, and reversals have occurred in some settings.",
+    "references": [
+      "https://doi.org/10.1037/0033-2909.101.2.171"
+    ],
+    "legacySourceFile": "js/data_batch27.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b005-assessment-2",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-ce4b0ab9e0564d2f",
+    "prompt": "A licensing examination blueprint defines the knowledge and skills to be sampled. Subject-matter experts then judge whether the items adequately represent that blueprint. This process primarily supplies evidence about:",
+    "choices": [
+      "Temporal stability",
+      "Predictive accuracy",
+      "Content validity",
+      "Interrater reliability"
+    ],
+    "answerIndex": 2,
+    "rationale": "Content-validity evidence concerns how adequately assessment content represents the intended domain. Domain definition, systematic item sampling, and qualified expert judgment are central parts of this process.",
+    "references": [
+      "https://doi.org/10.1037/1040-3590.7.3.238"
+    ],
+    "legacySourceFile": "js/data_batch22.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b005-intervention-1",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-5918fa8422da37a3",
+    "prompt": "Which description best captures a culturally adapted evidence-based mental health intervention?",
+    "choices": [
+      "Replacing supported treatment principles with generalized cultural assumptions",
+      "Adapting language, context, and delivery while retaining supported principles",
+      "Applying an unchanged manual without client-specific contextual review",
+      "Assuming cultural-group membership determines one identical treatment plan"
+    ],
+    "answerIndex": 1,
+    "rationale": "Cultural adaptation modifies relevant aspects of an intervention so it fits clients’ language, meanings, context, and needs while maintaining evidence-informed therapeutic principles. Adaptation should be individualized rather than stereotype-driven.",
+    "references": [
+      "https://doi.org/10.1037/0033-3204.43.4.531"
+    ],
+    "legacySourceFile": "js/data_batch23.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b005-intervention-2",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-096272149690467a",
+    "prompt": "For a child age 6 through 11 with diagnosed ADHD, which plan most closely matches the 2019 American Academy of Pediatrics guideline?",
+    "choices": [
+      "Use dietary restriction alone without medication or school-based support",
+      "Start an antipsychotic while excluding parent and classroom behavior programs",
+      "Delay treatment until adolescence regardless of current functional impairment",
+      "Use approved ADHD medication with parent and/or classroom behavior support"
+    ],
+    "answerIndex": 3,
+    "rationale": "For elementary and middle-school-aged children, the AAP recommends an FDA-approved ADHD medication along with parent training in behavior management and/or behavioral classroom intervention, preferably both behavioral components when available.",
+    "references": [
+      "https://doi.org/10.1542/peds.2019-2528"
+    ],
+    "legacySourceFile": "js/data_batch18.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b005-research-1",
+    "domainId": "research",
+    "legacySourceId": "legacy-6dadcc15cd4b810b",
+    "prompt": "Under the HHS Common Rule, an Institutional Review Board reviewing covered human-subjects research has authority to:",
+    "choices": [
+      "Approve, require modifications to, or disapprove the research",
+      "Guarantee publication of all results from the research",
+      "Determine whether every scientific hypothesis is correct",
+      "Replace the investigator in collecting all participant data"
+    ],
+    "answerIndex": 0,
+    "rationale": "An IRB may approve, require modifications to secure approval, or disapprove covered research. Approval criteria address risks, equitable selection, consent, privacy, confidentiality, monitoring, and safeguards for vulnerable participants.",
+    "references": [
+      "https://www.hhs.gov/ohrp/regulations-and-policy/regulations/45-cfr-46/index.html"
+    ],
+    "legacySourceFile": "js/data_batch21.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b005-research-2",
+    "domainId": "research",
+    "legacySourceId": "legacy-4c500b50a07d0248",
+    "prompt": "In null-hypothesis significance testing, a Type I error occurs when a researcher:",
+    "choices": [
+      "Fails to reject a false null hypothesis",
+      "Correctly retains a true null hypothesis",
+      "Rejects a null hypothesis that is actually true",
+      "Correctly rejects a false null hypothesis"
+    ],
+    "answerIndex": 2,
+    "rationale": "A Type I error is a false positive: rejecting the null hypothesis when it is true. A Type II error occurs when a false null hypothesis is not rejected.",
+    "references": [
+      "https://doi.org/10.1098/rsta.1933.0009"
+    ],
+    "legacySourceFile": "js/data_batch25.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b005-professional-1",
+    "domainId": "professional",
+    "legacySourceId": "legacy-1a968511ac123d64",
+    "prompt": "A psychologist knowingly makes a deceptive public statement about professional qualifications. Which APA Ethics Code standard most directly addresses this conduct?",
+    "choices": [
+      "Standard 2.05, Delegation of Work to Others",
+      "Standard 5.01, Avoidance of False or Deceptive Statements",
+      "Standard 6.03, Withholding Records for Nonpayment",
+      "Standard 9.10, Explaining Assessment Results"
+    ],
+    "answerIndex": 1,
+    "rationale": "Standard 5.01 prohibits knowingly false, deceptive, or fraudulent public statements concerning psychologists’ work, research, practice, qualifications, affiliations, services, or related matters.",
+    "references": [
+      "https://www.apa.org/ethics/code"
+    ],
+    "legacySourceFile": "js/data_batch21.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b005-professional-2",
+    "domainId": "professional",
+    "legacySourceId": "legacy-34f088d340cd67de",
+    "prompt": "What is a core requirement of APA Ethics Code Standard 3.10 when psychologists obtain informed consent?",
+    "choices": [
+      "Use technical language even when the recipient cannot understand it",
+      "Treat physical presence as automatic consent for every service",
+      "Omit consent whenever documentation would require additional time",
+      "Use language reasonably understandable to the person or persons involved"
+    ],
+    "answerIndex": 3,
+    "rationale": "Standard 3.10 requires appropriately documented informed consent using language reasonably understandable to the person or persons involved, except where services without consent are mandated by law or otherwise provided for in the Code.",
+    "references": [
+      "https://www.apa.org/ethics/code"
+    ],
+    "legacySourceFile": "js/data_batch15.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b006-biological-1",
+    "domainId": "biological",
+    "legacySourceId": "legacy-554a6292d6472d37",
+    "prompt": "Phenylketonuria (PKU) is a useful example of gene–environment interaction because its severe neurologic effects can often be prevented by:",
+    "choices": [
+      "Following a low-phenylalanine diet begun early in life",
+      "Changing the inherited gene through ordinary exercise",
+      "Increasing phenylalanine intake during childhood",
+      "Avoiding all dietary protein only during adulthood"
+    ],
+    "answerIndex": 0,
+    "rationale": "PKU is an inherited disorder in phenylalanine metabolism, but early and sustained dietary restriction of phenylalanine can prevent much of the resulting neurologic harm. The genotype remains present while environmental management changes the outcome.",
+    "references": [
+      "https://www.ncbi.nlm.nih.gov/books/NBK1504/"
+    ],
+    "legacySourceFile": "js/data_batch15.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b006-biological-2",
+    "domainId": "biological",
+    "legacySourceId": "legacy-40254ffaaf496f6f",
+    "prompt": "Which cell is a neuron rather than a type of glial cell?",
+    "choices": [
+      "Astrocyte",
+      "Oligodendrocyte",
+      "Microglial cell",
+      "Pyramidal neuron"
+    ],
+    "answerIndex": 3,
+    "rationale": "Astrocytes, oligodendrocytes, and microglia are major glial-cell classes. A pyramidal neuron is an electrically excitable neuron, not a glial cell.",
+    "references": [
+      "https://doi.org/10.1038/457675a"
+    ],
+    "legacySourceFile": "js/data_batch17.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b006-cognitive-1",
+    "domainId": "cognitive-affective",
+    "legacySourceId": "legacy-5445b5ac420302bb",
+    "prompt": "In Baddeley’s revised working-memory model, which component temporarily binds information from different sources into an integrated representation?",
+    "choices": [
+      "Phonological loop",
+      "Episodic buffer",
+      "Articulatory rehearsal process",
+      "Visuospatial sketchpad"
+    ],
+    "answerIndex": 1,
+    "rationale": "The episodic buffer is a limited-capacity component that binds information across modalities and links working memory with long-term memory. The other named components have more specialized storage or rehearsal roles.",
+    "references": [
+      "https://doi.org/10.1016/S1364-6613(00)01538-2"
+    ],
+    "legacySourceFile": "js/data_batch20.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b006-cognitive-2",
+    "domainId": "cognitive-affective",
+    "legacySourceId": "legacy-70f22cd45201d7ba",
+    "prompt": "A lesson splits one diagram across several distant panels, forcing learners to search back and forth for matching labels. The avoidable mental effort produced by this layout is best described as:",
+    "choices": [
+      "Retrieval-induced forgetting",
+      "State-dependent learning",
+      "Intrinsic cognitive load",
+      "Extraneous cognitive load"
+    ],
+    "answerIndex": 3,
+    "rationale": "Extraneous cognitive load is imposed by how information is presented rather than by the inherent complexity of the material. A split-attention layout can add avoidable search and integration demands.",
+    "references": [
+      "https://doi.org/10.1207/s15516709cog1202_4"
+    ],
+    "legacySourceFile": "js/data_batch14.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b006-social-1",
+    "domainId": "social-cultural",
+    "legacySourceId": "legacy-60652f3b3bdf958a",
+    "prompt": "According to social-facilitation research, the presence of other people is most likely to:",
+    "choices": [
+      "Improve performance on well-practiced tasks but disrupt difficult or novel performance",
+      "Improve every kind of performance equally",
+      "Disrupt well-practiced performance but improve novel performance",
+      "Have effects only when observers provide explicit feedback"
+    ],
+    "answerIndex": 0,
+    "rationale": "The presence of others tends to increase dominant responding. That can facilitate simple or well-learned performance while impairing difficult or not-yet-mastered performance.",
+    "references": [
+      "https://doi.org/10.1126/science.149.3681.269"
+    ],
+    "legacySourceFile": "js/data_batch20.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b006-social-2",
+    "domainId": "social-cultural",
+    "legacySourceId": "legacy-ff4bb2cb9ca3129d",
+    "prompt": "A person expects an interaction with an unfamiliar outgroup member to be awkward, fears behaving offensively, and becomes tense before the meeting. This pattern most directly illustrates:",
+    "choices": [
+      "Self-handicapping",
+      "Group polarization",
+      "Intergroup anxiety",
+      "Pluralistic ignorance"
+    ],
+    "answerIndex": 2,
+    "rationale": "Intergroup anxiety involves apprehension and negative expectations about interacting with members of another group, including concerns about one’s behavior, rejection, embarrassment, or other adverse outcomes.",
+    "references": [
+      "https://doi.org/10.1111/j.1540-4560.1985.tb01134.x"
+    ],
+    "legacySourceFile": "js/data_batch20.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b006-lifespan-1",
+    "domainId": "lifespan",
+    "legacySourceId": "legacy-f663d968723ded8b",
+    "prompt": "Which combination best reflects a developmental-resilience perspective?",
+    "choices": [
+      "High intelligence operating alone, without support from family or community",
+      "Individual skills combined with supportive relationships and community resources",
+      "Complete protection from adversity, stress, and developmental challenge",
+      "A fixed genetic trait whose effects cannot change through later experience"
+    ],
+    "answerIndex": 1,
+    "rationale": "Resilience is a dynamic process of positive adaptation in adversity, supported by interacting personal and environmental protective factors. It is not a single immutable trait or simply the absence of risk.",
+    "references": [
+      "https://doi.org/10.1111/1467-8721.ep10772327"
+    ],
+    "legacySourceFile": "js/data_batch20.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b006-lifespan-2",
+    "domainId": "lifespan",
+    "legacySourceId": "legacy-e3465005a1370431",
+    "prompt": "A tutor gives prompts calibrated to a learner’s current need, then gradually removes them as the learner becomes independent. This is an example of:",
+    "choices": [
+      "Habituation",
+      "Overcorrection",
+      "Response generalization",
+      "Scaffolding"
+    ],
+    "answerIndex": 3,
+    "rationale": "Scaffolding is temporary, contingent support that helps a learner accomplish a task and is reduced as competence and independence increase.",
+    "references": [
+      "https://doi.org/10.1111/j.1469-7610.1976.tb00381.x"
+    ],
+    "legacySourceFile": "js/data_batch21.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b006-assessment-1",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-d7c0dc6838e2bae7",
+    "prompt": "Which structure is the major fiber tract connecting the left and right cerebral hemispheres?",
+    "choices": [
+      "Corpus callosum",
+      "Internal capsule",
+      "Optic chiasm",
+      "Fornix"
+    ],
+    "answerIndex": 0,
+    "rationale": "The corpus callosum is the brain’s largest commissural fiber tract and provides extensive communication between the cerebral hemispheres.",
+    "references": [
+      "https://doi.org/10.1038/nrn2107"
+    ],
+    "legacySourceFile": "js/data_batch51.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b006-assessment-2",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-ac32dfb9ad5e4f82",
+    "prompt": "After a brain injury, a patient cannot recall events that occurred shortly before the injury but can form new memories. The loss of pre-injury memories is called:",
+    "choices": [
+      "Anterograde amnesia",
+      "Procedural amnesia",
+      "Retrograde amnesia",
+      "Prosopagnosia"
+    ],
+    "answerIndex": 2,
+    "rationale": "Retrograde amnesia is loss of information acquired before the onset of amnesia. Anterograde amnesia instead concerns impaired formation of new lasting memories after onset.",
+    "references": [
+      "https://doi.org/10.1016/0959-4388(95)80023-9"
+    ],
+    "legacySourceFile": "js/data_batch51.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b006-intervention-1",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-a853520bbb809962",
+    "prompt": "Why should improvement from baseline in a placebo group not automatically be attributed entirely to a placebo mechanism?",
+    "choices": [
+      "Placebo groups are incapable of showing genuine or sustained improvement",
+      "The change can include natural history, regression to the mean, and measurement effects",
+      "Random assignment ensures symptoms remain constant throughout the observation period",
+      "A placebo response necessarily equals the treatment-specific effect of an active drug"
+    ],
+    "answerIndex": 1,
+    "rationale": "Pre–post change in a placebo group is a placebo response, which can combine expectancy and context with spontaneous change, regression to the mean, and measurement effects. Isolating a placebo effect requires an appropriate comparison.",
+    "references": [
+      "https://doi.org/10.3389/fpsyt.2019.00407"
+    ],
+    "legacySourceFile": "js/data_batch19.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b006-intervention-2",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-26aa3b3ac194ddd0",
+    "prompt": "After a child writes on a wall, a behavior plan requires cleaning that wall and practicing the appropriate cleaning routine on several nearby surfaces. This procedure is:",
+    "choices": [
+      "Differential reinforcement",
+      "Stimulus fading",
+      "Extinction",
+      "Overcorrection"
+    ],
+    "answerIndex": 3,
+    "rationale": "Overcorrection makes a consequence contingent on the target behavior and may combine restitution—repairing the environment—with positive practice of an appropriate response.",
+    "references": [
+      "https://doi.org/10.1901/jaba.1973.6-1"
+    ],
+    "legacySourceFile": "js/data_batch25.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b006-research-1",
+    "domainId": "research",
+    "legacySourceId": "legacy-a200d0bc075b7d39",
+    "prompt": "Investigators use records from ten years ago to identify exposed and unexposed groups, then determine outcomes that occurred between then and now. This is best classified as a:",
+    "choices": [
+      "Retrospective cohort study",
+      "Prospective cohort study",
+      "Cross-sectional survey",
+      "Randomized controlled trial"
+    ],
+    "answerIndex": 0,
+    "rationale": "A retrospective cohort study constructs cohorts using past exposure information and follows their recorded experience forward to outcomes that have already occurred by the time of study. No exposure is randomly assigned.",
+    "references": [
+      "https://pubmed.ncbi.nlm.nih.gov/11830217/"
+    ],
+    "legacySourceFile": "js/data_batch16.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b006-research-2",
+    "domainId": "research",
+    "legacySourceId": "legacy-e98f930b441021ed",
+    "prompt": "Which value is impossible for a Pearson correlation coefficient?",
+    "choices": [
+      "−0.70",
+      "0.00",
+      "1.20",
+      "0.85"
+    ],
+    "answerIndex": 2,
+    "rationale": "Pearson’s correlation coefficient ranges from −1 to +1. Therefore 1.20 is outside the possible range; the other values are permissible.",
+    "references": [
+      "https://www.itl.nist.gov/div898/handbook/glossary.htm"
+    ],
+    "legacySourceFile": "js/data_batch27.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b006-professional-1",
+    "domainId": "professional",
+    "legacySourceId": "legacy-46bd430ba996bdb8",
+    "prompt": "Under APA Ethics Code Standard 8.02, which information belongs in informed consent for research?",
+    "choices": [
+      "A guarantee that participation will involve no risk, discomfort, or inconvenience",
+      "Purpose, procedures, withdrawal rights, risks, benefits, confidentiality, incentives, and contacts",
+      "A promise that each participant will ultimately receive the experimental intervention",
+      "The investigators’ preferred explanation of the results before any data are collected"
+    ],
+    "answerIndex": 1,
+    "rationale": "Standard 8.02 requires information including the research purpose, expected duration and procedures; rights and consequences related to declining or withdrawing; foreseeable risks or discomfort; prospective benefits; confidentiality limits; incentives; and whom to contact.",
+    "references": [
+      "https://www.apa.org/ethics/code/manual-updates.html"
+    ],
+    "legacySourceFile": "js/data_batch21.js"
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-10",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b006-professional-2",
+    "domainId": "professional",
+    "legacySourceId": "legacy-eb3cfe6ee12a5874",
+    "prompt": "A psychologist wants to use an assessment with a population for which validity and reliability have not been established. Under APA Ethics Code Standard 9.02, the psychologist should:",
+    "choices": [
+      "Assume evidence from any population generalizes without limitation",
+      "Use the instrument only if the client signs away all concerns",
+      "Describe the strengths and limitations of the results and interpretation",
+      "Report the scores as definitive because the test is commercially published"
+    ],
+    "answerIndex": 2,
+    "rationale": "Standard 9.02 calls for using assessment instruments whose validity and reliability are established for the relevant population and, when that evidence is not established, describing the strengths and limitations of results and interpretation.",
+    "references": [
+      "https://www.apa.org/ethics/code"
+    ],
+    "legacySourceFile": "js/data_batch22.js"
   }
 ]

@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-11T00:35:13.488Z",
+  "generatedAt": "2026-07-11T03:51:57.293Z",
   "target": "Exactly 500 blueprint-weighted native EPPP questions; every slot must pass the existing native QA gate before completion.",
   "summary": {
     "targetSlots": 500,
-    "qaPassed": 80,
-    "selectedPendingQa": 420,
+    "qaPassed": 112,
+    "selectedPendingQa": 388,
     "legacySourceSlots": 492,
     "nativeOriginalSlots": 8,
-    "webSourcePresentPendingVerification": 235,
+    "webSourcePresentPendingVerification": 203,
     "bibliographicSourceNeedsResolution": 157,
     "sourceMissing": 28
   },
@@ -18,9 +18,9 @@
       "label": "Biological bases of behavior",
       "blueprintWeight": 0.1,
       "target": 50,
-      "qaPassed": 10,
-      "selectedPending": 40,
-      "sourceReadyPending": 40,
+      "qaPassed": 14,
+      "selectedPending": 36,
+      "sourceReadyPending": 36,
       "sourceResolutionPending": 0
     },
     {
@@ -28,9 +28,9 @@
       "label": "Cognitive-affective bases of behavior",
       "blueprintWeight": 0.13,
       "target": 65,
-      "qaPassed": 10,
-      "selectedPending": 55,
-      "sourceReadyPending": 51,
+      "qaPassed": 14,
+      "selectedPending": 51,
+      "sourceReadyPending": 47,
       "sourceResolutionPending": 4
     },
     {
@@ -38,9 +38,9 @@
       "label": "Social and cultural bases of behavior",
       "blueprintWeight": 0.11,
       "target": 55,
-      "qaPassed": 10,
-      "selectedPending": 45,
-      "sourceReadyPending": 36,
+      "qaPassed": 14,
+      "selectedPending": 41,
+      "sourceReadyPending": 32,
       "sourceResolutionPending": 9
     },
     {
@@ -48,9 +48,9 @@
       "label": "Growth and lifespan development",
       "blueprintWeight": 0.12,
       "target": 60,
-      "qaPassed": 10,
-      "selectedPending": 50,
-      "sourceReadyPending": 18,
+      "qaPassed": 14,
+      "selectedPending": 46,
+      "sourceReadyPending": 14,
       "sourceResolutionPending": 32
     },
     {
@@ -58,9 +58,9 @@
       "label": "Assessment and diagnosis",
       "blueprintWeight": 0.16,
       "target": 80,
-      "qaPassed": 10,
-      "selectedPending": 70,
-      "sourceReadyPending": 7,
+      "qaPassed": 14,
+      "selectedPending": 66,
+      "sourceReadyPending": 3,
       "sourceResolutionPending": 63
     },
     {
@@ -68,9 +68,9 @@
       "label": "Treatment, intervention, prevention and supervision",
       "blueprintWeight": 0.15,
       "target": 75,
-      "qaPassed": 10,
-      "selectedPending": 65,
-      "sourceReadyPending": 17,
+      "qaPassed": 14,
+      "selectedPending": 61,
+      "sourceReadyPending": 13,
       "sourceResolutionPending": 48
     },
     {
@@ -78,9 +78,9 @@
       "label": "Research methods and statistics",
       "blueprintWeight": 0.07,
       "target": 35,
-      "qaPassed": 10,
-      "selectedPending": 25,
-      "sourceReadyPending": 12,
+      "qaPassed": 14,
+      "selectedPending": 21,
+      "sourceReadyPending": 8,
       "sourceResolutionPending": 13
     },
     {
@@ -88,9 +88,9 @@
       "label": "Ethical, legal, and professional issues",
       "blueprintWeight": 0.16,
       "target": 80,
-      "qaPassed": 10,
-      "selectedPending": 70,
-      "sourceReadyPending": 54,
+      "qaPassed": 14,
+      "selectedPending": 66,
+      "sourceReadyPending": 50,
       "sourceResolutionPending": 16
     }
   ],
@@ -259,7 +259,7 @@
     },
     {
       "slotType": "legacy-source",
-      "nativeItemId": null,
+      "nativeItemId": "eppp-b006-biological-1",
       "legacyId": "legacy-554a6292d6472d37",
       "sourceFile": "js/data_batch15.js",
       "domainId": "biological",
@@ -270,16 +270,13 @@
       "extractedSourceUrls": [
         "https://consensus.nih.gov/2000/2000phenylketonuria113html.htm"
       ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
     },
     {
       "slotType": "legacy-source",
-      "nativeItemId": null,
+      "nativeItemId": "eppp-b005-biological-2",
       "legacyId": "legacy-a85e7a213331e169",
       "sourceFile": "js/data_batch16.js",
       "domainId": "biological",
@@ -290,16 +287,13 @@
       "extractedSourceUrls": [
         "https://doi.org/10.3389/neuro.09.031.2009"
       ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
     },
     {
       "slotType": "legacy-source",
-      "nativeItemId": null,
+      "nativeItemId": "eppp-b005-biological-1",
       "legacyId": "legacy-c9e228584adf0bfd",
       "sourceFile": "js/data_batch17.js",
       "domainId": "biological",
@@ -310,12 +304,26 @@
       "extractedSourceUrls": [
         "https://doi.org/10.1006/cogp.1999.0734"
       ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b006-biological-2",
+      "legacyId": "legacy-40254ffaaf496f6f",
+      "sourceFile": "js/data_batch17.js",
+      "domainId": "biological",
+      "prompt": "Glia cells include all EXCEPT:",
+      "answerIndex": 3,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1038/457675a"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
     },
     {
       "slotType": "legacy-source",
@@ -329,26 +337,6 @@
       "automatedFlags": [],
       "extractedSourceUrls": [
         "https://doi.org/10.1038/nrn2573"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-40254ffaaf496f6f",
-      "sourceFile": "js/data_batch17.js",
-      "domainId": "biological",
-      "prompt": "Glia cells include all EXCEPT:",
-      "answerIndex": 3,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1038/457675a"
       ],
       "status": "curation-selected",
       "sourceReadiness": "web-source-present-needs-verification",
@@ -1208,6 +1196,23 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b006-cognitive-2",
+      "legacyId": "legacy-70f22cd45201d7ba",
+      "sourceFile": "js/data_batch14.js",
+      "domainId": "cognitive-affective",
+      "prompt": "Cognitive load theory distinguishes between:",
+      "answerIndex": 1,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1207/s15516709cog1202_4"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b003-cognitive-1",
       "legacyId": "legacy-d8c90c45b53fae29",
       "sourceFile": "js/data_batch14.js",
@@ -1276,6 +1281,57 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b005-cognitive-1",
+      "legacyId": "legacy-53d5b7f197b27b6e",
+      "sourceFile": "js/data_batch18.js",
+      "domainId": "cognitive-affective",
+      "prompt": "Intrinsic motivation (Deci & Ryan) is enhanced by satisfaction of:",
+      "answerIndex": 1,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1207/S15327965PLI1104_01"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b005-cognitive-2",
+      "legacyId": "legacy-82384406b0e1b9e1",
+      "sourceFile": "js/data_batch18.js",
+      "domainId": "cognitive-affective",
+      "prompt": "Mood-congruent memory refers to:",
+      "answerIndex": 1,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1037/0003-066X.36.2.129"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b006-cognitive-1",
+      "legacyId": "legacy-5445b5ac420302bb",
+      "sourceFile": "js/data_batch20.js",
+      "domainId": "cognitive-affective",
+      "prompt": "Baddeley's model of working memory includes:",
+      "answerIndex": 1,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1016/S1364-6613(00)01538-2"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-migrated-cognitive-1",
       "legacyId": "legacy-58e2b0cbc9a5a944",
       "sourceFile": "js/questions_bank.js",
@@ -1292,46 +1348,6 @@
     {
       "slotType": "legacy-source",
       "nativeItemId": null,
-      "legacyId": "legacy-70f22cd45201d7ba",
-      "sourceFile": "js/data_batch14.js",
-      "domainId": "cognitive-affective",
-      "prompt": "Cognitive load theory distinguishes between:",
-      "answerIndex": 1,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1207/s15516709cog1202_4"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-53d5b7f197b27b6e",
-      "sourceFile": "js/data_batch18.js",
-      "domainId": "cognitive-affective",
-      "prompt": "Intrinsic motivation (Deci & Ryan) is enhanced by satisfaction of:",
-      "answerIndex": 1,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1207/S15327965PLI1104_01"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
       "legacyId": "legacy-5c245b3d991e25dc",
       "sourceFile": "js/data_batch18.js",
       "domainId": "cognitive-affective",
@@ -1341,46 +1357,6 @@
       "automatedFlags": [],
       "extractedSourceUrls": [
         "https://doi.org/10.1037/0022-3514.77.6.1121"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-82384406b0e1b9e1",
-      "sourceFile": "js/data_batch18.js",
-      "domainId": "cognitive-affective",
-      "prompt": "Mood-congruent memory refers to:",
-      "answerIndex": 1,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1037/0003-066X.36.2.129"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-5445b5ac420302bb",
-      "sourceFile": "js/data_batch20.js",
-      "domainId": "cognitive-affective",
-      "prompt": "Baddeley's model of working memory includes:",
-      "answerIndex": 1,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1016/S1364-6613(00)01538-2"
       ],
       "status": "curation-selected",
       "sourceReadiness": "web-source-present-needs-verification",
@@ -2675,6 +2651,74 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b005-social-1",
+      "legacyId": "legacy-d14c26de4aa41b53",
+      "sourceFile": "js/data_batch15.js",
+      "domainId": "social-cultural",
+      "prompt": "System justification theory proposes that:",
+      "answerIndex": 1,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1111/j.2044-8309.1994.tb01008.x"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b005-social-2",
+      "legacyId": "legacy-206b0166156e0eba",
+      "sourceFile": "js/data_batch17.js",
+      "domainId": "social-cultural",
+      "prompt": "Social loafing is MOST likely when:",
+      "answerIndex": 2,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1037/0022-3514.37.6.822"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b006-social-1",
+      "legacyId": "legacy-60652f3b3bdf958a",
+      "sourceFile": "js/data_batch20.js",
+      "domainId": "social-cultural",
+      "prompt": "Social facilitation occurs when the presence of others:",
+      "answerIndex": 1,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1126/science.149.3681.269"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b006-social-2",
+      "legacyId": "legacy-ff4bb2cb9ca3129d",
+      "sourceFile": "js/data_batch20.js",
+      "domainId": "social-cultural",
+      "prompt": "Intergroup anxiety refers to:",
+      "answerIndex": 1,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1111/j.1540-4560.1985.tb01134.x"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": null,
       "legacyId": "legacy-15d49ed16da120cc",
       "sourceFile": "js/questions_bank.js",
@@ -2705,86 +2749,6 @@
       "automatedFlags": [],
       "extractedSourceUrls": [
         "https://doi.org/10.1037/0003-066X.52.6.613"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-d14c26de4aa41b53",
-      "sourceFile": "js/data_batch15.js",
-      "domainId": "social-cultural",
-      "prompt": "System justification theory proposes that:",
-      "answerIndex": 1,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1111/j.2044-8309.1994.tb01008.x"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-206b0166156e0eba",
-      "sourceFile": "js/data_batch17.js",
-      "domainId": "social-cultural",
-      "prompt": "Social loafing is MOST likely when:",
-      "answerIndex": 2,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1037/0022-3514.37.6.822"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-60652f3b3bdf958a",
-      "sourceFile": "js/data_batch20.js",
-      "domainId": "social-cultural",
-      "prompt": "Social facilitation occurs when the presence of others:",
-      "answerIndex": 1,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1126/science.149.3681.269"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-ff4bb2cb9ca3129d",
-      "sourceFile": "js/data_batch20.js",
-      "domainId": "social-cultural",
-      "prompt": "Intergroup anxiety refers to:",
-      "answerIndex": 1,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1111/j.1540-4560.1985.tb01134.x"
       ],
       "status": "curation-selected",
       "sourceReadiness": "web-source-present-needs-verification",
@@ -3752,6 +3716,23 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b005-lifespan-1",
+      "legacyId": "legacy-b1d570e69fed17de",
+      "sourceFile": "js/data_batch18.js",
+      "domainId": "lifespan",
+      "prompt": "Fluid intelligence (Gf) typically:",
+      "answerIndex": 1,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1016/0001-6918(67)90011-X"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b003-lifespan-2",
       "legacyId": "legacy-70ede06073b8d873",
       "sourceFile": "js/data_batch18.js",
@@ -3803,6 +3784,61 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b006-lifespan-1",
+      "legacyId": "legacy-f663d968723ded8b",
+      "sourceFile": "js/data_batch20.js",
+      "domainId": "lifespan",
+      "prompt": "Resiliency research has identified protective factors including:",
+      "answerIndex": 1,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1111/1467-8721.ep10772327"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b005-lifespan-2",
+      "legacyId": "legacy-abb84eede8dabe01",
+      "sourceFile": "js/data_batch19.js",
+      "domainId": "lifespan",
+      "prompt": "Puberty onset is primarily triggered by:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1038/nn1326"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b006-lifespan-2",
+      "legacyId": "legacy-e3465005a1370431",
+      "sourceFile": "js/data_batch21.js",
+      "domainId": "lifespan",
+      "prompt": "Scaffolding (Bruner, based on Vygotsky) involves:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1111/j.1469-7610.1976.tb00381.x"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-migrated-lifespan-1",
       "legacyId": "legacy-88a898f7ecad4728",
       "sourceFile": "js/data_batch14.js",
@@ -3815,46 +3851,6 @@
       "status": "qa-passed",
       "sourceReadiness": "qa-passed",
       "requiredWork": []
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-b1d570e69fed17de",
-      "sourceFile": "js/data_batch18.js",
-      "domainId": "lifespan",
-      "prompt": "Fluid intelligence (Gf) typically:",
-      "answerIndex": 1,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1016/0001-6918(67)90011-X"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-f663d968723ded8b",
-      "sourceFile": "js/data_batch20.js",
-      "domainId": "lifespan",
-      "prompt": "Resiliency research has identified protective factors including:",
-      "answerIndex": 1,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1111/1467-8721.ep10772327"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
     },
     {
       "slotType": "legacy-source",
@@ -3879,29 +3875,6 @@
     {
       "slotType": "legacy-source",
       "nativeItemId": null,
-      "legacyId": "legacy-abb84eede8dabe01",
-      "sourceFile": "js/data_batch19.js",
-      "domainId": "lifespan",
-      "prompt": "Puberty onset is primarily triggered by:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1038/nn1326"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
       "legacyId": "legacy-5f25b0b9a6cb8c01",
       "sourceFile": "js/data_batch19.js",
       "domainId": "lifespan",
@@ -3913,29 +3886,6 @@
       ],
       "extractedSourceUrls": [
         "https://doi.org/10.1093/geront/1.1.8"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-e3465005a1370431",
-      "sourceFile": "js/data_batch21.js",
-      "domainId": "lifespan",
-      "prompt": "Scaffolding (Bruner, based on Vygotsky) involves:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1111/j.1469-7610.1976.tb00381.x"
       ],
       "status": "curation-selected",
       "sourceReadiness": "web-source-present-needs-verification",
@@ -5011,6 +4961,25 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b005-assessment-1",
+      "legacyId": "legacy-0f70388357165d1b",
+      "sourceFile": "js/data_batch27.js",
+      "domainId": "assessment",
+      "prompt": "The Flynn effect describes:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1037/0033-2909.101.2.171"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b004-assessment-1",
       "legacyId": "legacy-6e9897a21a8f439e",
       "sourceFile": "js/data.js",
@@ -5030,6 +4999,25 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b005-assessment-2",
+      "legacyId": "legacy-ce4b0ab9e0564d2f",
+      "sourceFile": "js/data_batch22.js",
+      "domainId": "assessment",
+      "prompt": "Content validity is established by:",
+      "answerIndex": 0,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1037/1040-3590.7.3.238"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b004-assessment-2",
       "legacyId": "legacy-6a8dbb6b4667303a",
       "sourceFile": "js/data_batch49.js",
@@ -5042,6 +5030,44 @@
       ],
       "extractedSourceUrls": [
         "https://doi.org/10.1037/1040-3590.15.4.446"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b006-assessment-1",
+      "legacyId": "legacy-d7c0dc6838e2bae7",
+      "sourceFile": "js/data_batch51.js",
+      "domainId": "assessment",
+      "prompt": "The corpus callosum connects:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1038/nrn2107"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b006-assessment-2",
+      "legacyId": "legacy-ac32dfb9ad5e4f82",
+      "sourceFile": "js/data_batch51.js",
+      "domainId": "assessment",
+      "prompt": "Retrograde amnesia involves:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1016/0959-4388(95)80023-9"
       ],
       "status": "qa-passed",
       "sourceReadiness": "qa-passed",
@@ -5079,98 +5105,6 @@
       "sourceReadiness": "web-source-present-needs-verification",
       "requiredWork": [
         "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-0f70388357165d1b",
-      "sourceFile": "js/data_batch27.js",
-      "domainId": "assessment",
-      "prompt": "The Flynn effect describes:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1037/0033-2909.101.2.171"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-ce4b0ab9e0564d2f",
-      "sourceFile": "js/data_batch22.js",
-      "domainId": "assessment",
-      "prompt": "Content validity is established by:",
-      "answerIndex": 0,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1037/1040-3590.7.3.238"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-d7c0dc6838e2bae7",
-      "sourceFile": "js/data_batch51.js",
-      "domainId": "assessment",
-      "prompt": "The corpus callosum connects:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1038/nrn2107"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-ac32dfb9ad5e4f82",
-      "sourceFile": "js/data_batch51.js",
-      "domainId": "assessment",
-      "prompt": "Retrograde amnesia involves:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1016/0959-4388(95)80023-9"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "diversify-duplicate-concept",
         "accessibility-and-bias-review"
       ]
     },
@@ -6605,6 +6539,23 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b005-intervention-2",
+      "legacyId": "legacy-096272149690467a",
+      "sourceFile": "js/data_batch18.js",
+      "domainId": "intervention",
+      "prompt": "Pharmacotherapy for ADHD in children typically involves:",
+      "answerIndex": 1,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1542/peds.2019-2528"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b001-intervention-1",
       "legacyId": "legacy-bf5989a3a6ecc00c",
       "sourceFile": "js/data_batch17.js",
@@ -6700,6 +6651,25 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b006-intervention-1",
+      "legacyId": "legacy-a853520bbb809962",
+      "sourceFile": "js/data_batch19.js",
+      "domainId": "intervention",
+      "prompt": "The placebo effect in psychotherapy research demonstrates that:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.3389/fpsyt.2019.00407"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b002-intervention-1",
       "legacyId": "legacy-dd3a9b9a5c52a956",
       "sourceFile": "js/data_batch22.js",
@@ -6738,50 +6708,7 @@
     },
     {
       "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-096272149690467a",
-      "sourceFile": "js/data_batch18.js",
-      "domainId": "intervention",
-      "prompt": "Pharmacotherapy for ADHD in children typically involves:",
-      "answerIndex": 1,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1542/peds.2019-2528"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-a853520bbb809962",
-      "sourceFile": "js/data_batch19.js",
-      "domainId": "intervention",
-      "prompt": "The placebo effect in psychotherapy research demonstrates that:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.3389/fpsyt.2019.00407"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
+      "nativeItemId": "eppp-b005-intervention-1",
       "legacyId": "legacy-5918fa8422da37a3",
       "sourceFile": "js/data_batch23.js",
       "domainId": "intervention",
@@ -6794,13 +6721,28 @@
       "extractedSourceUrls": [
         "https://doi.org/10.1037/0033-3204.43.4.531"
       ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b006-intervention-2",
+      "legacyId": "legacy-26aa3b3ac194ddd0",
+      "sourceFile": "js/data_batch25.js",
+      "domainId": "intervention",
+      "prompt": "Overcorrection in behavioral therapy involves:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1901/jaba.1973.6-1"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
     },
     {
       "slotType": "legacy-source",
@@ -6816,29 +6758,6 @@
       ],
       "extractedSourceUrls": [
         "https://doi.org/10.1001/archpsyc.1975.01760260059004"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-26aa3b3ac194ddd0",
-      "sourceFile": "js/data_batch25.js",
-      "domainId": "intervention",
-      "prompt": "Overcorrection in behavioral therapy involves:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1901/jaba.1973.6-1"
       ],
       "status": "curation-selected",
       "sourceReadiness": "web-source-present-needs-verification",
@@ -8313,6 +8232,25 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b006-research-1",
+      "legacyId": "legacy-a200d0bc075b7d39",
+      "sourceFile": "js/data_batch16.js",
+      "domainId": "research",
+      "prompt": "Retrospective studies differ from prospective studies in that retrospective studies:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1016/S0140-6736(02)07500-1"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b004-research-2",
       "legacyId": "legacy-8d0bf407752ebe8e",
       "sourceFile": "js/data_batch19.js",
@@ -8332,30 +8270,7 @@
     },
     {
       "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-a200d0bc075b7d39",
-      "sourceFile": "js/data_batch16.js",
-      "domainId": "research",
-      "prompt": "Retrospective studies differ from prospective studies in that retrospective studies:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1016/S0140-6736(02)07500-1"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
+      "nativeItemId": "eppp-b005-research-1",
       "legacyId": "legacy-6dadcc15cd4b810b",
       "sourceFile": "js/data_batch21.js",
       "domainId": "research",
@@ -8368,13 +8283,47 @@
       "extractedSourceUrls": [
         "https://www.hhs.gov/ohrp/regulations-and-policy/regulations/45-cfr-46/index.html"
       ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b005-research-2",
+      "legacyId": "legacy-4c500b50a07d0248",
+      "sourceFile": "js/data_batch25.js",
+      "domainId": "research",
+      "prompt": "Type I error occurs when:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1098/rsta.1933.0009"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b006-research-2",
+      "legacyId": "legacy-e98f930b441021ed",
+      "sourceFile": "js/data_batch27.js",
+      "domainId": "research",
+      "prompt": "The Pearson r correlation coefficient ranges from:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1098/rspl.1895.0041"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
     },
     {
       "slotType": "legacy-source",
@@ -8402,29 +8351,6 @@
     {
       "slotType": "legacy-source",
       "nativeItemId": null,
-      "legacyId": "legacy-4c500b50a07d0248",
-      "sourceFile": "js/data_batch25.js",
-      "domainId": "research",
-      "prompt": "Type I error occurs when:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1098/rsta.1933.0009"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
       "legacyId": "legacy-41a08fe5f5307cbc",
       "sourceFile": "js/data_batch26.js",
       "domainId": "research",
@@ -8436,29 +8362,6 @@
       ],
       "extractedSourceUrls": [
         "https://doi.org/10.1037/0000165-000"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-e98f930b441021ed",
-      "sourceFile": "js/data_batch27.js",
-      "domainId": "research",
-      "prompt": "The Pearson r correlation coefficient ranges from:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1098/rspl.1895.0041"
       ],
       "status": "curation-selected",
       "sourceReadiness": "web-source-present-needs-verification",
@@ -8880,6 +8783,23 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b005-professional-2",
+      "legacyId": "legacy-34f088d340cd67de",
+      "sourceFile": "js/data_batch15.js",
+      "domainId": "professional",
+      "prompt": "Informed consent must include:",
+      "answerIndex": 1,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b001-professional-1",
       "legacyId": "legacy-2df56cbc883f29da",
       "sourceFile": "js/data_batch15.js",
@@ -9001,6 +8921,44 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b005-professional-1",
+      "legacyId": "legacy-1a968511ac123d64",
+      "sourceFile": "js/data_batch21.js",
+      "domainId": "professional",
+      "prompt": "A psychologist who knowingly makes a false statement in a professional context violates:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b006-professional-1",
+      "legacyId": "legacy-46bd430ba996bdb8",
+      "sourceFile": "js/data_batch21.js",
+      "domainId": "professional",
+      "prompt": "Psychologists conducting research must:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b004-professional-1",
       "legacyId": "legacy-da7752ceccc5fc5a",
       "sourceFile": "js/data_batch22.js",
@@ -9039,23 +8997,22 @@
     },
     {
       "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-34f088d340cd67de",
-      "sourceFile": "js/data_batch15.js",
+      "nativeItemId": "eppp-b006-professional-2",
+      "legacyId": "legacy-eb3cfe6ee12a5874",
+      "sourceFile": "js/data_batch22.js",
       "domainId": "professional",
-      "prompt": "Informed consent must include:",
+      "prompt": "Psychologists using psychological tests must:",
       "answerIndex": 1,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
       "extractedSourceUrls": [
         "https://www.apa.org/ethics/code"
       ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
     },
     {
       "slotType": "legacy-source",
@@ -9094,75 +9051,6 @@
       ],
       "extractedSourceUrls": [
         "https://supreme.justia.com/cases/federal/us/518/1/"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-1a968511ac123d64",
-      "sourceFile": "js/data_batch21.js",
-      "domainId": "professional",
-      "prompt": "A psychologist who knowingly makes a false statement in a professional context violates:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://www.apa.org/ethics/code"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-46bd430ba996bdb8",
-      "sourceFile": "js/data_batch21.js",
-      "domainId": "professional",
-      "prompt": "Psychologists conducting research must:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://www.apa.org/ethics/code"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-eb3cfe6ee12a5874",
-      "sourceFile": "js/data_batch22.js",
-      "domainId": "professional",
-      "prompt": "Psychologists using psychological tests must:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://www.apa.org/ethics/code"
       ],
       "status": "curation-selected",
       "sourceReadiness": "web-source-present-needs-verification",

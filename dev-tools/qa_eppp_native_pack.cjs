@@ -11,7 +11,8 @@ const legacyAuditPath = path.join(root, 'test_prep', 'eppp_legacy', 'content_aud
 const outputRoots = [path.join(root, 'test_prep'), path.join(root, 'prismflow-deploy', 'public', 'test_prep')];
 const expectedChecks = ['authoritative-source', 'one-best-answer', 'distractor-quality', 'clue-resistance', 'rationale-quality', 'provenance'];
 const authoritativeHosts = [
-  'aasm.org', 'www.aasm.org', 'apa.org', 'www.apa.org', 'cdc.gov', 'www.cdc.gov', 'collegeboard.org', 'clep.collegeboard.org',
+  'aasm.org', 'www.aasm.org', 'apa.org', 'www.apa.org', 'cdc.gov', 'www.cdc.gov', 'collegeboard.org', 'clep.collegeboard.org', 'hhs.gov', 'www.hhs.gov',
+  'www.itl.nist.gov',
   'doi.org', 'europepmc.org', 'journals.sagepub.com', 'ncbi.nlm.nih.gov', 'nimh.nih.gov',
   'www.nimh.nih.gov', 'nist.gov', 'www.nist.gov', 'ods.od.nih.gov', 'pmc.ncbi.nlm.nih.gov',
   'pubmed.ncbi.nlm.nih.gov', 'www.ncbi.nlm.nih.gov', 'routledge.com', 'www.routledge.com', 'who.int', 'www.who.int',
