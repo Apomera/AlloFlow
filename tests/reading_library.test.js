@@ -213,6 +213,22 @@ describe('textLayoutClass — picture-book text layout', () => {
   });
 });
 
+describe('chromeThemeClass / readingTimeLabel', () => {
+  it('maps only real chrome themes to a scoped class', () => {
+    expect(RL._chromeThemeClass('dark')).toBe('rl-theme-dark');
+    expect(RL._chromeThemeClass('highContrast')).toBe('rl-theme-highContrast');
+    expect(RL._chromeThemeClass('sepia')).toBe('rl-theme-sepia');
+    expect(RL._chromeThemeClass('default')).toBe('');
+    expect(RL._chromeThemeClass('nonsense')).toBe('');
+  });
+  it('estimates reading time by level and skips link-out cards', () => {
+    expect(RL._readingTimeLabel({ level: '4', wordCount: 1400 })).toMatch(/~\s*10\s*min/);
+    expect(RL._readingTimeLabel({ level: '6', wordCount: 190 * 75, contentType: 'public-domain-full-text' })).toMatch(/hr/);
+    expect(RL._readingTimeLabel({ level: '4', wordCount: 1400, contentType: 'public-domain-catalog-card' })).toBe('');
+    expect(RL._readingTimeLabel({ level: '4' })).toBe('');
+  });
+});
+
 describe('AI translation helpers', () => {
   it('parseTranslation accepts exact page-count JSON (with fence noise)', () => {
     const raw = '```json\n{"title":"Sheeko","pages":["a","","c"]}\n```';

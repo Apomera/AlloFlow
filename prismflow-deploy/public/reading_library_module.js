@@ -298,6 +298,56 @@
       }
     } catch (_) {}
   }
+
+  // Whole-modal theming. The page surface is themed inline; the CHROME (toolbar,
+  // pager, menus, browse cards, inputs) is a wall of light Tailwind tokens, so
+  // we override the specific tokens the reader uses — scoped to a per-theme
+  // class on the modal card (.rl-theme-<id>) so nothing outside the reader is
+  // touched. Dark and High contrast are the ones that were jarring; the light
+  // tints (sepia/warm/blue) get a matching frame too for consistency.
+  var CHROME_THEMES = {
+    dark: { card: '#0f172a', surf: '#1e293b', surf2: '#334155', surf3: '#475569', fg: '#e2e8f0', mut: '#94a3b8', border: '#334155', link: '#93c5fd' },
+    highContrast: { card: '#000000', surf: '#000000', surf2: '#000000', surf3: '#111111', fg: '#ffffff', mut: '#ffffff', border: '#ffffff', link: '#ffff00', bw: '3px' },
+    sepia: { card: '#f4ecd8', surf: '#efe6cf', surf2: '#e6dcc0', surf3: '#dccfae', fg: '#5b4636', mut: '#7a6a55', border: '#d8cbaa', link: '#8a5a2b' },
+    warm: { card: '#fdf6e3', surf: '#f7efd8', surf2: '#efe6cf', surf3: '#e6dcc0', fg: '#433422', mut: '#6b5a45', border: '#e6dcc0', link: '#8a5a2b' },
+    blue: { card: '#e8f0fe', surf: '#dbe7fb', surf2: '#cddcf6', surf3: '#bcd0f2', fg: '#1e293b', mut: '#475569', border: '#c7d7f0', link: '#1d4ed8' },
+  };
+  function chromeThemeClass(themeId) {
+    return CHROME_THEMES[themeId] ? 'rl-theme-' + themeId : '';
+  }
+  function ensureReaderThemes() {
+    try {
+      if (typeof document === 'undefined' || !document.head) return;
+      if (document.getElementById('allo-reader-themes-css')) return;
+      var rules = [];
+      Object.keys(CHROME_THEMES).forEach(function (id) {
+        var t = CHROME_THEMES[id];
+        var s = '.rl-theme-' + id;
+        var bw = t.bw || '1px';
+        rules.push(s + '{background:' + t.card + ' !important;color:' + t.fg + ';}');
+        rules.push(s + ' .bg-white{background:' + t.surf + ' !important;}');
+        rules.push(s + ' .bg-slate-50,' + s + ' .bg-slate-100{background:' + t.surf2 + ' !important;}');
+        rules.push(s + ' .bg-slate-200{background:' + t.surf3 + ' !important;}');
+        rules.push(s + ' .text-slate-900,' + s + ' .text-slate-800,' + s + ' .text-slate-700{color:' + t.fg + ' !important;}');
+        rules.push(s + ' .text-slate-600,' + s + ' .text-slate-500,' + s + ' .text-slate-400{color:' + t.mut + ' !important;}');
+        rules.push(s + ' .border-slate-100,' + s + ' .border-slate-200,' + s + ' .border-slate-300{border-color:' + t.border + ' !important;}');
+        rules.push(s + ' input,' + s + ' select,' + s + ' textarea{background:' + t.surf + ' !important;color:' + t.fg + ' !important;border:' + bw + ' solid ' + t.border + ' !important;}');
+        rules.push(s + ' a{color:' + t.link + ' !important;}');
+        // The narration/read buttons keep their emerald identity; just make sure
+        // their text stays legible on the themed surface for the darkest themes.
+        if (id === 'dark' || id === 'highContrast') {
+          rules.push(s + ' .hover\\:bg-slate-100:hover,' + s + ' .hover\\:bg-slate-200:hover{background:' + t.surf3 + ' !important;}');
+        }
+        if (t.bw) { // high contrast: thicker, fully visible control borders
+          rules.push(s + ' button{border-color:' + t.border + ';}');
+        }
+      });
+      var style = document.createElement('style');
+      style.id = 'allo-reader-themes-css';
+      style.textContent = rules.join('\n');
+      document.head.appendChild(style);
+    } catch (_) {}
+  }
   var READER_A11Y_FONT_IDS = ['opendyslexic', 'atkinson', 'lexend', 'andika'];
   function readerFontClass(prefFont) {
     // Reader-local pick wins; otherwise honor an app-wide accessibility font
@@ -835,6 +885,10 @@
         saveReaderPrefs(next);
         return next;
       });
+      // Let the modal chrome follow the page-color theme.
+      if (patch && Object.prototype.hasOwnProperty.call(patch, 'theme') && typeof props.onThemeChange === 'function') {
+        props.onThemeChange(patch.theme);
+      }
     };
     var audioRef = useRef(null);
     var fbAtRef = useRef(0); // debounce narration→TTS fallback (play-reject + onError can both fire)
@@ -1492,7 +1546,7 @@
             }, '📏 ' + tr('readinglib_aa_ruler', 'Reading ruler') + (readerPrefs.ruler ? ' ✓' : '')),
             e('button', {
               className: 'w-full px-2 py-1 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100',
-              onClick: function () { setReaderPrefsState(function () { saveReaderPrefs(READER_PREFS_DEFAULTS); return Object.assign({}, READER_PREFS_DEFAULTS); }); },
+              onClick: function () { setReaderPrefsState(function () { saveReaderPrefs(READER_PREFS_DEFAULTS); return Object.assign({}, READER_PREFS_DEFAULTS); }); if (typeof props.onThemeChange === 'function') props.onThemeChange(READER_PREFS_DEFAULTS.theme); },
             }, tr('readinglib_aa_reset', 'Reset to defaults'))
           ) : null
         ),
@@ -1977,10 +2031,15 @@
     var _opt = useState(false); var optionsOpen = _opt[0]; var setOptionsOpen = _opt[1];
     var _collection = useState(null); var selectedCollectionId = _collection[0]; var setSelectedCollectionId = _collection[1];
     var _visible = useState(VISIBLE_BOOK_BATCH); var visibleLimit = _visible[0]; var setVisibleLimit = _visible[1];
+    // Reader page-color theme, lifted here so the whole modal (not just the
+    // reading surface) can wear it. Seeded from the persisted pref; the reader's
+    // Aa panel keeps it in sync via onThemeChange.
+    var _th = useState(function () { return loadReaderPrefs().theme; }); var readerThemeId = _th[0]; var setReaderThemeId = _th[1];
     var containerRef = useRef(null);
 
     useEffect(function () {
       ensureReaderFonts();
+      ensureReaderThemes();
       var alive = true;
       fetchIndex(function (err, data, base) {
         if (!alive) return;
@@ -2151,6 +2210,7 @@
         isTeacherMode: props.isTeacherMode,
         onSaveToLesson: props.onSaveToLesson,
         onPracticeLanguage: props.onPracticeLanguage,
+        onThemeChange: setReaderThemeId,
       });
     } else if (!selectedCollection) {
       body = e('div', { className: 'flex flex-col h-full min-h-0' },
@@ -2293,7 +2353,7 @@
     },
       e('div', {
         ref: containerRef,
-        className: 'relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[92vh] flex flex-col p-4',
+        className: 'relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[92vh] flex flex-col p-4 ' + chromeThemeClass(readerThemeId),
         role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('readinglib_title', 'Reading Library'),
       },
         e('div', { className: 'flex items-center justify-between gap-2 pb-2' },
@@ -2355,6 +2415,8 @@
   ReadingLibrary._bookPlainTextForScope = bookPlainTextForScope;
   ReadingLibrary._bookPlainText = bookPlainText;
   ReadingLibrary._textLayoutClass = textLayoutClass;
+  ReadingLibrary._chromeThemeClass = chromeThemeClass;
+  ReadingLibrary._readingTimeLabel = readingTimeLabel;
   ReadingLibrary._attributionLine = attributionLine;
   ReadingLibrary._parseTranslation = parseTranslation;
   ReadingLibrary._isRtlLanguage = isRtlLanguage;

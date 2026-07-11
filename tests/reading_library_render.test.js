@@ -532,6 +532,27 @@ describe('reader navigation, bookmarks, and continuous read-aloud', () => {
   });
 });
 
+describe('whole-modal theming', () => {
+  it('applies a dark / high-contrast chrome class to the modal when chosen', async () => {
+    await mount();
+    await chooseStories();
+    selectLang('Arabic'); await flush();
+    clickByText(host, 'button', rtlEntry.title.slice(0, 12));
+    await flush();
+    clickByText(host, 'button', 'Aa');
+    await flush();
+    clickByText(host, 'button', 'High contrast');
+    await flush();
+    expect(host.querySelector('.rl-theme-highContrast')).toBeTruthy();
+    clickByText(host, 'button', 'Dark');
+    await flush();
+    expect(host.querySelector('.rl-theme-dark')).toBeTruthy();
+    expect(host.querySelector('.rl-theme-highContrast')).toBeFalsy();
+    // the scoped theme stylesheet was injected
+    expect(document.getElementById('allo-reader-themes-css')).toBeTruthy();
+  });
+});
+
 describe('AI translation', () => {
   it('translates via 🌐, shows the caveat, and exports the translation', async () => {
     const translated = {
