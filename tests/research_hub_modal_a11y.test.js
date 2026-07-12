@@ -29,6 +29,23 @@ describe('Research Hub modal accessibility', () => {
     expect(source).toContain('aria-describedby="research-hub-question-help"');
   });
 
+  it('uses a safe-default alert dialog for destructive inquiry reset', () => {
+    expect(source).not.toContain('window.confirm');
+    expect(source).toContain('role="alertdialog"');
+    expect(source).toContain('aria-labelledby="research-hub-reset-title"');
+    expect(source).toContain('aria-describedby="research-hub-reset-description"');
+    expect(source).toContain('data-safe-default="true"');
+    expect(source).toContain("if (event.key === 'Escape')");
+    expect(source).toContain("if (event.key !== 'Tab') return");
+  });
+
+  it('restores focus after reset cancellation or completion', () => {
+    expect(source).toContain('requestClearJournal');
+    expect(source).toContain('trigger.isConnected');
+    expect(source).toContain('closeButtonRef.current.focus()');
+    expect(source).toContain("minHeight: '44px'");
+  });
+
   it('synchronizes the deployable module', () => {
     expect(fs.readFileSync('prismflow-deploy/public/research_hub_module.js', 'utf8')).toBe(fs.readFileSync('research_hub_module.js', 'utf8'));
   });

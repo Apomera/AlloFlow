@@ -93,6 +93,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Replaced Brand Profile deletion's native browser confirmation with a named/described alert dialog; separated the deletion request from execution, focused the safe Cancel action, contained Tab, supported Escape cancellation, restored focus to the originating Delete control or the editor Close fallback when the deleted row disappears, and provided 44 CSS-pixel dialog actions (WCAG 2.1.1, 2.4.3, 2.4.7, 2.5.8, 3.3.4, 4.1.2).
 
+- Replaced Research Hub inquiry reset's native browser confirmation with a named/described alert dialog; separated reset request from execution, focused the safe Cancel action, contained Tab, supported Escape cancellation, restored focus to Reset or the Hub Close fallback, preserved the learner's developmental level, and provided 44 CSS-pixel actions (WCAG 2.1.1, 2.4.3, 2.4.7, 2.5.8, 3.3.4, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

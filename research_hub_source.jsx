@@ -1388,8 +1388,18 @@
     var gradeLevel = props.gradeLevel;
     var dialogRef = useRef(null);
     var closeButtonRef = useRef(null);
+    var resetDialogRef = useRef(null);
+    var resetTriggerRef = useRef(null);
+    var _resetConfirm = useState(false);
+    var showResetConfirm = _resetConfirm[0]; var setShowResetConfirm = _resetConfirm[1];
     var closeHandlerRef = useRef(onClose);
     closeHandlerRef.current = onClose;
+
+    useEffect(function () {
+      if (!showResetConfirm) return;
+      var cancel = resetDialogRef.current && resetDialogRef.current.querySelector('[data-safe-default="true"]');
+      if (cancel) cancel.focus();
+    }, [showResetConfirm]);
 
     useEffect(function () {
       if (!isOpen) return undefined;
@@ -1491,14 +1501,27 @@
       });
     }, []);
 
-    var clearJournal = useCallback(function () {
-      var ok = window.confirm(t('research_hub.confirm_reset') || 'Reset this inquiry? Voice notes, model snapshots, and AI history will be cleared. This cannot be undone.');
-      if (!ok) return;
+    var requestClearJournal = useCallback(function (event) {
+      resetTriggerRef.current = event.currentTarget;
+      setShowResetConfirm(true);
+    }, []);
+
+    var closeResetDialog = useCallback(function () {
+      setShowResetConfirm(false);
+      window.setTimeout(function () {
+        var trigger = resetTriggerRef.current;
+        if (trigger && trigger.isConnected && typeof trigger.focus === 'function') trigger.focus();
+        else if (closeButtonRef.current) closeButtonRef.current.focus();
+      }, 0);
+    }, []);
+
+    var confirmClearJournal = useCallback(function () {
       var fresh = emptyJournal();
       // Preserve dev level — most likely the same student.
       fresh.devLevel = journal.devLevel;
       setJournal(fresh);
-    }, [journal]);
+      closeResetDialog();
+    }, [journal, closeResetDialog]);
 
     if (!isOpen) return null;
 
@@ -1781,7 +1804,7 @@
               </ul>
               <button
                 type="button"
-                onClick={clearJournal}
+                onClick={requestClearJournal}
                 style={{
                   marginTop: '10px',
                   padding: '4px 10px', borderRadius: '999px',
@@ -1811,6 +1834,36 @@
               {t('research_hub.footer_tier_note') || 'Scientific · Engineering · Humanities lanes.'}
             </span>
           </div>
+          {showResetConfirm && (
+            <div role="presentation" style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(15,23,42,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+              <div
+                ref={resetDialogRef}
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby="research-hub-reset-title"
+                aria-describedby="research-hub-reset-description"
+                onClick={function (event) { event.stopPropagation(); }}
+                onKeyDown={function (event) {
+                  event.stopPropagation();
+                  if (event.key === 'Escape') { event.preventDefault(); closeResetDialog(); return; }
+                  if (event.key !== 'Tab') return;
+                  var focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                  if (!focusable.length) { event.preventDefault(); return; }
+                  var first = focusable[0], last = focusable[focusable.length - 1];
+                  if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                  else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+                }}
+                style={{ width: '100%', maxWidth: '440px', background: '#fff', borderRadius: '16px', padding: '24px', boxShadow: '0 25px 60px rgba(0,0,0,0.35)' }}
+              >
+                <h3 id="research-hub-reset-title" style={{ margin: 0, color: '#7f1d1d', fontSize: '18px' }}>{t('research_hub.reset_title') || 'Reset this inquiry?'}</h3>
+                <p id="research-hub-reset-description" style={{ margin: '12px 0 0', color: '#334155', lineHeight: 1.55 }}>{t('research_hub.confirm_reset') || 'Voice notes, model snapshots, and AI history will be cleared. This cannot be undone.'}</p>
+                <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end', gap: '12px', flexWrap: 'wrap' }}>
+                  <button type="button" data-safe-default="true" onClick={closeResetDialog} style={{ minHeight: '44px', padding: '8px 16px', borderRadius: '8px', border: '1px solid #94a3b8', background: '#fff', color: '#334155', fontWeight: 700 }}>{t('common.cancel') || 'Cancel'}</button>
+                  <button type="button" onClick={confirmClearJournal} style={{ minHeight: '44px', padding: '8px 16px', borderRadius: '8px', border: 0, background: '#b91c1c', color: '#fff', fontWeight: 700 }}>{t('research_hub.journal_reset') || 'Reset this inquiry'}</button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
