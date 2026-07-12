@@ -74,3 +74,33 @@ describe('Renewables Lab grid-model boundaries and accessibility', () => {
     expect(source).not.toContain('keep the grid at exactly 60 Hz');
   });
 });
+describe('Renewables Lab 24-hour storage accounting', () => {
+  it('splits round-trip losses across charging and discharging', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_renewables.js', 'utf8');
+    expect(source).toContain('var battOneWayEff = Math.sqrt(battRoundTripEff);');
+    expect(source).toContain('var storedEnergy = chargeInput * battOneWayEff;');
+    expect(source).toContain('var withdrawn = delivered / battOneWayEff;');
+    expect(source).toContain('summary.storageLoss += withdrawn - delivered;');
+    expect(source).not.toContain('batteryLevel += stored * battEff;');
+  });
+
+  it('exposes initial and ending state of charge plus conversion losses', () => {
+    const html = renderRenewables({
+      view: 'mix',
+      gridBattHrs: 4,
+      gridBattStartSoc: 25
+    });
+    expect(html).toContain('Starting state of charge');
+    expect(html).toContain('25%');
+    expect(html).toContain('Starting energy: 1.00 peak-demand-hours');
+    expect(html).toContain('Ending state of charge');
+    expect(html).toContain('Storage conversion losses');
+  });
+
+  it('states the 24-hour model boundaries and announces results', () => {
+    const html = renderRenewables({ view: 'mix' });
+    expect(html).toContain('no transmission constraints, reserves, degradation, or storage power limit');
+    expect(html).toContain('scenario comparisons, not reliability forecasts');
+    expect(html).toContain('aria-atomic="true"');
+  });
+});

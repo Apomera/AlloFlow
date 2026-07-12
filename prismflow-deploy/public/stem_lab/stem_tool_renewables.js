@@ -2991,12 +2991,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             // Calibrate so that if total share = 100 with average CF ~0.5 → matches demand
             // Simpler: just use share/100 directly as a multiplier for nameplate, then × profile
             var hours = [];
-            var batteryLevel = 0;
-            // Storage capacity in "kWh per kW peak demand-hours" — slider
+            // Storage capacity in peak-demand-hours. Start SOC is explicit so
+            // the midnight boundary does not silently assume an empty battery.
             var battCap = d.gridBattHrs != null ? d.gridBattHrs : 4;
-            var battEff = 0.92;
-            var summary = { totalSupply: 0, totalDemand: 0, unmetHrs: 0, curtailHrs: 0, battThroughput: 0 };
-            for (var hr = 0; hr < 24; hr++) {
+            var battStartSoc = d.gridBattStartSoc != null ? d.gridBattStartSoc : 50;
+            var battRoundTripEff = 0.90;
+            var battOneWayEff = Math.sqrt(battRoundTripEff);
+            var batteryLevel = battCap * battStartSoc / 100;
+            var summary = {
+              totalSupply: 0, totalDemand: 0, unmetHrs: 0, curtailHrs: 0,
+              battThroughput: 0, chargedInput: 0, dischargedOutput: 0, storageLoss: 0
+            };            for (var hr = 0; hr < 24; hr++) {
               var sUnits = (mixSolar / 100) * solarP[hr];
               var wUnits = (mixWind  / 100) * windP[hr];
               var bUnits = (mixHydro / 100) * 0.55 + (mixGeo / 100) * 0.85 + (mixNuclear / 100) * 0.92 + (mixGas / 100) * 0.55;
@@ -3007,26 +3012,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               // Battery dynamics
               var net = supply - dem;
               var battDelta = 0, served = supply, curtailed = 0;
-              if (net > 0) {
-                // Surplus — try to fill battery
-                var room = battCap - batteryLevel;
-                var stored = Math.min(net, room);
-                batteryLevel += stored * battEff;
-                curtailed = net - stored;
-                battDelta = stored;
+              if (net > 0 && battCap > 0) {
+                var room = Math.max(0, battCap - batteryLevel);
+                var chargeInput = Math.min(net, room / battOneWayEff);
+                var storedEnergy = chargeInput * battOneWayEff;
+                batteryLevel += storedEnergy;
+                curtailed = net - chargeInput;
+                battDelta = storedEnergy;
+                summary.chargedInput += chargeInput;
+                summary.battThroughput += chargeInput;
+                summary.storageLoss += chargeInput - storedEnergy;
                 if (curtailed > 0.01) summary.curtailHrs++;
-                summary.battThroughput += stored;
-              } else if (net < 0) {
-                // Deficit — try to drain battery
+              } else if (net < 0 && battCap > 0) {
                 var need = -net;
-                var drawn = Math.min(need, batteryLevel);
-                batteryLevel -= drawn;
-                served = supply + drawn;
-                if (drawn < need - 0.01) summary.unmetHrs++;
-                battDelta = -drawn;
-              }
-              hours.push({ hr: hr, sUnits: sUnits, wUnits: wUnits, bUnits: bUnits, supply: supply, demand: dem, served: served, batt: batteryLevel, battDelta: battDelta });
+                var delivered = Math.min(need, batteryLevel * battOneWayEff);
+                var withdrawn = delivered / battOneWayEff;
+                batteryLevel = Math.max(0, batteryLevel - withdrawn);
+                served = supply + delivered;
+                battDelta = -withdrawn;
+                summary.dischargedOutput += delivered;
+                summary.battThroughput += delivered;
+                summary.storageLoss += withdrawn - delivered;
+                if (delivered < need - 0.01) summary.unmetHrs++;
+              } else if (net > 0) {
+                curtailed = net;
+                if (curtailed > 0.01) summary.curtailHrs++;
+              } else if (net < 0) {
+                summary.unmetHrs++;
+              }              hours.push({ hr: hr, sUnits: sUnits, wUnits: wUnits, bUnits: bUnits, supply: supply, demand: dem, served: served, batt: batteryLevel, battDelta: battDelta });
             }
+            summary.endSocPct = battCap > 0 ? (batteryLevel / battCap) * 100 : 0;
             // SVG chart
             var W = 600, H = 240;
             var pad = { l: 36, r: 14, t: 18, b: 30 };
@@ -3068,7 +3083,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                 h('div', { style: { fontSize: 10, color: T.dim, marginTop: 2 } },
                   __alloT('stem.renewables.0_h_no_storage_4_h_typical_tesla_power', '0 h = no storage. 4 h ≈ typical Tesla Powerwall stack. 8+ h needed for high-renewable grids.'))
               ),
-              h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
+              h('div', { style: { marginBottom: 12, padding: 10, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border } },
+                h('label', { htmlFor: 'grid-batt-soc', style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 4 } },
+                  h('span', null, 'Starting state of charge'),
+                  h('span', { style: { color: T.accentHi, fontFamily: 'monospace' } }, battStartSoc.toFixed(0) + '%')
+                ),
+                h('input', {
+                  id: 'grid-batt-soc', 'data-rn-focusable': true, type: 'range',
+                  min: 0, max: 100, step: 5, value: battStartSoc,
+                  'aria-label': 'Battery starting state of charge',
+                  'aria-valuetext': battStartSoc.toFixed(0) + ' percent charged at midnight',
+                  onChange: function(e) { upd('gridBattStartSoc', parseFloat(e.target.value)); },
+                  style: { width: '100%', accentColor: T.accent, cursor: 'pointer' }
+                }),
+                h('div', { style: { fontSize: 10, color: T.dim, marginTop: 2 } },
+                  'Starting energy: ' + (battCap * battStartSoc / 100).toFixed(2) + ' peak-demand-hours. Change this to test how the midnight boundary affects results.'
+                )
+              ),              h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
                 role: 'img',
                 'aria-label': '24-hour grid balance chart. Total supply ' + summary.totalSupply.toFixed(1) + ' demand units, total demand ' + summary.totalDemand.toFixed(1) + '. Unmet hours: ' + summary.unmetHrs + '. Curtailed hours: ' + summary.curtailHrs + '.',
                 style: { background: '#0b1020', borderRadius: 8 } },
@@ -3132,7 +3163,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                   h('div', { style: { fontSize: 10, color: T.dim } }, __alloT('stem.renewables.peak_demand_hours', '× peak-demand-hours'))
                 )
               ),
-              // Teaching notes
+              h('div', {
+                role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+                style: { marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 }
+              },
+                h('div', { style: { padding: 9, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border } },
+                  h('div', { style: { fontSize: 10, color: T.dim } }, 'Ending state of charge'),
+                  h('strong', { style: { display: 'block', color: T.accentHi, fontFamily: 'monospace', fontSize: 16 } }, summary.endSocPct.toFixed(1) + '%')
+                ),
+                h('div', { style: { padding: 9, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border } },
+                  h('div', { style: { fontSize: 10, color: T.dim } }, 'Storage conversion losses'),
+                  h('strong', { style: { display: 'block', color: T.warm, fontFamily: 'monospace', fontSize: 16 } }, summary.storageLoss.toFixed(2)),
+                  h('div', { style: { fontSize: 10, color: T.dim } }, 'peak-demand-hours at 90% round-trip efficiency')
+                )
+              ),
+              h('div', { style: { marginTop: 8, fontSize: 10.5, color: T.dim, lineHeight: 1.5 } },
+                'Model boundary: fixed hourly profiles, no transmission constraints, reserves, degradation, or storage power limit. Results are scenario comparisons, not reliability forecasts.'
+              ),              // Teaching notes
               h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.bg, border: '1px dashed ' + T.border, fontSize: 11, color: T.muted, lineHeight: 1.55 } },
                 h('strong', { style: { color: T.text } }, __alloT('stem.renewables.what_to_notice', 'What to notice: ')),
                 summary.unmetHrs > 0
