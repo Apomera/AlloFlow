@@ -197,6 +197,15 @@ var d = labToolData || {};
 
           var sdTax = d.sdTax || 0;
 
+          // Curve slopes = elasticity levers. Flat (0.3) = elastic, steep (1.5)
+          // = inelastic. Every S&D formula below (equilibrium, floor/ceiling
+          // markers, tax wedge, probe, canvas summary) derives from these two —
+          // change them TOGETHER or the graph and its annotations disagree.
+
+          var sdDemSlope = d.sdDemSlope !== undefined ? d.sdDemSlope : 0.8;
+
+          var sdSupSlope = d.sdSupSlope !== undefined ? d.sdSupSlope : 0.8;
+
 
 
           // â”€â”€ Personal Finance Life Sim State â”€â”€
@@ -632,15 +641,19 @@ var d = labToolData || {};
 
               ctx.save(); ctx.shadowColor = '#3b82f6'; ctx.shadowBlur = 8; ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3; ctx.beginPath();
 
+              var dStarted = false;
+
               for (var dx = 0; dx <= 100; dx++) {
 
-                var dp = 90 - dx * 0.8 + sdDemandShift * 5;
+                var dp = 90 - dx * sdDemSlope + sdDemandShift * 5;
+
+                if (dp < 0 || dp > 100) continue;
 
                 var px = gx + dx / 100 * gw;
 
                 var py = gy + (100 - dp) / 100 * gh;
 
-                dx === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+                if (!dStarted) { ctx.moveTo(px, py); dStarted = true; } else { ctx.lineTo(px, py); }
 
               }
 
@@ -652,7 +665,7 @@ var d = labToolData || {};
               // at q=100) — it used to float at the top of the plot, which is
               // where the SUPPLY curve ends, so D and S read as swapped.
 
-              ctx.fillText('D' + (sdDemandShift !== 0 ? '\'' : ''), gx + gw - 34, Math.max(gy + 24, Math.min(gy + gh - 10, gy + (100 - (10 + sdDemandShift * 5)) / 100 * gh - 12)));
+              ctx.fillText('D' + (sdDemandShift !== 0 ? '\'' : ''), gx + gw - 34, Math.max(gy + 24, Math.min(gy + gh - 10, gy + (100 - (90 - 100 * sdDemSlope + sdDemandShift * 5)) / 100 * gh - 12)));
 
 
 
@@ -660,15 +673,19 @@ var d = labToolData || {};
 
               ctx.save(); ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 8; ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.beginPath();
 
+              var sStarted = false;
+
               for (var sx = 0; sx <= 100; sx++) {
 
-                var sp = 10 + sx * 0.8 + sdSupplyShift * 5;
+                var sp = 10 + sx * sdSupSlope + sdSupplyShift * 5;
+
+                if (sp < 0 || sp > 100) continue;
 
                 var spx = gx + sx / 100 * gw;
 
                 var spy = gy + (100 - sp) / 100 * gh;
 
-                sx === 0 ? ctx.moveTo(spx, spy) : ctx.lineTo(spx, spy);
+                if (!sStarted) { ctx.moveTo(spx, spy); sStarted = true; } else { ctx.lineTo(spx, spy); }
 
               }
 
@@ -676,15 +693,15 @@ var d = labToolData || {};
 
               ctx.restore(); ctx.fillStyle = '#ef4444';
 
-              ctx.fillText('S' + (sdSupplyShift !== 0 ? '\'' : ''), gx + gw - 34, Math.max(gy + 24, Math.min(gy + gh - 10, gy + (100 - (90 + sdSupplyShift * 5)) / 100 * gh - 12)));
+              ctx.fillText('S' + (sdSupplyShift !== 0 ? '\'' : ''), gx + gw - 34, Math.max(gy + 24, Math.min(gy + gh - 10, gy + (100 - (10 + 100 * sdSupSlope + sdSupplyShift * 5)) / 100 * gh - 12)));
 
 
 
               // Equilibrium point
 
-              var eqQ = (80 - sdSupplyShift * 5 + sdDemandShift * 5) / 1.6;
+              var eqQ = (80 - sdSupplyShift * 5 + sdDemandShift * 5) / (sdDemSlope + sdSupSlope);
 
-              var eqP = 10 + eqQ * 0.8 + sdSupplyShift * 5;
+              var eqP = 10 + eqQ * sdSupSlope + sdSupplyShift * 5;
 
               var eqInRange = eqQ >= 0 && eqQ <= 100 && eqP >= 0 && eqP <= 100;
 
@@ -772,9 +789,9 @@ var d = labToolData || {};
                   // Mark Qd and Qs at the floor price (curves are linear, so these
                   // are exact) and quantify the unsold surplus between them.
 
-                  var fQd = Math.max(0, Math.min(100, (90 + sdDemandShift * 5 - sdPriceFloor) / 0.8));
+                  var fQd = Math.max(0, Math.min(100, (90 + sdDemandShift * 5 - sdPriceFloor) / sdDemSlope));
 
-                  var fQs = Math.max(0, Math.min(100, (sdPriceFloor - 10 - sdSupplyShift * 5) / 0.8));
+                  var fQs = Math.max(0, Math.min(100, (sdPriceFloor - 10 - sdSupplyShift * 5) / sdSupSlope));
 
                   var fXd = gx + fQd / 100 * gw, fXs = gx + fQs / 100 * gw;
 
@@ -814,9 +831,9 @@ var d = labToolData || {};
 
                   // Mark Qs and Qd at the ceiling price and quantify the unmet demand.
 
-                  var cQd = Math.max(0, Math.min(100, (90 + sdDemandShift * 5 - sdPriceCeiling) / 0.8));
+                  var cQd = Math.max(0, Math.min(100, (90 + sdDemandShift * 5 - sdPriceCeiling) / sdDemSlope));
 
-                  var cQs = Math.max(0, Math.min(100, (sdPriceCeiling - 10 - sdSupplyShift * 5) / 0.8));
+                  var cQs = Math.max(0, Math.min(100, (sdPriceCeiling - 10 - sdSupplyShift * 5) / sdSupSlope));
 
                   var cXd = gx + cQd / 100 * gw, cXs = gx + cQs / 100 * gw;
 
@@ -847,11 +864,11 @@ var d = labToolData || {};
                 // keep Ps(Qt); the triangle from Qt to Q* is the deadweight loss.
                 // (The old drawing was a decorative rectangle centered on E.)
 
-                var txQ = Math.max(0, eqQ - sdTax / 1.6);
+                var txQ = Math.max(0, eqQ - sdTax / (sdDemSlope + sdSupSlope));
 
-                var txPd = 90 + sdDemandShift * 5 - 0.8 * txQ;
+                var txPd = 90 + sdDemandShift * 5 - sdDemSlope * txQ;
 
-                var txPs = 10 + 0.8 * txQ + sdSupplyShift * 5;
+                var txPs = 10 + sdSupSlope * txQ + sdSupplyShift * 5;
 
                 var txX = gx + Math.min(100, txQ) / 100 * gw;
 
@@ -891,9 +908,9 @@ var d = labToolData || {};
 
                 var prQ = Math.max(0, Math.min(100, d.sdProbe));
 
-                var prPd = 90 - prQ * 0.8 + sdDemandShift * 5;
+                var prPd = 90 - prQ * sdDemSlope + sdDemandShift * 5;
 
-                var prPs = 10 + prQ * 0.8 + sdSupplyShift * 5;
+                var prPs = 10 + prQ * sdSupSlope + sdSupplyShift * 5;
 
                 var prX = gx + prQ / 100 * gw;
 
@@ -1597,26 +1614,26 @@ var d = labToolData || {};
 
           function economicsCanvasSummary() {
             if (econTab === 'supplyDemand') {
-              var eqQ = (80 - sdSupplyShift * 5 + sdDemandShift * 5) / 1.6;
-              var eqP = 10 + eqQ * 0.8 + sdSupplyShift * 5;
+              var eqQ = (80 - sdSupplyShift * 5 + sdDemandShift * 5) / (sdDemSlope + sdSupSlope);
+              var eqP = 10 + eqQ * sdSupSlope + sdSupplyShift * 5;
               var sdSummary = t('stem.economicslab.canvas_summary_supply_demand', 'Supply and demand graph showing demand, supply, equilibrium price, equilibrium quantity, surplus, shortage, and tax effects.') + ' P* $' + eqP.toFixed(0) + ', Q* ' + eqQ.toFixed(0) + '.';
               if (sdPriceCeiling > 0 && sdPriceCeiling < eqP) {
-                var sumQd = Math.max(0, Math.min(100, (90 + sdDemandShift * 5 - sdPriceCeiling) / 0.8));
-                var sumQs = Math.max(0, Math.min(100, (sdPriceCeiling - 10 - sdSupplyShift * 5) / 0.8));
+                var sumQd = Math.max(0, Math.min(100, (90 + sdDemandShift * 5 - sdPriceCeiling) / sdDemSlope));
+                var sumQs = Math.max(0, Math.min(100, (sdPriceCeiling - 10 - sdSupplyShift * 5) / sdSupSlope));
                 sdSummary += ' ' + t('stem.economicslab.canvas_summary_shortage', 'Binding price ceiling: shortage of about') + ' ' + Math.max(0, sumQd - sumQs).toFixed(0) + ' ' + t('stem.economicslab.units', 'units') + '.';
               }
               if (sdPriceFloor > 0 && sdPriceFloor > eqP) {
-                var sumQd2 = Math.max(0, Math.min(100, (90 + sdDemandShift * 5 - sdPriceFloor) / 0.8));
-                var sumQs2 = Math.max(0, Math.min(100, (sdPriceFloor - 10 - sdSupplyShift * 5) / 0.8));
+                var sumQd2 = Math.max(0, Math.min(100, (90 + sdDemandShift * 5 - sdPriceFloor) / sdDemSlope));
+                var sumQs2 = Math.max(0, Math.min(100, (sdPriceFloor - 10 - sdSupplyShift * 5) / sdSupSlope));
                 sdSummary += ' ' + t('stem.economicslab.canvas_summary_surplus', 'Binding price floor: surplus of about') + ' ' + Math.max(0, sumQs2 - sumQd2).toFixed(0) + ' ' + t('stem.economicslab.units', 'units') + '.';
               }
               if (sdTax > 0) {
-                var sumQt = Math.max(0, eqQ - sdTax / 1.6);
+                var sumQt = Math.max(0, eqQ - sdTax / (sdDemSlope + sdSupSlope));
                 sdSummary += ' ' + t('stem.economicslab.canvas_summary_tax', 'Per-unit tax of') + ' $' + sdTax + ' ' + t('stem.economicslab.canvas_summary_tax_2', 'cuts trades to about') + ' ' + sumQt.toFixed(0) + ' ' + t('stem.economicslab.units', 'units') + ' (' + t('stem.economicslab.deadweight_loss', 'deadweight loss') + ').';
               }
               if (d.sdProbe !== null && d.sdProbe !== undefined) {
-                var sumPd = 90 - d.sdProbe * 0.8 + sdDemandShift * 5;
-                var sumPs = 10 + d.sdProbe * 0.8 + sdSupplyShift * 5;
+                var sumPd = 90 - d.sdProbe * sdDemSlope + sdDemandShift * 5;
+                var sumPs = 10 + d.sdProbe * sdSupSlope + sdSupplyShift * 5;
                 sdSummary += ' ' + t('stem.economicslab.canvas_summary_probe', 'Probe at quantity') + ' ' + d.sdProbe + ': $' + Math.max(0, sumPd).toFixed(0) + ' / $' + Math.max(0, sumPs).toFixed(0) + '.';
               }
               sdSummary += ' ' + t('stem.economicslab.canvas_probe_hint', 'Click the graph — or focus it and use arrow keys — to probe buyer value vs producer cost at any quantity.');
@@ -2917,8 +2934,8 @@ var d = labToolData || {};
                   var q = Math.round((xInternal - 76) / (el.offsetWidth * 2 - 140) * 100);
                   if (q < 0 || q > 100) { upd('sdProbe', null); return; }
                   upd('sdProbe', q);
-                  var pd0 = 90 - q * 0.8 + sdDemandShift * 5;
-                  var ps0 = 10 + q * 0.8 + sdSupplyShift * 5;
+                  var pd0 = 90 - q * sdDemSlope + sdDemandShift * 5;
+                  var ps0 = 10 + q * sdSupSlope + sdSupplyShift * 5;
                   if (announceToSR) announceToSR('Quantity ' + q + ': buyers value $' + Math.max(0, pd0).toFixed(0) + ', producer cost $' + Math.max(0, ps0).toFixed(0) + (pd0 > ps0 ? '. Worth producing.' : '. Not worth producing.'));
                 },
                 onKeyDown: function (e) {
@@ -2931,8 +2948,8 @@ var d = labToolData || {};
                   else return;
                   e.preventDefault();
                   upd('sdProbe', np);
-                  var pd1 = 90 - np * 0.8 + sdDemandShift * 5;
-                  var ps1 = 10 + np * 0.8 + sdSupplyShift * 5;
+                  var pd1 = 90 - np * sdDemSlope + sdDemandShift * 5;
+                  var ps1 = 10 + np * sdSupSlope + sdSupplyShift * 5;
                   if (announceToSR) announceToSR('Quantity ' + np + ': buyers value $' + Math.max(0, pd1).toFixed(0) + ', producer cost $' + Math.max(0, ps1).toFixed(0) + (pd1 > ps1 ? '. Worth producing.' : '. Not worth producing.'));
                 },
 
@@ -3010,7 +3027,7 @@ var d = labToolData || {};
 
                 // Dynamic educational feedback based on current slider values
 
-                (sdPriceFloor > 0 || sdPriceCeiling > 0 || sdTax > 0 || sdDemandShift !== 0 || sdSupplyShift !== 0) && React.createElement('div', { className: 'mt-3 bg-white rounded-lg p-3 border border-blue-100' },
+                (sdPriceFloor > 0 || sdPriceCeiling > 0 || sdTax > 0 || sdDemandShift !== 0 || sdSupplyShift !== 0 || sdDemSlope !== 0.8 || sdSupSlope !== 0.8) && React.createElement('div', { className: 'mt-3 bg-white rounded-lg p-3 border border-blue-100' },
 
                   React.createElement('h5', { className: 'text-[11px] font-bold text-indigo-700 mb-1' }, t('stem.economicslab.what_s_happening_right_now', '\uD83D\uDCA1 What\'s Happening Right Now:')),
 
@@ -3024,11 +3041,20 @@ var d = labToolData || {};
 
                     sdSupplyShift < 0 && React.createElement('p', null, t('stem.economicslab.supply_shifted_left_production_became_', '\u25B6 Supply shifted LEFT \u2014 Production became harder (natural disaster, regulations). Price rises, but quantity falls.')),
 
+                    sdDemSlope !== 0.8 && React.createElement('p', null, '\u25B6 Demand slope ' + sdDemSlope.toFixed(1) + (sdDemSlope < 0.8 ? t('stem.economicslab.demand_flatter', ' \u2014 flatter, more ELASTIC: buyers respond sharply to price (luxuries, goods with substitutes).') : t('stem.economicslab.demand_steeper', ' \u2014 steeper, more INELASTIC: buyers barely change quantity when price moves (necessities like gasoline or medicine).'))),
+
+                    sdSupSlope !== 0.8 && React.createElement('p', null, '\u25B6 Supply slope ' + sdSupSlope.toFixed(1) + (sdSupSlope < 0.8 ? t('stem.economicslab.supply_flatter', ' \u2014 flatter, more ELASTIC: producers can easily ramp output up or down (manufactured goods).') : t('stem.economicslab.supply_steeper', ' \u2014 steeper, more INELASTIC: output is hard to change quickly (housing, farmland, concert seats).'))),
+
                     sdPriceFloor > 0 && React.createElement('p', null, '\u25B6 Price Floor at $' + sdPriceFloor + ' \u2014 Government sets a MINIMUM price (e.g., minimum wage). If above equilibrium: creates SURPLUS (quantity supplied > quantity demanded). Workers want jobs, but firms hire fewer.'),
 
                     sdPriceCeiling > 0 && React.createElement('p', null, '\u25B6 Price Ceiling at $' + sdPriceCeiling + ' \u2014 Government sets a MAXIMUM price (e.g., rent control). If below equilibrium: creates SHORTAGE (quantity demanded > quantity supplied). Everyone wants it, but not enough is produced.'),
 
-                    sdTax > 0 && React.createElement('p', null, '\u25B6 Tax of $' + sdTax + ' \u2014 Government adds a per-unit tax. This creates a "tax wedge" between what buyers pay and sellers receive. Both sides bear some of the tax burden. This creates DEADWEIGHT LOSS \u2014 transactions that would have benefited both parties no longer happen.')
+                    sdTax > 0 && (function () {
+                      // Tax incidence, computed live: buyers bear Dm/(Dm+Sm) of the
+                      // wedge \u2014 the steeper (more inelastic) side always bears more.
+                      var buyerShare = Math.max(0, Math.min(100, sdDemSlope / (sdDemSlope + sdSupSlope) * 100));
+                      return React.createElement('p', null, '\u25B6 Tax of $' + sdTax + t('stem.economicslab.tax_incidence_1', ' \u2014 a "tax wedge" opens between what buyers pay and sellers keep, and some mutually beneficial trades stop happening (DEADWEIGHT LOSS). Right now buyers bear ~') + buyerShare.toFixed(0) + t('stem.economicslab.tax_incidence_2', '% of it and sellers ~') + (100 - buyerShare).toFixed(0) + t('stem.economicslab.tax_incidence_3', '% \u2014 the more INELASTIC (steeper) side always bears more. Tilt the elasticity sliders and watch the split move.'));
+                    })()
 
                   )
 
@@ -3064,7 +3090,31 @@ var d = labToolData || {};
 
                     className: 'w-full accent-red-500'
 
-                  })
+                  }),
+
+                  (function () {
+                    var slopeTag = function (m) { return m <= 0.5 ? t('stem.economicslab.elastic_flat', 'elastic (flat)') : m >= 1.1 ? t('stem.economicslab.inelastic_steep', 'inelastic (steep)') : t('stem.economicslab.moderate', 'moderate'); };
+                    return React.createElement(React.Fragment, null,
+                      React.createElement('label', { className: 'block text-xs text-blue-600' }, t('stem.economicslab.demand_elasticity', 'Demand elasticity — slope ') + sdDemSlope.toFixed(1) + ': ' + slopeTag(sdDemSlope)),
+                      React.createElement('input', {
+                        type: 'range', min: 0.3, max: 1.5, step: 0.1, value: sdDemSlope,
+                        'aria-label': t('stem.economicslab.demand_elasticity_2', 'Demand curve slope (elasticity)'),
+                        'aria-valuetext': sdDemSlope.toFixed(1) + ', ' + slopeTag(sdDemSlope),
+                        onChange: function (e) { upd('sdDemSlope', parseFloat(e.target.value)); },
+                        className: 'w-full accent-blue-500'
+                      }),
+                      React.createElement('label', { className: 'block text-xs text-red-600' }, t('stem.economicslab.supply_elasticity', 'Supply elasticity — slope ') + sdSupSlope.toFixed(1) + ': ' + slopeTag(sdSupSlope)),
+                      React.createElement('input', {
+                        type: 'range', min: 0.3, max: 1.5, step: 0.1, value: sdSupSlope,
+                        'aria-label': t('stem.economicslab.supply_elasticity_2', 'Supply curve slope (elasticity)'),
+                        'aria-valuetext': sdSupSlope.toFixed(1) + ', ' + slopeTag(sdSupSlope),
+                        onChange: function (e) { upd('sdSupSlope', parseFloat(e.target.value)); },
+                        className: 'w-full accent-red-500'
+                      }),
+                      React.createElement('div', { className: 'text-[11px] text-slate-600 bg-white rounded-lg p-2 border border-blue-100' },
+                        t('stem.economicslab.slope_note', '📚 Flat = elastic: people react strongly to price (luxuries, substitutes). Steep = inelastic: they can\'t easily change behavior (gasoline, medicine). Watch who bears a tax as you tilt the curves.'))
+                    );
+                  })()
 
                 ),
 
@@ -3111,6 +3161,11 @@ var d = labToolData || {};
                 )
 
               ),
+
+              React.createElement('button', {
+                onClick: function () { upd('sdDemandShift', 0); upd('sdSupplyShift', 0); upd('sdPriceFloor', 0); upd('sdPriceCeiling', 0); upd('sdTax', 0); upd('sdProbe', null); upd('sdDemSlope', 0.8); upd('sdSupSlope', 0.8); if (announceToSR) announceToSR('Supply and demand graph reset to defaults.'); },
+                className: 'mt-3 mb-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-400'
+              }, t('stem.economicslab.reset_graph', '♻ Reset Graph')),
 
               // Elasticity Education
 

@@ -259,6 +259,27 @@ describe('Economics Lab refinements', () => {
     expect(sdHtml).not.toContain('dual mandate');
   });
 
+  it('supports elasticity levers with consistent math across the whole S&D system', () => {
+    // Steep demand (1.4) + flat supply (0.4): eqQ = 80/1.8 ≈ 44, eqP = 10 + 0.4*44.4 ≈ 28.
+    const html = renderEconomicsLab({ econTab: 'supplyDemand', sdDemSlope: 1.4, sdSupSlope: 0.4, sdTax: 20 });
+
+    expect(html).toContain('P* $28, Q* 44');
+    expect(html).toContain('Demand elasticity');
+    expect(html).toContain('inelastic (steep)');
+    // Live tax incidence: buyers bear Dm/(Dm+Sm) = 1.4/1.8 ≈ 78%.
+    expect(html).toContain('buyers bear ~78%');
+    expect(html).toContain('Reset Graph');
+
+    // Probe respects slopes too: Q=40 → Pd = 90-56 = 34, Ps = 10+16 = 26.
+    const probeHtml = renderEconomicsLab({ econTab: 'supplyDemand', sdDemSlope: 1.4, sdSupSlope: 0.4, sdProbe: 40 });
+    expect(probeHtml).toContain('Probe at quantity 40: $34 / $26');
+
+    // No formula site still hard-codes the old 0.8 slope or the 1.6 sum.
+    const source = readFileSync(resolve(process.cwd(), FILE), 'utf8');
+    expect(source).not.toMatch(/sd(?:Demand|Supply)Shift \* 5[^;\n]*0\.8/);
+    expect(source).not.toContain('/ 1.6');
+  });
+
   it('counts investments and home equity toward net-worth achievements', () => {
     const html = renderEconomicsLab({ econTab: 'personalFinance', pfCash: 500000, pfEquity: 300000, pfInvested: 300000 });
 
