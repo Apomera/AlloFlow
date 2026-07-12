@@ -265,8 +265,15 @@
       ".da-shell.da-theme-contrast, .da-shell.da-theme-contrast .da-root { " + daBuildTokenCss(2) + " }",
       // The shell paints the page surface (the host wraps the module in a
       // hardcoded white card; radius matches the host's rounded-2xl).
-      ".da-shell { background: var(--da-page); border-radius: 16px; color: var(--da-ink); }",
-      ".da-shell.da-theme-contrast { outline: 2px solid #ffff00; }",
+      // color-scheme keys the UA's native widgets (scrollbars, checkboxes,
+      // form controls) to the active theme.
+      ".da-shell { background: var(--da-page); border-radius: 16px; color: var(--da-ink); color-scheme: light; }",
+      ".da-shell.da-theme-dark { color-scheme: dark; }",
+      ".da-shell.da-theme-contrast { outline: 2px solid #ffff00; color-scheme: dark; }",
+      // Form controls have no inline background/color — without this they
+      // keep the UA's white default and glare inside dark/contrast themes.
+      ".da-root input, .da-root textarea, .da-root select { background-color: var(--da-surface); color: var(--da-ink); }",
+      ".da-root input::placeholder, .da-root textarea::placeholder { color: var(--da-faint); opacity: 1; }",
       ".da-root { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; line-height: 1.55; color: var(--da-ink); }",
       // WCAG 2.4.7/1.4.11 — visible, ≥3:1 focus indicator on EVERY focusable,
       // not just buttons. Token flips per theme so it stays ≥3:1 on all surfaces.
@@ -2684,6 +2691,22 @@
           ". These patterns are clinically meaningful at this frequency and warrant further consideration when planning instruction."
         );
       }
+    }
+    // Learning-zone (ZPD) snapshot paragraph — deterministic, hedged. Gives
+    // the report the WHERE-to-teach read the score sums alone don't carry.
+    var zpdNarr = computeZpdProfile(session);
+    if (zpdNarr.nClassified > 0) {
+      var zpdBits = [];
+      zpdBits.push(zpdNarr.independent.length + " already solved independently at pretest");
+      zpdBits.push(zpdNarr.zpd.length + " solved during mediation with level 1–3 scaffolds" +
+        (zpdNarr.zpd.length > 0
+          ? " (" + zpdNarr.zpd.map(function (z) { return z.construct + " at L" + z.level; }).join("; ") + ")"
+          : ""));
+      zpdBits.push(zpdNarr.frustration.length + " requiring direct teaching or remaining unsolved");
+      lines.push(
+        "Learning-zone snapshot (descriptive): of the items administered, " + zpdBits.join("; ") +
+        ". Items in the scaffold-responsive band indicate where instruction pitched with similar supports is most likely to produce growth (Vygotsky, 1978). This classification describes this session's items only and is not a normed placement."
+      );
     }
     // Access-condition observations (only when a language context was recorded
     // at intake AND there is contrast evidence). Aaron-approved wording.
@@ -5266,7 +5289,7 @@
       }
       return h("div", {
         onKeyDown: trapConfirmKeys,
-        style: { position: "fixed", inset: 0, zIndex: 2000, background: "rgba(15,23,42,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }
+        style: { position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }
       },
         h("div", {
           role: "alertdialog", "aria-modal": "true", "aria-label": daConfirm.message,
@@ -12281,6 +12304,43 @@
             h("strong", null, transferInterpP.label)),
           h("p", { style: { fontSize: "10pt", margin: 0, lineHeight: 1.55 } }, transferInterpP.desc)
         ) : null,
+        // Learning-zone (ZPD) snapshot — parity with the on-screen summary.
+        (function () {
+          var zpdP = computeZpdProfile(s);
+          if (zpdP.nClassified === 0) return null;
+          function zpdRow(label, entries, note) {
+            return h("tr", null,
+              h("td", null, label),
+              h("td", null, String(entries.length)),
+              h("td", null, entries.length > 0 ? entries.join("; ") : "—"),
+              h("td", null, note)
+            );
+          }
+          return h("div", { className: "da-print-section" },
+            h("h2", null, "Learning-Zone Snapshot (Descriptive)"),
+            h("table", { className: "da-print-table" },
+              h("thead", null, h("tr", null,
+                h("th", null, "Band"),
+                h("th", null, "Items"),
+                h("th", null, "Constructs"),
+                h("th", null, "Instructional read")
+              )),
+              h("tbody", null,
+                zpdRow("Independent (solved unprompted at pretest)",
+                  zpdP.independent.map(function (z) { return z.construct; }),
+                  "Already secure — maintain, don't reteach."),
+                zpdRow("Scaffold-responsive band (solved with L1–L3)",
+                  zpdP.zpd.map(function (z) { return z.construct + " (L" + z.level + ")"; }),
+                  "Pitch instruction here, using the scaffold types that worked."),
+                zpdRow("Needs direct teaching (L4 or unsolved)",
+                  zpdP.frustration.map(function (z) { return z.construct + (z.solvedWithTeach ? " (solved after teach)" : " (unsolved)"); }),
+                  "Not yet reachable through prompting — reteach foundations first.")
+              )
+            ),
+            h("p", { className: "da-print-meta", style: { marginTop: 4 } },
+              "Zone-of-proximal-development classification (Vygotsky, 1978) based on the support each item required in this session. Descriptive of this session's items only — not a normed placement.")
+          );
+        })(),
         // Phase I — Observation tag patterns (only if any tags recorded)
         (function () {
           var tagAgg = aggregateObservationTags(s.itemResults);
@@ -12885,7 +12945,7 @@
                       onClick: o.action,
                       disabled: o.busy,
                       "aria-label": "Generate " + o.label,
-                      style: { padding: "3px 10px", borderRadius: 4, border: "none", background: o.busy ? "var(--da-faint)" : o.statusColor, color: "var(--da-on-accent)", fontSize: 10.5, fontWeight: 800, cursor: o.busy ? "wait" : "pointer", fontFamily: "inherit" }
+                      style: { padding: "3px 10px", borderRadius: 4, border: "none", background: o.busy ? "var(--da-faint)" : (daTheme === "contrast" ? "#ffff00" : o.statusColor), color: "var(--da-on-accent)", fontSize: 10.5, fontWeight: 800, cursor: o.busy ? "wait" : "pointer", fontFamily: "inherit" }
                     }, o.busy ? "Drafting…" : "Generate") : h("button", {
                       onClick: o.action,
                       "aria-label": "Open " + o.label + " panel",

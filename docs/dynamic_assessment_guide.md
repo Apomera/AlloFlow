@@ -213,7 +213,7 @@ In reports: present DA as clinical observations of learning behavior; avoid fram
 
 From the summary screen's outputs dashboard:
 
-- **Clinical narrative** — deterministic, template-built (editable), covering referral context, pretest/posttest/MI, scaffold use, transfer, observed patterns, and the access-condition note. Ends with a fixed caveat that the finding is descriptive, not normed, and should be interpreted alongside standardized measures.
+- **Clinical narrative** — deterministic, template-built (editable), covering referral context, pretest/posttest/MI, scaffold use, transfer, observed patterns, the learning-zone snapshot, and the access-condition note. Ends with a fixed caveat that the finding is descriptive, not normed, and should be interpreted alongside standardized measures.
 - **Teacher / case-manager handoff** — a "Monday morning" page: what worked, what didn't, what to watch for, quick probes, and when to re-refer. Carries the access-condition note as a kept, hypothesis-generating (not diagnostic) note.
 - **Family letter** — plain-language, sixth-grade reading level, jargon-banned and validated against overclaiming; it deliberately omits the technical access-condition note.
 - **IEP goals** — SMART-format annual goals with short-term objectives, anchored to scaffolds that worked; non-measurable verbs are rejected.
