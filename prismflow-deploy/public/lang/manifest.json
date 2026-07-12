@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-07-12T13:35:53.012Z",
+  "generated": "2026-07-12T13:43:41.306Z",
   "count": 63,
   "total_keys_expected": 9307,
   "available": [
@@ -28,8 +28,8 @@
     {
       "slug": "bengali",
       "display": "Bengali",
-      "keys": 18643,
-      "bytes": 2631060,
+      "keys": 18808,
+      "bytes": 2664611,
       "updated": "2026-07-12"
     },
     {
@@ -273,8 +273,8 @@
     {
       "slug": "marathi",
       "display": "Marathi",
-      "keys": 18483,
-      "bytes": 3270822,
+      "keys": 18648,
+      "bytes": 3304250,
       "updated": "2026-07-12"
     },
     {
@@ -287,8 +287,8 @@
     {
       "slug": "nepali",
       "display": "Nepali",
-      "keys": 18631,
-      "bytes": 2676602,
+      "keys": 18796,
+      "bytes": 2709833,
       "updated": "2026-07-12"
     },
     {
@@ -399,8 +399,8 @@
     {
       "slug": "thai",
       "display": "Thai",
-      "keys": 19083,
-      "bytes": 2629922,
+      "keys": 19248,
+      "bytes": 2663454,
       "updated": "2026-07-12"
     },
     {
