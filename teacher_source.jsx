@@ -27,8 +27,18 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const [batchTypes, setBatchTypes] = useState({ simplified: true, glossary: false, quiz: false, 'sentence-frames': false, brainstorm: false, faq: false, outline: false, adventure: false, 'concept-sort': false, image: false, timeline: false });
   const fileInputRef = useRef(null);
   const panelRef = useRef(null);
+  const submissionDialogRef = useRef(null);
+  const submissionDialogTriggerRef = useRef(null);
+  const [submissionDialog, setSubmissionDialog] = useState(null);
   useFocusTrap(panelRef, isOpen, onClose);
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!submissionDialog) return;
+    const dialog = submissionDialogRef.current;
+    const focusTarget = submissionDialog.kind === 'confirm'
+      ? dialog?.querySelector('[data-safe-default="true"]')
+      : dialog?.querySelector('button');
+    focusTarget?.focus();
+  }, [submissionDialog]);  if (!isOpen) return null;
   const groups = rosterKey?.groups || {};
   const students = rosterKey?.students || {};
   const groupIds = Object.keys(groups);
@@ -81,20 +91,25 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   // the public JWK in rosterKey.submissionKey so HTML exports embed it.
   // Phase 1, May 11 2026. Teacher MUST keep the downloaded file safe;
   // without it, encrypted student submissions are unrecoverable.
+  const closeSubmissionDialog = () => {
+    setSubmissionDialog(null);
+    window.setTimeout(() => submissionDialogTriggerRef.current?.focus(), 0);
+  };
+  const requestOfflineSubmissionSetup = (event) => {
+    submissionDialogTriggerRef.current = event.currentTarget;
+    if (rosterKey?.submissionKey?.publicJwk) {
+      setSubmissionDialog({ kind: 'confirm' });
+      return;
+    }
+    handleSetupOfflineSubmissions();
+  };
   const handleSetupOfflineSubmissions = async () => {
     const SC = window.AlloModules && window.AlloModules.SubmissionCrypto;
     if (!SC || typeof SC.generateClassKeypair !== 'function') {
       if (window.AlloFlowUX) window.AlloFlowUX.toast('Submission crypto module not loaded yet. Please refresh and try again.', 'error'); else alert('Submission crypto module not loaded yet. Please refresh and try again.');
       return;
     }
-    if (rosterKey?.submissionKey?.publicJwk) {
-      const confirmReplace = confirm(
-        'This class already has offline submissions set up.\n\n' +
-        'Generating a new key will INVALIDATE the old one — any student files saved with the old key will no longer be decryptable.\n\n' +
-        'Continue anyway?'
-      );
-      if (!confirmReplace) return;
-    }
+    setSubmissionDialog(null);
     try {
       const { publicJwk, privateJwk } = await SC.generateClassKeypair();
       const classId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('class-' + Date.now());
@@ -125,12 +140,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         students: prev?.students || {},
         submissionKey: { publicJwk: publicJwk, classId: classId, createdAt: createdAt }
       }));
-      // First-time warning
-      alert(
-        '🔐 Offline submissions are set up for this class.\n\n' +
-        'IMPORTANT: Save the downloaded "class-key" file in a safe place (your class Google Drive folder is recommended). Without it, you cannot open student submissions.\n\n' +
-        'AlloFlow does not keep a copy of this file. If you lose it, the encrypted submissions cannot be recovered.'
-      );
+      // Keep the recovery warning visible until the teacher acknowledges it.
+      setSubmissionDialog({ kind: 'complete' });
     } catch (err) {
       console.error('handleSetupOfflineSubmissions failed:', err);
       if (window.AlloFlowUX) window.AlloFlowUX.toast('Could not set up submissions: ' + (err && err.message ? err.message : 'unknown error'), 'error'); else alert('Could not set up submissions: ' + (err && err.message ? err.message : 'unknown error'));
@@ -259,7 +270,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             <Download size={14} /> {t('roster.export') || 'Export JSON'}
           </button>
           <button
-            onClick={handleSetupOfflineSubmissions}
+            onClick={requestOfflineSubmissionSetup}
             disabled={!rosterKey}
             title={rosterKey?.submissionKey?.publicJwk
               ? 'Offline submissions are active for this class. Click to regenerate (invalidates the existing key).'
@@ -528,6 +539,32 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             </div>
           )}
         </div>
+        {submissionDialog && (
+          <div className="absolute inset-0 z-20 bg-slate-900/70 flex items-center justify-center p-4">
+            <div ref={submissionDialogRef} role="alertdialog" aria-modal="true" aria-labelledby="offline-submission-dialog-title" aria-describedby="offline-submission-dialog-description"
+              onKeyDown={event => {
+                if (event.key === 'Escape') { event.preventDefault(); closeSubmissionDialog(); return; }
+                if (event.key !== 'Tab') return;
+                const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                if (!focusable.length) { event.preventDefault(); return; }
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+              }}
+              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+              <h3 id="offline-submission-dialog-title" className="text-lg font-black text-slate-900">
+                {submissionDialog.kind === 'confirm' ? 'Replace the class submission key?' : 'Offline submissions are ready'}
+              </h3>
+              <div id="offline-submission-dialog-description" className="mt-3 space-y-3 text-sm text-slate-700">
+                {submissionDialog.kind === 'confirm' ? (<><p>This class already has offline submissions set up.</p><p>Generating a new key invalidates the old key. Student files saved with the old key will no longer be decryptable.</p></>) : (<><p>Save the downloaded class-key file in a safe place, such as your class Google Drive folder. You cannot open student submissions without it.</p><p>AlloFlow does not keep a copy. Lost keys and their encrypted submissions cannot be recovered.</p></>)}
+              </div>
+              <div className="mt-6 flex flex-wrap justify-end gap-3">
+                {submissionDialog.kind === 'confirm' ? (<><button type="button" data-safe-default="true" onClick={closeSubmissionDialog} className="min-h-11 rounded-lg border border-slate-400 px-4 py-2 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">Keep existing key</button><button type="button" onClick={handleSetupOfflineSubmissions} className="min-h-11 rounded-lg bg-red-700 px-4 py-2 font-bold text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">Replace key</button></>) : (<button type="button" onClick={closeSubmissionDialog} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Done</button>)}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -79,6 +79,8 @@ This report evaluates the current local desktop command center and the bundled A
 - Replaced Word Sounds Voice Pack deletion's browser confirmation with a named/described alert dialog; separated requesting consent from the destructive action, defaulted focus to Keep pack, contained Tab, supported Escape cancellation and focus return, and preserved the one-pack minimum guard (WCAG 2.1.1, 2.4.3, 2.4.7, 3.3.4, 4.1.2).
 - Synchronized the Word Sounds setup-source review panel with the accessible runtime review: added named/described modal semantics, initial Back focus, Tab containment, Escape handling, and focus return; replaced its duplicated early-probe browser confirmation with the same safe-default named/described alert-dialog flow (WCAG 2.1.1, 2.4.3, 2.4.7, 3.3.4, 4.1.2).
 
+- Replaced the teacher roster offline-submission key regeneration confirmation and setup-completion browser alert with a named/described alert dialog; defaulted destructive consent to Keep existing key, contained Tab, supported Escape dismissal, preserved the key-loss warning, and returned focus to the setup trigger (WCAG 2.1.1, 2.4.3, 2.4.7, 3.3.4, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

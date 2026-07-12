@@ -139,7 +139,16 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const [batchTypes, setBatchTypes] = useState({ simplified: true, glossary: false, quiz: false, "sentence-frames": false, brainstorm: false, faq: false, outline: false, adventure: false, "concept-sort": false, image: false, timeline: false });
   const fileInputRef = useRef(null);
   const panelRef = useRef(null);
+  const submissionDialogRef = useRef(null);
+  const submissionDialogTriggerRef = useRef(null);
+  const [submissionDialog, setSubmissionDialog] = useState(null);
   useFocusTrap(panelRef, isOpen, onClose);
+  useEffect(() => {
+    if (!submissionDialog) return;
+    const dialog = submissionDialogRef.current;
+    const focusTarget = submissionDialog.kind === "confirm" ? dialog?.querySelector('[data-safe-default="true"]') : dialog?.querySelector("button");
+    focusTarget?.focus();
+  }, [submissionDialog]);
   if (!isOpen) return null;
   const groups = rosterKey?.groups || {};
   const students = rosterKey?.students || {};
@@ -189,6 +198,18 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
+  const closeSubmissionDialog = () => {
+    setSubmissionDialog(null);
+    window.setTimeout(() => submissionDialogTriggerRef.current?.focus(), 0);
+  };
+  const requestOfflineSubmissionSetup = (event) => {
+    submissionDialogTriggerRef.current = event.currentTarget;
+    if (rosterKey?.submissionKey?.publicJwk) {
+      setSubmissionDialog({ kind: "confirm" });
+      return;
+    }
+    handleSetupOfflineSubmissions();
+  };
   const handleSetupOfflineSubmissions = async () => {
     const SC = window.AlloModules && window.AlloModules.SubmissionCrypto;
     if (!SC || typeof SC.generateClassKeypair !== "function") {
@@ -196,12 +217,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       else alert("Submission crypto module not loaded yet. Please refresh and try again.");
       return;
     }
-    if (rosterKey?.submissionKey?.publicJwk) {
-      const confirmReplace = confirm(
-        "This class already has offline submissions set up.\n\nGenerating a new key will INVALIDATE the old one \u2014 any student files saved with the old key will no longer be decryptable.\n\nContinue anyway?"
-      );
-      if (!confirmReplace) return;
-    }
+    setSubmissionDialog(null);
     try {
       const { publicJwk, privateJwk } = await SC.generateClassKeypair();
       const classId = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : "class-" + Date.now();
@@ -233,9 +249,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         students: prev?.students || {},
         submissionKey: { publicJwk, classId, createdAt }
       }));
-      alert(
-        '\u{1F510} Offline submissions are set up for this class.\n\nIMPORTANT: Save the downloaded "class-key" file in a safe place (your class Google Drive folder is recommended). Without it, you cannot open student submissions.\n\nAlloFlow does not keep a copy of this file. If you lose it, the encrypted submissions cannot be recovered.'
-      );
+      setSubmissionDialog({ kind: "complete" });
     } catch (err) {
       console.error("handleSetupOfflineSubmissions failed:", err);
       if (window.AlloFlowUX) window.AlloFlowUX.toast("Could not set up submissions: " + (err && err.message ? err.message : "unknown error"), "error");
@@ -363,7 +377,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   return /* @__PURE__ */ React.createElement("div", { ref: panelRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "teacher-roster-panel-title", className: "fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border-2 border-indigo-100 animate-in zoom-in-95 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between p-5 border-b border-slate-100" }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "roster_panel_header" }, /* @__PURE__ */ React.createElement("h2", { id: "teacher-roster-panel-title", className: "text-lg font-black text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 20, className: "text-indigo-500" }), " ", isParentMode ? "Family Learning Profiles" : isIndependentMode ? "My Learning Profile" : t("roster.title") || "Class Roster & Progress Tracking"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, isParentMode ? "Manage family member profiles and track learning progress" : isIndependentMode ? "Manage your learning profile and track your progress" : t("roster.subtitle") || "Organize student groups with differentiated profiles for instruction")), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "p-2 rounded-full hover:bg-slate-100 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20, className: "text-slate-600" }))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 px-5 py-3 border-b border-slate-50 bg-slate-50/50" }, /* @__PURE__ */ React.createElement("button", { onClick: () => fileInputRef.current?.click(), className: "px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Upload, { size: 14 }), " ", t("roster.import") || "Import JSON"), /* @__PURE__ */ React.createElement("button", { onClick: handleExport, disabled: !rosterKey, className: "px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " ", t("roster.export") || "Export JSON"), /* @__PURE__ */ React.createElement(
     "button",
     {
-      onClick: handleSetupOfflineSubmissions,
+      onClick: requestOfflineSubmissionSetup,
       disabled: !rosterKey,
       title: rosterKey?.submissionKey?.publicJwk ? "Offline submissions are active for this class. Click to regenerate (invalidates the existing key)." : "Generate a class keypair so students can save HTML worksheets back to you.",
       className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 disabled:opacity-40 ${rosterKey?.submissionKey?.publicJwk ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`
@@ -534,7 +548,42 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2192"),
     groupIds.map((gId) => /* @__PURE__ */ React.createElement("option", { key: gId, value: gId }, groups[gId].name))
-  ), /* @__PURE__ */ React.createElement("button", { onClick: () => handleRemoveStudent(name), className: "hover:text-red-500 transition-colors", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))))), Array.isArray(rosterKey?.sessionHistory) && rosterKey.sessionHistory.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-cyan-200 bg-cyan-50/60 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-sm text-cyan-900" }, "Saved session history (", rosterKey.sessionHistory.length, ")"), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2" }, [...rosterKey.sessionHistory].reverse().slice(0, 10).map((session) => /* @__PURE__ */ React.createElement("details", { key: session.id, className: "rounded-lg border border-cyan-100 bg-white p-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap gap-x-2" }, /* @__PURE__ */ React.createElement("span", null, session.endedAt ? new Date(session.endedAt).toLocaleString() : "Saved session"), /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700" }, Object.keys(session.participants || {}).length, " present"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, session.mode === "mailbox" ? "Mailbox" : "Firebase")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-slate-600 space-y-1" }, typeof session.durationMinutes === "number" && /* @__PURE__ */ React.createElement("p", null, "Duration: ", session.durationMinutes, " min"), session.teacherNote && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Teacher note:"), " ", session.teacherNote), Object.entries(session.participants || {}).map(([codename, record]) => /* @__PURE__ */ React.createElement("p", { key: codename }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, codename), ": ", record.responseCount || 0, " live response", record.responseCount === 1 ? "" : "s", record.groupId ? ` \xB7 group ${record.groupId}` : "")), (session.unmatchedCodenames || []).length > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-rose-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Unmatched:"), " ", session.unmatchedCodenames.join(", "))))), rosterKey.sessionHistory.length > 10 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-800" }, "Showing the 10 most recent of ", rosterKey.sessionHistory.length, ". Export JSON for the complete retained history."))), "          ", rosterKey && /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600 font-medium" }, /* @__PURE__ */ React.createElement("span", null, groupIds.length, " group", groupIds.length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, Object.keys(students).length, " student", Object.keys(students).length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, getUnassigned().length, " unassigned"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10, className: "text-green-500" }), " ", t("teacher.local_only") || "Local only")))));
+  ), /* @__PURE__ */ React.createElement("button", { onClick: () => handleRemoveStudent(name), className: "hover:text-red-500 transition-colors", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))))), Array.isArray(rosterKey?.sessionHistory) && rosterKey.sessionHistory.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-cyan-200 bg-cyan-50/60 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-sm text-cyan-900" }, "Saved session history (", rosterKey.sessionHistory.length, ")"), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2" }, [...rosterKey.sessionHistory].reverse().slice(0, 10).map((session) => /* @__PURE__ */ React.createElement("details", { key: session.id, className: "rounded-lg border border-cyan-100 bg-white p-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap gap-x-2" }, /* @__PURE__ */ React.createElement("span", null, session.endedAt ? new Date(session.endedAt).toLocaleString() : "Saved session"), /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700" }, Object.keys(session.participants || {}).length, " present"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, session.mode === "mailbox" ? "Mailbox" : "Firebase")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-slate-600 space-y-1" }, typeof session.durationMinutes === "number" && /* @__PURE__ */ React.createElement("p", null, "Duration: ", session.durationMinutes, " min"), session.teacherNote && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Teacher note:"), " ", session.teacherNote), Object.entries(session.participants || {}).map(([codename, record]) => /* @__PURE__ */ React.createElement("p", { key: codename }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, codename), ": ", record.responseCount || 0, " live response", record.responseCount === 1 ? "" : "s", record.groupId ? ` \xB7 group ${record.groupId}` : "")), (session.unmatchedCodenames || []).length > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-rose-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Unmatched:"), " ", session.unmatchedCodenames.join(", "))))), rosterKey.sessionHistory.length > 10 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-800" }, "Showing the 10 most recent of ", rosterKey.sessionHistory.length, ". Export JSON for the complete retained history."))), "          ", rosterKey && /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600 font-medium" }, /* @__PURE__ */ React.createElement("span", null, groupIds.length, " group", groupIds.length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, Object.keys(students).length, " student", Object.keys(students).length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, getUnassigned().length, " unassigned"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10, className: "text-green-500" }), " ", t("teacher.local_only") || "Local only"))), submissionDialog && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-20 bg-slate-900/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      ref: submissionDialogRef,
+      role: "alertdialog",
+      "aria-modal": "true",
+      "aria-labelledby": "offline-submission-dialog-title",
+      "aria-describedby": "offline-submission-dialog-description",
+      onKeyDown: (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closeSubmissionDialog();
+          return;
+        }
+        if (event.key !== "Tab") return;
+        const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+        if (!focusable.length) {
+          event.preventDefault();
+          return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      },
+      className: "w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+    },
+    /* @__PURE__ */ React.createElement("h3", { id: "offline-submission-dialog-title", className: "text-lg font-black text-slate-900" }, submissionDialog.kind === "confirm" ? "Replace the class submission key?" : "Offline submissions are ready"),
+    /* @__PURE__ */ React.createElement("div", { id: "offline-submission-dialog-description", className: "mt-3 space-y-3 text-sm text-slate-700" }, submissionDialog.kind === "confirm" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", null, "This class already has offline submissions set up."), /* @__PURE__ */ React.createElement("p", null, "Generating a new key invalidates the old key. Student files saved with the old key will no longer be decryptable.")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", null, "Save the downloaded class-key file in a safe place, such as your class Google Drive folder. You cannot open student submissions without it."), /* @__PURE__ */ React.createElement("p", null, "AlloFlow does not keep a copy. Lost keys and their encrypted submissions cannot be recovered."))),
+    /* @__PURE__ */ React.createElement("div", { className: "mt-6 flex flex-wrap justify-end gap-3" }, submissionDialog.kind === "confirm" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { type: "button", "data-safe-default": "true", onClick: closeSubmissionDialog, className: "min-h-11 rounded-lg border border-slate-400 px-4 py-2 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, "Keep existing key"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetupOfflineSubmissions, className: "min-h-11 rounded-lg bg-red-700 px-4 py-2 font-bold text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" }, "Replace key")) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeSubmissionDialog, className: "min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" }, "Done"))
+  ))));
 });
 const SimpleBarChart = React.memo(({ data, color = "indigo" }) => {
   const { t } = useContext(LanguageContext);
