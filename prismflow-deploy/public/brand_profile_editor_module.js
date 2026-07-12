@@ -106,6 +106,45 @@ function BrandProfileEditor(props) {
   const [draft, setDraft] = React.useState(blankDraft);
   const fileInputRef = React.useRef(null);
   const importInputRef = React.useRef(null);
+  const dialogRef = React.useRef(null);
+  const closeButtonRef = React.useRef(null);
+  React.useEffect(function () {
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    const previousFocus = document.activeElement;
+    (closeButtonRef.current || dialog).focus();
+    const getFocusable = function () {
+      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    };
+    const onKeyDown = function (event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return function () {
+      dialog.removeEventListener('keydown', onKeyDown);
+      if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+    };
+  }, [onClose]);
   const refresh = React.useCallback(function () {
     if (!api) return;
     try {
@@ -326,25 +365,36 @@ function BrandProfileEditor(props) {
   const bodyFont = draft.fonts && draft.fonts.body || 'inherit';
   return /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4",
+    role: "presentation",
+    onClick: onClose
+  }, /*#__PURE__*/React.createElement("div", {
+    ref: dialogRef,
+    tabIndex: -1,
+    className: "bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden focus:outline-none",
     role: "dialog",
     "aria-modal": "true",
-    "aria-label": t('brand.title', 'Brand Settings')
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden"
+    "aria-labelledby": "brand-settings-title",
+    onClick: function (e) {
+      e.stopPropagation();
+    }
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-slate-50 shrink-0"
   }, /*#__PURE__*/React.createElement("h2", {
+    id: "brand-settings-title",
     className: "text-lg font-bold text-slate-800 flex items-center gap-2"
-  }, "\uD83C\uDFA8 ", t('brand.title', 'Brand Settings')), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "\uD83C\uDFA8"), " ", t('brand.title', 'Brand Settings')), /*#__PURE__*/React.createElement("button", {
+    ref: closeButtonRef,
     onClick: onClose,
     "aria-label": t('common.close', 'Close'),
     className: "p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 transition-colors text-xl leading-none"
   }, "\xD7")), !api ? /*#__PURE__*/React.createElement("div", {
     className: "p-8 text-center text-slate-600"
   }, t('brand.unavailable', 'Brand Profile module not loaded.')) : /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-1 min-h-0"
+    className: "flex flex-col lg:flex-row flex-1 min-h-0 overflow-y-auto lg:overflow-hidden"
   }, /*#__PURE__*/React.createElement("aside", {
-    className: "w-56 shrink-0 border-r border-slate-200 bg-slate-50 flex flex-col"
+    className: "w-full lg:w-56 shrink-0 border-b lg:border-b-0 lg:border-r border-slate-200 bg-slate-50 flex flex-col max-h-56 lg:max-h-none"
   }, /*#__PURE__*/React.createElement("div", {
     className: "p-3 flex flex-col gap-2 border-b border-slate-200"
   }, /*#__PURE__*/React.createElement("button", {
@@ -377,7 +427,7 @@ function BrandProfileEditor(props) {
       onClick: function () {
         editProfile(p);
       },
-      className: "text-left text-sm font-semibold text-slate-800 truncate flex-1",
+      className: "text-left text-sm font-semibold text-slate-800 truncate flex-1 min-h-6",
       title: p.name
     }, p.name || '(unnamed)'), isActive && /*#__PURE__*/React.createElement("span", {
       className: "text-[10px] font-bold uppercase text-green-700 bg-green-100 px-1.5 py-0.5 rounded"
@@ -387,17 +437,17 @@ function BrandProfileEditor(props) {
       onClick: function () {
         makeActive(p.id);
       },
-      className: "text-[11px] text-blue-700 hover:underline"
+      className: "inline-flex min-h-6 items-center text-[11px] text-blue-700 hover:underline"
     }, t('brand.use', 'Set active')), /*#__PURE__*/React.createElement("button", {
       onClick: function () {
         exportProfile(p.id);
       },
-      className: "text-[11px] text-slate-600 hover:underline"
+      className: "inline-flex min-h-6 items-center text-[11px] text-slate-600 hover:underline"
     }, t('brand.export', 'Export')), /*#__PURE__*/React.createElement("button", {
       onClick: function () {
         remove(p.id, p.name);
       },
-      className: "text-[11px] text-red-600 hover:underline"
+      className: "inline-flex min-h-6 items-center text-[11px] text-red-600 hover:underline"
     }, t('brand.delete', 'Delete'))));
   }))), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto p-5 min-w-0"
@@ -439,6 +489,8 @@ function BrandProfileEditor(props) {
       className: "text-[11px] text-slate-600 truncate"
     }, f.label), /*#__PURE__*/React.createElement("input", {
       value: val,
+      "aria-label": f.label + ' hex value',
+      "aria-invalid": !valid,
       onChange: function (e) {
         setColor(f.key, e.target.value);
       },
@@ -502,6 +554,7 @@ function BrandProfileEditor(props) {
     onChange: onLogoFile,
     className: "hidden"
   })), draft.logo && draft.logo.src && /*#__PURE__*/React.createElement("input", {
+    "aria-label": t('brand.logo_alt', 'Logo alternative text'),
     value: draft.logo.alt || '',
     onChange: function (e) {
       setLogoAlt(e.target.value);
@@ -513,6 +566,7 @@ function BrandProfileEditor(props) {
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold uppercase tracking-wide text-slate-500"
   }, t('brand.header', 'Header band')), /*#__PURE__*/React.createElement("input", {
+    "aria-label": t('brand.header_text', 'Header text'),
     value: draft.header.text,
     onChange: function (e) {
       setHeader({
@@ -535,6 +589,7 @@ function BrandProfileEditor(props) {
   }), " ", t('brand.header_logo', 'Show logo in header'))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold uppercase tracking-wide text-slate-500"
   }, t('brand.footer', 'Footer band')), /*#__PURE__*/React.createElement("input", {
+    "aria-label": t('brand.footer_text', 'Footer text'),
     value: draft.footer.text,
     onChange: function (e) {
       setFooter({
@@ -555,7 +610,7 @@ function BrandProfileEditor(props) {
       });
     }
   }), " ", t('brand.footer_page', 'Show page numbers'))))), /*#__PURE__*/React.createElement("aside", {
-    className: "w-72 shrink-0 border-l border-slate-200 flex flex-col"
+    className: "w-full lg:w-72 shrink-0 border-t lg:border-t-0 lg:border-l border-slate-200 flex flex-col"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto p-3"
   }, /*#__PURE__*/React.createElement("span", {
@@ -631,7 +686,10 @@ function BrandProfileEditor(props) {
       justifyContent: 'space-between'
     }
   }, /*#__PURE__*/React.createElement("span", null, draft.footer.text), draft.footer.showPageNumber && /*#__PURE__*/React.createElement("span", null, t('brand.preview_page', 'Page 1')))), /*#__PURE__*/React.createElement("div", {
-    className: "mt-3 space-y-1"
+    className: "mt-3 space-y-1",
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "false"
   }, validation.errors.map(function (er, i) {
     return /*#__PURE__*/React.createElement("div", {
       key: 'e' + i,
