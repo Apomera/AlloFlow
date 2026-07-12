@@ -252,19 +252,8 @@ var d = labToolData || {};
 
           // â”€â”€ Entrepreneur State â”€â”€
 
-          var enDay = d.enDay || 1;
-
-          var enCash = d.enCash !== undefined ? d.enCash : 20;
-
-          var enPrice = d.enPrice || 1.00;
-
-          var enCups = d.enCups || 30;
-
-          var enAdBudget = d.enAdBudget || 0;
-
-          var enWeather = d.enWeather || 'sunny';
-
-          var enHistory = d.enHistory || [];
+          // Legacy lemonade-stand state (enDay/enCash/enPrice/enCups/enAdBudget/
+          // enWeather/enHistory) removed — the live sim is d.enBusiness + enBiz*.
 
 
 
@@ -288,13 +277,18 @@ var d = labToolData || {};
 
           // â”€â”€ Achievement Tracking â”€â”€
 
+          // Net worth = liquid cash + home equity + investment portfolio \u2212 debt.
+          // The "Net worth" achievements check this, not raw cash, so investing
+          // and homeownership count toward them (they are assets, not losses).
+          var pfNetWorth = (d.pfCash || 2000) + (d.pfEquity || 0) + (d.pfInvested || 0) - (d.pfDebt || 0);
+
           var econAchievements = [];
 
           if ((d.pfCash || 0) >= 100000) econAchievements.push({ icon: '\uD83D\uDCB0', title: t('stem.economicslab.six_figures', 'Six Figures'), desc: t('stem.economicslab.saved_100k', 'Saved $100K+') });
 
-          if ((d.pfCash || 0) >= 1000000) econAchievements.push({ icon: '\uD83D\uDC8E', title: t('stem.economicslab.millionaire', 'Millionaire'), desc: t('stem.economicslab.net_worth_1m', 'Net worth $1M+') });
+          if (pfNetWorth >= 1000000) econAchievements.push({ icon: '\uD83D\uDC8E', title: t('stem.economicslab.millionaire', 'Millionaire'), desc: t('stem.economicslab.net_worth_1m', 'Net worth $1M+') });
 
-          if ((d.pfAge || 22) >= 65 && (d.pfCash || 0) > 500000) econAchievements.push({ icon: '\uD83C\uDFD6\uFE0F', title: t('stem.economicslab.comfortable_retirement', 'Comfortable Retirement'), desc: t('stem.economicslab.retired_with_500k', 'Retired with $500K+') });
+          if ((d.pfAge || 22) >= 65 && pfNetWorth > 500000) econAchievements.push({ icon: '\uD83C\uDFD6\uFE0F', title: t('stem.economicslab.comfortable_retirement', 'Comfortable Retirement'), desc: t('stem.economicslab.retired_with_500k', 'Retired with $500K+') });
 
           if ((d.pfCredit || 650) >= 800) econAchievements.push({ icon: '\u2B50', title: t('stem.economicslab.excellent_credit', 'Excellent Credit'), desc: t('stem.economicslab.credit_score_800', 'Credit score 800+') });
 
@@ -351,6 +345,8 @@ var d = labToolData || {};
           if (conceptsLearned >= 15) econAchievements.push({ icon: '\uD83C\uDF93', title: t('stem.economicslab.economics_major', 'Economics Major'), desc: t('stem.economicslab.15_concepts_learned', '15+ concepts learned') });
 
           if (conceptsLearned >= 30) econAchievements.push({ icon: '\uD83E\uDDD1\u200D\uD83C\uDF93', title: t('stem.economicslab.phd_economist', 'PhD Economist'), desc: t('stem.economicslab.30_concepts_learned', '30+ concepts learned') });
+
+          if (((d.policyIQ || {}).log || []).length >= 3) econAchievements.push({ icon: '\uD83D\uDD2C', title: t('stem.economicslab.macro_researcher', 'Macro Researcher'), desc: t('stem.economicslab.logged_3_policy_mixes', 'Logged 3+ policy mixes in Policy Inquiry') });
 
           // === Wave 1: ECON_CONCEPTS ===
           var ECON_CONCEPTS = [
@@ -580,7 +576,11 @@ var d = labToolData || {};
 
               // â”€â”€ Supply & Demand Graph â”€â”€
 
-              var gx = 60, gy = 30, gw = W - 120, gh = H - 80;
+              // NB: the canvas is a 2x supersample (drawn at offsetWidth*2 / 500,
+              // displayed at offsetWidth / 250), so font px here render at HALF
+              // size on screen — all text in this draw pass uses ~2x sizes.
+
+              var gx = 76, gy = 44, gw = W - 140, gh = H - 110;
 
               // Background
 
@@ -604,21 +604,21 @@ var d = labToolData || {};
 
               ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, gy + gh); ctx.lineTo(gx + gw, gy + gh); ctx.stroke();
 
-              ctx.font = 'bold 14px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+              ctx.font = 'bold 24px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
-              ctx.fillText('Price ($)', gx - 50, gy + gh / 2);
+              ctx.fillText('Price ($)', 8, 26);
 
-              ctx.fillText('Quantity', gx + gw / 2 - 25, gy + gh + 35);
+              ctx.fillText('Quantity', gx + gw / 2 - 50, gy + gh + 46);
 
               // Labels
 
-              ctx.font = '11px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+              ctx.font = '18px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
               for (var li = 0; li <= 10; li++) {
 
-                ctx.fillText((100 - li * 10).toString(), gx - 30, gy + li * gh / 10 + 4);
+                ctx.fillText((100 - li * 10).toString(), gx - 46, gy + li * gh / 10 + 6);
 
-                ctx.fillText((li * 10).toString(), gx + li * gw / 10 - 5, gy + gh + 18);
+                ctx.fillText((li * 10).toString(), gx + li * gw / 10 - 10, gy + gh + 24);
 
               }
 
@@ -642,9 +642,9 @@ var d = labToolData || {};
 
               ctx.stroke();
 
-              ctx.restore(); ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 13px Inter, system-ui';
+              ctx.restore(); ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 24px Inter, system-ui';
 
-              ctx.fillText('D' + (sdDemandShift !== 0 ? '\'' : ''), gx + gw - 30, gy + 30 - sdDemandShift * 25);
+              ctx.fillText('D' + (sdDemandShift !== 0 ? '\'' : ''), gx + gw - 34, Math.max(gy + 24, Math.min(gy + gh - 10, gy + 30 - sdDemandShift * 25)));
 
 
 
@@ -668,7 +668,7 @@ var d = labToolData || {};
 
               ctx.restore(); ctx.fillStyle = '#ef4444';
 
-              ctx.fillText('S' + (sdSupplyShift !== 0 ? '\'' : ''), gx + gw - 30, gy + gh - 30 - sdSupplyShift * 25);
+              ctx.fillText('S' + (sdSupplyShift !== 0 ? '\'' : ''), gx + gw - 34, Math.max(gy + 24, Math.min(gy + gh - 10, gy + gh - 30 - sdSupplyShift * 25)));
 
 
 
@@ -714,29 +714,34 @@ var d = labToolData || {};
 
               ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2; ctx.stroke();
 
-              ctx.font = 'bold 12px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+              ctx.font = 'bold 22px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
 
-              ctx.fillText('E', eqPx + 12, eqPy - 8);
+              ctx.fillText('E', eqPx + 14, eqPy - 10);
 
-              ctx.font = '11px Inter, system-ui';
+              ctx.font = '19px Inter, system-ui';
 
-              ctx.fillText('P* = $' + eqP.toFixed(0), gx + 5, eqPy - 5);
+              ctx.fillText('P* = $' + eqP.toFixed(0), gx + 8, Math.max(gy + 20, eqPy - 8));
 
-              ctx.fillText('Q* = ' + eqQ.toFixed(0), eqPx - 10, gy + gh + 30);
+              ctx.fillText('Q* = ' + eqQ.toFixed(0), Math.min(gx + gw - 100, eqPx + 12), gy + gh - 12);
 
-              if (!eqInRange) { ctx.fillStyle = '#fbbf24'; ctx.font = '10px Inter, system-ui'; ctx.fillText('Equilibrium is off the chart — reduce the shift sliders', gx + 5, gy + 14); }
+              if (!eqInRange) { ctx.fillStyle = '#fbbf24'; ctx.font = '18px Inter, system-ui'; ctx.fillText('Equilibrium is off the chart — reduce the shift sliders', gx + 10, gy + 24); }
 
-              // Concept summary
+              // Label the shaded surplus triangles right on the chart (the old
+              // bullet-list version of this drew at y >= H, below the visible canvas).
 
-              ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+              if (eqInRange && eqQ > 18) {
 
-              var csY = gy + gh + 50;
+                ctx.font = 'bold 20px Inter, system-ui';
 
-              ctx.fillText('\u2022 Consumer Surplus = area ABOVE equilibrium price, BELOW demand curve', gx, csY);
+                ctx.fillStyle = 'rgba(147,197,253,0.95)';
 
-              ctx.fillText('\u2022 Producer Surplus = area BELOW equilibrium price, ABOVE supply curve', gx, csY + 14);
+                ctx.fillText('CS', gx + eqQ / 100 * gw * 0.2, gy + (100 - (eqP + (90 + sdDemandShift * 5 - eqP) * 0.4)) / 100 * gh);
 
-              ctx.fillText('\u2022 Total Surplus = Consumer + Producer surplus (maximized at equilibrium)', gx, csY + 28);
+                ctx.fillStyle = 'rgba(252,165,165,0.95)';
+
+                ctx.fillText('PS', gx + eqQ / 100 * gw * 0.2, gy + (100 - (eqP - (eqP - (10 + sdSupplyShift * 5)) * 0.4)) / 100 * gh);
+
+              }
 
 
 
@@ -750,15 +755,34 @@ var d = labToolData || {};
 
                 ctx.beginPath(); ctx.moveTo(gx, pfY); ctx.lineTo(gx + gw, pfY); ctx.stroke();
 
-                ctx.setLineDash([]); ctx.fillStyle = '#22c55e'; ctx.font = 'bold 11px Inter, system-ui';
+                ctx.setLineDash([]); ctx.fillStyle = '#22c55e'; ctx.font = 'bold 19px Inter, system-ui';
 
-                ctx.fillText('Price Floor $' + sdPriceFloor, gx + gw - 120, pfY - 8);
+                ctx.fillText('Price Floor $' + sdPriceFloor, gx + gw - 240, pfY - 10);
 
                 if (sdPriceFloor > eqP) {
 
-                  ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+                  // Mark Qd and Qs at the floor price (curves are linear, so these
+                  // are exact) and quantify the unsold surplus between them.
 
-                  ctx.fillText('\u26A0 SURPLUS (above equilibrium)', gx + 10, pfY - 20);
+                  var fQd = Math.max(0, Math.min(100, (90 + sdDemandShift * 5 - sdPriceFloor) / 0.8));
+
+                  var fQs = Math.max(0, Math.min(100, (sdPriceFloor - 10 - sdSupplyShift * 5) / 0.8));
+
+                  var fXd = gx + fQd / 100 * gw, fXs = gx + fQs / 100 * gw;
+
+                  ctx.fillStyle = '#22c55e';
+
+                  ctx.beginPath(); ctx.arc(fXd, pfY, 6, 0, Math.PI * 2); ctx.fill();
+
+                  ctx.beginPath(); ctx.arc(fXs, pfY, 6, 0, Math.PI * 2); ctx.fill();
+
+                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 3;
+
+                  ctx.beginPath(); ctx.moveTo(fXd, pfY); ctx.lineTo(fXs, pfY); ctx.stroke();
+
+                  ctx.font = 'bold 19px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+
+                  ctx.fillText('\u26A0 SURPLUS \u2248 ' + Math.max(0, fQs - fQd).toFixed(0) + ' units unsold (Qs > Qd)', gx + 10, Math.max(gy + 22, pfY - 34));
 
                 }
 
@@ -774,15 +798,33 @@ var d = labToolData || {};
 
                 ctx.beginPath(); ctx.moveTo(gx, pcY); ctx.lineTo(gx + gw, pcY); ctx.stroke();
 
-                ctx.setLineDash([]); ctx.fillStyle = '#f97316'; ctx.font = 'bold 11px Inter, system-ui';
+                ctx.setLineDash([]); ctx.fillStyle = '#f97316'; ctx.font = 'bold 19px Inter, system-ui';
 
-                ctx.fillText('Price Ceiling $' + sdPriceCeiling, gx + gw - 130, pcY + 18);
+                ctx.fillText('Price Ceiling $' + sdPriceCeiling, gx + gw - 260, pcY + 26);
 
                 if (sdPriceCeiling < eqP) {
 
-                  ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+                  // Mark Qs and Qd at the ceiling price and quantify the unmet demand.
 
-                  ctx.fillText('\u26A0 SHORTAGE (below equilibrium)', gx + 10, pcY + 30);
+                  var cQd = Math.max(0, Math.min(100, (90 + sdDemandShift * 5 - sdPriceCeiling) / 0.8));
+
+                  var cQs = Math.max(0, Math.min(100, (sdPriceCeiling - 10 - sdSupplyShift * 5) / 0.8));
+
+                  var cXd = gx + cQd / 100 * gw, cXs = gx + cQs / 100 * gw;
+
+                  ctx.fillStyle = '#f97316';
+
+                  ctx.beginPath(); ctx.arc(cXd, pcY, 6, 0, Math.PI * 2); ctx.fill();
+
+                  ctx.beginPath(); ctx.arc(cXs, pcY, 6, 0, Math.PI * 2); ctx.fill();
+
+                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 3;
+
+                  ctx.beginPath(); ctx.moveTo(cXs, pcY); ctx.lineTo(cXd, pcY); ctx.stroke();
+
+                  ctx.font = 'bold 19px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+
+                  ctx.fillText('\u26A0 SHORTAGE \u2248 ' + Math.max(0, cQd - cQs).toFixed(0) + ' units unmet (Qd > Qs)', gx + 10, Math.min(gy + gh - 12, pcY + 52));
 
                 }
 
@@ -796,9 +838,9 @@ var d = labToolData || {};
 
                 ctx.fillRect(eqPx - 20, eqPy - sdTax / 100 * gh / 2, 40, sdTax / 100 * gh);
 
-                ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#a855f7';
+                ctx.font = 'bold 19px Inter, system-ui'; ctx.fillStyle = '#c084fc';
 
-                ctx.fillText('Tax: $' + sdTax, eqPx + 25, eqPy);
+                ctx.fillText('Tax wedge: $' + sdTax, eqPx + 28, eqPy);
 
               }
 
@@ -860,13 +902,13 @@ var d = labToolData || {};
 
                 if (e.val / total > 0.05) {
 
-                  ctx.font = 'bold 11px Inter, system-ui'; ctx.fillStyle = '#fff';
+                  ctx.font = 'bold 18px Inter, system-ui'; ctx.fillStyle = '#fff';
 
                   ctx.textAlign = 'center';
 
                   ctx.fillText(Math.round(e.val / total * 100) + '%', lx, ly);
 
-                  ctx.fillText(e.name, lx, ly + 14);
+                  ctx.fillText(e.name, lx, ly + 22);
 
                 }
 
@@ -878,27 +920,27 @@ var d = labToolData || {};
 
               // Income display
 
-              ctx.font = 'bold 16px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+              ctx.font = 'bold 28px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
-              ctx.fillText('Monthly Income: $' + pfIncome.toLocaleString(), W * 0.55, 40);
+              ctx.fillText('Monthly Income: $' + pfIncome.toLocaleString(), W * 0.55, 44);
 
-              ctx.font = '13px Inter, system-ui'; ctx.fillStyle = totalExp > pfIncome ? '#ef4444' : '#22c55e';
+              ctx.font = '22px Inter, system-ui'; ctx.fillStyle = totalExp > pfIncome ? '#ef4444' : '#22c55e';
 
-              ctx.fillText('Total Expenses: $' + totalExp.toLocaleString() + (totalExp > pfIncome ? ' \u26A0 OVER BUDGET' : ' \u2713 Within Budget'), W * 0.55, 65);
+              ctx.fillText('Total Expenses: $' + totalExp.toLocaleString() + (totalExp > pfIncome ? ' \u26A0 OVER BUDGET' : ' \u2713 Within Budget'), W * 0.55, 82);
 
               ctx.fillStyle = '#94a3b8';
 
-              ctx.fillText('Savings Rate: ' + (pfSavings / pfIncome * 100).toFixed(1) + '%', W * 0.55, 85);
+              ctx.fillText('Savings Rate: ' + (pfSavings / pfIncome * 100).toFixed(1) + '%', W * 0.55, 116);
 
 
 
               // Compound Interest Chart (right side)
 
-              ctx.font = 'bold 14px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+              ctx.font = 'bold 24px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
-              ctx.fillText('\uD83D\uDCC8 Compound Interest Growth', W * 0.55, 130);
+              ctx.fillText('\uD83D\uDCC8 Compound Interest Growth', W * 0.55, 160);
 
-              var ciX = W * 0.55, ciY = 150, ciW = W * 0.4, ciH = H - 200;
+              var ciX = W * 0.55, ciY = 176, ciW = W * 0.4, ciH = H - 240;
 
               ctx.strokeStyle = '#334155'; ctx.lineWidth = 1;
 
@@ -932,17 +974,17 @@ var d = labToolData || {};
 
               // End value label
 
-              ctx.font = 'bold 13px Inter, system-ui'; ctx.fillStyle = '#22c55e';
+              ctx.font = 'bold 24px Inter, system-ui'; ctx.fillStyle = '#22c55e';
 
-              ctx.fillText('$' + Math.round(maxVal).toLocaleString(), ciX + ciW - 80, ciY + 20);
+              ctx.fillText('$' + Math.round(maxVal).toLocaleString(), ciX + ciW - 170, ciY + 30);
 
-              ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+              ctx.font = '18px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
-              ctx.fillText('Year 0', ciX, ciY + ciH + 15);
+              ctx.fillText('Year 0', ciX, ciY + ciH + 24);
 
-              ctx.fillText('Year ' + pfYears, ciX + ciW - 40, ciY + ciH + 15);
+              ctx.fillText('Year ' + pfYears, ciX + ciW - 90, ciY + ciH + 24);
 
-              ctx.fillText('$' + pfPrincipal.toLocaleString() + ' @ ' + pfRate + '% for ' + pfYears + ' years', ciX, ciY + ciH + 30);
+              ctx.fillText('$' + pfPrincipal.toLocaleString() + ' @ ' + pfRate + '% for ' + pfYears + ' years', ciX, ciY + ciH + 50);
 
             }
 
@@ -1048,9 +1090,9 @@ var d = labToolData || {};
 
                   ctx.stroke(); ctx.setLineDash([]);
 
-                  ctx.font = '9px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+                  ctx.font = '16px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
 
-                  ctx.fillText('MA(5)', chX + chW - 40, chY + 15);
+                  ctx.fillText('MA(5)', chX + chW - 80, chY + 24);
 
                 }
 
@@ -1066,31 +1108,31 @@ var d = labToolData || {};
 
                 // Price labels
 
-                ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+                ctx.font = '18px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
-                ctx.fillText('$' + maxP.toFixed(0), chX - 35, chY + 12);
+                ctx.fillText('$' + maxP.toFixed(0), chX - 56, chY + 16);
 
-                ctx.fillText('$' + minP.toFixed(0), chX - 35, chY + chH);
+                ctx.fillText('$' + minP.toFixed(0), chX - 56, chY + chH);
 
               }
 
               // Company header
 
-              ctx.font = 'bold 18px Inter, system-ui'; ctx.fillStyle = co.color;
+              ctx.font = 'bold 30px Inter, system-ui'; ctx.fillStyle = co.color;
 
-              ctx.fillText(co.ticker, chX, 30);
+              ctx.fillText(co.ticker, chX, 36);
 
-              ctx.font = '13px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+              ctx.font = '20px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
-              ctx.fillText(co.name + ' | ' + co.sector, chX + 80, 30);
+              ctx.fillText(co.name + ' | ' + co.sector, chX + 150, 34);
 
-              ctx.font = 'bold 16px Inter, system-ui';
+              ctx.font = 'bold 26px Inter, system-ui';
 
               var priceChange = hist.length > 1 ? hist[hist.length - 1] - hist[hist.length - 2] : 0;
 
               ctx.fillStyle = priceChange >= 0 ? '#22c55e' : '#ef4444';
 
-              ctx.fillText('$' + co.price.toFixed(2) + ' ' + (priceChange >= 0 ? '\u25B2' : '\u25BC') + Math.abs(priceChange).toFixed(2), chX + chW - 150, 30);
+              ctx.fillText('$' + co.price.toFixed(2) + ' ' + (priceChange >= 0 ? '\u25B2' : '\u25BC') + Math.abs(priceChange).toFixed(2), chX + chW - 280, 36);
 
 
 
@@ -1098,13 +1140,13 @@ var d = labToolData || {};
 
               var portY = chY + chH + 30;
 
-              ctx.font = 'bold 14px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+              ctx.font = 'bold 24px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
               ctx.fillText('\uD83D\uDCBC Portfolio', chX, portY);
 
-              ctx.font = '12px Inter, system-ui'; ctx.fillStyle = '#22c55e';
+              ctx.font = '20px Inter, system-ui'; ctx.fillStyle = '#22c55e';
 
-              ctx.fillText('Cash: $' + smCash.toFixed(2), chX + 120, portY);
+              ctx.fillText('Cash: $' + smCash.toFixed(2), chX + 210, portY);
 
               // Holdings
 
@@ -1120,31 +1162,36 @@ var d = labToolData || {};
 
                   portVal += shares * c.price;
 
-                  ctx.fillStyle = c.color; ctx.font = '11px Inter, system-ui';
+                  ctx.fillStyle = c.color; ctx.font = '19px Inter, system-ui';
 
-                  ctx.fillText(c.ticker + ': ' + shares + ' ($' + (shares * c.price).toFixed(0) + ')', holdX, portY + 25);
+                  ctx.fillText(c.ticker + ': ' + shares + ' ($' + (shares * c.price).toFixed(0) + ')', holdX, portY + 34);
 
-                  holdX += 140;
+                  holdX += 260;
 
                 }
 
               });
 
-              ctx.font = 'bold 12px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+              ctx.font = 'bold 22px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
 
-              ctx.fillText('Total Value: $' + (smCash + portVal).toFixed(2), chX + chW - 180, portY);
+              ctx.fillText('Total Value: $' + (smCash + portVal).toFixed(2), chX + chW - 320, portY);
 
               // News banner
 
-              if (smNews) {
+              // News banner reads the live smNewsEvent (legacy smNews was never
+              // written by the AI day-sim, so the banner never appeared).
+
+              var newsHeadline = (d.smNewsEvent && d.smNewsEvent.headline) || smNews;
+
+              if (newsHeadline) {
 
                 ctx.fillStyle = 'rgba(251,191,36,0.15)';
 
-                ctx.fillRect(chX, portY + 45, chW, 30);
+                ctx.fillRect(chX, portY + 48, chW, 46);
 
-                ctx.font = 'bold 11px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
+                ctx.font = 'bold 20px Inter, system-ui'; ctx.fillStyle = '#fbbf24';
 
-                ctx.fillText('\uD83D\uDCF0 ' + smNews, chX + 10, portY + 65);
+                ctx.fillText('\uD83D\uDCF0 ' + newsHeadline, chX + 12, portY + 79);
 
               }
 
@@ -1158,7 +1205,7 @@ var d = labToolData || {};
 
               ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
 
-              ctx.font = 'bold 18px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+              ctx.font = 'bold 28px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
               ctx.fillText('\uD83C\uDFDB\uFE0F National Economy â€” Year ' + macroYear, 30, 35);
 
@@ -1200,13 +1247,13 @@ var d = labToolData || {};
 
                 // Labels
 
-                ctx.font = 'bold 11px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+                ctx.font = 'bold 18px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
-                ctx.fillText(ind.label, gx2 + 5, 80);
+                ctx.fillText(ind.label, gx2 + 6, 82);
 
-                ctx.font = 'bold 16px Inter, system-ui'; ctx.fillStyle = ind.color;
+                ctx.font = 'bold 24px Inter, system-ui'; ctx.fillStyle = ind.color;
 
-                ctx.fillText((ind.val >= 0 ? '+' : '') + ind.val.toFixed(1) + ind.unit, gx2 + 5, 100);
+                ctx.fillText((ind.val >= 0 ? '+' : '') + ind.val.toFixed(1) + ind.unit, gx2 + 6, 106);
 
               });
 
@@ -1266,27 +1313,27 @@ var d = labToolData || {};
 
                 // Legend
 
-                ctx.font = '10px Inter, system-ui';
+                ctx.font = '18px Inter, system-ui';
 
-                ctx.fillStyle = '#22c55e'; ctx.fillText('\u2014 GDP Growth', mhX + 10, mhY + 15);
+                ctx.fillStyle = '#22c55e'; ctx.fillText('\u2014 GDP Growth', mhX + 12, mhY + 26);
 
-                ctx.fillStyle = '#ef4444'; ctx.fillText('--- Inflation', mhX + 110, mhY + 15);
+                ctx.fillStyle = '#ef4444'; ctx.fillText('--- Inflation', mhX + 200, mhY + 26);
 
                 ctx.fillStyle = '#94a3b8';
 
-                ctx.fillText('Year ' + (macroHistory[0].year || 2025), mhX, mhY + mhH + 15);
+                ctx.fillText('Year ' + (macroHistory[0].year || 2025), mhX, mhY + mhH + 24);
 
-                ctx.fillText('Year ' + (macroHistory[macroHistory.length - 1].year || macroYear), mhX + mhW - 60, mhY + mhH + 15);
+                ctx.fillText('Year ' + (macroHistory[macroHistory.length - 1].year || macroYear), mhX + mhW - 110, mhY + mhH + 24);
 
               } else {
 
-                ctx.font = '14px Inter, system-ui'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
+                ctx.font = '24px Inter, system-ui'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
 
-                ctx.fillText('Click "Next Year" to simulate national economic policy changes', W / 2, H / 2);
+                ctx.fillText('Set your policy levers below, then press "Advance One Year"', W / 2, H / 2);
 
-                ctx.font = '11px Inter, system-ui'; ctx.fillStyle = '#475569';
+                ctx.font = '19px Inter, system-ui'; ctx.fillStyle = '#64748b';
 
-                ctx.fillText('AI will generate policy events that cascade to all other simulators', W / 2, H / 2 + 25);
+                ctx.fillText('Each simulated year plots GDP growth and inflation here', W / 2, H / 2 + 36);
 
                 ctx.textAlign = 'left';
 
@@ -1298,141 +1345,164 @@ var d = labToolData || {};
 
             else if (econTab === 'entrepreneur') {
 
-              // â”€â”€ Lemonade Stand â”€â”€
+              // -- Business Sim dashboard: draws the LIVE enBiz* state --
+              // (The old lemonade-stand drawing read enDay/enCash/enHistory,
+              // which the AI business sim never writes, so the canvas showed a
+              // frozen Day 1 / $20.00 forever regardless of play.)
 
               ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
 
-              // Weather display
+              var bz = d.enBusiness;
 
-              var weatherEmoji = enWeather === 'sunny' ? '\u2600\uFE0F' : enWeather === 'cloudy' ? '\u2601\uFE0F' : enWeather === 'rainy' ? '\uD83C\uDF27\uFE0F' : '\uD83C\uDF24\uFE0F';
+              if (!bz) {
 
-              ctx.font = 'bold 40px Inter, system-ui'; ctx.fillText(weatherEmoji, W / 2 - 25, 60);
+                ctx.textAlign = 'center';
 
-              ctx.font = 'bold 16px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+                ctx.font = 'bold 60px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
-              ctx.fillText('Day ' + enDay + ' | ' + enWeather.charAt(0).toUpperCase() + enWeather.slice(1), W / 2 - 60, 90);
+                ctx.fillText('🚀', W / 2, H / 2 - 50);
 
+                ctx.font = 'bold 26px Inter, system-ui';
 
+                ctx.fillText('No business yet', W / 2, H / 2 + 4);
 
-              // Lemonade stand illustration
+                ctx.font = '20px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
-              ctx.fillStyle = '#fbbf24';
+                ctx.fillText('Describe a business idea below and launch it to see your dashboard here.', W / 2, H / 2 + 42);
 
-              ctx.fillRect(W / 2 - 60, 110, 120, 80);
+                ctx.textAlign = 'left';
 
-              ctx.fillStyle = '#f59e0b';
+              }
 
-              ctx.beginPath(); ctx.moveTo(W / 2 - 80, 110); ctx.lineTo(W / 2, 85); ctx.lineTo(W / 2 + 80, 110); ctx.closePath(); ctx.fill();
+              if (bz) {
 
-              ctx.font = 'bold 12px Inter, system-ui'; ctx.fillStyle = '#7c2d12';
+                var bzPrice = d.enBizPrice || bz.suggestedPrice || 10;
 
-              ctx.fillText('LEMONADE', W / 2 - 35, 155);
+                var bzUnitCost = bz.unitCost || 5;
 
-              ctx.fillText('$' + enPrice.toFixed(2), W / 2 - 15, 175);
+                var bzFixed = bz.dailyFixedCosts || 50;
 
+                ctx.font = 'bold 40px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
+                ctx.fillText(bz.emoji || '🏪', 40, 64);
 
-              // Cash register
+                ctx.font = 'bold 28px Inter, system-ui';
 
-              ctx.font = 'bold 20px Inter, system-ui'; ctx.fillStyle = '#22c55e';
+                ctx.fillText(bz.businessName || 'My Business', 104, 54);
 
-              ctx.fillText('\uD83D\uDCB5 $' + enCash.toFixed(2), W / 2 - 50, 230);
+                ctx.font = '20px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
+                ctx.fillText('Day ' + (d.enBizDay || 1) + '  |  ' + (d.enBizEmployees || 0) + ' staff', 104, 84);
 
+                ctx.font = 'bold 32px Inter, system-ui'; ctx.fillStyle = (d.enBizCash || 0) >= 0 ? '#22c55e' : '#ef4444';
 
-              // Daily stats
+                ctx.fillText('💵 $' + (d.enBizCash || 0).toLocaleString(), 40, 134);
 
-              ctx.font = '13px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
+                ctx.font = '20px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
-              ctx.fillText('Price per cup: $' + enPrice.toFixed(2), 40, 270);
+                ctx.fillText('Reputation', 40, 176);
 
-              ctx.fillText('Cups prepared: ' + enCups, 40, 290);
+                ctx.fillStyle = '#1e293b'; ctx.fillRect(170, 158, 300, 22);
 
-              ctx.fillText('Ad budget: $' + enAdBudget.toFixed(2), 40, 310);
+                var bzRep = Math.min(100, Math.max(0, d.enBizRep || 50));
 
-              // Cost breakdown
+                ctx.fillStyle = bzRep >= 70 ? '#22c55e' : bzRep >= 40 ? '#fbbf24' : '#ef4444';
 
-              var cupCost = 0.25; var lemonCost = 0.15; var sugarCost = 0.05;
+                ctx.fillRect(170, 158, 300 * bzRep / 100, 22);
 
-              var totalCostPerCup = cupCost + lemonCost + sugarCost;
+                ctx.fillStyle = '#e2e8f0'; ctx.fillText(bzRep + '/100', 484, 176);
 
-              var dailyFixedCost = enCups * totalCostPerCup + enAdBudget;
+                ctx.font = '20px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
-              ctx.fillStyle = '#ef4444';
+                ctx.fillText('Price: $' + bzPrice.toFixed(2) + ' per ' + (bz.unitName || 'unit') + '   Unit cost: $' + bzUnitCost.toFixed(2) + '   Fixed: $' + bzFixed.toFixed(0) + '/day', 40, 222);
 
-              ctx.fillText('Cost/cup: $' + totalCostPerCup.toFixed(2) + ' (cup $0.25 + lemon $0.15 + sugar $0.05)', 40, 340);
+                var bzBreakEven = Math.ceil(bzFixed / Math.max(0.01, bzPrice - bzUnitCost));
 
-              ctx.fillText('Daily costs: $' + dailyFixedCost.toFixed(2), 40, 360);
+                ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 22px Inter, system-ui';
 
-              // Break-even
+                ctx.fillText('Break-even: ' + bzBreakEven + ' ' + (bz.unitName || 'unit') + 's/day to cover fixed costs', 40, 258);
 
-              var breakEven = dailyFixedCost / Math.max(0.01, enPrice - totalCostPerCup);
+                var bzHist = d.enBizHistory || [];
 
-              ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 12px Inter, system-ui';
+                if (bzHist.length > 0) {
 
-              ctx.fillText('Break-even: ' + Math.ceil(breakEven) + ' cups', 40, 390);
+                  var phX = W * 0.55, phY = 120, phW = W * 0.4, phH = H - 250;
 
+                  ctx.fillStyle = '#1e293b'; ctx.fillRect(phX, phY, phW, phH);
 
+                  ctx.font = 'bold 22px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
-              // Profit history chart
+                  ctx.fillText('Daily Profit', phX, phY - 12);
 
-              if (enHistory.length > 0) {
+                  var maxProfit = Math.max.apply(null, bzHist.map(function (h) { return Math.abs(h.profit || 0); })) || 1;
 
-                var phX = W * 0.55, phY = 260, phW = W * 0.4, phH = 170;
+                  var zeroY = phY + phH / 2;
 
-                ctx.fillStyle = '#1e293b'; ctx.fillRect(phX, phY, phW, phH);
+                  ctx.strokeStyle = '#475569'; ctx.lineWidth = 1;
 
-                ctx.font = 'bold 12px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+                  ctx.beginPath(); ctx.moveTo(phX, zeroY); ctx.lineTo(phX + phW, zeroY); ctx.stroke();
 
-                ctx.fillText('Profit History', phX, phY - 8);
+                  ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 2; ctx.beginPath();
 
-                var maxProfit = Math.max.apply(null, enHistory.map(function (h) { return Math.abs(h.profit); })) || 1;
+                  bzHist.forEach(function (h, hi) {
 
-                var zeroY = phY + phH / 2;
+                    var hx3 = phX + (hi / (Math.max(1, bzHist.length - 1))) * phW;
 
-                ctx.strokeStyle = '#475569'; ctx.lineWidth = 1;
+                    var hy3 = zeroY - ((h.profit || 0) / maxProfit) * phH / 2;
 
-                ctx.beginPath(); ctx.moveTo(phX, zeroY); ctx.lineTo(phX + phW, zeroY); ctx.stroke();
+                    hi === 0 ? ctx.moveTo(hx3, hy3) : ctx.lineTo(hx3, hy3);
 
-                ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 2; ctx.beginPath();
+                  });
 
-                enHistory.forEach(function (h, hi) {
+                  ctx.stroke();
 
-                  var hx3 = phX + (hi / (Math.max(1, enHistory.length - 1))) * phW;
+                  bzHist.forEach(function (h, hi) {
 
-                  var hy3 = zeroY - (h.profit / maxProfit) * phH / 2;
+                    var hx4 = phX + (hi / (Math.max(1, bzHist.length - 1))) * phW;
 
-                  hi === 0 ? ctx.moveTo(hx3, hy3) : ctx.lineTo(hx3, hy3);
+                    var hy4 = zeroY - ((h.profit || 0) / maxProfit) * phH / 2;
 
-                });
+                    ctx.beginPath(); ctx.arc(hx4, hy4, 5, 0, Math.PI * 2);
 
-                ctx.stroke();
+                    ctx.fillStyle = (h.profit || 0) >= 0 ? '#22c55e' : '#ef4444'; ctx.fill();
 
-                // Dots
+                  });
 
-                enHistory.forEach(function (h, hi) {
+                  var bzLast = bzHist[bzHist.length - 1];
 
-                  var hx4 = phX + (hi / (Math.max(1, enHistory.length - 1))) * phW;
+                  ctx.font = '18px Inter, system-ui'; ctx.fillStyle = (bzLast.profit || 0) >= 0 ? '#22c55e' : '#ef4444';
 
-                  var hy4 = zeroY - (h.profit / maxProfit) * phH / 2;
+                  ctx.fillText('Yesterday: ' + ((bzLast.profit || 0) >= 0 ? '+' : '') + '$' + (bzLast.profit || 0).toFixed(0) + ' (' + (bzLast.customers || 0) + ' customers)', phX, phY + phH + 30);
 
-                  ctx.beginPath(); ctx.arc(hx4, hy4, 3, 0, Math.PI * 2);
+                } else {
 
-                  ctx.fillStyle = h.profit >= 0 ? '#22c55e' : '#ef4444'; ctx.fill();
+                  ctx.font = '20px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
 
-                });
+                  ctx.fillText('Run your first day to chart daily profit here.', W * 0.55, H / 2);
+
+                }
 
               }
 
             }
-
           }, 0);
 
           function economicsCanvasSummary() {
             if (econTab === 'supplyDemand') {
               var eqQ = (80 - sdSupplyShift * 5 + sdDemandShift * 5) / 1.6;
               var eqP = 10 + eqQ * 0.8 + sdSupplyShift * 5;
-              return t('stem.economicslab.canvas_summary_supply_demand', 'Supply and demand graph showing demand, supply, equilibrium price, equilibrium quantity, surplus, shortage, and tax effects.') + ' P* $' + eqP.toFixed(0) + ', Q* ' + eqQ.toFixed(0) + '.';
+              var sdSummary = t('stem.economicslab.canvas_summary_supply_demand', 'Supply and demand graph showing demand, supply, equilibrium price, equilibrium quantity, surplus, shortage, and tax effects.') + ' P* $' + eqP.toFixed(0) + ', Q* ' + eqQ.toFixed(0) + '.';
+              if (sdPriceCeiling > 0 && sdPriceCeiling < eqP) {
+                var sumQd = Math.max(0, Math.min(100, (90 + sdDemandShift * 5 - sdPriceCeiling) / 0.8));
+                var sumQs = Math.max(0, Math.min(100, (sdPriceCeiling - 10 - sdSupplyShift * 5) / 0.8));
+                sdSummary += ' ' + t('stem.economicslab.canvas_summary_shortage', 'Binding price ceiling: shortage of about') + ' ' + Math.max(0, sumQd - sumQs).toFixed(0) + ' ' + t('stem.economicslab.units', 'units') + '.';
+              }
+              if (sdPriceFloor > 0 && sdPriceFloor > eqP) {
+                var sumQd2 = Math.max(0, Math.min(100, (90 + sdDemandShift * 5 - sdPriceFloor) / 0.8));
+                var sumQs2 = Math.max(0, Math.min(100, (sdPriceFloor - 10 - sdSupplyShift * 5) / 0.8));
+                sdSummary += ' ' + t('stem.economicslab.canvas_summary_surplus', 'Binding price floor: surplus of about') + ' ' + Math.max(0, sumQs2 - sumQd2).toFixed(0) + ' ' + t('stem.economicslab.units', 'units') + '.';
+              }
+              return sdSummary;
             }
             if (econTab === 'personalFinance') {
               var expensesTotal = pfRent + pfFood + pfTransport + pfEntertain + pfSavings;
@@ -1445,7 +1515,9 @@ var d = labToolData || {};
                 : t('stem.economicslab.canvas_summary_stock_market_empty', 'Stock market chart area ready for a generated market. Start a market simulation to see price history and holdings.');
             }
             if (econTab === 'entrepreneur') {
-              return t('stem.economicslab.canvas_summary_entrepreneur', 'Business simulation canvas showing weather, lemonade stand price, cash, costs, break-even point, and profit history.') + ' Day ' + enDay + ', cash $' + enCash.toFixed(2) + '.';
+              return d.enBusiness
+                ? t('stem.economicslab.canvas_summary_business', 'Business dashboard showing cash, reputation, unit economics, break-even point, and daily profit history.') + ' ' + (d.enBusiness.businessName || '') + ', ' + t('stem.economicslab.day', 'day') + ' ' + (d.enBizDay || 1) + ', $' + (d.enBizCash || 0).toLocaleString() + '.'
+                : t('stem.economicslab.canvas_summary_business_empty', 'Business dashboard placeholder. Launch a business below to see cash, reputation, and daily profit here.');
             }
             if (econTab === 'macro') {
               return t('stem.economicslab.canvas_summary_macro', 'National economy dashboard showing GDP growth, inflation, interest rate, unemployment, trade balance, and policy history.') + ' GDP ' + macroGDP.toFixed(1) + '%, inflation ' + macroInflation.toFixed(1) + '%, unemployment ' + macroUnemployment.toFixed(1) + '%.';
@@ -1483,13 +1555,30 @@ var d = labToolData || {};
             return total + (d[item.key] ? 1 : 0);
           }, 0);
 
+          var ECON_TABS = [
+            { id: 'supplyDemand', label: t('stem.economicslab.supply_demand_3', '📉 Supply & Demand') },
+            { id: 'personalFinance', label: t('stem.economicslab.personal_finance', '🏦 Personal Finance') },
+            { id: 'stockMarket', label: t('stem.economicslab.stock_market', '📈 Stock Market') },
+            { id: 'entrepreneur', label: t('stem.economicslab.business_sim', '🏪 Business Sim') },
+            { id: 'macro', label: t('stem.economicslab.national_economy', '🏛️ National Economy') },
+            { id: 'inquiry', label: t('stem.economicslab.policy_inquiry', '🔬 Policy Inquiry') }
+          ];
+
+          var econSelectTab = function (tabId, focusAfter) {
+            var viewed = Object.assign({}, d.tabsViewed || {});
+            viewed[tabId] = true;
+            upd('tabsViewed', viewed);
+            upd('econTab', tabId);
+            if (focusAfter) setTimeout(function () { var el = document.getElementById('economicslab-tab-' + tabId); if (el) el.focus(); }, 0);
+          };
+
 
 
           return React.createElement('div', { className: 'economicslab-tool-shell max-w-4xl mx-auto', "data-economicslab-tool": "true" },
 
             // Header
 
-            React.createElement('div', { className: 'flex items-center gap-3 mb-4' },
+            React.createElement('div', { className: 'flex items-center gap-3 mb-4 flex-wrap' },
 
               React.createElement('button', {
 
@@ -1499,7 +1588,7 @@ var d = labToolData || {};
 
                 onClick: function () { setStemLabTool(null); },
 
-                className: 'text-slate-200 hover:text-white transition-colors text-lg'
+                className: 'text-slate-500 hover:text-slate-700 transition-colors text-lg'
 
               }, '\u2190'),
 
@@ -1565,6 +1654,8 @@ var d = labToolData || {};
 
               React.createElement('select', {
 
+                'aria-label': t('stem.economicslab.difficulty', 'Difficulty'),
+
                 value: d.econDifficulty || 'medium',
 
                 onChange: function (e) { upd('econDifficulty', e.target.value); if (addToast) addToast('Difficulty: ' + e.target.value.toUpperCase(), 'info'); },
@@ -1591,21 +1682,7 @@ var d = labToolData || {};
               'aria-label': t('stem.economicslab.topic_tabs', 'Economics Lab topics')
             },
 
-              [
-
-                { id: 'supplyDemand', label: t('stem.economicslab.supply_demand_3', '\uD83D\uDCC9 Supply & Demand') },
-
-                { id: 'personalFinance', label: t('stem.economicslab.personal_finance', '\uD83C\uDFE6 Personal Finance') },
-
-                { id: 'stockMarket', label: t('stem.economicslab.stock_market', '\uD83D\uDCC8 Stock Market') },
-
-                { id: 'entrepreneur', label: t('stem.economicslab.business_sim', '\uD83C\uDFEA Business Sim') },
-
-                { id: 'macro', label: t('stem.economicslab.national_economy', '\uD83C\uDFDB\uFE0F National Economy') },
-
-                { id: 'inquiry', label: t('stem.economicslab.policy_inquiry', '\uD83D\uDD2C Policy Inquiry') }
-
-              ].map(function (tab) {
+              ECON_TABS.map(function (tab) {
 
                 return React.createElement('button', {
 
@@ -1615,11 +1692,20 @@ var d = labToolData || {};
                   id: 'economicslab-tab-' + tab.id,
                   'aria-selected': econTab === tab.id ? 'true' : 'false',
                   'aria-controls': 'economicslab-panel-' + tab.id,
+                  // Roving tabindex + arrow keys (WAI-ARIA tabs pattern)
+                  tabIndex: econTab === tab.id ? 0 : -1,
+                  onKeyDown: function (e) {
+                    var ids = ECON_TABS.map(function (x) { return x.id; });
+                    var idx = ids.indexOf(tab.id);
+                    var next = null;
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = ids[(idx + 1) % ids.length];
+                    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = ids[(idx - 1 + ids.length) % ids.length];
+                    else if (e.key === 'Home') next = ids[0];
+                    else if (e.key === 'End') next = ids[ids.length - 1];
+                    if (next) { e.preventDefault(); econSelectTab(next, true); }
+                  },
                   onClick: function () {
-                    var viewed = Object.assign({}, d.tabsViewed || {});
-                    viewed[tab.id] = true;
-                    upd('tabsViewed', viewed);
-                    upd('econTab', tab.id);
+                    econSelectTab(tab.id, false);
                   },
 
                   className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ' +
@@ -1817,7 +1903,7 @@ var d = labToolData || {};
 
                           isAnswered && isSelected && !isCorrect ? 'border-red-400 bg-red-50 text-red-800' :
 
-                            isAnswered ? 'border-slate-200 bg-white text-slate-200' :
+                            isAnswered ? 'border-slate-200 bg-white text-slate-400 opacity-70' :
 
                               'border-rose-100 bg-white hover:border-rose-400 text-slate-700')
 
@@ -1861,7 +1947,7 @@ var d = labToolData || {};
 
                       var topics = (d.econGlossary || []).map(function (g) { return g.concept; }).join(', ') || 'supply and demand, inflation, GDP, interest rates, opportunity cost';
 
-                      var prompt = 'You are an economics teacher creating a quiz. The student has studied these topics: ' + topics + '.\n\nGenerate 1 multiple-choice question. Return ONLY valid JSON:\n{"question":"<question text>","options":["<option A>","<option B>","<option C>","<option D>"],"correctIndex":<0-3>,"explanation":"<2-3 sentence explanation of the correct answer and the underlying economic concept>"}\n\nMake questions that test UNDERSTANDING, not just definitions. Include real-world application questions, cause-and-effect reasoning, and scenario-based problems. Vary difficulty.';
+                      var prompt = 'You are an economics teacher creating a quiz (difficulty: ' + (d.econDifficulty || 'medium') + '). The student has studied these topics: ' + topics + '.\n\nGenerate 1 multiple-choice question. Return ONLY valid JSON:\n{"question":"<question text>","options":["<option A>","<option B>","<option C>","<option D>"],"correctIndex":<0-3>,"explanation":"<2-3 sentence explanation of the correct answer and the underlying economic concept>"}\n\nMake questions that test UNDERSTANDING, not just definitions. Include real-world application questions, cause-and-effect reasoning, and scenario-based problems. Vary difficulty.';
 
                       callGemini(prompt, true).then(function (result) {
 
@@ -1887,7 +1973,7 @@ var d = labToolData || {};
 
                     disabled: d.quizLoading,
 
-                    className: 'py-3 px-8 rounded-xl text-sm font-bold transition-all ' + (d.quizLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-rose-500 to-pink-500 text-white hover:shadow-lg')
+                    className: 'py-3 px-8 rounded-xl text-sm font-bold transition-all ' + (d.quizLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-rose-500 to-pink-500 text-white hover:shadow-lg')
 
                   }, d.quizLoading ? '\u23F3 Generating...' : '\uD83C\uDFB2 Generate Quiz Question')
 
@@ -1969,7 +2055,7 @@ var d = labToolData || {};
 
                   disabled: d.advisorLoading || !(d.advisorInput || '').trim(),
 
-                  className: 'px-4 py-2 rounded-xl text-xs font-bold ' + (d.advisorLoading ? 'bg-slate-300 text-slate-200' : 'bg-sky-500 text-white')
+                  className: 'px-4 py-2 rounded-xl text-xs font-bold ' + (d.advisorLoading ? 'bg-slate-300 text-slate-600' : 'bg-sky-500 text-white')
 
                 }, d.advisorLoading ? '\u23F3' : '\uD83D\uDCAC Ask')
 
@@ -2047,7 +2133,7 @@ var d = labToolData || {};
                         className: 'w-full text-left p-2.5 rounded-xl border-2 text-xs transition-all ' + cls,
                         disabled: answered
                       },
-                        React.createElement('span', { className: 'font-bold mr-1 ' + (answered && isRight ? 'text-green-600' : answered && isSelected ? 'text-red-500' : 'text-slate-200') }, String.fromCharCode(65 + oi) + '.'),
+                        React.createElement('span', { className: 'font-bold mr-1 ' + (answered && isRight ? 'text-green-600' : answered && isSelected ? 'text-red-500' : 'text-slate-400') }, String.fromCharCode(65 + oi) + '.'),
                         React.createElement('span', { className: answered && isRight ? 'text-green-700' : answered && isSelected && !isRight ? 'text-red-600' : 'text-slate-700' }, ' ' + opt)
                       );
                     })
@@ -2215,7 +2301,7 @@ var d = labToolData || {};
                         React.createElement('span', { className: 'text-xl' }, phase.icon),
                         React.createElement('span', { className: 'text-[11px] font-black', style: { color: phase.color } }, phase.name)
                       ),
-                      pi < 3 && React.createElement('span', { className: 'text-slate-200 text-lg mx-0.5' }, '\u2192')
+                      pi < 3 && React.createElement('span', { className: 'text-slate-400 text-lg mx-0.5', 'aria-hidden': 'true' }, '\u2192')
                     );
                   })
                 ),
@@ -2236,7 +2322,7 @@ var d = labToolData || {};
                     React.createElement('div', { className: 'text-[11px] font-bold text-slate-600 mb-1' }, 'Characteristics:'),
                     React.createElement('ul', { className: 'space-y-0.5 ml-3 mb-2' },
                       phase.characteristics.map(function(ch, chi) {
-                        return React.createElement('li', { key: chi, className: 'text-[11px] text-slate-200 list-disc' }, ch);
+                        return React.createElement('li', { key: chi, className: 'text-[11px] text-slate-600 list-disc' }, ch);
                       })
                     ),
                     React.createElement('div', { className: 'text-[11px] text-blue-600 bg-blue-50 rounded-lg p-2 border border-blue-100 mb-1' },
@@ -2655,7 +2741,9 @@ var d = labToolData || {};
               'data-economicslab-canvas-shell': 'true'
             },
 
-              React.createElement('canvas', {
+              // The inquiry tab has its own SVG visualization — don't render a
+              // large permanently-empty canvas above it.
+              econTab !== 'inquiry' && React.createElement('canvas', {
 
                 ref: canvasRef,
 
@@ -2965,7 +3053,7 @@ var d = labToolData || {};
 
                     onClick: function () { upd('sdScenario', null); },
 
-                    className: 'w-full py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-200'
+                    className: 'w-full py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-600'
 
                   }, t('stem.economicslab.dismiss', 'Dismiss'))
 
@@ -2975,7 +3063,7 @@ var d = labToolData || {};
 
                     upd('sdLoading', true);
 
-                    var prompt = 'You are an economics teacher. Generate a real-world supply and demand scenario for students.\n\nReturn ONLY valid JSON:\n{"title":"<short scenario title>","explanation":"<2-3 sentences explaining what happened and why it shifts supply/demand>","demandShift":<integer -5 to 5>,"supplyShift":<integer -5 to 5>,"priceFloor":<0 or number if relevant>,"priceCeiling":<0 or number if relevant>,"tax":<0 or number if relevant>}\n\nExamples: new iPhone launch (demand +3), oil embargo (supply -4), minimum wage law (price floor 40), rent control (price ceiling 30), sugar tax (tax 5). Be creative.\n\nIMPORTANT: Include a "lesson" field with a 1-2 sentence economics concept (e.g., elasticity, substitute goods, complement goods, deadweight loss, consumer surplus, producer surplus, market failure, externalities, public goods).';
+                    var prompt = 'You are an economics teacher. Generate a real-world supply and demand scenario for students (difficulty: ' + (d.econDifficulty || 'medium') + ').\n\nReturn ONLY valid JSON:\n{"title":"<short scenario title>","explanation":"<2-3 sentences explaining what happened and why it shifts supply/demand>","demandShift":<integer -5 to 5>,"supplyShift":<integer -5 to 5>,"priceFloor":<0 or number if relevant>,"priceCeiling":<0 or number if relevant>,"tax":<0 or number if relevant>}\n\nExamples: new iPhone launch (demand +3), oil embargo (supply -4), minimum wage law (price floor 40), rent control (price ceiling 30), sugar tax (tax 5). Be creative.\n\nIMPORTANT: Include a "lesson" field with a 1-2 sentence economics concept (e.g., elasticity, substitute goods, complement goods, deadweight loss, consumer surplus, producer surplus, market failure, externalities, public goods).';
 
                     callGemini(prompt, true).then(function (result) {
 
@@ -2999,7 +3087,7 @@ var d = labToolData || {};
 
                   disabled: d.sdLoading,
 
-                  className: 'w-full py-3 rounded-xl text-xs font-bold transition-all ' + (d.sdLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:shadow-lg')
+                  className: 'w-full py-3 rounded-xl text-xs font-bold transition-all ' + (d.sdLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:shadow-lg')
 
                 }, d.sdLoading ? '\u23F3 Generating...' : '\uD83C\uDFB2 Generate Random Scenario')
 
@@ -3049,8 +3137,6 @@ var d = labToolData || {};
 
                         var eff = choice.effect || {};
 
-                        upd('pfCash', (d.pfCash || 2000) + (eff.cash || 0));
-
                         upd('pfDebt', Math.max(0, (d.pfDebt || 0) + (eff.debt || 0)));
 
                         upd('pfSalary', Math.max(0, (d.pfSalary || 35000) + (eff.salary || 0)));
@@ -3063,13 +3149,11 @@ var d = labToolData || {};
 
                         if (eff.insurance !== undefined && eff.insurance !== null) upd('pfInsurance', eff.insurance);
 
-                        var h = (d.pfHistory || []).slice(-29);
+                        // Cash flows for the year are computed ONCE and applied in a single
+                        // upd('pfCash', ...) — sequential upds each read stale `d`, so the last
+                        // write silently dropped the housing cost whenever investing was on.
 
-                        h.push({ age: d.pfAge || 22, cash: (d.pfCash || 2000) + (eff.cash || 0), debt: Math.max(0, (d.pfDebt || 0) + (eff.debt || 0)), event: d.lifeEvent.title, choice: choice.label });
-
-                        upd('pfHistory', h);
-
-                        // Apply housing costs
+                        var startCash = d.pfCash || 2000;
 
                         var housingCost = { renting: 12000, owning: 21600, frugal: 6000 };
 
@@ -3083,23 +3167,35 @@ var d = labToolData || {};
 
                         }
 
-                        upd('pfCash', (d.pfCash || 2000) + (eff.cash || 0) - hCost);
+                        // Investing moves cash INTO a tracked portfolio (pfInvested) that
+                        // compounds at the chosen risk profile's rate — it is an asset, not
+                        // an expense, so students see compounding instead of vanishing money.
 
-                        // Apply investment returns
+                        var investAmt = 0;
 
                         if ((d.pfInvestPct || 0) > 0 && d.pfInvestType) {
 
-                          var investAmt = (d.pfSalary || 35000) * (d.pfInvestPct || 0) / 100;
+                          investAmt = Math.round((d.pfSalary || 35000) * (d.pfInvestPct || 0) / 100);
 
                           var returns = { Conservative: 0.04, Balanced: 0.07, Aggressive: 0.10, Speculative: (Math.random() - 0.3) * 0.5 };
 
                           var returnRate = returns[d.pfInvestType] || 0;
 
-                          var gain = Math.round(investAmt * returnRate);
+                          var growth = Math.round((d.pfInvested || 0) * returnRate);
 
-                          upd('pfCash', (d.pfCash || 2000) + (eff.cash || 0) + gain - investAmt);
+                          upd('pfInvested', Math.max(0, (d.pfInvested || 0) + growth + investAmt));
 
                         }
+
+                        var finalCash = startCash + (eff.cash || 0) - hCost - investAmt;
+
+                        upd('pfCash', finalCash);
+
+                        var h = (d.pfHistory || []).slice(-29);
+
+                        h.push({ age: d.pfAge || 22, cash: finalCash, debt: Math.max(0, (d.pfDebt || 0) + (eff.debt || 0)), event: d.lifeEvent.title, choice: choice.label });
+
+                        upd('pfHistory', h);
 
                         upd('pfAge', (d.pfAge || 22) + 1);
 
@@ -3109,7 +3205,9 @@ var d = labToolData || {};
 
                         if (typeof addXP === 'function') addXP(15, 'Life Sim: Made a financial decision');
 
-                        if (addToast) addToast((eff.cash >= 0 ? '\uD83D\uDCB0 +$' : '\uD83D\uDCC9 -$') + Math.abs(eff.cash || 0).toLocaleString() + ' | ' + choice.label, eff.cash >= 0 ? 'success' : 'warning');
+                        var netChange = finalCash - startCash;
+
+                        if (addToast) addToast((netChange >= 0 ? '\uD83D\uDCB0 +$' : '\uD83D\uDCC9 -$') + Math.abs(netChange).toLocaleString() + ' net this year (after housing' + (investAmt > 0 ? ' + investing' : '') + ') | ' + choice.label, netChange >= 0 ? 'success' : 'warning');
 
                         // Auto-add lesson to glossary
 
@@ -3131,7 +3229,7 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'font-bold text-slate-700 group-hover:text-indigo-700' }, choice.label),
 
-                      React.createElement('div', { className: 'text-slate-200 mt-0.5 flex gap-3 flex-wrap' },
+                      React.createElement('div', { className: 'text-slate-500 mt-0.5 flex gap-3 flex-wrap' },
 
                         choice.effect && choice.effect.cash ? React.createElement('span', { className: choice.effect.cash >= 0 ? 'text-green-600' : 'text-red-500' }, (choice.effect.cash >= 0 ? '+' : '') + '$' + choice.effect.cash.toLocaleString()) : null,
 
@@ -3185,7 +3283,10 @@ var d = labToolData || {};
 
               ),
 
-              React.createElement('div', { className: 'text-xs text-slate-600 text-center mb-2' }, (d.pfCareer ? '\uD83D\uDCBC ' + d.pfCareer + ' | ' : '') + 'Salary: $' + (d.pfSalary || 35000).toLocaleString() + '/yr | Net Worth: $' + ((d.pfCash || 2000) - (d.pfDebt || 0)).toLocaleString() + ' | Credit: ' + (d.pfCredit || 650) + (d.pfInsurance ? ' | \uD83D\uDEE1\uFE0F Insured' : ' | \u26A0\uFE0F No Insurance')),
+              React.createElement('div', { className: 'text-xs text-slate-600 text-center mb-2' }, (d.pfCareer ? '\uD83D\uDCBC ' + d.pfCareer + ' | ' : '') + 'Salary: $' + (d.pfSalary || 35000).toLocaleString() + '/yr | Net Worth: $' + pfNetWorth.toLocaleString() + ((d.pfInvested || 0) > 0 ? ' | \uD83D\uDCC8 Invested: $' + (d.pfInvested || 0).toLocaleString() : '') + ((d.pfEquity || 0) > 0 ? ' | \uD83C\uDFE0 Equity: $' + (d.pfEquity || 0).toLocaleString() : '') + (d.pfInsurance ? ' | \uD83D\uDEE1\uFE0F Insured' : ' | \u26A0\uFE0F No Insurance')),
+
+              (d.pfCash || 2000) < 0 && React.createElement('div', { className: 'text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-center mb-2', role: 'alert' },
+                t('stem.economicslab.cash_flow_warning', '\u26A0\uFE0F Your cash is negative \u2014 you are spending more than you earn. Try cheaper housing, a lower investment %, or paying down debt before it compounds.')),
 
               // Next Year / Generate Event button
 
@@ -3233,7 +3334,7 @@ var d = labToolData || {};
 
                 disabled: d.pfLoading,
 
-                className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg transition-all ' + (d.pfLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 hover:shadow-xl hover:scale-[1.02]')
+                className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg transition-all ' + (d.pfLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 hover:shadow-xl hover:scale-[1.02]')
 
               }, d.pfLoading ? '\u23F3 Generating life event...' : '\u2728 Next Year (Age ' + ((d.pfAge || 22) + 1) + ')'),
 
@@ -3377,7 +3478,7 @@ var d = labToolData || {};
 
               React.createElement('button', {
 
-                onClick: function () { upd('pfAge', 22); upd('pfCash', 2000); upd('pfDebt', 0); upd('pfSalary', 35000); upd('pfHappiness', 70); upd('pfCredit', 650); upd('pfCareer', null); upd('pfInsurance', false); upd('pfHistory', []); upd('lifeEvent', null); if (addToast) addToast('\u267B Starting over at age 22!', 'info'); },
+                onClick: function () { upd('pfAge', 22); upd('pfCash', 2000); upd('pfDebt', 0); upd('pfSalary', 35000); upd('pfHappiness', 70); upd('pfCredit', 650); upd('pfCareer', null); upd('pfInsurance', false); upd('pfHistory', []); upd('lifeEvent', null); upd('pfEquity', 0); upd('pfInvested', 0); upd('pfHousing', 'renting'); upd('pfInvestPct', 0); upd('pfInvestType', null); if (addToast) addToast('\u267B Starting over at age 22!', 'info'); },
 
                 className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-400'
 
@@ -3464,7 +3565,7 @@ var d = labToolData || {};
 
                   disabled: d.smLoading,
 
-                  className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-xl')
+                  className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-xl')
 
                 }, d.smLoading ? '\u23F3 AI generating companies...' : '\uD83D\uDE80 Open Market')
 
@@ -3762,7 +3863,7 @@ var d = labToolData || {};
 
                       disabled: d.smLoading,
 
-                      className: 'py-3 px-6 rounded-xl text-xs font-bold transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white')
+                      className: 'py-3 px-6 rounded-xl text-xs font-bold transition-all ' + (d.smLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white')
 
                     }, d.smLoading ? '\u23F3...' : '\u23ED Day ' + (smDay + 1))
 
@@ -3932,7 +4033,7 @@ var d = labToolData || {};
 
                   disabled: d.enLoading || !(d.enInput || '').trim(),
 
-                  className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.enLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-xl')
+                  className: 'w-full max-w-md py-3 rounded-xl text-sm font-bold shadow-lg transition-all ' + (d.enLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-xl')
 
                 }, d.enLoading ? '\u23F3 AI is building your business...' : '\uD83D\uDE80 Launch Business')
 
@@ -3966,7 +4067,10 @@ var d = labToolData || {};
 
                   ),
 
-                  // Price adjustment + stats
+                  d.enBusiness && (d.enBizCash || 0) < 0 && React.createElement('div', { className: 'text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-3', role: 'alert' },
+                t('stem.economicslab.biz_cash_warning', '⚠️ Your business is losing money — cash is negative. Check your unit economics: does price cover unit cost AND your share of fixed costs? Raising price, cutting costs, or building reputation are your levers.')),
+
+              // Price adjustment + stats
 
                   React.createElement('div', { className: 'grid grid-cols-3 gap-2 mb-3' },
 
@@ -4074,7 +4178,7 @@ var d = labToolData || {};
 
                       React.createElement('div', { className: 'font-bold text-slate-700' }, ch.label),
 
-                      React.createElement('div', { className: 'text-slate-200 mt-0.5 flex gap-3' },
+                      React.createElement('div', { className: 'text-slate-500 mt-0.5 flex gap-3' },
 
                         ch.effect && ch.effect.cash ? React.createElement('span', { className: ch.effect.cash >= 0 ? 'text-green-500' : 'text-red-500' }, (ch.effect.cash >= 0 ? '+' : '') + '$' + ch.effect.cash) : null,
 
@@ -4152,7 +4256,7 @@ var d = labToolData || {};
 
                 disabled: d.enBizLoading,
 
-                className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg mb-3 transition-all ' + (d.enBizLoading ? 'bg-slate-300 text-slate-200' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:shadow-xl hover:scale-[1.02]')
+                className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg mb-3 transition-all ' + (d.enBizLoading ? 'bg-slate-300 text-slate-600' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:shadow-xl hover:scale-[1.02]')
 
               }, d.enBizLoading ? '\u23F3 Simulating day...' : '\u2600\uFE0F Open for Business! (Day ' + (d.enBizDay || 1) + ')'),
 
@@ -4191,6 +4295,124 @@ var d = labToolData || {};
               }, t('stem.economicslab.close_business_start_new', '\u267B Close Business & Start New'))
 
             ),
+
+            // \u2550\u2550 NATIONAL ECONOMY controls \u2550\u2550
+            // The macro canvas told students to "Click Next Year" but no such
+            // control ever existed \u2014 the whole simulator was unreachable (and
+            // with it the Policy Veteran / Economic Boom / Full Employment
+            // achievements and the macro ticker). This panel runs a LOCAL toy
+            // model (no AI call) so it works offline: textbook-Keynesian
+            // demand impulse, expectations-weighted inflation, Okun's-law
+            // unemployment, plus a small random shock table. Same epistemic
+            // framing as the Policy Inquiry widget: heuristic, contested.
+            econTab === 'macro' && (function () {
+              var mClamp = function (v, lo, hi) { return Math.min(hi, Math.max(lo, v)); };
+              var mRate = d.macroInterest !== undefined ? d.macroInterest : 5.25;
+              var mSpend = d.macroSpend || 0;
+              var mTax = d.macroTax || 0;
+              var mNeutral = 3;
+              var mRealRate = mRate - macroInflation;
+              var MACRO_SHOCKS = [
+                { name: t('stem.economicslab.shock_oil', 'Oil price shock'), icon: '\u26FD', gdp: -1.2, inf: 2.0, unemp: 0.6, trade: -0.5, lesson: t('stem.economicslab.shock_oil_lesson', 'Supply shocks raise prices AND cut output at the same time \u2014 stagflation pressure, like the 1973 OPEC embargo.') },
+                { name: t('stem.economicslab.shock_tech', 'Tech productivity boom'), icon: '\uD83D\uDCBB', gdp: 1.5, inf: -0.5, unemp: -0.4, trade: 0.3, lesson: t('stem.economicslab.shock_tech_lesson', 'Productivity growth is the rare free lunch: more output per worker lifts GDP without stoking inflation.') },
+                { name: t('stem.economicslab.shock_financial', 'Financial crisis'), icon: '\uD83C\uDFE6', gdp: -2.5, inf: -1.0, unemp: 1.8, trade: 0.2, lesson: t('stem.economicslab.shock_financial_lesson', 'Credit crunches destroy demand: GDP, prices, and employment all fall together, like 2008.') },
+                { name: t('stem.economicslab.shock_trade_war', 'Trade war escalation'), icon: '\uD83D\uDEA2', gdp: -0.6, inf: 0.7, unemp: 0.3, trade: -0.8, lesson: t('stem.economicslab.shock_trade_war_lesson', 'Tariffs raise import prices at home and invite retaliation against your exporters abroad.') },
+                { name: t('stem.economicslab.shock_consumer_boom', 'Consumer confidence surge'), icon: '\uD83D\uDECD\uFE0F', gdp: 0.9, inf: 0.5, unemp: -0.3, trade: -0.3, lesson: t('stem.economicslab.shock_consumer_boom_lesson', 'Expectations move economies: when households feel secure they spend, and spending is someone else\'s income.') }
+              ];
+              var advanceYear = function () {
+                var demandImpulse = mSpend * 0.8 - mTax * 0.5 - (mRate - mNeutral) * 0.4;
+                var shock = Math.random() < 0.4 ? MACRO_SHOCKS[Math.floor(Math.random() * MACRO_SHOCKS.length)] : null;
+                var gdpNew = mClamp(0.55 * macroGDP + 1.0 + demandImpulse + (shock ? shock.gdp : 0) + (Math.random() - 0.5) * 0.6, -8, 10);
+                var infNew = mClamp(0.65 * macroInflation + 0.8 + 0.3 * demandImpulse - 0.25 * (mRate - mNeutral) + (shock ? shock.inf : 0) + (Math.random() - 0.5) * 0.4, -2, 15);
+                var unempNew = mClamp(macroUnemployment - 0.35 * (gdpNew - 2) + (shock ? shock.unemp : 0), 2, 15);
+                var tradeNew = mClamp(macroTrade + (shock ? shock.trade : 0) - 0.05 * demandImpulse + (Math.random() - 0.5) * 0.4, -5, 5);
+                gdpNew = Math.round(gdpNew * 10) / 10; infNew = Math.round(infNew * 10) / 10;
+                unempNew = Math.round(unempNew * 10) / 10; tradeNew = Math.round(tradeNew * 10) / 10;
+                var lines = [];
+                if (mSpend > 0) lines.push(t('stem.economicslab.report_spend_up', '\uD83C\uDFDB\uFE0F Government spending ') + '+' + mSpend + t('stem.economicslab.report_spend_up_2', '% of GDP added demand (Keynesian multiplier) \u2014 but deficits must eventually be financed.'));
+                if (mSpend < 0) lines.push(t('stem.economicslab.report_spend_down', '\uD83C\uDFDB\uFE0F Austerity: spending cut ') + mSpend + t('stem.economicslab.report_spend_down_2', '% of GDP removed demand from the economy.'));
+                if (mTax > 0) lines.push(t('stem.economicslab.report_tax_up', '\uD83D\uDCB8 Tax increase of ') + mTax + t('stem.economicslab.report_tax_up_2', '% left households less to spend, cooling demand.'));
+                if (mTax < 0) lines.push(t('stem.economicslab.report_tax_down', '\uD83D\uDCB8 Tax cut of ') + Math.abs(mTax) + t('stem.economicslab.report_tax_down_2', '% left households more to spend, boosting demand.'));
+                if (mRate - mNeutral > 0.5) lines.push(t('stem.economicslab.report_rate_high', '\uD83C\uDFE6 Interest rates above the ~3% neutral rate made borrowing expensive \u2014 investment and hiring slowed (monetary brake).'));
+                if (mRate - mNeutral < -0.5) lines.push(t('stem.economicslab.report_rate_low', '\uD83C\uDFE6 Interest rates below neutral made borrowing cheap \u2014 credit-fueled demand rose (monetary gas pedal).'));
+                lines.push(t('stem.economicslab.report_okun', '\uD83D\uDCCA Okun\'s law: growth of ') + gdpNew.toFixed(1) + t('stem.economicslab.report_okun_2', '% vs the ~2% trend moved unemployment to ') + unempNew.toFixed(1) + '%.');
+                var hist = (d.macroHistory || []).slice(-29);
+                hist.push({ year: macroYear, gdp: gdpNew, inflation: infNew, unemployment: unempNew, interest: mRate });
+                upd('macroGDP', gdpNew); upd('macroInflation', infNew);
+                upd('macroUnemployment', unempNew); upd('macroTrade', tradeNew);
+                upd('macroYear', macroYear + 1); upd('macroHistory', hist);
+                upd('macroReport', { year: macroYear, shock: shock, lines: lines });
+                if (shock && shock.lesson) {
+                  var glM = (d.econGlossary || []).slice();
+                  if (!glM.some(function (g) { return g.concept === shock.name; })) { glM.push({ tab: 'Macro', concept: shock.name, explanation: shock.lesson }); upd('econGlossary', glM); }
+                }
+                if (typeof addXP === 'function') addXP(15, 'Macro: simulated a policy year');
+                if (addToast) addToast('\uD83C\uDFDB\uFE0F Year ' + macroYear + (shock ? ': ' + shock.icon + ' ' + shock.name : ' complete'), shock && shock.gdp < 0 ? 'warning' : 'success');
+                if (announceToSR) announceToSR('Year ' + macroYear + ' simulated. GDP growth ' + gdpNew.toFixed(1) + ' percent, inflation ' + infNew.toFixed(1) + ' percent, unemployment ' + unempNew.toFixed(1) + ' percent.' + (shock ? ' Shock: ' + shock.name + '.' : ''));
+              };
+              return React.createElement('div', { className: 'mt-4', 'data-economicslab-macro-controls': 'true' },
+                React.createElement('div', { className: 'grid grid-cols-2 gap-4 mb-3' },
+                  React.createElement('div', { className: 'space-y-2 bg-blue-50 rounded-xl p-4 border border-blue-200' },
+                    React.createElement('h4', { className: 'text-sm font-bold text-blue-700' }, t('stem.economicslab.central_bank', '\uD83C\uDFE6 Central Bank (Monetary Policy)')),
+                    React.createElement('label', { className: 'block text-xs text-blue-600' }, t('stem.economicslab.policy_interest_rate', 'Policy Interest Rate: ') + mRate.toFixed(2) + '%'),
+                    React.createElement('input', {
+                      type: 'range', min: 0, max: 12, step: 0.25, value: mRate,
+                      'aria-label': t('stem.economicslab.policy_interest_rate_2', 'Policy interest rate, percent'),
+                      'aria-valuetext': mRate.toFixed(2) + '%',
+                      onChange: function (e) { upd('macroInterest', parseFloat(e.target.value)); },
+                      className: 'w-full accent-blue-500'
+                    }),
+                    React.createElement('div', { className: 'text-[11px] text-slate-600 bg-white rounded-lg p-2 border border-blue-100' },
+                      t('stem.economicslab.real_rate_note', '\uD83D\uDCDA Real rate = nominal \u2212 inflation = ') + mRealRate.toFixed(1) + '%. ' +
+                      (mRealRate < 0
+                        ? t('stem.economicslab.real_rate_negative', 'Negative real rates mean borrowers win and savers lose \u2014 very stimulative.')
+                        : t('stem.economicslab.real_rate_positive', 'Positive real rates reward saving and slow borrowing \u2014 restrictive.')))
+                  ),
+                  React.createElement('div', { className: 'space-y-2 bg-amber-50 rounded-xl p-4 border border-amber-200' },
+                    React.createElement('h4', { className: 'text-sm font-bold text-amber-700' }, t('stem.economicslab.congress_fiscal', '\uD83C\uDFDB\uFE0F Congress (Fiscal Policy)')),
+                    React.createElement('label', { className: 'block text-xs text-amber-700' }, t('stem.economicslab.spending_change', 'Spending change: ') + (mSpend > 0 ? '+' : '') + mSpend + t('stem.economicslab.pct_of_gdp', '% of GDP')),
+                    React.createElement('input', {
+                      type: 'range', min: -3, max: 3, step: 0.5, value: mSpend,
+                      'aria-label': t('stem.economicslab.spending_change_2', 'Government spending change, percent of GDP'),
+                      'aria-valuetext': (mSpend > 0 ? 'plus ' : '') + mSpend + ' percent of GDP',
+                      onChange: function (e) { upd('macroSpend', parseFloat(e.target.value)); },
+                      className: 'w-full accent-amber-500'
+                    }),
+                    React.createElement('label', { className: 'block text-xs text-amber-700' }, t('stem.economicslab.tax_change', 'Tax change: ') + (mTax > 0 ? '+' : '') + mTax + '%'),
+                    React.createElement('input', {
+                      type: 'range', min: -3, max: 3, step: 0.5, value: mTax,
+                      'aria-label': t('stem.economicslab.tax_change_2', 'Tax change, percent'),
+                      'aria-valuetext': (mTax > 0 ? 'plus ' : '') + mTax + ' percent',
+                      onChange: function (e) { upd('macroTax', parseFloat(e.target.value)); },
+                      className: 'w-full accent-amber-500'
+                    }),
+                    (mSpend > 0 || mTax < 0) && React.createElement('div', { className: 'text-[11px] text-slate-600 bg-white rounded-lg p-2 border border-amber-100' },
+                      t('stem.economicslab.deficit_note', '\uD83D\uDCDA Spending more while taxing less = deficit spending. It stimulates now, but the debt is a claim on future taxpayers.'))
+                  )
+                ),
+                React.createElement('button', {
+                  onClick: advanceYear,
+                  className: 'w-full py-4 rounded-2xl text-sm font-bold shadow-lg mb-3 transition-all bg-gradient-to-r from-red-600 to-rose-600 text-white hover:shadow-xl hover:scale-[1.02]'
+                }, t('stem.economicslab.advance_year', '\uD83D\uDCC5 Advance One Year (') + macroYear + ' \u2192 ' + (macroYear + 1) + ')'),
+                d.macroReport && React.createElement('div', { className: 'bg-gradient-to-br from-slate-50 to-zinc-50 rounded-xl p-4 border border-slate-400 mb-3' },
+                  React.createElement('h4', { className: 'text-sm font-bold text-slate-800 mb-2' }, t('stem.economicslab.year_report', '\uD83D\uDCCB Year ') + d.macroReport.year + t('stem.economicslab.year_report_2', ' in Review')),
+                  d.macroReport.shock && React.createElement('div', { className: 'flex items-center gap-2 mb-2 bg-amber-50 border border-amber-200 rounded-lg p-2' },
+                    React.createElement('span', { className: 'text-xl', 'aria-hidden': 'true' }, d.macroReport.shock.icon),
+                    React.createElement('div', null,
+                      React.createElement('div', { className: 'text-[11px] font-bold text-amber-800' }, t('stem.economicslab.shock_label', 'Shock: ') + d.macroReport.shock.name),
+                      React.createElement('div', { className: 'text-[11px] text-amber-700' }, d.macroReport.shock.lesson))),
+                  React.createElement('div', { className: 'space-y-1' },
+                    (d.macroReport.lines || []).map(function (ln, li2) {
+                      return React.createElement('p', { key: li2, className: 'text-[11px] text-slate-600 leading-relaxed m-0' }, ln);
+                    }))
+                ),
+                React.createElement('button', {
+                  onClick: function () { upd('macroGDP', 2.1); upd('macroInflation', 3.2); upd('macroInterest', 5.25); upd('macroUnemployment', 3.8); upd('macroTrade', -0.5); upd('macroYear', 2025); upd('macroHistory', []); upd('macroReport', null); upd('macroSpend', 0); upd('macroTax', 0); if (addToast) addToast(t('stem.economicslab.economy_reset', '\u267B Economy reset to 2025 baseline'), 'info'); },
+                  className: 'w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-400 mb-2'
+                }, t('stem.economicslab.reset_economy', '\u267B Reset Economy')),
+                React.createElement('p', { className: 'm-0 text-[10px] italic text-slate-500' }, t('stem.economicslab.macro_model_disclaimer', 'Toy model with textbook-Keynesian signs plus Okun\'s-law unemployment \u2014 NOT a forecast. Real economies depend on expectations, credibility, and global conditions, and economists genuinely disagree about these coefficients (see Schools of Thought in the reference shelf).'))
+              );
+            })(),
 
             // \u2550\u2550 POLICY INQUIRY widget (H7b'') \u2550\u2550
             econTab === 'inquiry' && (function() {

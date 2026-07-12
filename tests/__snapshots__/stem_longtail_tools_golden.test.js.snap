@@ -64,8 +64,8 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 {
   "buttons": 24,
   "inputs": 5,
-  "lengthBucket": 56,
-  "sha": "aaaddc0b1028bbcb",
+  "lengthBucket": 57,
+  "sha": "a2cf5dbb38864c8a",
   "svgs": 0,
 }
 `;

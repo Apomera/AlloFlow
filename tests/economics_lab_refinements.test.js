@@ -55,13 +55,97 @@ describe('Economics Lab refinements', () => {
       const html = renderEconomicsLab({ econTab: tab });
 
       expect(html).toContain('data-economicslab-canvas-shell="true"');
-      expect(html).toContain('role="img"');
-      expect(html).toContain('aria-describedby="economicslab-canvas-summary"');
       expect(html).toContain('data-economicslab-canvas-summary="true"');
       expect(html).toContain('Canvas summary');
       expect(html).toContain('data-economicslab-teacher-prompt="true"');
       expect(html).toContain('Teacher move');
+
+      if (tab === 'inquiry') {
+        // The inquiry tab uses its own SVG widget — no empty canvas above it.
+        expect(html).not.toContain('<canvas');
+      } else {
+        expect(html).toContain('role="img"');
+        expect(html).toContain('aria-describedby="economicslab-canvas-summary"');
+      }
     }
+  });
+
+  it('ships a working National Economy policy cockpit (was a dead-end tab)', () => {
+    const html = renderEconomicsLab({ econTab: 'macro' });
+
+    expect(html).toContain('data-economicslab-macro-controls="true"');
+    expect(html).toContain('Advance One Year');
+    expect(html).toContain('Central Bank');
+    expect(html).toContain('Fiscal Policy');
+    expect(html).toContain('Reset Economy');
+    // Scientific-integrity framing: the model is labeled a contested heuristic.
+    expect(html).toContain('Toy model');
+
+    const reportHtml = renderEconomicsLab({
+      econTab: 'macro',
+      macroReport: { year: 2025, shock: null, lines: ['Okun test line'] },
+    });
+    expect(reportHtml).toContain('in Review');
+    expect(reportHtml).toContain('Okun test line');
+  });
+
+  it('drives the Business Sim canvas summary from live enBiz state, not the legacy lemonade vars', () => {
+    const emptyHtml = renderEconomicsLab({ econTab: 'entrepreneur' });
+    expect(emptyHtml).toContain('Launch a business below');
+
+    const bizHtml = renderEconomicsLab({
+      econTab: 'entrepreneur',
+      enBusiness: { businessName: 'Test Tacos', unitName: 'taco', suggestedPrice: 8, unitCost: 3, dailyFixedCosts: 40 },
+      enBizDay: 7,
+      enBizCash: 1234,
+    });
+    expect(bizHtml).toContain('Test Tacos');
+    expect(bizHtml).toContain('day');
+
+    const source = readFileSync(resolve(process.cwd(), FILE), 'utf8');
+    expect(source).not.toContain('LEMONADE');
+  });
+
+  it('warns when life-sim or business cash goes negative', () => {
+    const pfHtml = renderEconomicsLab({ econTab: 'personalFinance', pfCash: -500 });
+    expect(pfHtml).toContain('cash is negative');
+
+    const bizHtml = renderEconomicsLab({
+      econTab: 'entrepreneur',
+      enBusiness: { businessName: 'Test Tacos', unitName: 'taco', suggestedPrice: 8, unitCost: 3, dailyFixedCosts: 40 },
+      enBizCash: -50,
+    });
+    expect(bizHtml).toContain('losing money');
+  });
+
+  it('uses roving tabindex + keyboard handlers on the topic tablist', () => {
+    const html = renderEconomicsLab({ econTab: 'personalFinance' });
+
+    expect(html).toContain('tabindex="0"');
+    expect(html).toContain('tabindex="-1"');
+
+    const source = readFileSync(resolve(process.cwd(), FILE), 'utf8');
+    expect(source).toContain("e.key === 'ArrowRight'");
+    expect(source).toContain('econSelectTab(next, true)');
+  });
+
+  it('keeps the contrast + money-flow fixes pinned in source', () => {
+    const source = readFileSync(resolve(process.cwd(), FILE), 'utf8');
+
+    // Contrast: slate-200 text on light backgrounds was unreadable.
+    expect(source).not.toContain('text-slate-200');
+    // Life sim: single computed cash write + tracked investment portfolio.
+    expect(source).toContain("upd('pfCash', finalCash)");
+    expect(source).toContain("upd('pfInvested'");
+    // Net worth counts equity + investments.
+    expect(source).toContain('var pfNetWorth');
+  });
+
+  it('counts investments and home equity toward net-worth achievements', () => {
+    const html = renderEconomicsLab({ econTab: 'personalFinance', pfCash: 500000, pfEquity: 300000, pfInvested: 300000 });
+
+    expect(html).toContain('achievements');
+    expect(html).toContain('Net Worth: $1,100,000');
   });
 
   it('keeps optional reference material behind a compact shelf by default', () => {
