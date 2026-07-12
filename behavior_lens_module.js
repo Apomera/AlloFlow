@@ -298,6 +298,17 @@
 
     const OBSERVATION_METHODS = ['frequency', 'duration', 'interval', 'latency'];
 
+    // ─── WCAG 2.4.3: modal focus management (module scope) ──────────────
+    // Remembers the control that opened a modal so focus can return to it on
+    // close. These were previously mis-declared inside an ABCDataPanel
+    // useMemo callback, which put them out of scope for the container's
+    // Escape-key handler — calling alloRestoreFocus() there threw a
+    // ReferenceError and focus was never restored. Declared at module scope
+    // so every component (and the Escape handler) can reach them.
+    let _alloFocusTrigger = null;
+    function alloSaveFocus() { try { _alloFocusTrigger = document.activeElement; } catch (e) { _alloFocusTrigger = null; } }
+    function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch (e) {} _alloFocusTrigger = null; } }
+
     const RESTORATIVE_PREAMBLE = `IMPORTANT — Language Guidelines: Use person-first, strengths-based language throughout your response. Frame challenges as unmet needs or lagging skills, not deficits. Say "the student demonstrates difficulty with..." rather than "the student refuses to..." or "is non-compliant." Avoid punitive framing; focus on teaching replacement skills and building supportive environments.`;
 
     // ─── Dual-Label Terminology ─────────────────────────────────────────
@@ -880,11 +891,6 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 if (dateRange === 'today') {
                     cutoff.setHours(0, 0, 0, 0);
                 } else {
-  // WCAG 2.4.3: Focus management for modal dialogs
-  var _alloFocusTrigger = null;
-  function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
-  function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
-
                     cutoff.setDate(cutoff.getDate() - days);
                 }
                 filtered = filtered.filter(e => new Date(e.timestamp) >= cutoff);
@@ -930,6 +936,11 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         };
 
         const handleDelete = (id) => {
+            // Confirm before destroying a permanent observation — there is no
+            // undo, and bulk delete already confirms, so single delete should
+            // too (matches the crisis-contact removal pattern).
+            const msg = (t && t('behavior_lens.confirm.delete_entry')) || 'Delete this ABC entry? This cannot be undone.';
+            if (typeof window !== 'undefined' && window.confirm && !window.confirm(msg)) return;
             setEntries(prev => prev.filter(e => e.id !== id));
             setSelectedIds(prev => { const n = new Set(prev); n.delete(id); return n; });
             if (addToast) addToast(tt('behavior_lens.abc.entry_deleted', 'Entry deleted'), 'info');
@@ -2074,20 +2085,28 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             ),
 
             // Controls
-            h('div', { 'aria-expanded': String(running), className: 'flex gap-4 mt-6' },
-                h('button', { 'aria-expanded': String(running), "aria-label": "Toggle running",
+            h('div', { className: 'flex gap-4 mt-6' },
+                h('button', { 'aria-pressed': String(running), "aria-label": running ? 'Pause recording' : 'Start recording',
                     onClick: () => setRunning(!running),
                     className: `px-5 py-2 rounded-full text-sm font-bold transition-colors ${running ? 'bg-amber-500 hover:bg-amber-400' : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300'}`
                 }, running ? '⏸ Pause' : '▶ Start'),
-                h('button', { "aria-label": "Reset",
-                    onClick: () => { setCounters(prev => prev.map(c => ({ ...c, count: 0 }))); setElapsed(0); setRunning(false); },
+                h('button', { "aria-label": "Reset all counts and timer",
+                    onClick: () => {
+                        // Reset wipes an unsaved running count — confirm when
+                        // there is anything to lose (this button sits next to
+                        // Start/Pause and there is no undo).
+                        const hasData = elapsed > 0 || counters.some(c => (c.count || 0) > 0);
+                        const msg = (t && t('behavior_lens.confirm.reset_counts')) || 'Reset all counts and the timer? This cannot be undone.';
+                        if (hasData && !window.confirm(msg)) return;
+                        setCounters(prev => prev.map(c => ({ ...c, count: 0 }))); setElapsed(0); setRunning(false);
+                    },
                     className: 'px-5 py-2 rounded-full bg-white/10 hover:bg-white/20 text-sm font-bold transition-colors'
                 }, '↺ Reset')
             ),
             // Timer
             h('div', { className: 'absolute bottom-8 text-center' },
-                h('div', { className: 'text-3xl font-black tabular-nums text-slate-600' }, fmtDuration(elapsed)),
-                h('div', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.freq.elapsed', 'Elapsed'))
+                h('div', { className: 'text-3xl font-black tabular-nums text-slate-200' }, fmtDuration(elapsed)),
+                h('div', { className: 'text-xs text-slate-400 mt-1' }, tt('behavior_lens.freq.elapsed', 'Elapsed'))
             )
         );
     };
@@ -2134,7 +2153,10 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
 
         const occurredCount = grid.filter(Boolean).length;
         const completedCount = Math.min(currentInterval, totalIntervals);
-        const pct = completedCount > 0 ? ((occurredCount / completedCount) * 100).toFixed(0) : '0';
+        // Denominator counts marked cells too so an in-progress interval the
+        // observer already marked can't push the percentage above 100%.
+        const pctDenom = Math.max(completedCount, occurredCount);
+        const pct = pctDenom > 0 ? ((occurredCount / pctDenom) * 100).toFixed(0) : '0';
 
         const handleSave = () => {
             onSaveSession({
@@ -2224,16 +2246,23 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         if (isCurrent) bg = 'bg-indigo-500 ring-2 ring-indigo-300 animate-pulse';
                         else if (isComplete && occurred) bg = 'bg-red-500';
                         else if (isComplete && !occurred) bg = 'bg-emerald-500';
-                        return h('button', { "aria-label": "Mark",
+                        const statusLabel = isCurrent ? 'current' : isComplete ? (occurred ? 'occurred' : 'not occurred') : 'not yet recorded';
+                        return h('button', {
+                            "aria-label": `Interval ${i + 1} — ${statusLabel}`,
                             key: i,
                             onClick: () => { if (isComplete || isCurrent) mark(i); },
-                            className: `bl-interval-cell aspect-square rounded-lg flex items-center justify-center text-xs font-bold text-white transition-all ${bg} ${isComplete || isCurrent ? 'cursor-pointer hover:opacity-80' : 'opacity-40 cursor-default'}`
-                        }, i + 1);
+                            className: `bl-interval-cell aspect-square rounded-lg flex flex-col items-center justify-center text-xs font-bold text-white leading-none transition-all ${bg} ${isComplete || isCurrent ? 'cursor-pointer hover:opacity-80' : 'opacity-40 cursor-default'}`
+                        },
+                            h('span', null, i + 1),
+                            // Shape, not color alone, marks occurred (●) vs not (○) —
+                            // so red/green isn't the only cue (colorblind + SR users).
+                            isComplete && h('span', { 'aria-hidden': 'true', className: 'text-[10px] mt-0.5' }, occurred ? '●' : '○')
+                        );
                     })
                 ),
                 // Controls
                 running && h('div', { className: 'mt-4 flex gap-3 justify-center' },
-                    h('button', { "aria-label": "Mark",
+                    h('button', { "aria-label": "Mark current interval as occurred",
                         onClick: () => mark(currentInterval),
                         className: 'bl-occurred-btn px-8 py-3 bg-red-700 text-white rounded-xl font-bold text-lg hover:bg-red-400 active:scale-95 transition-all'
                     }, '✓ ' + (tt('behavior_lens.obs_occurred', 'Occurred'))),
@@ -2376,6 +2405,10 @@ Return ONLY valid JSON:
         // Compute next interval for interval schedules
         const computeNextInterval = useCallback((type, param) => {
             if (type === 'FI') return param * 60;
+            // DRO reinforces after `param` MINUTES with no target behavior.
+            // Previously omitted here → targetSec was null, so DRO fired after
+            // 1 second instead of the set interval.
+            if (type === 'DRO') return param * 60;
             if (type === 'VI') {
                 const min = Math.max(30, Math.floor(param * 0.5 * 60));
                 const max = Math.floor(param * 1.5 * 60);
@@ -2383,6 +2416,24 @@ Return ONLY valid JSON:
             }
             return null;
         }, []);
+
+        // Fill the next empty token slot atomically (reads the freshest token
+        // array via the functional updater, so the timer's DRO auto-reinforce
+        // never toggles a stale slot). Mirrors toggleToken's confetti logic.
+        const fillNextToken = useCallback(() => {
+            setTokens(prev => {
+                const i = prev.findIndex((t2, idx) => !t2 && idx < slots);
+                if (i < 0) return prev;
+                const next = prev.slice();
+                next[i] = true;
+                if (next.filter(Boolean).length >= slots && !showConfetti) {
+                    setShowConfetti(true);
+                    setTimeout(() => setShowConfetti(false), 3000);
+                    if (addToast) addToast(tt('behavior_lens.token.complete', '🎉 Token Board Complete!'), 'success');
+                }
+                return next;
+            });
+        }, [slots, showConfetti, addToast]);
 
         // Initialize schedule when type changes
         useEffect(() => {
@@ -2413,18 +2464,22 @@ Return ONLY valid JSON:
             timerRef.current = setInterval(() => {
                 setTimerSeconds(prev => {
                     const next = prev + 1;
-                    if (next >= targetSec && !intervalReady) {
-                        setIntervalReady(true);
-                        if (scheduleType === 'DRO') {
-                            // DRO auto-reinforces when interval completes without behavior
+                    if (scheduleType === 'DRO') {
+                        // DRO reinforces EACH completed interval, then restarts.
+                        // Do NOT latch intervalReady — that blocked every
+                        // interval after the first (the timer effect re-ran and
+                        // the `!intervalReady` guard stayed false forever).
+                        if (targetSec && next >= targetSec) {
                             setReinforceNow(true);
                             setTimeout(() => setReinforceNow(false), 3000);
-                            const nextEmpty = tokens.findIndex((t2, i) => !t2 && i < slots);
-                            if (nextEmpty >= 0) toggleToken(nextEmpty);
+                            fillNextToken();
                             if (addToast) addToast(tt('behavior_lens.toast.dro_interval_complete_reinforce_no_target_behavior', '🎉 DRO interval complete — REINFORCE! No target behavior occurred!'), 'success');
-                            // auto-restart DRO timer
-                            return 0;
+                            return 0; // restart the DRO interval
                         }
+                        return next;
+                    }
+                    if (next >= targetSec && !intervalReady) {
+                        setIntervalReady(true);
                         if (addToast) addToast(tt('behavior_lens.toast.interval_ready_reinforce_next_behavior', '⏰ Interval ready — reinforce next behavior!'), 'info');
                     }
                     return next;
@@ -5087,6 +5142,13 @@ Generate a 3-tier crisis intervention plan and return ONLY valid JSON:
                     className: 'flex-1 py-3 bg-gradient-to-r from-stone-600 to-stone-800 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
                 }, drafting ? '⏳ Drafting...' : ('🧠 ' + (tt('behavior_lens.crisis.draft', 'AI Draft Crisis Plan')))),
                 h('button', { "aria-label": "Save Plan", onClick: savePlan, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-600 transition-all' }, '💾 Save Plan')
+            ),
+            // Scope / authorization guardrail — this is the highest-stakes
+            // output in the tool; an untrained user must not treat AI-drafted
+            // "immediate safety steps" as an authorized crisis protocol.
+            h('div', { className: 'bg-amber-50 border border-amber-300 rounded-xl p-3', role: 'note' },
+                h('p', { className: 'text-[11px] text-amber-800 leading-relaxed' },
+                    tt('behavior_lens.crisis.disclaimer', '⚠️ Planning aid for education — not a substitute for your district\'s crisis protocol or certified crisis-response training (e.g., CPI / Mandt / NCI). It does NOT authorize restraint or seclusion; physical-management decisions belong to trained, authorized staff. Have a qualified professional review this plan and follow district policy in any real emergency.'))
             ),
             // Last reviewed badge
             lastReviewed && h('div', { className: 'flex items-center gap-2 text-xs text-slate-600' },
@@ -15215,8 +15277,8 @@ Return ONLY a JSON object (no markdown, no explanation) with these exact keys:
 
             // Decision tree logic
             if (base >= 80) return { type: 'adequate', label: 'Adequate Performance', color: 'green', icon: '✅', desc: 'Student demonstrates the skill consistently at baseline. No deficit identified — consider whether the referral concern is about a different context or expectation.' };
-            if (support > base + 15 && motivation <= base + 15) return { type: 'cantdo', label: "Can't Do (Skill Deficit)", color: 'red', icon: '📚', desc: 'Performance improves significantly with instructional support but NOT with motivation alone. The student lacks the skill — focus on explicit instruction, modeling, guided practice, and scaffolding.' };
-            if (motivation > base + 15 && support <= base + 15) return { type: 'wontdo', label: "Won't Do (Performance Deficit)", color: 'amber', icon: '⭐', desc: 'Performance improves significantly with motivation/incentives but NOT with support alone. The student has the skill but lacks motivation — focus on reinforcement strategies, choice, engagement, and addressing function.' };
+            if (support > base + 15 && motivation <= base + 15) return { type: 'cantdo', label: "Likely Skill (Acquisition) Deficit", color: 'red', icon: '📚', desc: 'Performance improved with instructional support but not with motivation alone — this suggests a likely SKILL (acquisition) deficit. Treat it as a hypothesis to confirm with more probes; focus on explicit instruction, modeling, guided practice, and scaffolding.' };
+            if (motivation > base + 15 && support <= base + 15) return { type: 'wontdo', label: "Likely Performance Deficit", color: 'amber', icon: '⭐', desc: 'Performance improved with motivation/incentives but not with support alone — this suggests the skill is present but not reliably shown under current conditions (a performance deficit). Treat it as a hypothesis, not a "won\'t"; look for competing contingencies or an unmet need, and focus on reinforcement, choice, engagement, and the behavior\'s function.' };
             if (both > base + 15 && support > base + 15 && motivation > base + 15) return { type: 'mixed', label: 'Mixed Deficit', color: 'purple', icon: '🔀', desc: 'Performance improves with both support AND motivation. The student needs a combined approach — teach the skill while also building motivation through reinforcement and functional alternatives.' };
             if (both > base + 15) return { type: 'combined', label: 'Combined Approach Needed', color: 'blue', icon: '🔗', desc: 'Only the combined condition shows improvement. The student needs simultaneous instructional support and motivational strategies to succeed.' };
             return { type: 'unclear', label: 'Inconclusive', color: 'slate', icon: '❓', desc: 'No condition produced meaningful improvement over baseline. Consider whether the probes were adequate, the behavior was properly operationalized, or additional assessment is needed.' };
@@ -15371,7 +15433,9 @@ Provide a brief (3-4 sentences) clinical interpretation with 2-3 specific interv
                     h('span', { className: 'text-2xl' }, diagnosis.icon),
                     h('div', { className: 'flex-1' },
                         h('h3', { className: `text-sm font-black text-${diagnosis.color}-800` }, diagnosis.label),
-                        h('p', { className: `text-xs text-${diagnosis.color}-700 mt-1 leading-relaxed` }, diagnosis.desc)
+                        h('p', { className: `text-xs text-${diagnosis.color}-700 mt-1 leading-relaxed` }, diagnosis.desc),
+                        h('p', { className: 'text-[11px] text-slate-500 mt-2 italic leading-relaxed' },
+                            tt('behavior_lens.cantdo.threshold_note', 'This uses a ~15-percentage-point improvement over baseline as the threshold for a "meaningful" change — a rule of thumb, not a validated cutoff. It is a screening hypothesis from a few probes, not a diagnosis; confirm with more opportunities and classroom data.'))
                     )
                 )
             ),
@@ -16201,10 +16265,16 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         const [mbTitle, setMbTitle] = useState('');
 
 
-        // Collect all unique behavior names from sessions
+        // Collect all unique behavior names from sessions. Multi-target
+        // LiveObservation sessions carry a `targets` array; the frequency /
+        // interval / latency bridge emits FLAT records ({behavior, count, rate}
+        // with no `targets`) — those were previously invisible to Auto mode.
         const behaviorNames = useMemo(() => {
             const names = new Set();
-            (sessionHistory || []).forEach(s => (s.targets || []).forEach(t => { if (t.name) names.add(t.name); }));
+            (sessionHistory || []).forEach(s => {
+                if (s.targets && s.targets.length) s.targets.forEach(t => { if (t.name) names.add(t.name); });
+                else if (s.behavior) names.add(s.behavior);
+            });
             return Array.from(names);
         }, [sessionHistory]);
 
@@ -16214,11 +16284,15 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             const bName = behaviorNames[selectedBehavior];
             return (sessionHistory || []).map((s, i) => {
                 const target = (s.targets || []).find(t => t.name === bName);
-                return {
-                    session: i + 1,
-                    date: s.date,
-                    value: target ? (target.type === 'rate' ? target.rate : target.type === 'duration' && target.durations?.length ? target.durations.reduce((a, b) => a + b, 0) / target.durations.length : target.type === 'interval' && target.intervals?.length ? Math.round(target.intervals.filter(Boolean).length / target.intervals.length * 100) : target.count) : null,
-                };
+                let value = null;
+                if (target) {
+                    value = target.type === 'rate' ? target.rate : target.type === 'duration' && target.durations?.length ? target.durations.reduce((a, b) => a + b, 0) / target.durations.length : target.type === 'interval' && target.intervals?.length ? Math.round(target.intervals.filter(Boolean).length / target.intervals.length * 100) : target.count;
+                } else if (s.behavior === bName) {
+                    // Flat bridged observation record — plot the raw count,
+                    // falling back to rate/percentage when no count is present.
+                    value = s.count != null ? s.count : (s.rate != null ? s.rate : null);
+                }
+                return { session: i + 1, date: s.date, value };
             }).filter(d => d.value !== null);
         }, [sessionHistory, behaviorNames, selectedBehavior]);
 
@@ -16283,8 +16357,12 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     const secondHalf = values.slice(values.length - half);
                     const m1 = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
                     const m2 = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
-                    trendSlope = (m2 - m1) / (values.length - 1);
-                    trendIntercept = m1 - trendSlope * (half / 2);
+                    // The two half-means sit at index centroids (half-1)/2 and
+                    // n-(half+1)/2 — a span of (n-half), not (n-1). Slope and
+                    // intercept must use that span so the drawn line actually
+                    // passes through both half-means (was off by ~½·slope).
+                    trendSlope = (m2 - m1) / (values.length - half);
+                    trendIntercept = m1 - trendSlope * ((half - 1) / 2);
                 }
                 return [{ label: (tt('behavior_lens.raw.all_data', 'All Data')), startIdx: 0, endIdx: dataSeries.length - 1, data: dataSeries, mean, trendSlope, trendIntercept }];
             }
@@ -16300,8 +16378,12 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     const secondHalf = values.slice(values.length - half);
                     const m1 = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
                     const m2 = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
-                    trendSlope = (m2 - m1) / (values.length - 1);
-                    trendIntercept = m1 - trendSlope * (half / 2);
+                    // The two half-means sit at index centroids (half-1)/2 and
+                    // n-(half+1)/2 — a span of (n-half), not (n-1). Slope and
+                    // intercept must use that span so the drawn line actually
+                    // passes through both half-means (was off by ~½·slope).
+                    trendSlope = (m2 - m1) / (values.length - half);
+                    trendIntercept = m1 - trendSlope * ((half - 1) / 2);
                 }
                 // Celeration (semi-log slope) — geometric ratio of second-half median to first-half median
                 let celeration = null;
@@ -17406,7 +17488,9 @@ Keep under 200 words. Use bullet points.`);
                     || (_prefIdKey !== _prefLegacyKey ? localStorage.getItem(_prefLegacyKey) : null)
                     || 'No formal preference assessment generated.';
 
-                const prompt = `Draft a formal Behavior Intervention Plan (BIP) for ${studentName}.
+                const prompt = `Draft a DRAFT Behavior Intervention Plan (BIP) for ${studentName} that a qualified team member will review and finalize.
+${RESTORATIVE_PREAMBLE}
+
 Based on the following aggregated data:
 - ABC Data Summary (${abcEntries.length} entries): ${JSON.stringify(abcEntries.slice(-10))}
 - Known Preferences: ${studentProfile.preferences || 'Unknown'}
@@ -17414,14 +17498,14 @@ Based on the following aggregated data:
 
 The BIP MUST strictly follow these sections:
 1. Target Behavior Definition (Operational Definition)
-2. Hypothesized Function of Behavior
+2. Hypothesized Function of Behavior — state it explicitly as a HYPOTHESIS to be confirmed with data, not a fact.
 3. Proactive / Antecedent Strategies
-4. Teaching / Replacement Behavior Strategies
-5. Consequence / Reactive Strategies
+4. Teaching / Replacement Behavior Strategies (assent-based; teach a replacement, do not just suppress)
+5. Consequence / Reactive Strategies — least-restrictive, positive strategies first; do NOT recommend restraint, seclusion, or aversives.
 
-Use clinical, professional tone, suitable for an IEP team. Keep it structured and actionable.`;
+Use a clear, professional tone suitable for an IEP team. Keep it structured and actionable. Do NOT fabricate assessment data that was not provided.`;
 
-                const result = await callGemini(prompt, studentName);
+                const result = await callGemini(prompt, false);
                 setPlan(result);
                 setEditedPlan(result);
             } catch (e) {
@@ -17457,7 +17541,11 @@ Use clinical, professional tone, suitable for an IEP team. Keep it structured an
                     onClick: () => setIsEditing(true),
                     className: 'absolute top-4 right-4 p-2 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity'
                 }, '✏️ Edit'),
-                h('h3', { className: 'text-sm font-bold text-slate-800 mb-4 border-b pb-2' }, `Formal BIP: ${studentName}`),
+                h('h3', { className: 'text-sm font-bold text-slate-800 mb-4 border-b pb-2' }, `Draft BIP: ${studentName}`),
+                h('div', { className: 'bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4' },
+                    h('p', { className: 'text-[11px] text-amber-800 leading-relaxed' },
+                        tt('behavior_lens.bip.disclaimer', '⚠️ AI-generated DRAFT — not a completed FBA or a finalized BIP. The hypothesized function is a hypothesis to confirm with data. A qualified team member (school psychologist / BCBA) must review, correct, and finalize this plan with the IEP team, the student, and the family before use.'))
+                ),
                 h('div', { className: 'text-xs text-slate-700 whitespace-pre-wrap leading-relaxed' }, plan),
                 h('div', { className: 'flex gap-2 mt-6 pt-4 border-t border-slate-100' },
                     h('button', { onClick: () => { navigator.clipboard.writeText(plan); if (addToast) addToast(tt('behavior_lens.toast.copied', 'Copied!'), 'success'); }, className: 'px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100' }, '📋 Copy to Clipboard'),
@@ -19957,7 +20045,13 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         const validTrials = trials.filter(t => t.latency !== null);
         const meanVal = validTrials.length > 0 ? (validTrials.reduce((a, t) => a + t.latency, 0) / validTrials.length) : 0;
         const mean = meanVal.toFixed(2);
-        const median = validTrials.length > 0 ? validTrials.map(t => t.latency).sort((a, b) => a - b)[Math.floor(validTrials.length / 2)].toFixed(2) : 0;
+        const median = (() => {
+            if (validTrials.length === 0) return 0;
+            const s = validTrials.map(t => t.latency).sort((a, b) => a - b);
+            const mid = Math.floor(s.length / 2);
+            // Even count → average the two middle values (true median).
+            return (s.length % 2 === 0 ? (s[mid - 1] + s[mid]) / 2 : s[mid]).toFixed(2);
+        })();
         const range = validTrials.length > 1 ? `${Math.min(...validTrials.map(t => t.latency)).toFixed(1)}–${Math.max(...validTrials.map(t => t.latency)).toFixed(1)}` : 'N/A';
         const sdVal = validTrials.length > 1 ? Math.sqrt(validTrials.reduce((s, tr) => s + Math.pow(tr.latency - meanVal, 2), 0) / (validTrials.length - 1)) : 0;
 
@@ -21058,17 +21152,18 @@ Keep the language professional but accessible.`;
                         h('h3', { className: 'text-xs font-bold text-slate-800 mb-2' }, '📋 Clinical Interpretation'),
                         h('p', { className: 'text-xs text-slate-700 mb-2' },
                             analysis.pBgivA > analysis.pBgivNoA + 0.15
-                                ? `The behavior "${selectedBehavior}" is ${analysis.riskRatio === Infinity ? 'exclusively' : analysis.riskRatio.toFixed(1) + 'x more'} likely when "${selectedAntecedent}" is present. This supports a functional relationship.`
+                                ? `The behavior "${selectedBehavior}" is ${analysis.riskRatio === Infinity ? 'exclusively' : analysis.riskRatio.toFixed(1) + 'x more'} likely when "${selectedAntecedent}" is present. This is a strong association — a hypothesis to test, not a confirmed function. Descriptive ABC data shows correlation, not causation.`
                                 : analysis.pBgivA > analysis.pBgivNoA
                                     ? `Slight elevation of "${selectedBehavior}" given "${selectedAntecedent}", but the difference is small (φ = ${analysis.phi.toFixed(2)}). More data may clarify.`
-                                    : `"${selectedBehavior}" does not appear functionally related to "${selectedAntecedent}". Consider other antecedents.`
+                                    : `"${selectedBehavior}" shows little association with "${selectedAntecedent}" in this data. Consider other antecedents.`
                         ),
                         h('div', { className: 'bg-white/60 rounded-lg p-3 space-y-1' },
-                            h('p', { className: 'text-[11px] font-bold text-slate-600' }, '📏 Interpretation Guide'),
-                            h('p', { className: 'text-[11px] text-slate-600' }, '• Risk Ratio > 2.0: Strong functional relationship'),
-                            h('p', { className: 'text-[11px] text-slate-600' }, '• Risk Ratio 1.5–2.0: Moderate relationship, more data recommended'),
-                            h('p', { className: 'text-[11px] text-slate-600' }, '• Risk Ratio < 1.5: Weak/no relationship'),
-                            h('p', { className: 'text-[11px] text-slate-600' }, '• φ ≥ 0.3: Medium-large effect size | φ ≥ 0.1: Small effect')
+                            h('p', { className: 'text-[11px] font-bold text-slate-600' }, '📏 Association strength (descriptive only — not a functional relationship)'),
+                            h('p', { className: 'text-[11px] text-slate-600' }, '• Risk Ratio > 2.0: Strong association'),
+                            h('p', { className: 'text-[11px] text-slate-600' }, '• Risk Ratio 1.5–2.0: Moderate association, more data recommended'),
+                            h('p', { className: 'text-[11px] text-slate-600' }, '• Risk Ratio < 1.5: Weak/no association'),
+                            h('p', { className: 'text-[11px] text-slate-600' }, '• φ ≥ 0.3: Medium-large effect size | φ ≥ 0.1: Small effect'),
+                            h('p', { className: 'text-[11px] text-slate-500 italic pt-1' }, 'These are associations from descriptive data. A functional relationship requires experimental manipulation (functional analysis). Confirm hypotheses before writing a BIP.')
                         )
                     )
                 )
@@ -21812,7 +21907,17 @@ Keep the language professional but accessible.`;
 
         const [results, setResults] = useState(null);
 
-        const parseData = (str) => str.split(/[,\s]+/).map(Number).filter(n => !isNaN(n));
+        // Goal direction: is the intervention meant to REDUCE the behavior
+        // (the typical BIP case) or INCREASE it (e.g., a replacement skill)?
+        // PND / NAP / Tau-U are all directional — without this the tool
+        // assumed "higher = better" and reported successful reductions as
+        // "Ineffective".
+        const [goalDirection, setGoalDirection] = useState('decrease');
+
+        // Split on separators, then drop empty tokens BEFORE Number() —
+        // Number('') is 0, so a trailing comma would otherwise inject a
+        // spurious 0 data point and skew every statistic.
+        const parseData = (str) => str.split(/[,\s]+/).map(s => s.trim()).filter(s => s !== '').map(Number).filter(n => !isNaN(n));
 
         // Auto-fill from graph phase data
         const handleAutoFill = () => {
@@ -21858,29 +21963,44 @@ Keep the language professional but accessible.`;
 
             if (baseline.length < 2 || intervention.length < 2) { if (addToast) addToast(tt('behavior_lens.toast.need_at_least_2_data_points_per_phase', 'Need at least 2 data points per phase'), 'error'); return; }
 
-            const baseMax = Math.max(...baseline);
+            // Orient every metric so "improvement" = moving toward the goal.
+            // decrease goal → improvement is a LOWER value; increase → HIGHER.
+            const wantDecrease = goalDirection === 'decrease';
+            const improved = (i, b) => wantDecrease ? i < b : i > b;
+            const worsened = (i, b) => wantDecrease ? i > b : i < b;
 
-            const pndCount = intervention.filter(v => v > baseMax).length;
+            // PND: threshold is the most extreme baseline point in the goal
+            // direction (min for a decrease goal, max for an increase goal).
+            const baseThresh = wantDecrease ? Math.min(...baseline) : Math.max(...baseline);
+
+            const pndCount = intervention.filter(v => wantDecrease ? v < baseThresh : v > baseThresh).length;
 
             const pnd = (pndCount / intervention.length) * 100;
 
             let pairs = 0, nonoverlap = 0, ties = 0;
 
-            baseline.forEach(b => { intervention.forEach(i => { pairs++; if (i > b) nonoverlap++; else if (i === b) ties++; }); });
+            baseline.forEach(b => { intervention.forEach(i => { pairs++; if (improved(i, b)) nonoverlap++; else if (i === b) ties++; }); });
 
             const nap = ((nonoverlap + 0.5 * ties) / pairs) * 100;
 
+            // Baseline trend S, oriented so a baseline already trending toward
+            // the goal contributes positively (and is then subtracted out).
             let sBaseline = 0;
 
-            for (let i = 0; i < baseline.length; i++) { for (let j = i + 1; j < baseline.length; j++) { if (baseline[j] > baseline[i]) sBaseline++; else if (baseline[j] < baseline[i]) sBaseline--; } }
+            for (let i = 0; i < baseline.length; i++) { for (let j = i + 1; j < baseline.length; j++) { if (improved(baseline[j], baseline[i])) sBaseline++; else if (worsened(baseline[j], baseline[i])) sBaseline--; } }
 
-            const baselineTrend = sBaseline / (baseline.length * (baseline.length - 1) / 2);
-
+            // Between-phase S, oriented toward the goal.
             let sBetween = 0;
 
-            baseline.forEach(b => { intervention.forEach(i => { if (i > b) sBetween++; else if (i < b) sBetween--; }); });
+            baseline.forEach(b => { intervention.forEach(i => { if (improved(i, b)) sBetween++; else if (worsened(i, b)) sBetween--; }); });
 
-            const tauU = Math.max(-1, Math.min(1, (sBetween / pairs) - baselineTrend));
+            // Parker's Tau-U pools S_AB − S_A over the COMBINED pair count
+            // (n_A·n_B + n_A·(n_A−1)/2). Previously this subtracted two
+            // separately-normalized taus, which over-corrected for short
+            // baselines and could zero out a large true effect.
+            const tauDenom = (baseline.length * intervention.length) + (baseline.length * (baseline.length - 1) / 2);
+
+            const tauU = tauDenom > 0 ? Math.max(-1, Math.min(1, (sBetween - sBaseline) / tauDenom)) : 0;
 
             const baseMean = baseline.reduce((a, b) => a + b, 0) / baseline.length;
 
@@ -21888,7 +22008,10 @@ Keep the language professional but accessible.`;
 
             const pctChange = baseMean !== 0 ? ((intMean - baseMean) / baseMean * 100) : 0;
 
+            const smallN = baseline.length < 5 || intervention.length < 5;
+
             setResults({
+                goalDirection, smallN,
                 pnd: pnd.toFixed(1), nap: nap.toFixed(1), tauU: tauU.toFixed(3), baseMean: baseMean.toFixed(2), intMean: intMean.toFixed(2), pctChange: pctChange.toFixed(1), baseline, intervention,
 
                 pndInterp: pnd >= 90 ? 'Very effective' : pnd >= 70 ? 'Effective' : pnd >= 50 ? 'Questionable' : 'Ineffective',
@@ -21923,6 +22046,24 @@ Keep the language professional but accessible.`;
 
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 space-y-3' },
 
+                // Goal direction toggle — decides which way counts as "improvement"
+                h('div', null,
+                    h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider' }, tt('behavior_lens.effectsize.goal_label', '🎯 Intervention goal')),
+                    h('div', { className: 'flex gap-2 mt-1', role: 'radiogroup', 'aria-label': 'Intervention goal direction' },
+                        [['decrease', tt('behavior_lens.effectsize.goal_decrease', '📉 Decrease behavior'), 'For problem behavior you want less of'], ['increase', tt('behavior_lens.effectsize.goal_increase', '📈 Increase behavior'), 'For a skill or replacement behavior you want more of']].map(([id, label, hint]) =>
+                            h('button', {
+                                key: id, role: 'radio', 'aria-checked': goalDirection === id ? 'true' : 'false',
+                                title: hint,
+                                onClick: () => setGoalDirection(id),
+                                className: `flex-1 py-2 px-3 rounded-lg text-xs font-bold border-2 transition-all ${goalDirection === id ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-300 hover:border-indigo-400'}`
+                            }, label)
+                        )
+                    ),
+                    h('p', { className: 'text-[11px] text-slate-500 mt-1' }, goalDirection === 'decrease'
+                        ? tt('behavior_lens.effectsize.goal_decrease_hint', 'Improvement = intervention values LOWER than baseline (the usual BIP case).')
+                        : tt('behavior_lens.effectsize.goal_increase_hint', 'Improvement = intervention values HIGHER than baseline.'))
+                ),
+
                 // Auto-fill from graph button
                 graphExport && graphExport.phaseAnalysis && graphExport.phaseAnalysis.length >= 2 && h('button', { onClick: handleAutoFill,
                     className: 'w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-xs font-bold hover:from-emerald-600 hover:to-teal-600 shadow-md transition-all mb-2'
@@ -21948,6 +22089,17 @@ Keep the language professional but accessible.`;
 
             results && h('div', { className: 'space-y-3' },
 
+                // Direction reminder + small-N caveat
+                h('div', { className: 'text-[11px] text-slate-600 flex flex-wrap items-center gap-x-2' },
+                    h('span', { className: 'font-bold' }, results.goalDirection === 'decrease' ? '📉 Goal: decrease' : '📈 Goal: increase'),
+                    h('span', null, '— higher scores below = more improvement in that direction.')
+                ),
+
+                results.smallN && h('div', { className: 'bg-orange-50 border border-orange-200 rounded-xl p-3' },
+                    h('p', { className: 'text-[11px] text-orange-800 leading-relaxed' },
+                        tt('behavior_lens.effectsize.small_n', '⚠️ Small sample: single-case standards (WWC) want at least 5 data points per phase (3 with reservations). With fewer, these numbers are unstable — read them alongside a visual analysis of the graph, not on their own.'))
+                ),
+
                 h('div', { className: 'grid grid-cols-3 gap-3' },
 
                     [['Tau-U', results.tauU, results.tauInterp, 'indigo'], ['NAP', results.nap + '%', results.napInterp, 'purple'], ['PND', results.pnd + '%', results.pndInterp, 'violet']].map(([label, val, interp, color]) =>
@@ -21968,7 +22120,7 @@ Keep the language professional but accessible.`;
 
                 h('div', { className: 'grid grid-cols-3 gap-3' }, [['Baseline Mean', results.baseMean], ['Intervention Mean', results.intMean], ['% Change', results.pctChange + '%']].map(([label, val]) => h('div', { key: label, className: 'bg-white rounded-lg border border-slate-400 p-3 text-center' }, h('div', { className: 'text-[11px] font-bold text-slate-600' }, label), h('div', { className: 'text-lg font-bold text-slate-800' }, val)))),
 
-                h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3' }, h('p', { className: 'text-[11px] text-amber-700' }, '💡 Tau-U corrects for baseline trend. NAP counts nonoverlapping pairs. PND uses highest baseline point as threshold.')),
+                h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3' }, h('p', { className: 'text-[11px] text-amber-700' }, '💡 Tau-U corrects for baseline trend (Parker\'s pooled formula). NAP counts pairs that improved toward the goal. PND uses the most extreme baseline point in the goal direction. Interpretation bands are approximate conventions — not hard thresholds; PND in particular is outlier-sensitive.')),
 
                 // Inter-tool: Send to IEP
                 setActivePanel && h('button', { "aria-label": "Send Effect Sizes to IEP Prep",
@@ -24756,6 +24908,21 @@ IMPORTANT rules for expert keys:
             return callGemini(prompt, jsonMode);
         }, [callGemini, aiConsent, addToast, t]);
 
+        // ── Vision/media consent gate ──
+        // The IOA video/audio coding path sends the student's recording (and
+        // often their name/visual description) to Gemini Vision. That is the
+        // most PII-heavy call in the tool, so it MUST honor the same aiConsent
+        // gate as text calls. Previously the raw callGeminiVision prop was
+        // threaded straight into IOACalculator, bypassing consent entirely.
+        const callGeminiVisionGuarded = useCallback(async (prompt, base64, mime) => {
+            if (!callGeminiVision) return null;
+            if (!aiConsent) {
+                if (addToast) addToast(tt('behavior_lens.toast.ai_disabled', '🤖 AI is off — toggle it on in the header to use this feature'), 'info');
+                return null;
+            }
+            return callGeminiVision(prompt, base64, mime);
+        }, [callGeminiVision, aiConsent, addToast, t]);
+
         // ── Contextual AI wrapper — auto-injects student profile + notes ──
         // Routes through callGeminiGuarded so the consent gate fires for
         // every contextual call too.
@@ -24901,8 +25068,32 @@ Use professional language. Refer to "the student" (not the codename).`;
 
         // Load data — cloud first (if available), then localStorage fallback
         const cloudLoadAttempted = useRef({});
+        // Guards the auto-save effects: they must not write until the current
+        // student's data has been hydrated from storage. Without this, an
+        // emptied array (from a full delete) could not be persisted — the save
+        // effect skipped length-0 to avoid clobbering unloaded data — so
+        // deleted entries reappeared on reload. Now: block saves pre-hydration,
+        // allow saving an empty array once hydrated.
+        const abcHydratedRef = useRef(false);
+        // Tracks the last student we loaded, to detect a genuine switch. Some
+        // paths (Caseload "View", Batch import, name pickers) change
+        // selectedStudent WITHOUT going through switchToStudent (which clears
+        // data) — those left the previous student's entries in memory, so the
+        // new student showed the wrong data and could save it under the new key.
+        const loadedStudentRef = useRef(null);
         useEffect(() => {
             if (!selectedStudent) return;
+            abcHydratedRef.current = false;
+            const isStudentChange = loadedStudentRef.current !== null && loadedStudentRef.current !== selectedStudent;
+            loadedStudentRef.current = selectedStudent;
+            if (isStudentChange) {
+                // Clear the previous student's in-memory data up front so the
+                // load below repopulates fresh (and, if the new student has no
+                // saved data, nothing stale lingers to be re-saved).
+                setAbcEntries([]);
+                setObservationSessions([]);
+                setAiAnalysis(null);
+            }
             const loadData = async () => {
                 // Try cloud first (once per student)
                 if (cloudSync.userId && !isCanvasEnv && !cloudLoadAttempted.current[selectedStudent]) {
@@ -24933,14 +25124,18 @@ Use professional language. Refer to "the student" (not the codename).`;
                     const idKey = studentKey('behaviorLens_abc_');
                     const legacyKey = `behaviorLens_abc_${selectedStudent}`;
                     const saved = localStorage.getItem(idKey) || (idKey !== legacyKey ? localStorage.getItem(legacyKey) : null);
-                    if (saved && abcEntries.length === 0) {
+                    // On a student change, load unconditionally (the length
+                    // guard reads a stale closure of the previous student's
+                    // entries). Otherwise keep the "don't clobber in-memory
+                    // work" guard for cloud-auth-driven effect re-runs.
+                    if (saved && (isStudentChange || abcEntries.length === 0)) {
                         setAbcEntries(JSON.parse(saved));
                         debugLog('BehaviorLens: loaded legacy ABC data from localStorage');
                     }
                     const idObsKey = studentKey('behaviorLens_obs_');
                     const legacyObsKey = `behaviorLens_obs_${selectedStudent}`;
                     const savedObs = localStorage.getItem(idObsKey) || (idObsKey !== legacyObsKey ? localStorage.getItem(legacyObsKey) : null);
-                    if (savedObs && observationSessions.length === 0) {
+                    if (savedObs && (isStudentChange || observationSessions.length === 0)) {
                         setObservationSessions(JSON.parse(savedObs));
                         debugLog('BehaviorLens: loaded legacy obs data from localStorage');
                     }
@@ -24948,13 +25143,13 @@ Use professional language. Refer to "the student" (not the codename).`;
                     debugLog('localStorage unavailable — use workspace JSON save/load instead');
                 }
             };
-            loadData();
+            loadData().finally(() => { abcHydratedRef.current = true; });
         }, [selectedStudent, cloudSync.userId, activeStudentId]);
 
         // Auto-save ABC entries (localStorage + cloud write-through)
         const cloudSaveTimer = useRef(null);
         useEffect(() => {
-            if (!selectedStudent || abcEntries.length === 0) return;
+            if (!selectedStudent || !abcHydratedRef.current) return;
             try {
                 localStorage.setItem(studentKey('behaviorLens_abc_'), JSON.stringify(abcEntries));
             } catch (e) {
@@ -24982,7 +25177,7 @@ Use professional language. Refer to "the student" (not the codename).`;
 
         // Auto-save observation sessions (localStorage + cloud write-through)
         useEffect(() => {
-            if (!selectedStudent || observationSessions.length === 0) return;
+            if (!selectedStudent || !abcHydratedRef.current) return;
             try {
                 localStorage.setItem(studentKey('behaviorLens_obs_'), JSON.stringify(observationSessions));
             } catch (e) {
@@ -26387,6 +26582,9 @@ Analyze this data and return ONLY valid JSON:
                     ];
 
                     const handleToolOpen = (toolId) => {
+                        // Remember the launching control so Escape/close can
+                        // return focus to it (WCAG 2.4.3).
+                        if (['observation', 'frequency', 'interval', 'choice'].includes(toolId)) alloSaveFocus();
                         if (toolId === 'observation') setShowLiveObs(true);
                         else if (toolId === 'analysis') handleAiAnalyze();
                         else if (toolId === 'frequency') setShowFreqCounter(true);
@@ -26471,20 +26669,20 @@ Analyze this data and return ONLY valid JSON:
                                     '80+ clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:'
                                 ),
                                 h('div', { className: 'flex flex-wrap gap-3 mb-4' },
-                                    h('button', { "aria-label": "Dismiss Welcome",
+                                    h('button', { "aria-label": "Start as Teacher — open ABC Data",
                                         onClick: () => { dismissWelcome(); handleToolOpen('abc'); },
                                         className: 'flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95'
                                     }, h('span', { className: 'text-lg' }, '👩‍🏫'), h('div', { className: 'text-start' }, h('div', { className: 'text-xs font-black' }, tt('behavior_lens.ui.teacher', 'Teacher')), h('div', { className: 'text-[11px] text-indigo-200 font-medium' }, tt('behavior_lens.ui.start_with_abc_data', 'Start with ABC Data')))),
-                                    h('button', { "aria-label": "Dismiss Welcome",
+                                    h('button', { "aria-label": "Start as Parent — open Home Behavior Log",
                                         onClick: () => { dismissWelcome(); handleToolOpen('homelog'); },
                                         className: 'flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95'
                                     }, h('span', { className: 'text-lg' }, '👪'), h('div', { className: 'text-start' }, h('div', { className: 'text-xs font-black' }, tt('behavior_lens.ui.parent', 'Parent')), h('div', { className: 'text-[11px] text-indigo-200 font-medium' }, tt('behavior_lens.ui.home_behavior_log', 'Home Behavior Log')))),
-                                    h('button', { "aria-label": "Dismiss Welcome",
+                                    h('button', { "aria-label": "Start as BCBA or Specialist — open ABA Graph Engine",
                                         onClick: () => { dismissWelcome(); handleToolOpen('abagraph'); },
                                         className: 'flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95'
                                     }, h('span', { className: 'text-lg' }, '📊'), h('div', { className: 'text-start' }, h('div', { className: 'text-xs font-black' }, tt('behavior_lens.ui.bcba_specialist', 'BCBA / Specialist')), h('div', { className: 'text-[11px] text-indigo-200 font-medium' }, tt('behavior_lens.ui.aba_graph_engine', 'ABA Graph Engine'))))
                                 ),
-                                h('button', { "aria-label": "Dismiss Welcome",
+                                h('button', { "aria-label": "Explore the PD Learning Path",
                                     onClick: () => { dismissWelcome(); handleToolOpen('pdpath'); },
                                     className: 'flex items-center gap-1.5 text-[11px] text-indigo-200 hover:text-white transition-colors font-medium'
                                 }, h('span', null, '🎓'), tt('behavior_lens.ui.or_explore_the_pd_learning_path', 'Or explore the PD Learning Path →'))
@@ -26493,7 +26691,7 @@ Analyze this data and return ONLY valid JSON:
                             h('div', { className: 'mt-4 pt-4 border-t border-white/20' },
                                 h('div', { className: 'text-[11px] font-black text-indigo-200 uppercase tracking-wider mb-3' }, '🚀 Quick-Start Pathways'),
                                 h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
-                                    h('button', { "aria-label": "Dismiss Welcome",
+                                    h('button', { "aria-label": "5-minute Quick Start — load sandbox data",
                                         onClick: () => { dismissWelcome(); loadDemoStudent(); },
                                         className: 'group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all'
                                     },
@@ -26503,7 +26701,7 @@ Analyze this data and return ONLY valid JSON:
                                         ),
                                         h('p', { className: 'text-[11px] text-indigo-200' }, 'Load sandbox data and explore ABC, AI Analysis, and Trend Dashboard instantly')
                                     ),
-                                    h('button', { "aria-label": "Dismiss Welcome",
+                                    h('button', { "aria-label": "Open the Guided FBA Workflow",
                                         onClick: () => { dismissWelcome(); handleToolOpen('fbaworkflow'); },
                                         className: 'group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all'
                                     },
@@ -26513,7 +26711,7 @@ Analyze this data and return ONLY valid JSON:
                                         ),
                                         h('p', { className: 'text-[11px] text-indigo-200' }, 'Step-by-step FBA process with scenario practice and AI coaching')
                                     ),
-                                    h('button', { "aria-label": "Dismiss Welcome",
+                                    h('button', { "aria-label": "Open the Skill Tracker Journey",
                                         onClick: () => { dismissWelcome(); handleToolOpen('skilltracker'); },
                                         className: 'group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all'
                                     },
@@ -26571,7 +26769,7 @@ Analyze this data and return ONLY valid JSON:
                                     { id: 'scdmanager', icon: '🔬', label: tt('behavior_lens.hub.scdmanager_title', 'SCD Manager'), shortLabel: 'SCD Manager' },
                                     { id: 'effectsize', icon: '📐', label: tt('behavior_lens.hub.effectsize_title', 'Effect Size Calculator'), shortLabel: 'Effect Size' },
                                     { id: 'hypothesis', icon: '🔗', label: tt('behavior_lens.hub.hypothesis_title', 'Hypothesis Diagram'), shortLabel: 'Hypothesis' },
-                                ].map(q => h('button', { "aria-label": "Tool Open",
+                                ].map(q => h('button', { "aria-label": 'Open ' + q.label,
                                     key: 'ql-' + q.id,
                                     onClick: () => handleToolOpen(q.id),
                                     disabled: !q.isWizard && !selectedStudent && !['abagraph', 'scdmanager', 'effectsize'].includes(q.id),
@@ -26585,7 +26783,7 @@ Analyze this data and return ONLY valid JSON:
                             h('button', { onClick: handleSaveWorkspace,
                                 className: `flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataChangedSinceSave ? 'bg-amber-50 border-2 border-amber-600 text-amber-700 hover:bg-amber-100 animate-pulse' : 'bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100'}`
                             }, dataChangedSinceSave ? '🔴 ' : '💾 ', tt('behavior_lens.hub.save_workspace', 'Save Workspace')),
-                            h('button', { "aria-label": "Tool Open",
+                            h('button', { "aria-label": "Load workspace from file",
                                 onClick: () => fileInputRef.current?.click(),
                                 className: 'flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all'
                             }, '📂 ', tt('behavior_lens.hub.load_workspace', 'Load Workspace')),
@@ -26597,7 +26795,7 @@ Analyze this data and return ONLY valid JSON:
                         favTools.length > 0 && h('div', { className: 'bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl border border-yellow-200 p-3' },
                             h('div', { className: 'text-[11px] font-black text-yellow-600 uppercase tracking-wider mb-2' }, '⭐ ', tt('behavior_lens.hub.favorites', 'Favorites')),
                             h('div', { className: 'flex flex-wrap gap-2' },
-                                favTools.map(tool => h('button', { "aria-label": "Tool Open",
+                                favTools.map(tool => h('button', { "aria-label": 'Open ' + tool.title,
                                     key: 'fav-' + tool.id,
                                     onClick: () => handleToolOpen(tool.id),
                                     className: `flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg border border-yellow-600 text-xs font-bold text-slate-700 hover:bg-yellow-100 transition-all shadow-sm`
@@ -26666,7 +26864,7 @@ Analyze this data and return ONLY valid JSON:
                         recs.length > 0 && h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-3' },
                             h('div', { className: 'text-[11px] font-black text-emerald-600 uppercase tracking-wider mb-2' }, '💡 ', tt('behavior_lens.hub.recommended_next', 'Recommended Next Steps')),
                             h('div', { className: 'flex flex-wrap gap-2' },
-                                recs.slice(0, 3).map((r, i) => h('button', { "aria-label": "Tool Open",
+                                recs.slice(0, 3).map((r, i) => h('button', { "aria-label": 'Open ' + r.label,
                                     key: 'rec-' + i,
                                     onClick: () => handleToolOpen(r.target),
                                     className: 'flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg border border-emerald-600 text-xs font-medium text-emerald-700 hover:bg-emerald-100 transition-all shadow-sm'
@@ -26713,7 +26911,7 @@ Analyze this data and return ONLY valid JSON:
                             h('button', { onClick: handleSaveWorkspace,
                                 className: `flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${dataChangedSinceSave ? 'bg-amber-50 border-2 border-amber-600 text-amber-700 hover:bg-amber-100 animate-pulse' : 'bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100'}`
                             }, dataChangedSinceSave ? '🔴 ' : '💾 ', tt('behavior_lens.hub.save_workspace', 'Save Workspace')),
-                            h('button', { "aria-label": "Toggle ai analysis",
+                            h('button', { "aria-label": "Load workspace from file",
                                 onClick: () => fileInputRef.current?.click(),
                                 className: 'flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all'
                             }, '📂 ', tt('behavior_lens.hub.load_workspace', 'Load Workspace')),
@@ -26727,9 +26925,9 @@ Analyze this data and return ONLY valid JSON:
                 aiAnalysis && h('div', { className: 'mt-6 bg-white rounded-xl border border-purple-200 p-5 shadow-sm animate-in slide-in-from-bottom-4 duration-300' },
                     h('div', { className: 'flex items-center justify-between mb-4' },
                         h('h3', { className: 'text-lg font-black text-slate-800 flex items-center gap-2' }, '🧠 ', tt('behavior_lens.analysis.title_v2', 'AI-Assisted Analysis')),
-                        h('button', { "aria-label": "Toggle ai analysis",
+                        h('button', { "aria-label": "Dismiss AI analysis",
                             onClick: () => setAiAnalysis(null),
-                            className: 'text-xs text-slate-600 hover:text-slate-600 p-1'
+                            className: 'text-xs text-slate-600 hover:text-slate-800 p-1'
                         }, h(X, { size: 14 }))
                     ),
                     // Small-N warning: BCBA conventions want ~10+ ABC entries before
@@ -27461,7 +27659,7 @@ Analyze this data and return ONLY valid JSON:
                     t,
                     addToast
                 }),
-                activePanel === 'ioacalc' && h(IOACalculator, { studentName: selectedStudent, abcEntries: abcEntries, callGemini: callGeminiWithContext, callGeminiVision: callGeminiVision, t: t, addToast: addToast }),
+                activePanel === 'ioacalc' && h(IOACalculator, { studentName: selectedStudent, abcEntries: abcEntries, callGemini: callGeminiWithContext, callGeminiVision: callGeminiVisionGuarded, t: t, addToast: addToast }),
                 activePanel === 'prefassess' && h(PreferenceAssessmentWizard, {
                     studentName: selectedStudent,
                     callGemini: callGeminiWithContext,
@@ -27506,7 +27704,6 @@ Analyze this data and return ONLY valid JSON:
                     abcEntries, observationSessions, studentProfile,
                     studentName: selectedStudent, callGemini: callGeminiWithContext, t, addToast
                 }),
-                activePanel === 'ioacalc' && h(IOACalculator, { callGemini: callGeminiWithContext, callGeminiVision: callGeminiVision, t, addToast }),
                 activePanel === 'taskanalysis' && h(TaskAnalysisTool, { studentName: selectedStudent, callGemini: callGeminiWithContext, t, addToast }),
                 activePanel === 'dtt' && h(DTTDataSheet, { studentName: selectedStudent, t, addToast }),
                 activePanel === 'prefassess' && h(PreferenceAssessment, { studentName: selectedStudent, t, addToast }),

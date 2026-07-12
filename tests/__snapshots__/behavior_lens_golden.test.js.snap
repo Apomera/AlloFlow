@@ -96,21 +96,21 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: defaul
 </div>
 <p class="text-sm text-indigo-100 mb-4 max-w-lg">80+ clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
 <div class="flex flex-wrap gap-3 mb-4">
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as Teacher — open ABC Data" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👩‍🏫</span>
 <div class="text-start">
 <div class="text-xs font-black">Teacher</div>
 <div class="text-[11px] text-indigo-200 font-medium">Start with ABC Data</div>
 </div>
 </button>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as Parent — open Home Behavior Log" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👪</span>
 <div class="text-start">
 <div class="text-xs font-black">Parent</div>
 <div class="text-[11px] text-indigo-200 font-medium">Home Behavior Log</div>
 </div>
 </button>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as BCBA or Specialist — open ABA Graph Engine" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">📊</span>
 <div class="text-start">
 <div class="text-xs font-black">BCBA / Specialist</div>
@@ -118,27 +118,27 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: defaul
 </div>
 </button>
 </div>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-1.5 text-[11px] text-indigo-200 hover:text-white transition-colors font-medium">
+<button aria-label="Explore the PD Learning Path" class="flex items-center gap-1.5 text-[11px] text-indigo-200 hover:text-white transition-colors font-medium">
 <span>🎓</span>Or explore the PD Learning Path →</button>
 </div>
 <div class="mt-4 pt-4 border-t border-white/20">
 <div class="text-[11px] font-black text-indigo-200 uppercase tracking-wider mb-3">🚀 Quick-Start Pathways</div>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="5-minute Quick Start — load sandbox data" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">⚡</span>
 <span class="text-xs font-black text-white">5-Min Quick Start</span>
 </div>
 <p class="text-[11px] text-indigo-200">Load sandbox data and explore ABC, AI Analysis, and Trend Dashboard instantly</p>
 </button>
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="Open the Guided FBA Workflow" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">🧭</span>
 <span class="text-xs font-black text-white">Guided FBA Workflow</span>
 </div>
 <p class="text-[11px] text-indigo-200">Step-by-step FBA process with scenario practice and AI coaching</p>
 </button>
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="Open the Skill Tracker Journey" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">🏅</span>
 <span class="text-xs font-black text-white">Skill Tracker Journey</span>
@@ -179,23 +179,23 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: defaul
 <span class="text-indigo-200 text-[11px] font-medium">Core clinical tools — one tap access</span>
 </div>
 <div class="flex flex-wrap gap-2">
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer bg-indigo-500/80 border-indigo-400 shadow-lg ring-2 ring-indigo-400/50">
+<button aria-label="Open Tool Wizard" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer bg-indigo-500/80 border-indigo-400 shadow-lg ring-2 ring-indigo-400/50">
 <span class="text-base">🧭</span>Tool Wizard</button>
-<button aria-label="Tool Open" disabled="" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 opacity-40 cursor-not-allowed ">
+<button aria-label="Open ABC Data Collection" disabled="" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 opacity-40 cursor-not-allowed ">
 <span class="text-base">📝</span>ABC Data</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open ABA Graph Engine" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">📊</span>JABA Graphs</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open SCD Manager" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">🔬</span>SCD Manager</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open Effect Size Calculator" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">📐</span>Effect Size</button>
-<button aria-label="Tool Open" disabled="" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 opacity-40 cursor-not-allowed ">
+<button aria-label="Open Hypothesis Diagram" disabled="" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 opacity-40 cursor-not-allowed ">
 <span class="text-base">🔗</span>Hypothesis</button>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
+<button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
 <input type="file" accept=".json" class="hidden"/>
 </div>
 <div aria-expanded="false" class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
@@ -1088,7 +1088,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: defaul
 </div>
 <div class="flex flex-wrap items-center gap-2 pt-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
-<button aria-label="Toggle ai analysis" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
+<button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
 <input type="file" accept=".json" class="hidden"/>
 <input type="file" accept=".json" multiple="" class="hidden"/>
 </div>
@@ -1198,21 +1198,21 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: standa
 </div>
 <p class="text-sm text-indigo-100 mb-4 max-w-lg">80+ clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
 <div class="flex flex-wrap gap-3 mb-4">
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as Teacher — open ABC Data" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👩‍🏫</span>
 <div class="text-start">
 <div class="text-xs font-black">Teacher</div>
 <div class="text-[11px] text-indigo-200 font-medium">Start with ABC Data</div>
 </div>
 </button>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as Parent — open Home Behavior Log" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👪</span>
 <div class="text-start">
 <div class="text-xs font-black">Parent</div>
 <div class="text-[11px] text-indigo-200 font-medium">Home Behavior Log</div>
 </div>
 </button>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as BCBA or Specialist — open ABA Graph Engine" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">📊</span>
 <div class="text-start">
 <div class="text-xs font-black">BCBA / Specialist</div>
@@ -1220,27 +1220,27 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: standa
 </div>
 </button>
 </div>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-1.5 text-[11px] text-indigo-200 hover:text-white transition-colors font-medium">
+<button aria-label="Explore the PD Learning Path" class="flex items-center gap-1.5 text-[11px] text-indigo-200 hover:text-white transition-colors font-medium">
 <span>🎓</span>Or explore the PD Learning Path →</button>
 </div>
 <div class="mt-4 pt-4 border-t border-white/20">
 <div class="text-[11px] font-black text-indigo-200 uppercase tracking-wider mb-3">🚀 Quick-Start Pathways</div>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="5-minute Quick Start — load sandbox data" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">⚡</span>
 <span class="text-xs font-black text-white">5-Min Quick Start</span>
 </div>
 <p class="text-[11px] text-indigo-200">Load sandbox data and explore ABC, AI Analysis, and Trend Dashboard instantly</p>
 </button>
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="Open the Guided FBA Workflow" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">🧭</span>
 <span class="text-xs font-black text-white">Guided FBA Workflow</span>
 </div>
 <p class="text-[11px] text-indigo-200">Step-by-step FBA process with scenario practice and AI coaching</p>
 </button>
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="Open the Skill Tracker Journey" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">🏅</span>
 <span class="text-xs font-black text-white">Skill Tracker Journey</span>
@@ -1281,23 +1281,23 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: standa
 <span class="text-indigo-200 text-[11px] font-medium">Core clinical tools — one tap access</span>
 </div>
 <div class="flex flex-wrap gap-2">
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer bg-indigo-500/80 border-indigo-400 shadow-lg ring-2 ring-indigo-400/50">
+<button aria-label="Open Tool Wizard" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer bg-indigo-500/80 border-indigo-400 shadow-lg ring-2 ring-indigo-400/50">
 <span class="text-base">🧭</span>Tool Wizard</button>
-<button aria-label="Tool Open" disabled="" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 opacity-40 cursor-not-allowed ">
+<button aria-label="Open ABC Data Collection" disabled="" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 opacity-40 cursor-not-allowed ">
 <span class="text-base">📝</span>ABC Data</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open ABA Graph Engine" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">📊</span>JABA Graphs</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open SCD Manager" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">🔬</span>SCD Manager</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open Effect Size Calculator" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">📐</span>Effect Size</button>
-<button aria-label="Tool Open" disabled="" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 opacity-40 cursor-not-allowed ">
+<button aria-label="Open Hypothesis Diagram" disabled="" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 opacity-40 cursor-not-allowed ">
 <span class="text-base">🔗</span>Hypothesis</button>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
+<button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
 <input type="file" accept=".json" class="hidden"/>
 </div>
 <div aria-expanded="false" class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
@@ -2190,7 +2190,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: standa
 </div>
 <div class="flex flex-wrap items-center gap-2 pt-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
-<button aria-label="Toggle ai analysis" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
+<button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
 <input type="file" accept=".json" class="hidden"/>
 <input type="file" accept=".json" multiple="" class="hidden"/>
 </div>
@@ -2300,21 +2300,21 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 </div>
 <p class="text-sm text-indigo-100 mb-4 max-w-lg">80+ clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
 <div class="flex flex-wrap gap-3 mb-4">
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as Teacher — open ABC Data" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👩‍🏫</span>
 <div class="text-start">
 <div class="text-xs font-black">Teacher</div>
 <div class="text-[11px] text-indigo-200 font-medium">Start with ABC Data</div>
 </div>
 </button>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as Parent — open Home Behavior Log" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👪</span>
 <div class="text-start">
 <div class="text-xs font-black">Parent</div>
 <div class="text-[11px] text-indigo-200 font-medium">Home Behavior Log</div>
 </div>
 </button>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as BCBA or Specialist — open ABA Graph Engine" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">📊</span>
 <div class="text-start">
 <div class="text-xs font-black">BCBA / Specialist</div>
@@ -2322,27 +2322,27 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 </div>
 </button>
 </div>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-1.5 text-[11px] text-indigo-200 hover:text-white transition-colors font-medium">
+<button aria-label="Explore the PD Learning Path" class="flex items-center gap-1.5 text-[11px] text-indigo-200 hover:text-white transition-colors font-medium">
 <span>🎓</span>Or explore the PD Learning Path →</button>
 </div>
 <div class="mt-4 pt-4 border-t border-white/20">
 <div class="text-[11px] font-black text-indigo-200 uppercase tracking-wider mb-3">🚀 Quick-Start Pathways</div>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="5-minute Quick Start — load sandbox data" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">⚡</span>
 <span class="text-xs font-black text-white">5-Min Quick Start</span>
 </div>
 <p class="text-[11px] text-indigo-200">Load sandbox data and explore ABC, AI Analysis, and Trend Dashboard instantly</p>
 </button>
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="Open the Guided FBA Workflow" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">🧭</span>
 <span class="text-xs font-black text-white">Guided FBA Workflow</span>
 </div>
 <p class="text-[11px] text-indigo-200">Step-by-step FBA process with scenario practice and AI coaching</p>
 </button>
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="Open the Skill Tracker Journey" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">🏅</span>
 <span class="text-xs font-black text-white">Skill Tracker Journey</span>
@@ -2383,23 +2383,23 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 <span class="text-indigo-200 text-[11px] font-medium">Core clinical tools — one tap access</span>
 </div>
 <div class="flex flex-wrap gap-2">
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer bg-indigo-500/80 border-indigo-400 shadow-lg ring-2 ring-indigo-400/50">
+<button aria-label="Open Tool Wizard" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer bg-indigo-500/80 border-indigo-400 shadow-lg ring-2 ring-indigo-400/50">
 <span class="text-base">🧭</span>Tool Wizard</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open ABC Data Collection" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">📝</span>ABC Data</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open ABA Graph Engine" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">📊</span>JABA Graphs</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open SCD Manager" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">🔬</span>SCD Manager</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open Effect Size Calculator" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">📐</span>Effect Size</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open Hypothesis Diagram" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">🔗</span>Hypothesis</button>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
+<button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
 <input type="file" accept=".json" class="hidden"/>
 </div>
 <div aria-expanded="false" class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
@@ -3316,7 +3316,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 </div>
 <div class="flex flex-wrap items-center gap-2 pt-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
-<button aria-label="Toggle ai analysis" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
+<button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
 <input type="file" accept=".json" class="hidden"/>
 <input type="file" accept=".json" multiple="" class="hidden"/>
 </div>
@@ -3422,21 +3422,21 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 </div>
 <p class="text-sm text-indigo-100 mb-4 max-w-lg">80+ clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
 <div class="flex flex-wrap gap-3 mb-4">
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as Teacher — open ABC Data" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👩‍🏫</span>
 <div class="text-start">
 <div class="text-xs font-black">Teacher</div>
 <div class="text-[11px] text-indigo-200 font-medium">Start with ABC Data</div>
 </div>
 </button>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as Parent — open Home Behavior Log" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👪</span>
 <div class="text-start">
 <div class="text-xs font-black">Parent</div>
 <div class="text-[11px] text-indigo-200 font-medium">Home Behavior Log</div>
 </div>
 </button>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as BCBA or Specialist — open ABA Graph Engine" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">📊</span>
 <div class="text-start">
 <div class="text-xs font-black">BCBA / Specialist</div>
@@ -3444,27 +3444,27 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 </div>
 </button>
 </div>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-1.5 text-[11px] text-indigo-200 hover:text-white transition-colors font-medium">
+<button aria-label="Explore the PD Learning Path" class="flex items-center gap-1.5 text-[11px] text-indigo-200 hover:text-white transition-colors font-medium">
 <span>🎓</span>Or explore the PD Learning Path →</button>
 </div>
 <div class="mt-4 pt-4 border-t border-white/20">
 <div class="text-[11px] font-black text-indigo-200 uppercase tracking-wider mb-3">🚀 Quick-Start Pathways</div>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="5-minute Quick Start — load sandbox data" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">⚡</span>
 <span class="text-xs font-black text-white">5-Min Quick Start</span>
 </div>
 <p class="text-[11px] text-indigo-200">Load sandbox data and explore ABC, AI Analysis, and Trend Dashboard instantly</p>
 </button>
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="Open the Guided FBA Workflow" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">🧭</span>
 <span class="text-xs font-black text-white">Guided FBA Workflow</span>
 </div>
 <p class="text-[11px] text-indigo-200">Step-by-step FBA process with scenario practice and AI coaching</p>
 </button>
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="Open the Skill Tracker Journey" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">🏅</span>
 <span class="text-xs font-black text-white">Skill Tracker Journey</span>
@@ -3505,23 +3505,23 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 <span class="text-indigo-200 text-[11px] font-medium">Core clinical tools — one tap access</span>
 </div>
 <div class="flex flex-wrap gap-2">
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer bg-indigo-500/80 border-indigo-400 shadow-lg ring-2 ring-indigo-400/50">
+<button aria-label="Open Tool Wizard" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer bg-indigo-500/80 border-indigo-400 shadow-lg ring-2 ring-indigo-400/50">
 <span class="text-base">🧭</span>Tool Wizard</button>
-<button aria-label="Tool Open" disabled="" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 opacity-40 cursor-not-allowed ">
+<button aria-label="Open ABC Data Collection" disabled="" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 opacity-40 cursor-not-allowed ">
 <span class="text-base">📝</span>ABC Data</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open ABA Graph Engine" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">📊</span>JABA Graphs</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open SCD Manager" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">🔬</span>SCD Manager</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open Effect Size Calculator" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">📐</span>Effect Size</button>
-<button aria-label="Tool Open" disabled="" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 opacity-40 cursor-not-allowed ">
+<button aria-label="Open Hypothesis Diagram" disabled="" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 opacity-40 cursor-not-allowed ">
 <span class="text-base">🔗</span>Hypothesis</button>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
+<button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
 <input type="file" accept=".json" class="hidden"/>
 </div>
 <div aria-expanded="false" class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
@@ -4414,7 +4414,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: teache
 </div>
 <div class="flex flex-wrap items-center gap-2 pt-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
-<button aria-label="Toggle ai analysis" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
+<button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
 <input type="file" accept=".json" class="hidden"/>
 <input type="file" accept=".json" multiple="" class="hidden"/>
 </div>
@@ -4524,21 +4524,21 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with d
 </div>
 <p class="text-sm text-indigo-100 mb-4 max-w-lg">80+ clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
 <div class="flex flex-wrap gap-3 mb-4">
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as Teacher — open ABC Data" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👩‍🏫</span>
 <div class="text-start">
 <div class="text-xs font-black">Teacher</div>
 <div class="text-[11px] text-indigo-200 font-medium">Start with ABC Data</div>
 </div>
 </button>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as Parent — open Home Behavior Log" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👪</span>
 <div class="text-start">
 <div class="text-xs font-black">Parent</div>
 <div class="text-[11px] text-indigo-200 font-medium">Home Behavior Log</div>
 </div>
 </button>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as BCBA or Specialist — open ABA Graph Engine" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">📊</span>
 <div class="text-start">
 <div class="text-xs font-black">BCBA / Specialist</div>
@@ -4546,27 +4546,27 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with d
 </div>
 </button>
 </div>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-1.5 text-[11px] text-indigo-200 hover:text-white transition-colors font-medium">
+<button aria-label="Explore the PD Learning Path" class="flex items-center gap-1.5 text-[11px] text-indigo-200 hover:text-white transition-colors font-medium">
 <span>🎓</span>Or explore the PD Learning Path →</button>
 </div>
 <div class="mt-4 pt-4 border-t border-white/20">
 <div class="text-[11px] font-black text-indigo-200 uppercase tracking-wider mb-3">🚀 Quick-Start Pathways</div>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="5-minute Quick Start — load sandbox data" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">⚡</span>
 <span class="text-xs font-black text-white">5-Min Quick Start</span>
 </div>
 <p class="text-[11px] text-indigo-200">Load sandbox data and explore ABC, AI Analysis, and Trend Dashboard instantly</p>
 </button>
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="Open the Guided FBA Workflow" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">🧭</span>
 <span class="text-xs font-black text-white">Guided FBA Workflow</span>
 </div>
 <p class="text-[11px] text-indigo-200">Step-by-step FBA process with scenario practice and AI coaching</p>
 </button>
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="Open the Skill Tracker Journey" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">🏅</span>
 <span class="text-xs font-black text-white">Skill Tracker Journey</span>
@@ -4607,23 +4607,23 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with d
 <span class="text-indigo-200 text-[11px] font-medium">Core clinical tools — one tap access</span>
 </div>
 <div class="flex flex-wrap gap-2">
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer bg-indigo-500/80 border-indigo-400 shadow-lg ring-2 ring-indigo-400/50">
+<button aria-label="Open Tool Wizard" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer bg-indigo-500/80 border-indigo-400 shadow-lg ring-2 ring-indigo-400/50">
 <span class="text-base">🧭</span>Tool Wizard</button>
-<button aria-label="Tool Open" disabled="" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 opacity-40 cursor-not-allowed ">
+<button aria-label="Open ABC Data Collection" disabled="" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 opacity-40 cursor-not-allowed ">
 <span class="text-base">📝</span>ABC Data</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open ABA Graph Engine" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">📊</span>JABA Graphs</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open SCD Manager" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">🔬</span>SCD Manager</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open Effect Size Calculator" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">📐</span>Effect Size</button>
-<button aria-label="Tool Open" disabled="" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 opacity-40 cursor-not-allowed ">
+<button aria-label="Open Hypothesis Diagram" disabled="" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 opacity-40 cursor-not-allowed ">
 <span class="text-base">🔗</span>Hypothesis</button>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
+<button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
 <input type="file" accept=".json" class="hidden"/>
 </div>
 <div aria-expanded="false" class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
@@ -5516,7 +5516,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with d
 </div>
 <div class="flex flex-wrap items-center gap-2 pt-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
-<button aria-label="Toggle ai analysis" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
+<button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
 <input type="file" accept=".json" class="hidden"/>
 <input type="file" accept=".json" multiple="" class="hidden"/>
 </div>
@@ -5626,21 +5626,21 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with s
 </div>
 <p class="text-sm text-indigo-100 mb-4 max-w-lg">80+ clinical tools for behavior analysis, data collection, and intervention planning. Choose your role to get started:</p>
 <div class="flex flex-wrap gap-3 mb-4">
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as Teacher — open ABC Data" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👩‍🏫</span>
 <div class="text-start">
 <div class="text-xs font-black">Teacher</div>
 <div class="text-[11px] text-indigo-200 font-medium">Start with ABC Data</div>
 </div>
 </button>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as Parent — open Home Behavior Log" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">👪</span>
 <div class="text-start">
 <div class="text-xs font-black">Parent</div>
 <div class="text-[11px] text-indigo-200 font-medium">Home Behavior Log</div>
 </div>
 </button>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
+<button aria-label="Start as BCBA or Specialist — open ABA Graph Engine" class="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30 text-sm font-bold hover:bg-white/30 transition-all hover:scale-105 active:scale-95">
 <span class="text-lg">📊</span>
 <div class="text-start">
 <div class="text-xs font-black">BCBA / Specialist</div>
@@ -5648,27 +5648,27 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with s
 </div>
 </button>
 </div>
-<button aria-label="Dismiss Welcome" class="flex items-center gap-1.5 text-[11px] text-indigo-200 hover:text-white transition-colors font-medium">
+<button aria-label="Explore the PD Learning Path" class="flex items-center gap-1.5 text-[11px] text-indigo-200 hover:text-white transition-colors font-medium">
 <span>🎓</span>Or explore the PD Learning Path →</button>
 </div>
 <div class="mt-4 pt-4 border-t border-white/20">
 <div class="text-[11px] font-black text-indigo-200 uppercase tracking-wider mb-3">🚀 Quick-Start Pathways</div>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="5-minute Quick Start — load sandbox data" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">⚡</span>
 <span class="text-xs font-black text-white">5-Min Quick Start</span>
 </div>
 <p class="text-[11px] text-indigo-200">Load sandbox data and explore ABC, AI Analysis, and Trend Dashboard instantly</p>
 </button>
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="Open the Guided FBA Workflow" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">🧭</span>
 <span class="text-xs font-black text-white">Guided FBA Workflow</span>
 </div>
 <p class="text-[11px] text-indigo-200">Step-by-step FBA process with scenario practice and AI coaching</p>
 </button>
-<button aria-label="Dismiss Welcome" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
+<button aria-label="Open the Skill Tracker Journey" class="group p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-start hover:bg-white/20 transition-all">
 <div class="flex items-center gap-2 mb-1">
 <span class="text-lg">🏅</span>
 <span class="text-xs font-black text-white">Skill Tracker Journey</span>
@@ -5709,23 +5709,23 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with s
 <span class="text-indigo-200 text-[11px] font-medium">Core clinical tools — one tap access</span>
 </div>
 <div class="flex flex-wrap gap-2">
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer bg-indigo-500/80 border-indigo-400 shadow-lg ring-2 ring-indigo-400/50">
+<button aria-label="Open Tool Wizard" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer bg-indigo-500/80 border-indigo-400 shadow-lg ring-2 ring-indigo-400/50">
 <span class="text-base">🧭</span>Tool Wizard</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open ABC Data Collection" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">📝</span>ABC Data</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open ABA Graph Engine" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">📊</span>JABA Graphs</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open SCD Manager" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">🔬</span>SCD Manager</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open Effect Size Calculator" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">📐</span>Effect Size</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
+<button aria-label="Open Hypothesis Diagram" class="flex items-center gap-1.5 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 text-white text-xs font-bold hover:bg-white/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ">
 <span class="text-base">🔗</span>Hypothesis</button>
 </div>
 </div>
 <div class="flex flex-wrap items-center gap-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
-<button aria-label="Tool Open" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
+<button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
 <input type="file" accept=".json" class="hidden"/>
 </div>
 <div aria-expanded="false" class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 overflow-hidden transition-all duration-300">
@@ -6642,7 +6642,7 @@ exports[`layer 1 — Hub render across prop matrix > renders identically: with s
 </div>
 <div class="flex flex-wrap items-center gap-2 pt-2">
 <button class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-50 border border-indigo-600 text-indigo-700 hover:bg-indigo-100">💾 Save Workspace</button>
-<button aria-label="Toggle ai analysis" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
+<button aria-label="Load workspace from file" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 border border-emerald-600 rounded-xl text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">📂 Load Workspace</button>
 <input type="file" accept=".json" class="hidden"/>
 <input type="file" accept=".json" multiple="" class="hidden"/>
 </div>
