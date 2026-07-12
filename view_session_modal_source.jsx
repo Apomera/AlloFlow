@@ -66,6 +66,26 @@ function SessionModal({
   const isLocalOnly = sessionData?.isLocalOnly === true || sessionData?.transport === 'local-preview';
   const [liveQrSvg, setLiveQrSvg] = React.useState('');
   const [liveQrError, setLiveQrError] = React.useState(false);
+  const dialogRef = React.useRef(null);
+  React.useEffect(function () {
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    const previousFocus = document.activeElement;
+    const getFocusable = function () { return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')); };
+    const first = getFocusable()[0];
+    (first || dialog).focus();
+    const onKeyDown = function (event) {
+      if (event.key === 'Escape') { event.preventDefault(); handleSetShowSessionModalToFalse(); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+      const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
+      else if (!event.shiftKey && document.activeElement === lastItem) { event.preventDefault(); firstItem.focus(); }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return function () { dialog.removeEventListener('keydown', onKeyDown); if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus(); };
+  }, [handleSetShowSessionModalToFalse]);
 
   const liveJoinUrl = React.useMemo(() => {
     if (mailboxJoinUrl) return mailboxJoinUrl;
@@ -125,8 +145,8 @@ function SessionModal({
   }, [liveJoinUrl]);
 
   return (
-    <div className="fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowSessionModalToFalse}>
-      <div className="bg-white rounded-2xl shadow-2xl p-5 sm:p-8 text-center max-w-md w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="alloflow-session-modal-title">
+    <div className="fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200" role="presentation" onClick={handleSetShowSessionModalToFalse}>
+      <div ref={dialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-5 sm:p-8 text-center max-w-md w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200 focus:outline-none" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="alloflow-session-modal-title">
         <button onClick={handleSetShowSessionModalToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close')}><X size={24}/></button>
         <div className="flex justify-center mb-4">
           <div className="bg-green-100 p-4 rounded-full shadow-inner">

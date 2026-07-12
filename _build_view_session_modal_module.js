@@ -10,6 +10,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_session_modal_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_session_modal_module.js');
+const PUBLIC_OUTPUT = path.join(ROOT, 'prismflow-deploy', 'public', 'view_session_modal_module.js');
 const TMP = path.join(ROOT, '_tmp_session_modal_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
@@ -59,4 +60,5 @@ ${compiled}
 `;
 
 fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
+fs.writeFileSync(PUBLIC_OUTPUT, outputCode, 'utf-8');
 console.log(`Built ${OUTPUT} (${outputCode.split('\n').length} lines)`);
