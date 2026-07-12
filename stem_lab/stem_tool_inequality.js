@@ -538,23 +538,61 @@ window.StemLab = window.StemLab || {
       // ════════════════════════════════
       // ═══ RENDER ═══
       // ════════════════════════════════
-      return h('div', { className: 'max-w-3xl mx-auto animate-in fade-in duration-200' },
+      var inequalityModeLabel = graphMode === '2d' ? '2D region' : 'Number line';
+      var inequalityNext = !d.expr
+        ? 'Choose or enter an inequality, then predict the boundary and shading before graphing.'
+        : testCount === 0
+          ? 'Test one value inside and one value outside the proposed solution set.'
+          : solverCount === 0
+            ? 'Solve symbolically and compare each algebra step with the graph.'
+            : 'Justify the boundary style and shading direction in words.';
+
+      return h('div', { className: 'max-w-5xl mx-auto animate-in fade-in duration-200' },
 
         // ── Header ──
-        h('div', { className: 'flex items-center gap-3 mb-3' },
-          h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back to tools' },
-            h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-          h('h3', { className: 'text-lg font-bold text-fuchsia-800' }, '\uD83C\uDFA8 Inequality Grapher'),
-          h('span', { className: 'px-2 py-0.5 bg-fuchsia-100 text-fuchsia-700 text-[11px] font-bold rounded-full' }, 'INTERACTIVE'),
-          d.quiz && (d.quiz.streak || 0) >= 2 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-600 text-[11px] font-bold rounded-full animate-pulse' }, '\uD83D\uDD25 ' + d.quiz.streak),
-          earnedCount > 0 && h('button', { onClick: function() { upd('showBadges', !showBadges); },
-            className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-600 text-amber-700 hover:bg-amber-100 transition-all',
-            title: 'View badges (B)'
-          }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
-          h('button', { onClick: askAI,
-            className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-600 text-purple-600 hover:bg-purple-100 transition-all',
-            title: 'AI Tutor (?)'
-          }, '\uD83E\uDDE0 AI')
+        h('section', { 'data-inequality-command': 'true', className: 'mb-4 overflow-hidden rounded-2xl border border-fuchsia-300/40 bg-gradient-to-br from-slate-950 via-fuchsia-950 to-purple-950 text-white shadow-xl' },
+          h('div', { className: 'p-4 sm:p-5' },
+            h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
+              h('div', { className: 'min-w-0' },
+                h('div', { className: 'flex flex-wrap items-center gap-2' },
+                  h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-fuchsia-300', 'aria-label': 'Back to tools' }, h(ArrowLeft, { size: 18 })),
+                  h('span', { className: 'rounded-full bg-fuchsia-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-fuchsia-100 ring-1 ring-fuchsia-200/30' }, 'Solution-set studio'),
+                  earnedCount > 0 && h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'rounded-full border border-amber-300/40 bg-amber-300/15 px-2.5 py-1 text-[10px] font-bold text-amber-100' }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
+                  h('button', { onClick: askAI, className: 'rounded-full border border-violet-300/40 bg-violet-300/15 px-2.5 py-1 text-[10px] font-bold text-violet-100' }, '\uD83E\uDDE0 AI')
+                ),
+                h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, '\uD83C\uDFA8 Inequality Grapher'),
+                h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-fuchsia-100' }, 'Test values, represent solution sets, and justify boundaries with algebraic and graphical evidence.'),
+                h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-fuchsia-200' }, 'Recommended next move'),
+                  h('p', { className: 'mt-1 text-sm font-semibold text-white' }, inequalityNext)
+                )
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
+                [
+                  { label: 'View', value: inequalityModeLabel },
+                  { label: 'Tests', value: String(testCount) },
+                  { label: 'Solved', value: String(solverCount) }
+                ].map(function(metric) {
+                  return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
+                    h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
+                    h('div', { className: 'mt-1 text-[9px] font-bold uppercase tracking-wider text-fuchsia-200' }, metric.label)
+                  );
+                })
+              )
+            ),
+            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Inequality reasoning pathway' },
+              [
+                { n: '1', title: 'Test', detail: 'Check values against the statement.' },
+                { n: '2', title: 'Represent', detail: 'Graph boundary and solution region.' },
+                { n: '3', title: 'Justify', detail: 'Explain inclusion and direction.' }
+              ].map(function(step) {
+                return h('li', { key: step.n, className: 'flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5' },
+                  h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-fuchsia-300 font-black text-slate-950' }, step.n),
+                  h('span', null, h('strong', { className: 'block text-white' }, step.title), h('span', { className: 'text-fuchsia-200' }, step.detail))
+                );
+              })
+            )
+          )
         ),
 
         // ── Badge panel ──
@@ -608,7 +646,7 @@ window.StemLab = window.StemLab || {
             var labels = { '1d': '\uD83D\uDCCF Number Line', '2d': '\uD83D\uDCC8 2D Graph' };
             return h('button', { key: m, role: 'tab', 'aria-selected': graphMode === m,
               onClick: function() { upd('graphMode', m); trackMode(m); },
-              className: 'px-3 py-1.5 text-xs font-bold rounded-lg transition-all ' +
+              className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-fuchsia-400 ' +
                 (graphMode === m ? 'bg-fuchsia-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
               title: m === '1d' ? '1 key' : '2 key'
             }, labels[m]);
