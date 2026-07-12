@@ -89,6 +89,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Added programmatic names, state announcements, and focus transitions to student Escape Room full-screen states: waiting is a polite busy status, game over is an alert, escape success is a named status, the active room is a named region, pause is a named/described alert dialog, focus returns to the active room on resume, team escapes are polite atomic status messages, and confetti is hidden from assistive technology (WCAG 1.1.1, 2.4.3, 2.4.6, 3.2.2, 4.1.2, 4.1.3).
 
+- Implemented the WAI-ARIA tabs pattern for the Teacher Dashboard Students, Insights, Behavior, and STEM sections: added a named tablist, tab and tabpanel roles, selected state, bidirectional control/label relationships, roving tabindex, automatic activation, wrapping Arrow-key navigation, and Home/End support (WCAG 1.3.1, 2.1.1, 2.4.3, 2.4.6, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

@@ -4294,6 +4294,21 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
   };
   const [studentFilter, setStudentFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('students');
+  const dashboardTabIds = ['students', 'insights', 'behavior', 'stems'];
+  const dashboardTabRefs = useRef({});
+  const handleDashboardTabKeyDown = (event, tabId) => {
+      const currentIndex = dashboardTabIds.indexOf(tabId);
+      let nextIndex = currentIndex;
+      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (currentIndex + 1) % dashboardTabIds.length;
+      else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (currentIndex - 1 + dashboardTabIds.length) % dashboardTabIds.length;
+      else if (event.key === 'Home') nextIndex = 0;
+      else if (event.key === 'End') nextIndex = dashboardTabIds.length - 1;
+      else return;
+      event.preventDefault();
+      const nextId = dashboardTabIds[nextIndex];
+      setActiveTab(nextId);
+      window.setTimeout(() => dashboardTabRefs.current[nextId]?.focus(), 0);
+  };
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const clearConfirmDialogRef = useRef(null);
   const clearConfirmTriggerRef = useRef(null);
@@ -5059,26 +5074,26 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
             </div>
           </div>
           {dashboardData.length > 0 && dashboardView === 'list' && (
-              <div className="flex px-3 sm:px-6 gap-4 sm:gap-6 overflow-x-auto whitespace-nowrap">
-                  <button
+              <div role="tablist" aria-label={t('dashboard.sections') || 'Dashboard sections'} className="flex px-3 sm:px-6 gap-4 sm:gap-6 overflow-x-auto whitespace-nowrap">
+                  <button ref={element => { dashboardTabRefs.current.students = element; }} type="button" role="tab" id="teacher-dashboard-tab-students" aria-selected={activeTab === 'students'} aria-controls="teacher-dashboard-panel-students" tabIndex={activeTab === 'students' ? 0 : -1} onKeyDown={event => handleDashboardTabKeyDown(event, 'students')}
                       onClick={() => setActiveTab('students')}
                       className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'students' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       {t('dashboard.tab_students')} ({dashboardData.length})
                   </button>
-                  <button
+                  <button ref={element => { dashboardTabRefs.current.insights = element; }} type="button" role="tab" id="teacher-dashboard-tab-insights" aria-selected={activeTab === 'insights'} aria-controls="teacher-dashboard-panel-insights" tabIndex={activeTab === 'insights' ? 0 : -1} onKeyDown={event => handleDashboardTabKeyDown(event, 'insights')}
                       onClick={() => setActiveTab('insights')}
                       className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'insights' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       {t('dashboard.tab_insights')}
                   </button>
-                  <button
+                  <button ref={element => { dashboardTabRefs.current.behavior = element; }} type="button" role="tab" id="teacher-dashboard-tab-behavior" aria-selected={activeTab === 'behavior'} aria-controls="teacher-dashboard-panel-behavior" tabIndex={activeTab === 'behavior' ? 0 : -1} onKeyDown={event => handleDashboardTabKeyDown(event, 'behavior')}
                       onClick={() => setActiveTab('behavior')}
                       className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'behavior' ? 'border-orange-600 text-orange-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
                       🔍 {t('behavior_lens.hub.title') || 'Behavior'}
                   </button>
-                  <button
+                  <button ref={element => { dashboardTabRefs.current.stems = element; }} type="button" role="tab" id="teacher-dashboard-tab-stems" aria-selected={activeTab === 'stems'} aria-controls="teacher-dashboard-panel-stems" tabIndex={activeTab === 'stems' ? 0 : -1} onKeyDown={event => handleDashboardTabKeyDown(event, 'stems')}
                       onClick={() => setActiveTab('stems')}
                       className={`pb-3 text-sm font-bold border-b-2 transition-all shrink-0 ${activeTab === 'stems' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
                   >
@@ -5370,7 +5385,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                  ) : (
                     <>
                      {activeTab === 'students' && (
-                     <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-left-4">
+                     <div role="tabpanel" id="teacher-dashboard-panel-students" aria-labelledby="teacher-dashboard-tab-students" tabIndex={0} className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-left-4 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4">
                                  <div className="bg-blue-100 p-3 rounded-full text-blue-600"><Users size={24}/></div>
@@ -5530,7 +5545,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                      </div>
                      )}
                      {activeTab === 'insights' && (
-                         <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4">
+                         <div role="tabpanel" id="teacher-dashboard-panel-insights" aria-labelledby="teacher-dashboard-tab-insights" tabIndex={0} className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-400">
                                 <div>
                                     <h3 className="font-bold text-lg text-slate-800">{t('dashboard.insights.class_performance')}</h3>
@@ -5755,7 +5770,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                         </div>
                      )}
                      {activeTab === 'behavior' && (
-                         <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0">
+                         <div role="tabpanel" id={`teacher-dashboard-panel-${activeTab}`} aria-labelledby={`teacher-dashboard-tab-${activeTab}`} tabIndex={0} className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                              <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-400 text-center">
                                  <div className="text-4xl sm:text-5xl mb-4">🔍</div>
                                  <h3 className="text-xl sm:text-2xl font-black text-slate-800 mb-2">{t('behavior_lens.hub.title') || 'BehaviorLens'}</h3>
@@ -5770,7 +5785,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                          </div>
                      )}
                      {activeTab === 'stems' && (
-                         <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0">
+                         <div role="tabpanel" id={`teacher-dashboard-panel-${activeTab}`} aria-labelledby={`teacher-dashboard-tab-${activeTab}`} tabIndex={0} className="max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-right-4 px-3 sm:px-0 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                              <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-400">
                                  <h3 className="text-base sm:text-lg font-black text-slate-800 flex items-center gap-2 mb-4">
                                      {t('teacher.stem_stations.section_title') || '🔬 STEM Station Activity'}
