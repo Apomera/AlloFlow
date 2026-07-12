@@ -28926,6 +28926,23 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         setHistory(prev => prev.map(item => item.id === generatedContent.id ? generatedContent : item));
     }
   };
+  const handleTimelineMove = (fromIndex, toIndex) => {
+    if (!generatedContent || generatedContent.type !== 'timeline') return;
+    const data = generatedContent.data;
+    const isArrayShape = Array.isArray(data);
+    const currentItems = isArrayShape ? data : (data?.items || []);
+    if (fromIndex < 0 || fromIndex >= currentItems.length || toIndex < 0 || toIndex >= currentItems.length || fromIndex === toIndex) return;
+    const newItems = [...currentItems];
+    const [movedItem] = newItems.splice(fromIndex, 1);
+    newItems.splice(toIndex, 0, movedItem);
+    const renumberedItems = newItems.map((item, i) => item.date && /^Step\s+\d+$/i.test(item.date) ? { ...item, date: `Step ${i + 1}` } : item);
+    const newData = isArrayShape ? renumberedItems : { ...data, items: renumberedItems };
+    const updatedContent = { ...generatedContent, data: newData };
+    setGeneratedContent(updatedContent);
+    setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+    setDraggedTimelineIndex(null);
+    addToast(t('timeline.moved_position', { position: toIndex + 1 }) || `Moved timeline item to position ${toIndex + 1}.`, 'info');
+  };
   const handleAddTimelineStep = () => {
     if (!generatedContent || generatedContent.type !== 'timeline') return;
     const data = generatedContent.data;
@@ -34476,7 +34493,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     handleAddTimelineStep, handleAutoFixTimeline, handleDeleteTimelineStep,
                     handleExplainTimelineItem, handleGameCompletion, handleGameScoreUpdate,
                     handleGenerateTimelineItemImage, handleLockTimelineMode, handleSetIsTimelineGameToTrue,
-                    handleTimelineChange, handleTimelineDragEnd, handleTimelineDragOver, handleTimelineDragStart,
+                    handleTimelineChange, handleTimelineDragEnd, handleTimelineDragOver, handleTimelineDragStart, handleTimelineMove,
                     handleTimelineRevision, handleToggleIsEditingTimeline, handleVerifyTimelineAccuracy,
                     closeTimeline,
                     ErrorBoundary, TimelineGame, playSound
