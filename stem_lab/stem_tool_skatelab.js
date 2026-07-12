@@ -56,6 +56,7 @@ window.StemLab = window.StemLab || {
     var st = document.createElement('style');
     st.id = 'allo-skatelab-responsive-css';
     st.textContent = [
+      '.skatelab-shell{container-type:inline-size}.skatelab-shell button,.skatelab-shell input,.skatelab-shell summary{touch-action:manipulation}.skatelab-shell button[data-sk-focusable=true]{min-height:36px}.skatelab-shell button:focus-visible,.skatelab-shell input:focus-visible,.skatelab-shell summary:focus-visible{outline:3px solid #38bdf8;outline-offset:2px}',
       '.sk-run-focus-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(240px,.75fr);gap:12px}',
       '.sk-run-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
       '.sk-park-map{position:relative;min-height:112px;margin:10px 0;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(14,165,233,.14),rgba(168,85,247,.12) 48%,rgba(22,163,74,.18));border:1px solid rgba(251,191,36,.24)}',
@@ -63,12 +64,15 @@ window.StemLab = window.StemLab || {
       '.sk-park-map:after{content:"";position:absolute;left:16%;right:16%;bottom:27px;height:54px;border-top:3px solid rgba(251,191,36,.9);border-radius:70% 70% 0 0;filter:drop-shadow(0 0 10px rgba(251,191,36,.35))}',
       '.sk-park-point{position:absolute;z-index:1;display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:18px;background:rgba(15,23,42,.80);border:1px solid rgba(226,232,240,.18);color:#e0f2fe;font-size:11px;font-weight:850}',
       '.sk-park-start{left:7%;bottom:10px}.sk-park-apex{left:39%;top:12px}.sk-park-land{right:7%;bottom:10px}',
+      '.sk-scenario-rail{display:flex;gap:6px;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:inline proximity;padding:2px 2px 8px;justify-content:flex-start}.sk-scenario-rail>button,.sk-scenario-rail>div{flex:0 0 auto;scroll-snap-align:start}',
       '.sk-control-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}',
       '.sk-gap-control-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px}',
       '.sk-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}',
       '.sk-inquiry-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:6px}',
       '.sk-inquiry-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px 12px}',
-      '@media(max-width:760px){.sk-run-focus-grid,.sk-run-metric-grid{grid-template-columns:1fr!important}.sk-canvas-frame{padding:6px!important}.sk-toolbar-row{justify-content:flex-start!important}.sk-compact-label{white-space:normal!important}}'
+      '@media(max-width:760px){.skatelab-shell{padding:10px!important}.sk-run-focus-grid,.sk-run-metric-grid{grid-template-columns:1fr!important}.sk-canvas-frame{padding:6px!important}.sk-toolbar-row{justify-content:flex-start!important}.sk-compact-label{white-space:normal!important}.skatelab-shell button[data-sk-focusable=true]{min-height:40px}}',
+      '@media(max-width:480px){.sk-park-map{min-height:132px}.sk-park-point{font-size:10px;padding:4px 6px}.sk-park-start{left:4%;bottom:9px}.sk-park-apex{left:50%;transform:translateX(-50%);top:10px}.sk-park-land{right:4%;bottom:9px}.sk-run-focus-grid>div{padding:10px!important}}',
+      '@media(prefers-reduced-motion:reduce){.skatelab-shell *{scroll-behavior:auto!important;transition-duration:0.01ms!important;animation-duration:0.01ms!important;animation-iteration-count:1!important}}'
     ].join('');
     document.head.appendChild(st);
   })();
@@ -2718,7 +2722,10 @@ window.StemLab = window.StemLab || {
               rotation: sim.trick.rotation, completed: sim.rotationCompleted,
               vehicle: sim.vehicle.label, gravity: sim.gravity,
               surface: sim.surface ? sim.surface.label : 'Standard',
-              effMinAir: sim.effMinAir
+              effMinAir: sim.effMinAir,
+              energyInputJ: sim.energyInputJ,
+              mechanicalJ: sim.mechanicalJ,
+              thermalJ: sim.thermalJ
             };
             _captureAndStampPrediction(bumps, bumps.lastResult, sim.hAir * M2FT);
             // Bail counter for adaptive nudge — reset on land,
@@ -2883,7 +2890,7 @@ window.StemLab = window.StemLab || {
                 if (skG.prev >= 3) {
                   addToast('💔 Streak ended at ' + skG.prev + '. Reset and reload.', 'info');
                 } else {
-                  addToast(sim.clearance < 0 ? '💥 Came up short by ' + Math.abs(sim.clearance * M2FT).toFixed(1) + ' ft.' : '💥 Overshot by ' + (sim.clearance * M2FT - 1.2).toFixed(1) + ' ft.', 'info');
+                  addToast(sim.clearance < 0 ? '💥 Came up short by ' + Math.abs(sim.clearance * M2FT).toFixed(1) + ' ft.' : '💥 Overshot by ' + ((sim.clearance - 1.2) * M2FT).toFixed(1) + ' ft.', 'info');
                 }
               }
             }
@@ -2944,10 +2951,12 @@ window.StemLab = window.StemLab || {
 
       function _renderLaunchButton(compact) {
         var gate = _predictionGate();
-        var disabled = d.running || gate.blocked;
+        var disabled = !!d.running;
         return h('button', {
           onClick: _startRunFromUI,
           disabled: disabled,
+          'aria-disabled': gate.blocked || undefined,
+          'aria-controls': gate.blocked ? 'sk-predict-input' : 'sk-mode-panel',
           'aria-label': gate.blocked
             ? 'Type a prediction first'
             : (d.mode === 'halfpipe' ? 'Drop in and attempt the trick' : 'Send it across the gap'),
@@ -2958,14 +2967,14 @@ window.StemLab = window.StemLab || {
             width: compact ? 'auto' : '100%',
             padding: compact ? '9px 14px' : '12px 20px',
             marginBottom: compact ? 0 : 12,
-            background: disabled ? '#64748b' : 'linear-gradient(135deg, #b45309, #7c2d12)',
-            color: disabled ? '#0f172a' : '#fef3c7',
-            border: '2px solid ' + (disabled ? '#475569' : '#78350f'),
+            background: disabled ? '#64748b' : gate.blocked ? '#334155' : 'linear-gradient(135deg, #b45309, #7c2d12)',
+            color: disabled ? '#0f172a' : gate.blocked ? '#e2e8f0' : '#fef3c7',
+            border: '2px solid ' + (disabled ? '#475569' : gate.blocked ? '#64748b' : '#78350f'),
             borderRadius: compact ? 10 : 12,
             fontSize: compact ? 13 : 16,
             fontWeight: 900,
             cursor: d.running ? 'wait' : (gate.blocked ? 'not-allowed' : 'pointer'),
-            boxShadow: disabled ? 'none' : '0 4px 15px rgba(120,53,15,0.4), inset 0 1px 0 rgba(255,235,170,0.3)',
+            boxShadow: (disabled || gate.blocked) ? 'none' : '0 4px 15px rgba(120,53,15,0.4), inset 0 1px 0 rgba(255,235,170,0.3)',
             letterSpacing: '0.04em',
             opacity: disabled ? 0.85 : 1,
             minHeight: compact ? 38 : 46
@@ -3143,12 +3152,29 @@ window.StemLab = window.StemLab || {
 
 
       // ── Render UI ───────────────────────────────────────────────
+      var modeOrder = ['halfpipe', 'gap'];
       var modeBtn = function(id, label, emoji) {
         var sel = d.mode === id;
         return h('button', {
           key: id,
+          id: 'sk-mode-tab-' + id,
+          role: 'tab',
           onClick: function() { upd('mode', id); skAnnounce(label + ' mode'); },
-          'aria-pressed': sel,
+          onKeyDown: function(e) {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
+            e.preventDefault();
+            var current = modeOrder.indexOf(id);
+            var next = e.key === 'Home' ? 0 : e.key === 'End' ? modeOrder.length - 1 : (current + (e.key === 'ArrowRight' ? 1 : -1) + modeOrder.length) % modeOrder.length;
+            var nextId = modeOrder[next];
+            upd('mode', nextId);
+            setTimeout(function() {
+              var tab = document.getElementById('sk-mode-tab-' + nextId);
+              if (tab) tab.focus();
+            }, 0);
+          },
+          'aria-selected': sel,
+          'aria-controls': 'sk-mode-panel',
+          tabIndex: sel ? 0 : -1,
           'data-sk-focusable': 'true',
           style: {
             padding: '8px 16px', borderRadius: 20,
@@ -3259,7 +3285,7 @@ window.StemLab = window.StemLab || {
           )
         )
       ) : null;
-      return h('div', { style: { color: 'var(--allo-stem-text, #f1f5f9)', fontFamily: 'system-ui, sans-serif', maxWidth: '58rem', margin: '0 auto', padding: 16 } },
+      return h('div', { className: 'skatelab-shell', style: { color: 'var(--allo-stem-text, #f1f5f9)', fontFamily: 'system-ui, sans-serif', maxWidth: '58rem', margin: '0 auto', padding: 16 } },
         scenarioIntroModal,
         // Header
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
@@ -3343,7 +3369,7 @@ window.StemLab = window.StemLab || {
               }
             }, __alloT('stem.skatelab.save_current', '💾 Save current'))
           ),
-          h('div', { style: { display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' } },
+          h('div', { className: 'sk-scenario-rail', 'aria-label': 'Famous trick scenarios' },
             SCENARIOS.map(function(sc) {
               var active = d.activeScenarioId === sc.id;
               var todayId = _todayScenario().id;
@@ -3577,6 +3603,9 @@ window.StemLab = window.StemLab || {
         _renderRunFocus(),
         // Canvas
         h('div', {
+          id: 'sk-mode-panel',
+          role: 'tabpanel',
+          'aria-labelledby': 'sk-mode-tab-' + d.mode,
           className: 'sk-canvas-frame',
           'data-skatelab-sim-surface': 'true',
           style: {
@@ -3602,8 +3631,6 @@ window.StemLab = window.StemLab || {
             ref: canvasRef,
             width: 640, height: 320,
             role: 'img',
-            tabIndex: 0,
-            'data-sk-focusable': 'true',
             // WCAG 1.1.1 — aria-label rolls up the canvas's current
             // environmental state so screen-reader users know what the
             // simulation is configured to show without watching it.
@@ -3665,6 +3692,7 @@ window.StemLab = window.StemLab || {
           };
           return h('div', {
             role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sk-tour-title',
+            onKeyDown: function(e) { if (e.key === 'Escape') closeAndMarkSeen(); },
             onClick: function(e) { if (e.target === e.currentTarget) closeAndMarkSeen(); },
             style: {
               position: 'fixed', inset: 0, zIndex: 9999,
@@ -3746,6 +3774,7 @@ window.StemLab = window.StemLab || {
         // Mirrors saveModalDraft visual pattern — overlay + card.
         (d.session && d.session.startPromptOpen) && h('div', {
           role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sk-sess-title',
+          onKeyDown: function(e) { if (e.key === 'Escape') upd({ session: Object.assign({}, d.session, { startPromptOpen: false }) }); },
           onClick: function(e) { if (e.target === e.currentTarget) upd({ session: Object.assign({}, d.session, { startPromptOpen: false }) }); },
           style: {
             position: 'fixed', inset: 0, zIndex: 9999,
@@ -3801,6 +3830,7 @@ window.StemLab = window.StemLab || {
         // closing the modal is a pure dismiss.
         (d.session && d.session.summaryOpen && d.session.lastSummary) && h('div', {
           role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sk-sess-summary-title',
+          onKeyDown: function(e) { if (e.key === 'Escape') upd({ session: Object.assign({}, d.session, { summaryOpen: false }) }); },
           onClick: function(e) { if (e.target === e.currentTarget) upd({ session: Object.assign({}, d.session, { summaryOpen: false }) }); },
           style: {
             position: 'fixed', inset: 0, zIndex: 9999,
@@ -3905,6 +3935,7 @@ window.StemLab = window.StemLab || {
         // current state. Mirrors ThrowLab's save-scenario flow.
         d.saveModalDraft && h('div', {
           role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sk-save-title',
+          onKeyDown: function(e) { if (e.key === 'Escape') upd('saveModalDraft', null); },
           onClick: function(e) { if (e.target === e.currentTarget) upd('saveModalDraft', null); },
           style: {
             position: 'fixed', inset: 0, zIndex: 9999,
@@ -3974,6 +4005,7 @@ window.StemLab = window.StemLab || {
         // ── Reset confirm modal ─────────────────────────────────
         d.resetConfirmOpen && h('div', {
           role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sk-reset-title',
+          onKeyDown: function(e) { if (e.key === 'Escape') upd('resetConfirmOpen', false); },
           onClick: function(e) { if (e.target === e.currentTarget) upd('resetConfirmOpen', false); },
           style: {
             position: 'fixed', inset: 0, zIndex: 9999,
@@ -4833,55 +4865,9 @@ window.StemLab = window.StemLab || {
             )
           );
         })(),
-        // Run button — disabled while running OR while predict-mode
-        // is on without a valid numeric prediction. The dim/disabled
-        // path is the same in both cases so screen readers + visual
-        // users get a consistent affordance.
-        (function() {
-          var predTrim = (d.predictionInput || '').trim();
-          var predParsed = parseFloat(predTrim);
-          var predValid = isFinite(predParsed) && predParsed >= 0;
-          var blockedByPredict = d.predictMode && !predValid;
-          var disabled = d.running || blockedByPredict;
-          return h('button', {
-            onClick: function() {
-              if (blockedByPredict) {
-                skAnnounce('Type a numeric prediction first.');
-                if (addToast) addToast('🔮 Predict mode is on, type a number first.', 'info');
-                var input = document.getElementById('sk-predict-input');
-                if (input) input.focus();
-                return;
-              }
-              (d.mode === 'halfpipe' ? runHalfpipe : runGapJump)();
-            },
-            disabled: disabled,
-            'aria-label': blockedByPredict
-              ? 'Type a prediction first'
-              : (d.mode === 'halfpipe' ? 'Drop in and attempt the trick' : 'Send it across the gap'),
-            'aria-busy': d.running,
-            'data-sk-focusable': 'true',
-            style: {
-              width: '100%', padding: '12px 20px', marginBottom: 12,
-              // WCAG 1.4.3 — slate-500 background + slate-900 text on
-              // disabled meets AA on the dimmer state.
-              background: disabled ? '#64748b' : 'linear-gradient(135deg, #b45309, #7c2d12)',
-              color: disabled ? '#0f172a' : '#fef3c7',
-              border: '2px solid ' + (disabled ? '#475569' : '#78350f'),
-              borderRadius: 12,
-              fontSize: 16, fontWeight: 800,
-              cursor: d.running ? 'wait' : (blockedByPredict ? 'not-allowed' : 'pointer'),
-              boxShadow: disabled ? 'none' : '0 4px 15px rgba(120,53,15,0.4), inset 0 1px 0 rgba(255,235,170,0.3)',
-              letterSpacing: '0.04em', opacity: disabled ? 0.85 : 1
-            }
-          }, d.running
-            ? '⏳ Sending it...'
-            : blockedByPredict
-              ? '🔮 Type a prediction first'
-              : (d.mode === 'halfpipe' ? '🛹 Drop In!' : '🦘 Send It!'));
-        })(),
         // Last-result analysis panel — pedagogically valuable, shows
         // the actual physics that produced what the student just saw.
-        d.lastResult && h('div', { style: { background: d.lastResult.landed ? 'rgba(22,163,74,0.12)' : 'rgba(180,83,9,0.12)', border: '1px solid ' + (d.lastResult.landed ? '#22c55e' : '#d97706'), borderRadius: 10, padding: 12, marginBottom: 12 } },
+        d.lastResult && h('div', { role: 'status', 'aria-live': 'polite', style: { background: d.lastResult.landed ? 'rgba(22,163,74,0.12)' : 'rgba(180,83,9,0.12)', border: '1px solid ' + (d.lastResult.landed ? '#22c55e' : '#d97706'), borderRadius: 10, padding: 12, marginBottom: 12 } },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: d.lastResult.landed ? '#86efac' : '#fbbf24' } },
               d.lastResult.landed ? '✅ Clean landing — what made it work' : '💥 Bail — here\'s why'),
@@ -4914,6 +4900,7 @@ window.StemLab = window.StemLab || {
                 h('div', null, __alloT('stem.skatelab.air_height_above_lip', '📈 Air height (above lip): '), h('b', { style: { color: '#fbbf24' } }, d.lastResult.hFt.toFixed(2) + ' ft')),
                 h('div', null, __alloT('stem.skatelab.hang_time', '⏱ Hang time: '), h('b', { style: { color: '#fbbf24' } }, d.lastResult.airTime.toFixed(2) + ' s')),
                 h('div', null, __alloT('stem.skatelab.rotation', '🌀 Rotation: '), h('b', { style: { color: '#fbbf24' } }, Math.round(d.lastResult.completed) + '° of ' + d.lastResult.rotation + '° needed')),
+                d.lastResult.thermalJ != null && h('div', null, 'Heat transferred: ', h('b', { style: { color: '#fde047' } }, Math.round(d.lastResult.thermalJ) + ' J'), ' · ' + Math.round((d.lastResult.thermalJ / Math.max(1, d.lastResult.energyInputJ)) * 100) + '% of launch energy'),
                 d.lastResult.errPct !== undefined && h('div', {
                   style: {
                     marginTop: 6, padding: '6px 8px', borderRadius: 6,
