@@ -1019,6 +1019,40 @@ function InfoModal({
     setSelectedFeature(null);
   }, [infoModalTab]);
 
+  const dialogRef = React.useRef(null);
+  React.useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    const previousFocus = document.activeElement;
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    (getFocusable()[0] || dialog).focus();
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); handleSetShowInfoModalToFalse(); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return () => {
+      dialog.removeEventListener('keydown', onKeyDown);
+      if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+    };
+  }, [handleSetShowInfoModalToFalse]);
+
+  const handleTabKeyDown = (event) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const tabs = Array.from(event.currentTarget.parentElement.querySelectorAll('[role="tab"]'));
+    const current = tabs.indexOf(event.currentTarget);
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+    tabs[next].focus();
+    tabs[next].click();
+  };
+
   const colorMap = {
     indigo: 'bg-indigo-50 border-indigo-200 text-indigo-700',
     teal: 'bg-teal-50 border-teal-200 text-teal-700',
@@ -1038,45 +1072,50 @@ function InfoModal({
   };
 
   return (
-    <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowInfoModalToFalse} aria-label={t('common.close')}>
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh]" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
+    <div role="presentation" className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowInfoModalToFalse}>
+      <div ref={dialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh] focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="info-modal-title" onClick={e => e.stopPropagation()}>
         <div className="bg-indigo-700 p-4 text-white flex justify-between items-center shrink-0">
-          <h3 className="font-bold text-lg flex items-center gap-2"><Layers size={20}/> {t('about.title')}</h3>
+          <h3 id="info-modal-title" className="font-bold text-lg flex items-center gap-2"><Layers size={20}/> {t('about.title')}</h3>
           <button onClick={handleSetShowInfoModalToFalse} className="p-2 rounded-full hover:bg-indigo-600 focus:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close')}><X size={20}/></button>
         </div>
-        <div className="flex border-b border-slate-200 bg-slate-50 shrink-0 overflow-x-auto">
+        <div className="flex border-b border-slate-200 bg-slate-50 shrink-0 overflow-x-auto" role="tablist" aria-label={t('about.title')}>
           <button
+            id="info-tab-about" role="tab" aria-selected={infoModalTab === 'about'} aria-controls="info-modal-panel" tabIndex={infoModalTab === 'about' ? 0 : -1} onKeyDown={handleTabKeyDown}
             onClick={handleSetInfoModalTabToAbout}
             className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'about' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
           >
             {t('about.tab_about')}
           </button>
           <button
+            id="info-tab-atlas" role="tab" aria-selected={infoModalTab === 'atlas'} aria-controls="info-modal-panel" tabIndex={infoModalTab === 'atlas' ? 0 : -1} onKeyDown={handleTabKeyDown}
             onClick={handleSetInfoModalTabToAtlas}
             className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'atlas' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
           >
             {t('about.tab_atlas') || 'Atlas'}
           </button>
           <button
+            id="info-tab-features" role="tab" aria-selected={infoModalTab === 'features'} aria-controls="info-modal-panel" tabIndex={infoModalTab === 'features' ? 0 : -1} onKeyDown={handleTabKeyDown}
             onClick={handleSetInfoModalTabToFeatures}
             className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'features' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
           >
             {t('about.tab_features')}
           </button>
           <button
+            id="info-tab-privacy" role="tab" aria-selected={infoModalTab === 'privacy'} aria-controls="info-modal-panel" tabIndex={infoModalTab === 'privacy' ? 0 : -1} onKeyDown={handleTabKeyDown}
             onClick={handleSetInfoModalTabToPrivacy}
             className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'privacy' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
           >
             {t('about.tab_privacy') || 'Privacy'}
           </button>
           <button
+            id="info-tab-opensource" role="tab" aria-selected={infoModalTab === 'opensource'} aria-controls="info-modal-panel" tabIndex={infoModalTab === 'opensource' ? 0 : -1} onKeyDown={handleTabKeyDown}
             onClick={handleSetInfoModalTabToOpenSource}
             className={`flex-1 whitespace-nowrap px-2 py-3 text-sm font-bold transition-colors border-b-2 ${infoModalTab === 'opensource' ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-700'}`}
           >
             {t('about.tab_opensource') || 'Open Source'}
           </button>
         </div>
-        <div className="p-6 overflow-y-auto custom-scrollbar">
+        <div id="info-modal-panel" role="tabpanel" aria-labelledby={`info-tab-${infoModalTab}`} tabIndex={0} className="p-6 overflow-y-auto custom-scrollbar focus:outline-none">
           {infoModalTab === 'about' ? (
             <div className="space-y-4 text-slate-700">
               <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">

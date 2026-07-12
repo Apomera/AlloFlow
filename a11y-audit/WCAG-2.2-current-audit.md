@@ -52,6 +52,7 @@ This report evaluates the current local desktop command center and the bundled A
 - Added a named Kokoro offer dialog with a non-interactive backdrop, initial focus, Tab containment, Escape dismissal, and trigger focus return (WCAG 2.1.1, 2.4.3, 2.4.7, 4.1.2).
 - Added presentation-only backdrop semantics, initial focus, Tab containment, Escape dismissal, and trigger focus return to the live-session dialog (WCAG 2.1.1, 2.4.3, 2.4.7, 4.1.2).
 - Added initial focus, Tab containment, Escape dismissal, and trigger focus return to the named Hints dialog (WCAG 2.1.1, 2.4.3, 2.4.7, 4.1.2).
+- Removed full-screen button semantics from the Info/About backdrop; named the dialog; added initial focus, Tab containment, Escape dismissal, and focus return; and exposed its five-section selector as an arrow-key-operable ARIA tablist (WCAG 2.1.1, 2.4.3, 2.4.7, 4.1.2).
 
 ## Resolved finding
 
