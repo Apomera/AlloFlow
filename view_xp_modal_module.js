@@ -26,7 +26,43 @@ function XPModal({
   const Trophy = window.Trophy || (() => null);
   const X = window.X || (() => null);
   const History = window.History || (() => null);
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-200", onClick: handleSetShowXPModalToFalse, role: "presentation" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-yellow-400 transition-all animate-in zoom-in-95", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-labelledby": "xp-modal-title" }, /* @__PURE__ */ React.createElement("button", { onClick: handleSetShowXPModalToFalse, className: "absolute top-3 right-3 text-slate-600 hover:text-slate-900 hover:bg-slate-200 bg-slate-100 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 16 })), /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6 relative" }, /* @__PURE__ */ React.createElement("div", { className: "w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-3 border-4 border-indigo-900 shadow-lg relative" }, /* @__PURE__ */ React.createElement(Trophy, { size: 40, className: "text-indigo-900 fill-current" }), /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-2 bg-indigo-900 text-yellow-400 text-xs font-black px-2 py-1 rounded-full border border-white" }, t("student_dashboard.level_abbr"), " ", globalLevel)), /* @__PURE__ */ React.createElement("h2", { id: "xp-modal-title", className: "text-2xl font-black text-indigo-900 uppercase tracking-tight", "data-help-key": "xp_modal_summary" }, t("student_dashboard.level_progress")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold text-sm" }, t("student_dashboard.total_xp"), ": ", /* @__PURE__ */ React.createElement("span", { className: "text-green-600" }, globalPoints))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-xl p-4 mb-6 border border-slate-400 shadow-inner" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-xs font-bold text-slate-600 uppercase tracking-wider mb-1" }, /* @__PURE__ */ React.createElement("span", null, t("common.progress")), /* @__PURE__ */ React.createElement("span", null, Math.round(globalProgress), "%")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-4 overflow-hidden border border-slate-400" }, /* @__PURE__ */ React.createElement(
+  const dialogRef = React.useRef(null);
+  React.useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return void 0;
+    const previousFocus = document.activeElement;
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'));
+    (getFocusable()[0] || dialog).focus();
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        handleSetShowXPModalToFalse();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    dialog.addEventListener("keydown", onKeyDown);
+    return () => {
+      dialog.removeEventListener("keydown", onKeyDown);
+      if (previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
+    };
+  }, [handleSetShowXPModalToFalse]);
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-200", onClick: handleSetShowXPModalToFalse, role: "presentation" }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-yellow-400 transition-all animate-in zoom-in-95 focus:outline-none", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-labelledby": "xp-modal-title" }, /* @__PURE__ */ React.createElement("button", { onClick: handleSetShowXPModalToFalse, className: "absolute top-3 right-3 text-slate-600 hover:text-slate-900 hover:bg-slate-200 bg-slate-100 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 16 })), /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6 relative" }, /* @__PURE__ */ React.createElement("div", { className: "w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-3 border-4 border-indigo-900 shadow-lg relative" }, /* @__PURE__ */ React.createElement(Trophy, { size: 40, className: "text-indigo-900 fill-current" }), /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-2 bg-indigo-900 text-yellow-400 text-xs font-black px-2 py-1 rounded-full border border-white" }, t("student_dashboard.level_abbr"), " ", globalLevel)), /* @__PURE__ */ React.createElement("h2", { id: "xp-modal-title", className: "text-2xl font-black text-indigo-900 uppercase tracking-tight", "data-help-key": "xp_modal_summary" }, t("student_dashboard.level_progress")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold text-sm" }, t("student_dashboard.total_xp"), ": ", /* @__PURE__ */ React.createElement("span", { className: "text-green-600" }, globalPoints))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-xl p-4 mb-6 border border-slate-400 shadow-inner" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-xs font-bold text-slate-600 uppercase tracking-wider mb-1" }, /* @__PURE__ */ React.createElement("span", null, t("common.progress")), /* @__PURE__ */ React.createElement("span", null, Math.round(globalProgress), "%")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-4 overflow-hidden border border-slate-400", role: "progressbar", "aria-label": t("common.progress"), "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": Math.round(globalProgress), "aria-valuetext": `${Math.round(globalProgress)}%` }, /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-1000 ease-out relative",
