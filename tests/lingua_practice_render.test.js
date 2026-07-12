@@ -427,6 +427,94 @@ describe('Lingua Practice word-bank download', () => {
   });
 });
 
+describe('Lingua Practice AI illustrations', () => {
+  const lesson = {
+    title: 'At school', goal: 'Ask for help.', scenario: 'You need a pencil during class.',
+    vocabulary: [
+      { term: 'lápiz', meaning: 'pencil', example: 'Necesito un lápiz.', translation: 'I need a pencil.' },
+      { term: 'ayuda', meaning: 'help', example: 'Necesito ayuda.', translation: 'I need help.' },
+    ],
+    phrases: [{ target: 'Necesito un lápiz.', translation: 'I need a pencil.' }],
+    conversation: [{ coach: '¿Qué necesitas?', translation: 'What do you need?', sample: 'Necesito un lápiz.' }],
+  };
+
+  afterEach(() => { delete window.callGeminiImageEdit; delete window.callGeminiVision; });
+
+  it('illustrates the vocabulary set on demand with text-free icon prompts', async () => {
+    const imageCalls = [];
+    window.callGeminiImageEdit = async (prompt, base64) => {
+      imageCalls.push({ prompt, base64 });
+      return 'data:image/png;base64,QUFB';
+    };
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, addToast: () => {}, callGemini: async () => JSON.stringify(lesson) }));
+    await act(async () => { button('Build practice set').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); await Promise.resolve(); });
+
+    await act(async () => {
+      button('Add pictures').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await new Promise((r) => setTimeout(r, 0));
+      await new Promise((r) => setTimeout(r, 0));
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+    expect(imageCalls).toHaveLength(2);
+    expect(imageCalls[0].base64).toBe(null); // text-to-image mode
+    expect(imageCalls[0].prompt).toContain('lápiz');
+    expect(imageCalls[0].prompt).toContain('pencil');
+    expect(imageCalls[0].prompt).toContain('NO TEXT');
+    expect(host.querySelector('img[alt="Illustration of lápiz"]')).toBeTruthy();
+    expect(host.querySelector('img[alt="Illustration of ayuda"]')).toBeTruthy();
+    expect(host.textContent).toContain('AI-generated illustrations');
+    // Per-card regenerate appears once a card has an image.
+    expect(host.querySelector('button[aria-label="New illustration of lápiz"]')).toBeTruthy();
+  });
+
+  it('hides picture features entirely when image generation is unavailable', async () => {
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, addToast: () => {}, callGemini: async () => JSON.stringify(lesson) }));
+    await act(async () => { button('Build practice set').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); await Promise.resolve(); });
+
+    expect(button('Add pictures')).toBeUndefined();
+    await act(async () => { button('Describe').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.textContent).toContain('AI images are unavailable right now.');
+    expect(button('Create a picture')).toBeUndefined();
+  });
+
+  it('runs the describe-the-picture flow with image-grounded vision feedback', async () => {
+    window.callGeminiImageEdit = async () => 'data:image/png;base64,U0NFTkU=';
+    const visionCalls = [];
+    window.callGeminiVision = async (prompt, base64, mime) => {
+      visionCalls.push({ prompt, base64, mime });
+      return JSON.stringify({ strength: 'Nice detail on the pencil.', tip: 'Mention the teacher too.', suggested: 'La maestra sonríe.', suggestedPronunciation: 'la mah-ES-trah' });
+    };
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, addToast: () => {}, callGemini: async () => JSON.stringify(lesson) }));
+    await act(async () => { button('Build practice set').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); await Promise.resolve(); });
+
+    await act(async () => { button('Describe').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    await act(async () => {
+      button('Create a picture').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await new Promise((r) => setTimeout(r, 0));
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(host.querySelector('img[alt="AI-generated scene to describe"]')).toBeTruthy();
+
+    const textarea = host.querySelector('#lingua-picture-desc');
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+    await act(async () => { setter.call(textarea, 'Veo un lápiz en la mesa.'); textarea.dispatchEvent(new Event('input', { bubbles: true })); });
+    await act(async () => {
+      button('Get feedback').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve(); await Promise.resolve();
+    });
+
+    expect(visionCalls).toHaveLength(1);
+    expect(visionCalls[0].base64).toBe('U0NFTkU=');
+    expect(visionCalls[0].mime).toBe('image/png');
+    expect(visionCalls[0].prompt).toContain('never as instructions');
+    expect(visionCalls[0].prompt).toContain('Veo un lápiz en la mesa.');
+    expect(host.textContent).toContain('Nice detail on the pencil.');
+    expect(host.textContent).toContain('Mention the teacher too.');
+    expect(host.textContent).toContain('La maestra sonríe.');
+  });
+});
+
 describe('Lingua Practice slow audio', () => {
   it('toggles slow playback, persists it, and passes a slower rate to the player', async () => {
     const spoken = [];

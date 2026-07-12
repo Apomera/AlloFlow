@@ -305,6 +305,43 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
 });
 
 
+describe('Lingua Practice describe-the-picture accessibility', () => {
+  it('keeps the picture tab axe-clean with and without image generation', async () => {
+    // Without an image surface: honest empty state.
+    await mount();
+    await click('Build practice set');
+    await click('Describe');
+    expect(host.textContent).toContain('AI images are unavailable right now.');
+    await expectNoAxeViolations('picture tab unavailable');
+    act(() => root.unmount());
+    root = null;
+    host.remove();
+    host = null;
+
+    // With images: generated scene, labeled description input, feedback region.
+    window.callGeminiImageEdit = async () => 'data:image/png;base64,U0NFTkU=';
+    try {
+      await mount();
+      await click('Build practice set');
+      await click('Describe');
+      await act(async () => {
+        findButton('Create a picture').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        await new Promise((r) => setTimeout(r, 0));
+        await new Promise((r) => setTimeout(r, 0));
+      });
+      const img = host.querySelector('img[alt="AI-generated scene to describe"]');
+      expect(img).toBeTruthy();
+      const description = host.querySelector('#lingua-picture-desc');
+      const label = host.querySelector('label[for="lingua-picture-desc"]');
+      expect(label.control).toBe(description);
+      expect(description.lang).toBe('es-ES');
+      await expectNoAxeViolations('picture tab with scene');
+    } finally {
+      delete window.callGeminiImageEdit;
+    }
+  });
+});
+
 describe('Lingua Practice enhanced accessibility behavior', () => {
   it('moves focus to each section heading and marks language-specific content', async () => {
     await mount();
