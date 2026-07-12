@@ -34,4 +34,16 @@ describe('Word Sounds source selector keyboard behavior', () => {
     expect(source).toContain('const deletePack = () => {');
     expect(source).toContain('setShowDeletePackConfirm(true)');
     expect(source).toContain('onClick={performDeletePack}');
+  });
+  it('focus-manages the setup-source review dialog', () => {
+    expect(source).toContain('ref={reviewDialogRef} role="dialog" aria-modal="true"');
+    expect(source).toContain('aria-labelledby="word-sounds-review-title" aria-describedby="word-sounds-review-description"');
+    expect(source).toContain('reviewBackRef.current?.focus()');
+    expect(source).toContain('onClick={requestBackToSetup}');
+  });
+
+  it('removes every browser confirmation from setup source', () => {
+    expect(source).not.toMatch(/\bwindow\.confirm\s*\(/);
+    expect(source).toContain('aria-labelledby="probe-end-title" aria-describedby="probe-end-message"');
+    expect(source).toContain('probeCancelRef.current?.focus()');
   });});
