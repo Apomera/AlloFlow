@@ -83,11 +83,15 @@ Each rung can be revealed to yourself first and read aloud to the student. In **
 
 Throughout mediation you capture a **free-text examiner observation** (local-only, never synced), **quick-tap observation tags** (ten of them: self-corrected, needed wait time, used self-talk, off-task, frustration, asked clarifying question, changed strategy, perseverated, appeared to guess, fluent+automatic), and a **leaky-rung flag** when a scaffold accidentally gave the answer away.
 
+The ladder card also carries a collapsed **"Mediation quality reminders (MLE)"** drawer — wait time (5–10 seconds before escalating), intentionality & reciprocity, meaning, and transcendence, drawn from Feuerstein's Mediated Learning Experience criteria. They are reminders that support mediation quality, not a scored fidelity measure. A **session-arc stepper** (pretest → mediation → posttest → transfer → results) keeps you oriented in the test-teach-retest cycle throughout.
+
 **Posttest (unprompted).** Re-test the same items alone. Compare directly to pretest — this is where modifiability shows up.
 
 **Transfer (optional).** If any item has a transfer twin, the student attempts **novel items, same construct**, with no scaffolds. This is the test of whether learning *generalized* rather than was merely memorized.
 
 Answer matching is forgiving for numbers (matches "7" inside "I think 7 apples" but not "17") and uses whole-word containment for text. You can always override with **Mark correct / Mark wrong / Skip** (or **Auto-check + record**).
+
+**Mis-clicks are recoverable.** An **↩ Undo item** button re-presents the most recently recorded item with its response, observations, and tags restored — so a slip on "Mark correct" during a live session no longer means discarding everything. It works across phase boundaries, and the results screen has a matching **↩ Reopen last item** button that steps back into the session. (For AI-mediated items, the mediation attempts restart fresh on the re-presented item.)
 
 ### 5. Score
 
@@ -95,7 +99,7 @@ Each item scores **5 − (prompt level reached)**: solved alone = 5, after L1 = 
 
 ### 6. Interpret
 
-The summary screen leads with the **Modifiability Index**, then layers in transfer, score breakdown, per-item detail, scaffold usage, observation patterns, and — when enabled — the access-condition lens. (Detail below.)
+The summary screen leads with the **Modifiability Index**, then layers in transfer, score breakdown, a **per-item movement table** (each item's arc across pretest → mediation → posttest → transfer, labeled gained / held / not yet / lost), scaffold usage, observation patterns, and — when enabled — the access-condition lens. (Detail below.)
 
 ### 7. Generate Outputs
 
@@ -147,7 +151,9 @@ Tiers:
 - **0–0.3** — *Limited modifiability under these mediation conditions.*
 - **< 0** — *Posttest below pretest baseline* (regression — usually reflects fatigue, anxiety, or motivation rather than ability; re-test on a different day).
 
-**The MI is descriptive, not normed.** With fewer than five items per phase (the default is three), it carries substantial measurement error — read it as a **broad direction** (clear gain / little change / regression), not a precise number. It is a *within-student* metric: never report it as a standard score, percentile, or classification, and never compare it across students. If you compare against your own saved sessions, the tool will tell you that is a local reference only — not an external or standardized norm — and unstable below ~10 sessions, exploratory below ~30. Across a single student's own sessions the trajectory is descriptive only (and construct-relative — compare points *within* the same domain), never a growth norm.
+**The tier cut-points (0.30 / 0.60) are interpretation conventions of this tool** — chosen to structure clinical reasoning, not derived from normative or validation data. Treat the tiers as a reading frame; the underlying pattern (clear gain / partial gain / little change / regression) is the finding.
+
+**The MI is descriptive, not normed.** With fewer than five items per phase (the default is three), it carries substantial measurement error — read it as a **broad direction** (clear gain / little change / regression), not a precise number. The summary quantifies this with a **sensitivity line**: the range the index would span if a single item's scaffold level had been judged one step differently — treat differences smaller than that range as noise. It is a *within-student* metric: never report it as a standard score, percentile, or classification, and never compare it across students. If you compare against your own saved sessions, the tool will tell you that is a local reference only — not an external or standardized norm — and unstable below ~10 sessions, exploratory below ~30. Across a single student's own sessions the trajectory is descriptive only (and construct-relative — compare points *within* the same domain), never a growth norm.
 
 ### Transfer Tier (generalization vs. memorization)
 
@@ -159,6 +165,16 @@ When the transfer phase runs, the tool compares novel-item performance to the po
 - **Minimal transfer** — performance on novel items collapsed back to baseline; interpret the posttest gain as **un-generalized** learning, not construct mastery.
 
 Recommended report phrasing: *"Transfer-probe performance suggests [strong/partial/weak/minimal] generalization to novel surface features."*
+
+### Learning-Zone Snapshot (ZPD)
+
+The summary also places each administered item into the Vygotskian band the session's own data supports:
+
+- **Independent** — solved unprompted at pretest. Already secure; maintain, don't reteach.
+- **Teachable band (ZPD)** — failed alone but solved with L1–L3 scaffolds. This is where to pitch instruction, using the scaffold types that worked.
+- **Needs direct teaching** — required L4 (direct teach) or was never solved. Not yet reachable through prompting alone; reteach foundations first.
+
+A rung you flagged as leaky counts one level higher here (the same conservative correction the score applies), so a leaked L3 success lands in "needs direct teaching" rather than inflating the teachable band. Like everything else on the summary, this is **descriptive of this session's items only — not a normed placement.**
 
 ### Access-Condition Lens (hypothesis only)
 
@@ -205,6 +221,12 @@ From the summary screen's outputs dashboard:
 - **Progress-monitoring plan** — CBM-anchored with NCII/RTI decision rules, explicitly noting that DA is *not* the primary monitoring tool.
 
 **Export and backup:** a self-contained black-and-white **print packet** (with the full clinical caveat in its footer), per-session and full-history **JSON** backup/restore (non-destructive — your local sessions always win), **CSV** exports for research/instrument development, and a **Send to Report Writer** hand-off that carries fact chunks, a pre-drafted section, and all generated outputs.
+
+---
+
+## Accessibility and Theming
+
+The Studio renders as a proper dialog (labeled, focus-trapped, Escape closes it from the start screen, and focus returns to the button that opened it). Every focusable control shows a high-contrast focus ring, tables carry proper header semantics, progress bars and charts expose text alternatives, and status changes are announced to screen readers. Destructive actions (discard, delete) confirm through a themed, keyboard-managed dialog rather than the browser's native popup, and Windows High Contrast Mode keeps card structure and focus visible via system colors. The interface follows the app's **light / dark / high-contrast** theme automatically — including all charts — while **printed packets, family letters, and teacher handoffs always print dark-on-white** regardless of the on-screen theme. Reduced-motion preferences suppress all animation.
 
 ---
 

@@ -102,7 +102,153 @@
     return (typeof window !== "undefined") && !!(window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === "function");
   }
 
+  // ── Host theme detection ──
+  // The host app stamps `theme-${theme}` (light | dark | contrast) on its
+  // root/main element but does not pass a theme prop to DA. Same DOM-sniff
+  // pattern as stem_lab_module's AlloStemTheme: query for the class, watch
+  // it with a MutationObserver (wired in the component) so the Studio
+  // re-themes live when the user toggles the app theme.
+  function daDetectTheme() {
+    try {
+      if (typeof document === "undefined") return "light";
+      var names = ["contrast", "dark", "light"];
+      for (var i = 0; i < names.length; i++) {
+        if (document.querySelector("main.theme-" + names[i])) return names[i];
+      }
+      if (document.body && document.body.classList) {
+        for (var j = 0; j < names.length; j++) {
+          if (document.body.classList.contains("theme-" + names[j])) return names[j];
+        }
+      }
+      for (var k = 0; k < names.length; k++) {
+        if (document.querySelector(".theme-" + names[k])) return names[k];
+      }
+    } catch (_) {}
+    return "light";
+  }
+  // The element whose class attribute carries the theme (observed for changes).
+  function daThemeTarget() {
+    try {
+      if (typeof document === "undefined") return null;
+      return document.querySelector("main.theme-light, main.theme-dark, main.theme-contrast, .theme-light, .theme-dark, .theme-contrast") || document.body || null;
+    } catch (_) { return null; }
+  }
+
   // ── Module-level style block ──
+  // Theme system: every surface color in the component reads a --da-* custom
+  // property. Light values reproduce the original palette byte-for-byte; dark
+  // and contrast values are generated from DA_THEME_TOKENS below. The shell
+  // element (rendered around every view) carries .da-theme-<name> so the
+  // whole module re-themes live when the host app's theme toggles.
+  // Print media re-pins every token to its LIGHT value so packets/letters
+  // print dark-on-white regardless of the on-screen theme.
+  var DA_THEME_TOKENS = {
+    // token: [light, dark, contrast]
+    "page":          ["#ffffff", "#0f172a", "#000000"],
+    "surface":       ["#ffffff", "#1e293b", "#000000"],
+    "surface-2":     ["#f8fafc", "#253247", "#000000"],
+    "surface-3":     ["#f1f5f9", "#2b3a52", "#000000"],
+    "ink":           ["#0f172a", "#e8eef7", "#ffff00"],
+    "ink-2":         ["#334155", "#cbd5e1", "#ffff00"],
+    "ink-3":         ["#475569", "#b0bece", "#ffff00"],
+    "muted":         ["#64748b", "#94a3b8", "#ffff00"],
+    "faint":         ["#94a3b8", "#7e8ca0", "#ffff00"],
+    "border":        ["#e2e8f0", "#334155", "#ffff00"],
+    "border-2":      ["#cbd5e1", "#46586e", "#ffff00"],
+    "on-accent":     ["#ffffff", "#ffffff", "#000000"],
+    "accent":        ["#1e3a8a", "#2563eb", "#ffff00"],
+    "accent-text":   ["#1e3a8a", "#93c5fd", "#ffff00"],
+    "accent-2":      ["#3b82f6", "#60a5fa", "#ffff00"],
+    "focus":         ["#b45309", "#fbbf24", "#ffff00"],
+    "blue-tint":     ["#eff6ff", "rgba(59,130,246,0.14)", "#000000"],
+    "blue-tint-2":   ["#dbeafe", "rgba(59,130,246,0.22)", "#000000"],
+    "blue-border":   ["#bfdbfe", "rgba(96,165,250,0.5)", "#ffff00"],
+    "indigo-tint":   ["#eef2ff", "rgba(99,102,241,0.14)", "#000000"],
+    "indigo-border": ["#c7d2fe", "rgba(129,140,248,0.5)", "#ffff00"],
+    "indigo-border-2": ["#a5b4fc", "rgba(129,140,248,0.6)", "#ffff00"],
+    "indigo-text":   ["#3730a3", "#a5b4fc", "#ffff00"],
+    "indigo-deep":   ["#312e81", "#c7d2fe", "#ffff00"],
+    "indigo-deeper": ["#1e1b4b", "#e0e7ff", "#ffff00"],
+    "indigo-mid":    ["#6366f1", "#818cf8", "#ffff00"],
+    "indigo-mid-2":  ["#4338ca", "#a5b4fc", "#ffff00"],
+    "sky-tint":      ["#f0f9ff", "rgba(14,165,233,0.12)", "#000000"],
+    "sky-tint-2":    ["#ecfeff", "rgba(34,211,238,0.10)", "#000000"],
+    "sky-border":    ["#bae6fd", "rgba(56,189,248,0.5)", "#ffff00"],
+    "sky-border-2":  ["#7dd3fc", "rgba(56,189,248,0.65)", "#ffff00"],
+    "sky-text":      ["#0369a1", "#7dd3fc", "#ffff00"],
+    "sky-deep":      ["#075985", "#bae6fd", "#ffff00"],
+    "sky-deeper":    ["#0c4a6e", "#e0f2fe", "#ffff00"],
+    "cyan-text":     ["#0891b2", "#67e8f9", "#ffff00"],
+    "cyan-deep":     ["#155e75", "#a5f3fc", "#ffff00"],
+    "teal-text":     ["#0f766e", "#5eead4", "#ffff00"],
+    "teal-mid":      ["#0d9488", "#2dd4bf", "#ffff00"],
+    "violet-tint":   ["#faf5ff", "rgba(139,92,246,0.12)", "#000000"],
+    "violet-tint-2": ["#f5f3ff", "rgba(139,92,246,0.10)", "#000000"],
+    "violet-tint-3": ["#fdf4ff", "rgba(217,70,239,0.10)", "#000000"],
+    "violet-border": ["#c4b5fd", "rgba(167,139,250,0.5)", "#ffff00"],
+    "violet-border-2": ["#e9d5ff", "rgba(216,180,254,0.4)", "#ffff00"],
+    "violet-border-3": ["#a78bfa", "rgba(167,139,250,0.65)", "#ffff00"],
+    "violet-text":   ["#6b21a8", "#c4b5fd", "#ffff00"],
+    "violet-text-2": ["#5b21b6", "#c4b5fd", "#ffff00"],
+    "violet-mid":    ["#7c3aed", "#a78bfa", "#ffff00"],
+    "violet-mid-2":  ["#6d28d9", "#a78bfa", "#ffff00"],
+    "violet-deep":   ["#4c1d95", "#ddd6fe", "#ffff00"],
+    "fuchsia-text":  ["#86198f", "#e879f9", "#ffff00"],
+    "rose-tint":     ["#fdf2f8", "rgba(236,72,153,0.12)", "#000000"],
+    "rose-border":   ["#f9a8d4", "rgba(244,114,182,0.5)", "#ffff00"],
+    "rose-text":     ["#9d174d", "#f9a8d4", "#ffff00"],
+    "rose-deep":     ["#831843", "#fbcfe8", "#ffff00"],
+    "pink-mid":      ["#db2777", "#f472b6", "#ffff00"],
+    "red-tint":      ["#fef2f2", "rgba(239,68,68,0.12)", "#000000"],
+    "red-tint-2":    ["#fee2e2", "rgba(239,68,68,0.20)", "#000000"],
+    "red-border":    ["#fca5a5", "rgba(248,113,113,0.5)", "#ffff00"],
+    "red-mid":       ["#dc2626", "#f87171", "#ffff00"],
+    "red-mid-2":     ["#ef4444", "#f87171", "#ffff00"],
+    "red-text":      ["#b91c1c", "#fca5a5", "#ffff00"],
+    "red-deep":      ["#7f1d1d", "#fecaca", "#ffff00"],
+    "orange-mid":    ["#ea580c", "#fb923c", "#ffff00"],
+    "orange-mid-2":  ["#f97316", "#fb923c", "#ffff00"],
+    "orange-text":   ["#c2410c", "#fdba74", "#ffff00"],
+    "orange-text-2": ["#9a3412", "#fdba74", "#ffff00"],
+    "orange-deep":   ["#7c2d12", "#fed7aa", "#ffff00"],
+    "amber-tint":    ["#fffbeb", "rgba(245,158,11,0.12)", "#000000"],
+    "amber-tint-2":  ["#fef3c7", "rgba(245,158,11,0.18)", "#000000"],
+    "amber-tint-3":  ["#fdfaf3", "rgba(245,158,11,0.08)", "#000000"],
+    "amber-border":  ["#fbbf24", "rgba(251,191,36,0.55)", "#ffff00"],
+    "amber-border-2": ["#f3d28a", "rgba(251,191,36,0.4)", "#ffff00"],
+    "amber-mid":     ["#f59e0b", "#fbbf24", "#ffff00"],
+    "amber-mid-2":   ["#d97706", "#fbbf24", "#ffff00"],
+    "amber-text":    ["#a16207", "#fcd34d", "#ffff00"],
+    "amber-text-2":  ["#92400e", "#fde68a", "#ffff00"],
+    "amber-text-3":  ["#b45309", "#fcd34d", "#ffff00"],
+    "green-tint":    ["#f0fdf4", "rgba(34,197,94,0.12)", "#000000"],
+    "green-tint-2":  ["#dcfce7", "rgba(34,197,94,0.20)", "#000000"],
+    "green-border":  ["#86efac", "rgba(74,222,128,0.5)", "#ffff00"],
+    "green-border-2": ["#bbf7d0", "rgba(74,222,128,0.35)", "#ffff00"],
+    "green-mid":     ["#16a34a", "#22c55e", "#ffff00"],
+    "green-text":    ["#16a34a", "#4ade80", "#ffff00"],
+    "green-text-2":  ["#15803d", "#86efac", "#ffff00"],
+    "green-deep":    ["#14532d", "#bbf7d0", "#ffff00"],
+    "green-deep-2":  ["#166534", "#bbf7d0", "#ffff00"],
+    "zinc-text":     ["#52525b", "#c9ced8", "#ffff00"],
+    // Button backgrounds under white (--da-on-accent) text. These hues are
+    // ALSO used as text-on-tint (where dark mode needs a light value), so the
+    // buttons get their own tokens that stay deep in dark mode. Contrast mode
+    // uses yellow (on-accent flips to black there).
+    "btn-indigo":    ["#3730a3", "#4f46e5", "#ffff00"],
+    "btn-sky":       ["#075985", "#0369a1", "#ffff00"],
+    "btn-rose":      ["#9d174d", "#be185d", "#ffff00"],
+    "btn-amber":     ["#92400e", "#b45309", "#ffff00"],
+    "btn-violet":    ["#6d28d9", "#7c3aed", "#ffff00"],
+    "btn-green":     ["#16a34a", "#15803d", "#ffff00"]
+  };
+  function daBuildTokenCss(idx) {
+    var decls = [];
+    Object.keys(DA_THEME_TOKENS).forEach(function (k) {
+      decls.push("--da-" + k + ": " + DA_THEME_TOKENS[k][idx] + ";");
+    });
+    return decls.join(" ");
+  }
   (function () {
     if (typeof document === "undefined") return;
     if (document.getElementById("allo-da-styles")) return;
@@ -113,12 +259,31 @@
       "@keyframes da-pop { 0% { transform:scale(0.96); } 50% { transform:scale(1.04); } 100% { transform:scale(1); } }",
       ".da-fade-in { animation: da-fade-in 280ms ease-out; }",
       ".da-pop { animation: da-pop 320ms ease-out; }",
-      ".da-root { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; line-height: 1.55; color: #0f172a; }",
-      ".da-root button:focus-visible { outline: 3px solid #fbbf24; outline-offset: 2px; }",
-      ".da-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(15,23,42,0.06); }",
-      ".da-ladder-step { padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; transition: border-color 200ms ease, background 200ms ease; }",
-      ".da-ladder-step.used { background: #fef3c7; border-color: #fbbf24; }",
-      ".da-ladder-step.active { background: #dbeafe; border-color: #3b82f6; }",
+      // Token sets: light is the default; the shell's theme class flips them.
+      ".da-shell, .da-root { " + daBuildTokenCss(0) + " }",
+      ".da-shell.da-theme-dark, .da-shell.da-theme-dark .da-root { " + daBuildTokenCss(1) + " }",
+      ".da-shell.da-theme-contrast, .da-shell.da-theme-contrast .da-root { " + daBuildTokenCss(2) + " }",
+      // The shell paints the page surface (the host wraps the module in a
+      // hardcoded white card; radius matches the host's rounded-2xl).
+      ".da-shell { background: var(--da-page); border-radius: 16px; color: var(--da-ink); }",
+      ".da-shell.da-theme-contrast { outline: 2px solid #ffff00; }",
+      ".da-root { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; line-height: 1.55; color: var(--da-ink); }",
+      // WCAG 2.4.7/1.4.11 — visible, ≥3:1 focus indicator on EVERY focusable,
+      // not just buttons. Token flips per theme so it stays ≥3:1 on all surfaces.
+      ".da-root button:focus-visible, .da-root a:focus-visible, .da-root input:focus-visible, .da-root select:focus-visible, .da-root textarea:focus-visible, .da-root summary:focus-visible, .da-root [tabindex]:focus-visible { outline: 3px solid var(--da-focus); outline-offset: 2px; }",
+      // WCAG 2.5.8 — minimum target size for the small icon/chip buttons.
+      ".da-root button { min-height: 24px; min-width: 24px; }",
+      ".da-card { background: var(--da-surface); border: 1px solid var(--da-border); border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(15,23,42,0.06); }",
+      ".da-ladder-step { padding: 10px 12px; border: 1px solid var(--da-border); border-radius: 10px; background: var(--da-surface-2); transition: border-color 200ms ease, background 200ms ease; }",
+      ".da-ladder-step.used { background: var(--da-amber-tint-2); border-color: var(--da-amber-border); }",
+      ".da-ladder-step.active { background: var(--da-blue-tint-2); border-color: var(--da-accent-2); }",
+      // Windows High Contrast Mode (forced-colors) — the OS overrides our
+      // palette; keep structure visible via system-color borders + focus.
+      "@media (forced-colors: active) {",
+      "  .da-card, .da-ladder-step { border: 1px solid CanvasText; }",
+      "  .da-root button { border: 1px solid ButtonText; }",
+      "  .da-root button:focus-visible, .da-root a:focus-visible, .da-root input:focus-visible, .da-root select:focus-visible, .da-root textarea:focus-visible, .da-root summary:focus-visible, .da-root [tabindex]:focus-visible { outline: 3px solid Highlight; }",
+      "}",
       // Phase E — Print packet styles
       ".da-print-packet { display: none; }",
       // Phase S — Family letter is hidden by default on screen
@@ -126,6 +291,9 @@
       // Phase T — Teacher handoff print block is hidden by default
       ".da-teacher-handoff-print { display: none; }",
       "@media print {",
+      // Re-pin every theme token to its LIGHT value so packets, family
+      // letters, and handoffs print dark-on-white even from dark/contrast.
+      "  .da-shell, .da-shell.da-theme-dark, .da-shell.da-theme-contrast, .da-root { " + daBuildTokenCss(0) + " }",
       "  body * { visibility: hidden !important; }",
       "  .da-print-packet, .da-print-packet * { visibility: visible !important; }",
       "  .da-print-packet { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: #fff !important; color: #000 !important; padding: 20px; }",
@@ -1351,6 +1519,102 @@
   }
 
   // ═════════════════════════════════════════════════════════
+  // Learning-zone (ZPD) snapshot
+  // ─────────────────────────────────────────────────────────
+  // Classifies each administered item into the Vygotskian bands the
+  // session's own data supports:
+  //   independent  — solved unprompted at PRETEST (secure before teaching)
+  //   zpd          — solved during MEDIATION with scaffolds L1–L3
+  //                  (the teachable band: fails alone, succeeds with help)
+  //   frustration  — needed L4 direct teach, or never solved in mediation
+  //                  (not yet reachable through prompting alone)
+  // A rung the clinician flagged as leaky counts one level higher (same
+  // conservative correction scoreForLevel applies), so a leaked L3 success
+  // lands in the frustration band rather than inflating the ZPD band.
+  // Descriptive within this session only — NOT a normed placement.
+  function computeZpdProfile(session) {
+    var results = (session && session.itemResults) || [];
+    var pre = {}, med = {};
+    var order = [];
+    var seen = {};
+    results.forEach(function (r) {
+      if (!r || !r.itemId) return;
+      if (!seen[r.itemId]) { seen[r.itemId] = true; order.push(r.itemId); }
+      if (r.phase === "pretest") pre[r.itemId] = r;
+      else if (r.phase === "mediation") med[r.itemId] = r;
+    });
+    var out = { independent: [], zpd: [], frustration: [], nClassified: 0 };
+    order.forEach(function (id) {
+      var item = ITEMS_BY_ID[id];
+      var construct = item ? item.construct : id;
+      var p = pre[id], m = med[id];
+      if (p && p.finalCorrect) {
+        out.independent.push({ itemId: id, construct: construct });
+        out.nClassified++;
+        return;
+      }
+      if (m) {
+        var lvl = m.promptLevelReached || 0;
+        if (m.scaffoldLeaked && lvl < 4) lvl = lvl + 1;
+        if (m.finalCorrect && lvl <= 3) {
+          out.zpd.push({ itemId: id, construct: construct, level: lvl });
+        } else {
+          out.frustration.push({ itemId: id, construct: construct, solvedWithTeach: !!m.finalCorrect });
+        }
+        out.nClassified++;
+      }
+      // No pretest success and no mediation record → unclassifiable; skip.
+    });
+    return out;
+  }
+
+  // ═════════════════════════════════════════════════════════
+  // Undo support — roll back the most recent item entry
+  // ─────────────────────────────────────────────────────────
+  // A single mis-click on "Mark correct" used to force discarding the WHOLE
+  // session (live, with a student across the table). This computes the
+  // session-field patch that re-presents the most recently recorded item.
+  // Pure: returns null when there is nothing to undo. The popped result is
+  // returned so the caller can restore the response/observation drafts.
+  function rollbackLastItemResult(session) {
+    var results = (session && session.itemResults) || [];
+    if (results.length === 0) return null;
+    var popped = results[results.length - 1];
+    var remaining = results.slice(0, -1);
+    // The item's position within its phase = how many results that phase
+    // retains after the pop (items run 0..n-1 in order within each phase).
+    var idxInPhase = remaining.filter(function (r) { return r.phase === popped.phase; }).length;
+    return {
+      itemResults: remaining,
+      currentPhase: popped.phase,
+      currentItemIdx: idxInPhase,
+      currentLadderLevel: 0,
+      popped: popped
+    };
+  }
+
+  // ═════════════════════════════════════════════════════════
+  // Single-item sensitivity band for the Modifiability Index
+  // ─────────────────────────────────────────────────────────
+  // Quantifies the small-N caution: how far would the MI move if ONE item's
+  // scaffold level had been judged one step differently (±1 point on one
+  // phase sum — the most common real scoring error, adjacent-level
+  // confusion)? Returns { lo, hi } or null when no items.
+  function computeMiSensitivity(pretestSum, posttestSum, itemCount) {
+    var max = maxPossibleScore(itemCount);
+    if (max <= 0) return null;
+    function clamp(v) { return Math.max(0, Math.min(max, v)); }
+    var candidates = [
+      computeModifiabilityIndex(clamp(pretestSum + 1), posttestSum, itemCount),
+      computeModifiabilityIndex(clamp(pretestSum - 1), posttestSum, itemCount),
+      computeModifiabilityIndex(pretestSum, clamp(posttestSum + 1), itemCount),
+      computeModifiabilityIndex(pretestSum, clamp(posttestSum - 1), itemCount),
+      computeModifiabilityIndex(pretestSum, posttestSum, itemCount)
+    ];
+    return { lo: Math.min.apply(null, candidates), hi: Math.max.apply(null, candidates) };
+  }
+
+  // ═════════════════════════════════════════════════════════
   // Phase I — Structured observation taxonomy
   // ─────────────────────────────────────────────────────────
   // Free-text observations capture nuance but don't aggregate.
@@ -1790,7 +2054,7 @@
     if (d === null || d === undefined) return { label: "—", color: "#64748b", desc: "Insufficient data." };
     var abs = Math.abs(d);
     if (abs < 0.2) return { label: "Negligible", color: "#64748b",
-      desc: "Effect size is below the conventional 'small' threshold. Across your caseload, the average mediation effect is statistically detectable but not clinically meaningful." };
+      desc: "Effect size is below the conventional 'small' threshold (Cohen, 1988). Across your caseload, the average pretest→posttest change is too small to distinguish from measurement noise — do not describe it as a meaningful mediation effect." };
     if (abs < 0.5) return { label: "Small", color: "#a16207",
       desc: "Average mediation produces a small (Cohen, 1988) effect across your caseload. Useful at the individual level for some students, but not a strong population-wide intervention signal." };
     if (abs < 0.8) return { label: "Medium", color: "#15803d",
@@ -2256,6 +2520,18 @@
     if (transferResults.length > 0 && transferInterp) {
       chunks.push(chunk("Transfer probe score", transferSum + " / " + transferMax + " (" + Math.round((transferSum / transferMax) * 100) + "%)"));
       chunks.push(chunk("Transfer interpretation", transferInterp.label, transferInterp.id));
+    }
+
+    // Learning-zone (ZPD) snapshot — counts per band, descriptive only.
+    var zpd = computeZpdProfile(session);
+    if (zpd.nClassified > 0) {
+      chunks.push(chunk(
+        "Learning-zone snapshot (descriptive)",
+        zpd.independent.length + " item(s) already independent at pretest · " +
+        zpd.zpd.length + " item(s) solved with L1–L3 scaffolds (teachable band) · " +
+        zpd.frustration.length + " item(s) needing direct teaching or unsolved",
+        "zpd"
+      ));
     }
 
     // Construct tags rolled up
@@ -4857,6 +5133,164 @@
     var useState = React.useState;
     var useEffect = React.useEffect;
 
+    // ── Theme (light | dark | contrast), self-detected from the host DOM ──
+    // The host doesn't pass a theme prop; we sniff its theme-<name> class at
+    // mount and observe it for live toggles. The shell element (see RENDER)
+    // carries .da-theme-<name>, which flips every --da-* token in CSS.
+    var daThemeTuple = useState(daDetectTheme);
+    var daTheme = daThemeTuple[0];
+    var setDaTheme = daThemeTuple[1];
+    useEffect(function () {
+      if (typeof document === "undefined" || typeof MutationObserver === "undefined") return;
+      var target = daThemeTarget();
+      if (!target) return;
+      var mo = new MutationObserver(function () {
+        var next = daDetectTheme();
+        setDaTheme(function (prev) { return prev === next ? prev : next; });
+      });
+      try { mo.observe(target, { attributes: true, attributeFilter: ["class"] }); } catch (_) {}
+      return function () { try { mo.disconnect(); } catch (_) {} };
+      // eslint-disable-next-line
+    }, []);
+
+    // JS-side tone palette for colors that CANNOT be CSS variables:
+    // SVG presentation attributes (fill/stroke) and hex+alpha string concats
+    // (e.g. idxColor + "11"). Light values match the original palette.
+    var DA_TONES = {
+      light: { ink: "#0f172a", muted: "#64748b", faint: "#94a3b8", slate: "#475569", border: "#cbd5e1", grid: "#e2e8f0", surface: "#ffffff",
+        blue: "#1e3a8a", blueMid: "#3b82f6", sky: "#0284c7", green: "#16a34a", greenStrong: "#15803d", amber: "#a16207", amberMid: "#d97706",
+        red: "#b91c1c", redMid: "#dc2626", violet: "#6d28d9", orangeDeep: "#7c2d12", roseDeep: "#9d174d", redDeep: "#7f1d1d" },
+      dark: { ink: "#e8eef7", muted: "#94a3b8", faint: "#7e8ca0", slate: "#b0bece", border: "#46586e", grid: "#334155", surface: "#1e293b",
+        blue: "#93c5fd", blueMid: "#60a5fa", sky: "#38bdf8", green: "#4ade80", greenStrong: "#86efac", amber: "#fbbf24", amberMid: "#fbbf24",
+        red: "#f87171", redMid: "#f87171", violet: "#a78bfa", orangeDeep: "#fdba74", roseDeep: "#f9a8d4", redDeep: "#fca5a5" },
+      contrast: { ink: "#ffff00", muted: "#ffff00", faint: "#ffff00", slate: "#ffff00", border: "#ffff00", grid: "#ffff00", surface: "#000000",
+        blue: "#ffff00", blueMid: "#ffff00", sky: "#ffff00", green: "#00ff00", greenStrong: "#00ff00", amber: "#ffff00", amberMid: "#ffff00",
+        red: "#ffff00", redMid: "#ffff00", violet: "#ffff00", orangeDeep: "#ffff00", roseDeep: "#ffff00", redDeep: "#ffff00" }
+    };
+    var daTone = DA_TONES[daTheme] || DA_TONES.light;
+    // Map a module-level data color (tier.color, flag.color — always the light
+    // hex) to the current theme's tone so text stays readable on dark surfaces.
+    var DA_HEX_TONE = {
+      "#16a34a": "green", "#15803d": "greenStrong", "#a16207": "amber", "#d97706": "amberMid",
+      "#b91c1c": "red", "#dc2626": "redMid", "#ea580c": "amberMid", "#64748b": "muted",
+      "#475569": "slate", "#1e3a8a": "blue", "#0f172a": "ink", "#7f1d1d": "redDeep",
+      "#7c2d12": "orangeDeep", "#9d174d": "roseDeep", "#92400e": "amber",
+      "#6d28d9": "violet", "#5b21b6": "violet", "#7c3aed": "violet",
+      "#075985": "blueMid", "#3730a3": "violet", "#3b82f6": "blueMid"
+    };
+    function daHex(hex) {
+      var key = DA_HEX_TONE[String(hex || "").toLowerCase()];
+      return key ? daTone[key] : hex;
+    }
+
+    // ── Dialog shell focus management (WCAG 2.4.3 / 2.1.2) ──
+    var daShellRef = (React.useRef ? React.useRef(null) : { current: null });
+    // Focus the shell on mount and restore the opener's focus on unmount —
+    // the host mounts/unmounts the module to open/close the modal, so the
+    // unmount cleanup is exactly the close moment. Only when hosted as a
+    // modal (onClose present); embedded contexts shouldn't have focus yanked.
+    useEffect(function () {
+      if (typeof props.onClose !== "function") return;
+      if (typeof document === "undefined") return;
+      var opener = document.activeElement;
+      try { if (daShellRef.current && typeof daShellRef.current.focus === "function") daShellRef.current.focus(); } catch (_) {}
+      return function () {
+        try {
+          if (opener && typeof opener.focus === "function" && document.contains(opener)) opener.focus();
+        } catch (_) {}
+      };
+      // eslint-disable-next-line
+    }, []);
+    // Tab/Shift+Tab wrap inside the dialog.
+    function daTrapTab(e) {
+      if (e.key !== "Tab") return;
+      var root = daShellRef.current;
+      if (!root) return;
+      var nodes;
+      try { nodes = root.querySelectorAll("button, [href], input, select, textarea, summary, [tabindex]:not([tabindex='-1'])"); } catch (_) { return; }
+      var list = [];
+      for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        if (n.disabled) continue;
+        if (n.offsetParent === null && n !== document.activeElement) continue; // hidden
+        list.push(n);
+      }
+      if (list.length === 0) return;
+      var first = list[0], last = list[list.length - 1];
+      var active = document.activeElement;
+      if (e.shiftKey && (active === first || active === root)) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && active === last) { e.preventDefault(); first.focus(); }
+    }
+
+    // ── Themed, accessible confirm dialog (replaces window.confirm) ──
+    // Native confirm() is unthemed, unstyled, and yanks the screen-reader
+    // context. daAskConfirm renders an alertdialog inside the shell with its
+    // own two-button focus loop; Escape cancels; focus returns to the
+    // element that triggered it.
+    var daConfirmTuple = useState(null); // { message, confirmLabel, danger, onConfirm, _opener }
+    var daConfirm = daConfirmTuple[0];
+    var setDaConfirm = daConfirmTuple[1];
+    function daAskConfirm(opts) {
+      var opener = null;
+      try { opener = document.activeElement; } catch (_) {}
+      setDaConfirm({
+        message: String(opts.message || "Are you sure?"),
+        confirmLabel: opts.confirmLabel || "Confirm",
+        danger: opts.danger !== false, // most of these confirms guard destructive actions
+        onConfirm: typeof opts.onConfirm === "function" ? opts.onConfirm : function () {},
+        _opener: opener
+      });
+    }
+    function daCloseConfirm(runIt) {
+      var c = daConfirm;
+      setDaConfirm(null);
+      if (c && c._opener && typeof c._opener.focus === "function") {
+        try { if (document.contains(c._opener)) c._opener.focus(); } catch (_) {}
+      }
+      if (runIt && c) c.onConfirm();
+    }
+    function renderDaConfirm() {
+      if (!daConfirm) return null;
+      function trapConfirmKeys(e) {
+        if (e.key === "Escape" || e.key === "Esc") { e.preventDefault(); e.stopPropagation(); daCloseConfirm(false); return; }
+        if (e.key === "Tab") {
+          // Two buttons only — wrap between them (and keep the shell's own
+          // Tab trap from seeing this event).
+          e.preventDefault();
+          e.stopPropagation();
+          try {
+            var btns = e.currentTarget.querySelectorAll("button");
+            if (btns.length === 2) (document.activeElement === btns[0] ? btns[1] : btns[0]).focus();
+          } catch (_) {}
+        }
+      }
+      return h("div", {
+        onKeyDown: trapConfirmKeys,
+        style: { position: "fixed", inset: 0, zIndex: 2000, background: "rgba(15,23,42,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }
+      },
+        h("div", {
+          role: "alertdialog", "aria-modal": "true", "aria-label": daConfirm.message,
+          className: "da-card",
+          style: { maxWidth: 420, width: "100%", padding: 18, boxShadow: "0 12px 40px rgba(0,0,0,0.35)" }
+        },
+          h("p", { style: { margin: "0 0 14px", fontSize: 14, color: "var(--da-ink)", lineHeight: 1.6 } }, daConfirm.message),
+          h("div", { style: { display: "flex", gap: 8, justifyContent: "flex-end" } },
+            h("button", {
+              autoFocus: true,
+              onClick: function () { daCloseConfirm(false); },
+              style: { padding: "8px 16px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+            }, "Cancel"),
+            h("button", {
+              onClick: function () { daCloseConfirm(true); },
+              style: daConfirm.danger
+                ? { padding: "8px 16px", borderRadius: 8, border: "none", background: "var(--da-red-mid)", color: "var(--da-on-accent)", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }
+                : { padding: "8px 16px", borderRadius: 8, border: "none", background: "var(--da-accent)", color: "var(--da-on-accent)", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }
+            }, daConfirm.confirmLabel)
+          )
+        )
+      );
+    }
+
     // Phase V-bis — Math Fluency CBM probes piped in from the host's main
     // history array. Most-recent-first. May be empty or undefined if the
     // host hasn't passed them (legacy callers, embedded contexts, etc).
@@ -5118,6 +5552,9 @@
     useEffect(function () {
       if (typeof document === "undefined") return;
       function onKeyDown(e) {
+        // The confirm dialog owns the keyboard while open (its own handler
+        // cancels on Escape); don't back-navigate underneath it.
+        if (daConfirm) return;
         // Esc — back-navigation
         if (e.key === "Escape" || e.key === "Esc") {
           if (tourStep !== null) { closeTour(); e.preventDefault(); return; }
@@ -5138,14 +5575,20 @@
             // Inside calibration: Esc goes back one view-stage (feedback→scenario, summary→start, etc.)
             if (calibState.view === "feedback") { updateCalibState({ view: "scenario" }); }
             else if (calibState.view === "summary" || calibState.view === "scenario") {
-              if (window.confirm("Exit calibration mode? Progress will be discarded.")) {
-                resetCalibration();
-                setStartScreenView("start");
-              }
+              daAskConfirm({
+                message: "Exit calibration mode? Progress will be discarded.",
+                confirmLabel: "Exit calibration",
+                onConfirm: function () { resetCalibration(); setStartScreenView("start"); }
+              });
             } else { setStartScreenView("start"); }
             e.preventDefault(); return;
           }
           if (startScreenView === "reference")      { setStartScreenView("start"); e.preventDefault(); return; }
+          // Top-level start screen with no active session → close the dialog
+          // (standard modal Escape behavior; host wrapper never wired it).
+          if (startScreenView === "start" && typeof props.onClose === "function") {
+            props.onClose(); e.preventDefault(); return;
+          }
         }
         // Cmd/Ctrl+Enter — submit response in active item phase
         if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
@@ -5166,7 +5609,7 @@
         try { document.removeEventListener("keydown", onKeyDown); } catch (err) { /* ignore */ }
       };
       // eslint-disable-next-line
-    }, [tourStep, startScreenView, viewingSessionId, state.activeSession ? state.activeSession.currentPhase : null]);
+    }, [tourStep, startScreenView, viewingSessionId, daConfirm, state.activeSession ? state.activeSession.currentPhase : null]);
 
     // ── Polish — surface localStorage save failures as a toast ──
     // The state mutator pings window.__alloDaStorageFailed on quota errors.
@@ -5549,8 +5992,8 @@
           style: {
             display: "inline-flex", alignItems: "center", gap: 4,
             margin: "0 2px", padding: "1px 8px",
-            background: "#eef2ff", color: "#3730a3",
-            border: "1px solid #c7d2fe", borderRadius: 999,
+            background: "var(--da-indigo-tint)", color: "var(--da-indigo-text)",
+            border: "1px solid var(--da-indigo-border)", borderRadius: 999,
             fontSize: "0.85em", fontWeight: 700, fontFamily: "inherit",
             cursor: "pointer", textDecoration: "none", verticalAlign: "baseline"
           }
@@ -6749,6 +7192,34 @@
       announce("Scaffold level " + level + " delivered.");
     }
 
+    // Undo the most recent item entry — re-presents that item with the
+    // response/observation drafts restored so a mis-click doesn't cost the
+    // session. AI-mediation attempts restart fresh for the re-presented item
+    // (the popped result's transcript is discarded with it).
+    function undoLastResult() {
+      var s = state.activeSession;
+      if (!s) return;
+      var rb = rollbackLastItemResult(s);
+      if (!rb) { addToast("Nothing to undo yet."); return; }
+      patchSession({
+        itemResults: rb.itemResults,
+        currentPhase: rb.currentPhase,
+        currentItemIdx: rb.currentItemIdx,
+        currentLadderLevel: rb.currentLadderLevel
+      });
+      var popped = rb.popped;
+      setResponseDraft(popped.studentResponseText || "");
+      setObservationDraft(popped.examinerObservation || "");
+      setObservationTagsDraft(Array.isArray(popped.observationTags) ? popped.observationTags.slice() : []);
+      setScaffoldLeakedDraft(!!popped.scaffoldLeaked);
+      setAccessReadAloudDraft(!!popped.accessReadAloudHelped);
+      setAccessSimplifiedDraft(!!popped.accessSimplifiedHelped);
+      setAccessL1Draft(!!popped.accessL1Helped);
+      setAiAttempts([]);
+      setAiError(null);
+      announce("Last item entry undone. Back on " + rb.currentPhase + " item " + (rb.currentItemIdx + 1) + ".");
+    }
+
     // ─── Phase B — AI mediation cycle ───
     // Called when student submits a response during AI-mediated mediation.
     // 1. Build prompt → call Gemini for verdict + nextScaffoldLevel.
@@ -6918,31 +7389,50 @@
     }
 
     // ── RENDER ──
+    // Every view renders inside one shell element that provides:
+    //   1. the theme class (.da-theme-<name>) that flips all --da-* tokens,
+    //   2. dialog semantics (role/aria-modal/aria-label) the host wrapper
+    //      never supplied (WCAG 4.1.2),
+    //   3. a Tab focus trap + mount-focus target (WCAG 2.4.3 / 2.1.2),
+    //   4. the painted page surface so the host's hardcoded white wrapper
+    //      doesn't bleed through in dark/contrast themes.
+    function daShellWrap(view) {
+      return h("div", {
+        ref: daShellRef,
+        className: "da-shell da-theme-" + daTheme,
+        role: "dialog",
+        "aria-modal": typeof props.onClose === "function" ? "true" : undefined,
+        "aria-label": "Dynamic Assessment Studio",
+        tabIndex: -1,
+        onKeyDown: daTrapTab,
+        style: { outline: "none" }
+      }, view, renderDaConfirm());
+    }
     // Phase U: if activeSession is paused, route to the start screen with
     // a resume banner instead of dropping into the item view.
     var isPaused = !!(state.activeSession && state.activeSession.paused);
+    var daView;
     if (!state.activeSession || isPaused) {
       // Pre-session views, in priority order
-      if (tourStep !== null) return renderOnboardingTour();
-      if (startScreenView === "custom-builder") return renderCustomBuilder();
-      if (startScreenView === "custom-review")  return renderCustomReview();
-      if (startScreenView === "sessions")       return renderSessionsBrowser();
-      if (startScreenView === "session-detail") return renderSessionDetail();
-      if (startScreenView === "longitudinal")   return renderLongitudinalView();
-      if (startScreenView === "analytics")      return renderItemAnalytics();
-      if (startScreenView === "population")     return renderPopulationStats();
-      if (startScreenView === "calibration")    return renderCalibration();
-      if (startScreenView === "reference")      return renderReferenceGuide();
-      return renderStartScreen();
+      if (tourStep !== null) daView = renderOnboardingTour();
+      else if (startScreenView === "custom-builder") daView = renderCustomBuilder();
+      else if (startScreenView === "custom-review")  daView = renderCustomReview();
+      else if (startScreenView === "sessions")       daView = renderSessionsBrowser();
+      else if (startScreenView === "session-detail") daView = renderSessionDetail();
+      else if (startScreenView === "longitudinal")   daView = renderLongitudinalView();
+      else if (startScreenView === "analytics")      daView = renderItemAnalytics();
+      else if (startScreenView === "population")     daView = renderPopulationStats();
+      else if (startScreenView === "calibration")    daView = renderCalibration();
+      else if (startScreenView === "reference")      daView = renderReferenceGuide();
+      else daView = renderStartScreen();
+    } else {
+      // AI mode only changes the MEDIATION phase. Pretest/posttest are
+      // single-attempt regardless of mode (they're unprompted by design).
+      if (state.activeSession.currentPhase === "summary") daView = renderSummaryScreen();
+      else if (state.activeSession.currentPhase === "mediation" && state.activeSession.mode === "ai") daView = renderActivePhaseAI();
+      else daView = renderActivePhase();
     }
-    var s = state.activeSession;
-    if (s.currentPhase === "summary") return renderSummaryScreen();
-    // AI mode only changes the MEDIATION phase. Pretest/posttest are
-    // single-attempt regardless of mode (they're unprompted by design).
-    if (s.currentPhase === "mediation" && s.mode === "ai") {
-      return renderActivePhaseAI();
-    }
-    return renderActivePhase();
+    return daShellWrap(daView);
 
     // ─── Start screen ───
     function renderStartScreen() {
@@ -6956,11 +7446,11 @@
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" } },
           props.onClose ? h("button", {
             onClick: props.onClose, "aria-label": "Close Dynamic Assessment Studio",
-            style: { background: "transparent", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
+            style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
           }, "← Back") : null,
           h("div", { style: { flex: 1, minWidth: 200 } },
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } }, "Clinical tool · v1"),
-            h("h1", { style: { margin: "2px 0 0", fontSize: 24, fontWeight: 800, color: "#0f172a" } }, "🔬 Dynamic Assessment Studio")
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } }, "Clinical tool · v1"),
+            h("h1", { style: { margin: "2px 0 0", fontSize: 24, fontWeight: 800, color: "var(--da-ink)" } }, "🔬 Dynamic Assessment Studio")
           ),
           // Phase F + G — top-right utility actions
           h("div", { style: { display: "flex", gap: 6 } },
@@ -6968,25 +7458,25 @@
               onClick: function () { setStartScreenView("sessions"); },
               "aria-label": "View all saved sessions",
               title: "Browse all saved DA sessions, filter by student, see longitudinal patterns",
-              style: { background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, color: "#0f172a" }
+              style: { background: "var(--da-surface)", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, color: "var(--da-ink)" }
             }, "📁 Sessions" + ((state.sessions || []).length > 0 ? " · " + state.sessions.length : "")),
             h("button", {
               onClick: startTour,
               "aria-label": "Open the DA methodology tour",
               title: "4-step intro to Dynamic Assessment + this tool's workflow",
-              style: { background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, color: "#0f172a" }
+              style: { background: "var(--da-surface)", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, color: "var(--da-ink)" }
             }, "🧭 Tour"),
             h("button", {
               onClick: function () { setStartScreenView("reference"); },
               "aria-label": "Open the clinician interpretation guide",
               title: "MI tier interpretation, when to use DA, reporting framing, citations",
-              style: { background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, color: "#0f172a" }
+              style: { background: "var(--da-surface)", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, color: "var(--da-ink)" }
             }, "📚 Guide"),
             h("button", {
               onClick: function () { resetCalibration(); setStartScreenView("calibration"); },
               "aria-label": "Open calibration mode — practice scoring sample student responses",
               title: "Train on hand-authored scenarios; check your inter-rater agreement with expert verdicts",
-              style: { background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, color: "#0f172a" }
+              style: { background: "var(--da-surface)", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, color: "var(--da-ink)" }
             }, "🎓 Calibrate")
           )
         ),
@@ -6999,15 +7489,15 @@
           var doneCount = (as.itemResults || []).length;
           var phaseLabel = (as.currentPhase || "pretest");
           var lastTouched = as.lastTouchedAt || as.dateStarted;
-          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 14, background: "#fef3c7", borderColor: "#f59e0b" } },
+          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 14, background: "var(--da-amber-tint-2)", borderColor: "var(--da-amber-mid)" } },
             h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" } },
               h("div", { style: { flex: 1, minWidth: 200 } },
-                h("div", { style: { fontSize: 11, color: "#92400e", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, marginBottom: 4 } },
+                h("div", { style: { fontSize: 11, color: "var(--da-amber-text-2)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, marginBottom: 4 } },
                   "📌 Session in progress" + (as.paused ? " · PAUSED" : "")),
-                h("div", { style: { fontSize: 14, fontWeight: 700, color: "#0f172a" } },
+                h("div", { style: { fontSize: 14, fontWeight: 700, color: "var(--da-ink)" } },
                   (as.studentNickname || "Anonymous") + " · " + as.domain + " · " +
                   phaseLabel + " phase · " + Math.min(doneCount + 1, totalItems) + " of " + totalItems + " items"),
-                h("div", { style: { fontSize: 11, color: "#92400e", marginTop: 4, fontStyle: "italic" } },
+                h("div", { style: { fontSize: 11, color: "var(--da-amber-text-2)", marginTop: 4, fontStyle: "italic" } },
                   "Last touched " + formatRelativeTime(lastTouched) +
                   (as.paused && as.pausedAt ? " · paused " + formatRelativeTime(as.pausedAt) : ""))
               ),
@@ -7017,47 +7507,48 @@
                     if (as.paused) resumeSession();
                   },
                   "aria-label": "Resume the in-progress session",
-                  style: { padding: "8px 16px", borderRadius: 8, border: "none", background: "#92400e", color: "#ffffff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "8px 16px", borderRadius: 8, border: "none", background: "var(--da-btn-amber)", color: "var(--da-on-accent)", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }
                 }, as.paused ? "▶ Resume" : "▶ Continue"),
                 h("button", {
                   onClick: function () {
-                    if (window.confirm("Discard this in-progress session? Item results will be lost. This cannot be undone.")) {
-                      discardSession();
-                      addToast("In-progress session discarded.");
-                    }
+                    daAskConfirm({
+                      message: "Discard this in-progress session? Item results will be lost. This cannot be undone.",
+                      confirmLabel: "Discard session",
+                      onConfirm: function () { discardSession(); addToast("In-progress session discarded."); }
+                    });
                   },
                   "aria-label": "Discard in-progress session",
-                  style: { padding: "8px 12px", borderRadius: 8, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "8px 12px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "Discard")
               )
             )
           );
         })() : null,
         h("div", { className: "da-card", style: { marginBottom: 14 } },
-          h("p", { style: { margin: "0 0 8px", fontSize: 14, color: "#334155", lineHeight: 1.6 } },
+          h("p", { style: { margin: "0 0 8px", fontSize: 14, color: "var(--da-ink-2)", lineHeight: 1.6 } },
             "Probes the student's ", h("strong", null, "modifiability"), " — how much their performance changes with structured scaffolding — rather than static ability alone. Following the Feuerstein / Vygotsky tradition: a pretest baseline, a mediation phase where you deliver graduated prompts, and a posttest re-measure."
           ),
-          h("p", { style: { margin: 0, fontSize: 12, color: "#64748b", fontStyle: "italic", lineHeight: 1.6 } },
+          h("p", { style: { margin: 0, fontSize: 12, color: "var(--da-muted)", fontStyle: "italic", lineHeight: 1.6 } },
             "Examiner-led mode is the default. Sit beside the student, run the items, and choose which scaffold level to deliver when they struggle. Free-text observations stay on this device — never synced."
           )
         ),
         h("div", { className: "da-card" },
-          h("h2", { style: { fontSize: 16, fontWeight: 800, margin: "0 0 10px", color: "#0f172a" } }, "Start a session"),
+          h("h2", { style: { fontSize: 16, fontWeight: 800, margin: "0 0 10px", color: "var(--da-ink)" } }, "Start a session"),
           // Nickname
           h("label", {
             htmlFor: "da-nickname",
-            style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", marginBottom: 4 }
+            style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 }
           }, "Student codename (optional)"),
           h("input", {
             id: "da-nickname", type: "text", value: nicknameDraft, maxLength: 30,
             onChange: function (e) { setNicknameDraft(e.target.value); },
             placeholder: "e.g., AmberSparrow",
-            style: { width: "100%", padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: 8, fontFamily: "inherit", fontSize: 14, boxSizing: "border-box", marginBottom: 12 }
+            style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 14, boxSizing: "border-box", marginBottom: 12 }
           }),
           // Domain picker (Phase C — all four domains shipped)
           h("div", { style: { marginBottom: 12 } },
-            h("div", { style: { fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", marginBottom: 4 } }, "Domain"),
-            h("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 } },
+            h("div", { style: { fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, "Domain"),
+            h("div", { role: "group", "aria-label": "Domain", style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 } },
               [
                 { id: "math",           label: "🧮 Math reasoning",    desc: "Word problems with scaffolded ladders" },
                 { id: "reading",        label: "📖 Reading comprehension", desc: "Short passages + literal & inferential probes" },
@@ -7071,21 +7562,21 @@
                   "aria-pressed": active,
                   style: {
                     padding: "10px 12px", textAlign: "left",
-                    border: active ? "2px solid #3b82f6" : "1px solid #cbd5e1",
-                    borderRadius: 10, background: active ? "#eff6ff" : "#ffffff",
+                    border: active ? "2px solid var(--da-accent-2)" : "1px solid var(--da-border-2)",
+                    borderRadius: 10, background: active ? "var(--da-blue-tint)" : "var(--da-surface)",
                     cursor: "pointer", fontFamily: "inherit"
                   }
                 },
-                  h("div", { style: { fontSize: 13, fontWeight: 700, color: "#0f172a" } }, opt.label),
-                  h("div", { style: { fontSize: 11, color: "#64748b", marginTop: 2 } }, opt.desc)
+                  h("div", { style: { fontSize: 13, fontWeight: 700, color: "var(--da-ink)" } }, opt.label),
+                  h("div", { style: { fontSize: 11, color: "var(--da-muted)", marginTop: 2 } }, opt.desc)
                 );
               })
             )
           ),
           // Difficulty
           h("div", { style: { marginBottom: 14 } },
-            h("div", { style: { fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", marginBottom: 4 } }, "Difficulty band"),
-            h("div", { style: { display: "flex", gap: 8 } },
+            h("div", { style: { fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, "Difficulty band"),
+            h("div", { role: "group", "aria-label": "Difficulty band", style: { display: "flex", gap: 8 } },
               [
                 { id: "easy", label: "Easy", grade: "Grades 2–3", desc: "One-step word problems" },
                 { id: "medium", label: "Medium", grade: "Grades 4–5", desc: "Two-step word problems" },
@@ -7098,22 +7589,22 @@
                   "aria-pressed": active,
                   style: {
                     flex: 1, padding: "10px 12px", textAlign: "left",
-                    border: active ? "2px solid #3b82f6" : "1px solid #cbd5e1",
-                    borderRadius: 10, background: active ? "#eff6ff" : "#ffffff",
+                    border: active ? "2px solid var(--da-accent-2)" : "1px solid var(--da-border-2)",
+                    borderRadius: 10, background: active ? "var(--da-blue-tint)" : "var(--da-surface)",
                     cursor: "pointer", fontFamily: "inherit"
                   }
                 },
-                  h("div", { style: { fontSize: 13, fontWeight: 700, color: "#0f172a" } }, opt.label),
-                  h("div", { style: { fontSize: 11, color: "#64748b", marginTop: 2 } }, opt.grade),
-                  h("div", { style: { fontSize: 11, color: "#64748b", marginTop: 2 } }, opt.desc)
+                  h("div", { style: { fontSize: 13, fontWeight: 700, color: "var(--da-ink)" } }, opt.label),
+                  h("div", { style: { fontSize: 11, color: "var(--da-muted)", marginTop: 2 } }, opt.grade),
+                  h("div", { style: { fontSize: 11, color: "var(--da-muted)", marginTop: 2 } }, opt.desc)
                 );
               })
             )
           ),
           // Mediation mode (Phase B)
           h("div", { style: { marginBottom: 14 } },
-            h("div", { style: { fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", marginBottom: 4 } }, "Mediation mode"),
-            h("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } },
+            h("div", { style: { fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, "Mediation mode"),
+            h("div", { role: "group", "aria-label": "Mediation mode", style: { display: "flex", gap: 8, flexWrap: "wrap" } },
               [
                 { id: "clinician", label: "Clinician-led", icon: "🧑‍⚕️", desc: "You pick which scaffold level to deliver. Full clinical control." },
                 { id: "ai", label: "AI-mediated" + (hasGemini ? "" : " (unavailable)"), icon: "🤖", desc: "Gemini plays the examiner role: evaluates each response and chooses the next scaffold. For non-specialist settings." }
@@ -7127,14 +7618,14 @@
                   disabled: disabled,
                   style: {
                     flex: "1 1 220px", padding: "10px 12px", textAlign: "left",
-                    border: active ? "2px solid #3b82f6" : "1px solid #cbd5e1",
-                    borderRadius: 10, background: active ? "#eff6ff" : disabled ? "#f1f5f9" : "#ffffff",
+                    border: active ? "2px solid var(--da-accent-2)" : "1px solid var(--da-border-2)",
+                    borderRadius: 10, background: active ? "var(--da-blue-tint)" : disabled ? "var(--da-surface-3)" : "var(--da-surface)",
                     cursor: disabled ? "not-allowed" : "pointer", fontFamily: "inherit",
                     opacity: disabled ? 0.55 : 1
                   }
                 },
-                  h("div", { style: { fontSize: 13, fontWeight: 700, color: "#0f172a" } }, opt.icon + " " + opt.label),
-                  h("div", { style: { fontSize: 11, color: "#64748b", marginTop: 4, lineHeight: 1.5 } }, opt.desc)
+                  h("div", { style: { fontSize: 13, fontWeight: 700, color: "var(--da-ink)" } }, opt.icon + " " + opt.label),
+                  h("div", { style: { fontSize: 11, color: "var(--da-muted)", marginTop: 4, lineHeight: 1.5 } }, opt.desc)
                 );
               })
             )
@@ -7143,12 +7634,12 @@
           // overridable per-DA-session. Drives every AI-generated output below
           // (items, scaffolds, IEP goals, accommodations, family/teacher/monitoring).
           h("div", {
-            style: { marginBottom: 14, padding: "10px 12px", background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 8, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }
+            style: { marginBottom: 14, padding: "10px 12px", background: "var(--da-sky-tint)", border: "1px solid var(--da-sky-border)", borderRadius: 8, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }
           },
             h("span", { style: { fontSize: 16, flexShrink: 0 } }, "🌐"),
             h("label", {
               htmlFor: "da-output-language",
-              style: { fontSize: 11.5, fontWeight: 700, color: "#0c4a6e", flexShrink: 0 }
+              style: { fontSize: 11.5, fontWeight: 700, color: "var(--da-sky-deeper)", flexShrink: 0 }
             }, "Output language for AI:"),
             h("input", {
               id: "da-output-language",
@@ -7157,23 +7648,23 @@
               onChange: function (e) { setDaOutputLanguage(e.target.value); },
               placeholder: "English",
               "aria-label": "Output language for AI-generated content in this Dynamic Assessment session",
-              style: { flex: "1 1 160px", minWidth: 140, padding: "4px 8px", border: "1px solid #7dd3fc", borderRadius: 6, fontFamily: "inherit", fontSize: 12.5, background: "#ffffff" }
+              style: { flex: "1 1 160px", minWidth: 140, padding: "4px 8px", border: "1px solid var(--da-sky-border-2)", borderRadius: 6, fontFamily: "inherit", fontSize: 12.5, background: "var(--da-surface)" }
             }),
             daOutputLanguage !== hostOutputLanguage ? h("button", {
               type: "button",
               onClick: function () { setDaOutputLanguage(hostOutputLanguage); },
               "aria-label": "Reset output language to the AlloFlow setting",
               title: "Reset to the AlloFlow text-adaptation language (" + hostOutputLanguage + ")",
-              style: { padding: "3px 8px", borderRadius: 6, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "3px 8px", borderRadius: 6, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }
             }, "↺ reset") : null,
-            h("span", { style: { fontSize: 10.5, color: "#0369a1", fontStyle: "italic", flexBasis: "100%", marginTop: 2 } },
+            h("span", { style: { fontSize: 10.5, color: "var(--da-sky-text)", fontStyle: "italic", flexBasis: "100%", marginTop: 2 } },
               daOutputLanguage === "English" ? "Items, scaffolds, IEP goals, accommodations, family/teacher/monitoring outputs will be generated in English." : "Items, scaffolds, IEP goals, accommodations, family/teacher/monitoring outputs will be generated in " + daOutputLanguage + ". Built-in item banks remain in English; use Custom Probe (✨) to generate items in " + daOutputLanguage + ".")
           ),
           // Phase V — Pre-session intake context (collapsible; optional)
           h("details", { style: { marginBottom: 14 } },
-            h("summary", { style: { cursor: "pointer", fontSize: 11, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.06em", padding: "6px 0" } },
+            h("summary", { style: { cursor: "pointer", fontSize: 11, fontWeight: 800, color: "var(--da-ink-3)", textTransform: "uppercase", letterSpacing: "0.06em", padding: "6px 0" } },
               "📋 Referral context (optional)" + (intakeFilledCount > 0 ? " · " + intakeFilledCount + " field" + (intakeFilledCount === 1 ? "" : "s") + " filled" : "")),
-            h("p", { style: { margin: "4px 0 10px", fontSize: 11.5, color: "#64748b", fontStyle: "italic", lineHeight: 1.55 } },
+            h("p", { style: { margin: "4px 0 10px", fontSize: 11.5, color: "var(--da-muted)", fontStyle: "italic", lineHeight: 1.55 } },
               "Capturing the referral question + existing data here makes every AI output (IEP goals, accommodations, family letter, teacher handoff) better. Nothing leaves the device until you choose to send to Report Writer or call AI generation."),
             h("div", { style: { display: "flex", flexDirection: "column", gap: 8 } },
               [
@@ -7188,7 +7679,7 @@
                 return h("div", { key: "da-intake-" + field.id },
                   h("label", {
                     htmlFor: "da-intake-" + field.id,
-                    style: { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 2 }
+                    style: { display: "block", fontSize: 11, fontWeight: 700, color: "var(--da-muted)", marginBottom: 2 }
                   }, field.label),
                   // Phase V-bis — Pull-from-Math-Fluency button (only on existingAssessmentData when probes exist)
                   showPullButton ? h("button", {
@@ -7203,7 +7694,7 @@
                     },
                     "aria-label": "Append recent Math Fluency probe data to the existing assessment data field",
                     title: "Appends the " + Math.min(3, mathFluencyProbes.length) + " most recent CBM-Math probe(s) to this field, plus a trend line if applicable.",
-                    style: { display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 10px", marginBottom: 6, borderRadius: 8, border: "1px solid #15803d", background: "#f0fdf4", color: "#15803d", fontWeight: 700, fontSize: 11.5, cursor: "pointer", fontFamily: "inherit" }
+                    style: { display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 10px", marginBottom: 6, borderRadius: 8, border: "1px solid var(--da-green-mid)", background: "var(--da-green-tint)", color: "var(--da-green-text-2)", fontWeight: 700, fontSize: 11.5, cursor: "pointer", fontFamily: "inherit" }
                   }, "📊 Pull from recent Math Fluency probe" + (mathFluencyProbes.length > 1 ? " (" + mathFluencyProbes.length + " available)" : "")) : null,
                   h("textarea", {
                     id: "da-intake-" + field.id,
@@ -7212,7 +7703,7 @@
                     rows: field.id === "existingAssessmentData" || field.id === "priorInterventions" ? 3 : 2,
                     placeholder: field.placeholder,
                     "aria-label": field.label,
-                    style: { width: "100%", padding: "6px 8px", border: "1px solid #cbd5e1", borderRadius: 6, fontFamily: "inherit", fontSize: 12.5, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box" }
+                    style: { width: "100%", padding: "6px 8px", border: "1px solid var(--da-border-2)", borderRadius: 6, fontFamily: "inherit", fontSize: 12.5, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box" }
                   })
                 );
               })
@@ -7230,7 +7721,7 @@
                   intake: intakeFilledCount > 0 ? intakeDraft : null
                 });
               },
-              style: { padding: "10px 22px", borderRadius: 10, border: "none", background: "#1e3a8a", color: "#ffffff", fontWeight: 800, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "10px 22px", borderRadius: 10, border: "none", background: "var(--da-accent)", color: "var(--da-on-accent)", fontWeight: 800, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }
             }, "Begin pretest →"),
             // Phase A-bis — entry to AI-generated custom probe builder
             hasGemini ? h("button", {
@@ -7243,7 +7734,7 @@
               },
               "aria-label": "Build a custom probe with AI",
               title: "Specify a construct + grade + suspected bottleneck; AI generates items with full prompt ladders.",
-              style: { padding: "10px 18px", borderRadius: 10, border: "1px dashed #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "10px 18px", borderRadius: 10, border: "1px dashed var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
             }, "✨ Or build a custom probe →") : null
           )
         ),
@@ -7251,7 +7742,7 @@
         Array.isArray(state.savedProbeTemplates) && state.savedProbeTemplates.length > 0 ? h("details", {
           style: { marginTop: 14 }
         },
-          h("summary", { style: { fontSize: 12, fontWeight: 700, color: "#64748b", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.06em" } },
+          h("summary", { style: { fontSize: 12, fontWeight: 700, color: "var(--da-muted)", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.06em" } },
             "📚 My probe library · " + state.savedProbeTemplates.length),
           h("div", { style: { marginTop: 10, display: "flex", flexDirection: "column", gap: 6 } },
             state.savedProbeTemplates.slice().reverse().map(function (tpl) {
@@ -7260,8 +7751,8 @@
               return h("div", { key: "da-tpl-" + tpl.id, className: "da-card", style: { padding: 10 } },
                 h("div", { style: { display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" } },
                   h("div", { style: { flex: 1, minWidth: 200 } },
-                    h("div", { style: { fontSize: 13, fontWeight: 700, color: "#0f172a" } }, tpl.name),
-                    h("div", { style: { fontSize: 11, color: "#64748b", marginTop: 2 } },
+                    h("div", { style: { fontSize: 13, fontWeight: 700, color: "var(--da-ink)" } }, tpl.name),
+                    h("div", { style: { fontSize: 11, color: "var(--da-muted)", marginTop: 2 } },
                       tpl.domain + " · grade " + tpl.gradeBand + " · " + (tpl.items || []).length + " items · saved " + created)
                   ),
                   h("button", {
@@ -7275,16 +7766,18 @@
                         intake: intakeFilledCount > 0 ? intakeDraft : null
                       });
                     },
-                    style: { padding: "6px 14px", borderRadius: 8, border: "none", background: "#1e3a8a", color: "#ffffff", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
+                    style: { padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--da-accent)", color: "var(--da-on-accent)", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
                   }, "▶ Run again"),
                   h("button", {
                     onClick: function () {
-                      if (window.confirm("Delete this template? This cannot be undone.")) {
-                        deleteProbeTemplate(tpl.id);
-                      }
+                      daAskConfirm({
+                        message: "Delete this template? This cannot be undone.",
+                        confirmLabel: "Delete template",
+                        onConfirm: function () { deleteProbeTemplate(tpl.id); }
+                      });
                     },
                     "aria-label": "Delete template",
-                    style: { padding: "6px 10px", borderRadius: 8, border: "1px solid #fca5a5", background: "transparent", color: "#b91c1c", fontWeight: 700, fontSize: 11, cursor: "pointer", fontFamily: "inherit" }
+                    style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontWeight: 700, fontSize: 11, cursor: "pointer", fontFamily: "inherit" }
                   }, "✕")
                 )
               );
@@ -7298,11 +7791,11 @@
           style: { marginTop: 14 }
         },
           h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 } },
-            h("div", { style: { fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" } },
+            h("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em" } },
               "📁 Recent sessions · " + state.sessions.length + " total"),
             h("button", {
               onClick: function () { setStartScreenView("sessions"); },
-              style: { background: "transparent", border: "none", color: "#1e3a8a", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", padding: 0 }
+              style: { background: "transparent", border: "none", color: "var(--da-accent-text)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", padding: 0 }
             }, "See all →")
           ),
           h("div", { style: { display: "flex", flexDirection: "column", gap: 6 } },
@@ -7310,19 +7803,19 @@
               var dt = "";
               try { dt = new Date(sn.dateCompleted).toLocaleDateString(); } catch (e) {}
               var idxRec = (typeof sn.modifiabilityIndex === "number" ? sn.modifiabilityIndex : 0);
-              var idxColor = idxRec >= 0.6 ? "#16a34a" : idxRec >= 0.3 ? "#a16207" : idxRec >= 0 ? "#b91c1c" : "#475569";
+              var idxColor = daHex(idxRec >= 0.6 ? "#16a34a" : idxRec >= 0.3 ? "#a16207" : idxRec >= 0 ? "#b91c1c" : "#475569");
               return h("button", {
                 key: "da-prev-" + sn.id,
                 onClick: function () { setViewingSessionId(sn.id); setStartScreenView("session-detail"); },
-                style: { padding: 10, border: "1px solid #e2e8f0", borderRadius: 10, background: "#ffffff", textAlign: "left", cursor: "pointer", fontFamily: "inherit" }
+                style: { padding: 10, border: "1px solid var(--da-border)", borderRadius: 10, background: "var(--da-surface)", textAlign: "left", cursor: "pointer", fontFamily: "inherit" }
               },
                 h("div", { style: { display: "flex", alignItems: "center", gap: 10 } },
                   h("div", { style: { minWidth: 52, padding: 4, textAlign: "center", border: "1.5px solid " + idxColor, borderRadius: 6, background: idxColor + "11", color: idxColor, fontSize: 13, fontWeight: 800 } },
                     (idxRec >= 0 ? "+" : "") + idxRec.toFixed(2)),
                   h("div", { style: { flex: 1 } },
-                    h("div", { style: { fontSize: 13, fontWeight: 700, color: "#0f172a" } },
+                    h("div", { style: { fontSize: 13, fontWeight: 700, color: "var(--da-ink)" } },
                       (sn.studentNickname || "Anonymous") + " · " + sn.domain + " (" + sn.difficulty + ")"),
-                    h("div", { style: { fontSize: 11, color: "#64748b", marginTop: 2 } }, dt + " · " + (sn.mode === "ai" ? "AI" : "clinician"))
+                    h("div", { style: { fontSize: 11, color: "var(--da-muted)", marginTop: 2 } }, dt + " · " + (sn.mode === "ai" ? "AI" : "clinician"))
                   )
                 )
               );
@@ -7363,20 +7856,20 @@
           h("button", {
             onClick: function () { setStartScreenView("sessions"); },
             "aria-label": "Back to sessions",
-            style: { background: "transparent", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
+            style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
           }, "← Sessions"),
           h("div", { style: { flex: 1, minWidth: 220 } },
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
               "Phase BB · Population statistics"),
-            h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "#0f172a" } },
+            h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "var(--da-ink)" } },
               "📈 Local-norm reference · n = " + n + " sessions")
           )
         ),
         // Caveat
-        h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "#fffbeb", borderColor: "#fbbf24" } },
-          h("div", { style: { fontSize: 11, color: "#a16207", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 4 } },
+        h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "var(--da-amber-tint)", borderColor: "var(--da-amber-border)" } },
+          h("div", { style: { fontSize: 11, color: "var(--da-amber-text)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 4 } },
             "⚠ Local norms, not standardized norms"),
-          h("p", { style: { margin: 0, fontSize: 12, color: "#7c2d12", lineHeight: 1.55 } },
+          h("p", { style: { margin: 0, fontSize: 12, color: "var(--da-orange-deep)", lineHeight: 1.55 } },
             "These statistics describe your saved caseload — useful for contextualizing a single session ('this MI is +1 SD above my local mean'), tracking trends over time, and supporting the empirical validation work needed to publish DA as a research instrument. NOT a substitute for nationally-normed reference data. ",
             n < 10 ? h("strong", null, "With n < 10 these estimates are highly unstable; treat as illustrative only.") :
             n < 30 ? h("strong", null, "With n < 30, treat results as exploratory.") :
@@ -7384,26 +7877,26 @@
         ),
         // Empty state
         n === 0 ? h("div", { className: "da-card", style: { padding: 24, textAlign: "center" } },
-          h("p", { style: { margin: 0, color: "#64748b" } },
+          h("p", { style: { margin: 0, color: "var(--da-muted)" } },
             "No saved sessions yet. Complete a session and save it to begin building local norms.")
         ) : null,
         // Headline stat cards
         n > 0 ? h("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, marginBottom: 14 } },
           h("div", { className: "da-card", style: { textAlign: "center", padding: 12 } },
-            h("div", { style: { fontSize: 10.5, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Sessions"),
-            h("div", { style: { fontSize: 26, fontWeight: 900, color: "#0f172a", marginTop: 4 } }, n)
+            h("div", { style: { fontSize: 10.5, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Sessions"),
+            h("div", { style: { fontSize: 26, fontWeight: 900, color: "var(--da-ink)", marginTop: 4 } }, n)
           ),
           h("div", { className: "da-card", style: { textAlign: "center", padding: 12 } },
-            h("div", { style: { fontSize: 10.5, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Mean MI"),
-            h("div", { style: { fontSize: 26, fontWeight: 900, color: "#1e3a8a", marginTop: 4 } }, fmt(stats.miMean)),
-            h("div", { style: { fontSize: 10.5, color: "#64748b", marginTop: 2 } }, "SD = " + fmt(stats.miSD))
+            h("div", { style: { fontSize: 10.5, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Mean MI"),
+            h("div", { style: { fontSize: 26, fontWeight: 900, color: "var(--da-accent-text)", marginTop: 4 } }, fmt(stats.miMean)),
+            h("div", { style: { fontSize: 10.5, color: "var(--da-muted)", marginTop: 2 } }, "SD = " + fmt(stats.miSD))
           ),
           h("div", { className: "da-card", style: { textAlign: "center", padding: 12 } },
-            h("div", { style: { fontSize: 10.5, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Median MI"),
-            h("div", { style: { fontSize: 26, fontWeight: 900, color: "#1e3a8a", marginTop: 4 } }, fmt(stats.miMedian))
+            h("div", { style: { fontSize: 10.5, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Median MI"),
+            h("div", { style: { fontSize: 26, fontWeight: 900, color: "var(--da-accent-text)", marginTop: 4 } }, fmt(stats.miMedian))
           ),
           h("div", { className: "da-card", style: { textAlign: "center", padding: 12, borderColor: dInterp.color + "55", background: dInterp.color + "0d" } },
-            h("div", { style: { fontSize: 10.5, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Cohen's d"),
+            h("div", { style: { fontSize: 10.5, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Cohen's d"),
             h("div", { style: { fontSize: 26, fontWeight: 900, color: dInterp.color, marginTop: 4 } }, fmt(stats.cohenD)),
             h("div", { style: { fontSize: 10.5, color: dInterp.color, marginTop: 2, fontWeight: 700 } }, dInterp.label)
           )
@@ -7412,28 +7905,28 @@
         n > 0 ? h("div", { className: "da-card", style: { marginBottom: 14, padding: 14, borderColor: dInterp.color + "55", background: dInterp.color + "0d" } },
           h("div", { style: { fontSize: 11, color: dInterp.color, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 4 } },
             "Average mediation effect across your caseload"),
-          h("p", { style: { margin: 0, fontSize: 13, color: "#334155", lineHeight: 1.65 } },
+          h("p", { style: { margin: 0, fontSize: 13, color: "var(--da-ink-2)", lineHeight: 1.65 } },
             "Pretest mean " + fmt(stats.pretestMean, 1) + " (SD " + fmt(stats.pretestSD, 1) + ") → posttest mean " + fmt(stats.posttestMean, 1) + " (SD " + fmt(stats.posttestSD, 1) + ") · Cohen's d = " + fmt(stats.cohenD) + " (" + dInterp.label.toLowerCase() + "). " + dInterp.desc),
-          stats.hedgesG !== null && n < 50 ? h("p", { style: { margin: "6px 0 0", fontSize: 11, color: "#64748b", fontStyle: "italic" } },
+          stats.hedgesG !== null && n < 50 ? h("p", { style: { margin: "6px 0 0", fontSize: 11, color: "var(--da-muted)", fontStyle: "italic" } },
             "Hedges' g (small-sample corrected) = " + fmt(stats.hedgesG) + ". For n < 50, prefer g over d.") : null
         ) : null,
         // MI distribution histogram
         n > 0 ? h("div", { className: "da-card", style: { marginBottom: 14, padding: 12 } },
-          h("h3", { style: { margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: "#0f172a" } },
+          h("h3", { style: { margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: "var(--da-ink)" } },
             "MI distribution across your caseload"),
           h("svg", {
             width: "100%", viewBox: "0 0 " + chartW + " " + chartH,
             role: "img", "aria-label": "Histogram of modifiability indices across " + n + " saved sessions",
-            style: { display: "block", maxWidth: "100%", height: "auto", background: "#f8fafc", borderRadius: 6 }
+            style: { display: "block", maxWidth: "100%", height: "auto", background: "var(--da-surface-2)", borderRadius: 6 }
           },
             // Y-axis baseline
-            h("line", { x1: padL, x2: padL + plotW, y1: padT + plotH, y2: padT + plotH, stroke: "#475569", strokeWidth: 1 }),
+            h("line", { x1: padL, x2: padL + plotW, y1: padT + plotH, y2: padT + plotH, stroke: daTone.slate, strokeWidth: 1 }),
             // Tier reference lines (vertical at 0.6, 0.3, 0)
             [0.6, 0.3, 0].map(function (mi, mi_i) {
               var xAt = padL + ((mi + 1) / 2) * plotW;
               return h("g", { key: "da-bb-ref-" + mi_i },
-                h("line", { x1: xAt, x2: xAt, y1: padT, y2: padT + plotH, stroke: "#cbd5e1", strokeWidth: 1, strokeDasharray: "3 4" }),
-                h("text", { x: xAt, y: padT - 4, textAnchor: "middle", fontSize: 9, fill: "#64748b" }, (mi >= 0 ? "+" : "") + mi.toFixed(1))
+                h("line", { x1: xAt, x2: xAt, y1: padT, y2: padT + plotH, stroke: daTone.border, strokeWidth: 1, strokeDasharray: "3 4" }),
+                h("text", { x: xAt, y: padT - 4, textAnchor: "middle", fontSize: 9, fill: daTone.muted }, (mi >= 0 ? "+" : "") + mi.toFixed(1))
               );
             }),
             // Bars
@@ -7441,7 +7934,7 @@
               var hPx = (bin.count / maxBinCount) * plotH;
               var x = padL + bi * binW;
               var y = padT + plotH - hPx;
-              var color = bin.lo >= 0.6 ? "#16a34a" : bin.lo >= 0.3 ? "#a16207" : bin.lo >= 0 ? "#b91c1c" : "#475569";
+              var color = daHex(bin.lo >= 0.6 ? "#16a34a" : bin.lo >= 0.3 ? "#a16207" : bin.lo >= 0 ? "#b91c1c" : "#475569");
               return h("g", { key: "da-bb-bin-" + bi },
                 h("rect", {
                   x: x + 1, y: y, width: binW - 2, height: hPx,
@@ -7453,7 +7946,7 @@
                 }, bin.count) : null,
                 h("text", {
                   x: x + binW / 2, y: padT + plotH + 14,
-                  textAnchor: "middle", fontSize: 9, fill: "#475569"
+                  textAnchor: "middle", fontSize: 9, fill: daTone.slate
                 }, bin.lo.toFixed(1))
               );
             })
@@ -7461,22 +7954,22 @@
         ) : null,
         // Tier breakdown
         n > 0 ? h("div", { className: "da-card", style: { marginBottom: 14 } },
-          h("h3", { style: { margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: "#0f172a" } },
+          h("h3", { style: { margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: "var(--da-ink)" } },
             "Modifiability tier distribution"),
-          h("div", { style: { display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: "#475569" } },
+          h("div", { style: { display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: "var(--da-ink-3)" } },
             [
-              { id: "high",       label: "Responsive to mediation (MI ≥ 0.6)",        color: "#16a34a" },
-              { id: "moderate",   label: "Moderately responsive (0.3 ≤ MI < 0.6)",   color: "#a16207" },
-              { id: "low",        label: "Limited modifiability (0 ≤ MI < 0.3)",      color: "#b91c1c" },
-              { id: "regression", label: "Posttest below pretest (MI < 0)",           color: "#475569" }
+              { id: "high",       label: "Responsive to mediation (MI ≥ 0.6)",        color: "var(--da-green-text)" },
+              { id: "moderate",   label: "Moderately responsive (0.3 ≤ MI < 0.6)",   color: "var(--da-amber-text)" },
+              { id: "low",        label: "Limited modifiability (0 ≤ MI < 0.3)",      color: "var(--da-red-text)" },
+              { id: "regression", label: "Posttest below pretest (MI < 0)",           color: "var(--da-ink-3)" }
             ].map(function (tier) {
               var count = stats.tierCounts[tier.id] || 0;
               var pct = n > 0 ? Math.round((count / n) * 100) : 0;
               return h("div", { key: "da-bb-tier-" + tier.id, style: { display: "flex", alignItems: "center", gap: 8 } },
                 h("span", { style: { minWidth: 280 } }, tier.label),
-                h("div", { style: { flex: 1, height: 10, background: "#f1f5f9", borderRadius: 5, overflow: "hidden" } },
-                  h("div", { style: { height: "100%", width: pct + "%", background: tier.color } })),
-                h("span", { style: { fontFamily: "ui-monospace, monospace", fontWeight: 700, color: "#0f172a", minWidth: 70, textAlign: "right" } }, count + " (" + pct + "%)")
+                h("div", { style: { flex: 1, height: 10, background: "var(--da-surface-3)", borderRadius: 5, overflow: "hidden" } },
+                  h("div", { "aria-hidden": "true", style: { height: "100%", width: pct + "%", background: tier.color } })),
+                h("span", { style: { fontFamily: "ui-monospace, monospace", fontWeight: 700, color: "var(--da-ink)", minWidth: 70, textAlign: "right" } }, count + " (" + pct + "%)")
               );
             })
           )
@@ -7484,8 +7977,8 @@
         // CSV export
         n > 0 ? h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" } },
           h("div", { style: { flex: 1 } },
-            h("h3", { style: { margin: "0 0 4px", fontSize: 13, fontWeight: 800, color: "#0f172a" } }, "Research export"),
-            h("p", { style: { margin: 0, fontSize: 11.5, color: "#64748b", lineHeight: 1.55 } },
+            h("h3", { style: { margin: "0 0 4px", fontSize: 13, fontWeight: 800, color: "var(--da-ink)" } }, "Research export"),
+            h("p", { style: { margin: 0, fontSize: 11.5, color: "var(--da-muted)", lineHeight: 1.55 } },
               "Per-session CSV with all key fields (MI, tier, pretest/posttest sums, transfer counts). De-identified — only the nickname you chose. Useful for IRB-approved external analysis in R / SPSS / Excel.")
           ),
           h("button", {
@@ -7504,19 +7997,19 @@
               } catch (e) { addToast("CSV export failed: " + (e && e.message ? e.message : "unknown")); }
             },
             "aria-label": "Download all session statistics as CSV",
-            style: { padding: "6px 14px", borderRadius: 8, border: "1px solid #15803d", background: "#f0fdf4", color: "#15803d", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "6px 14px", borderRadius: 8, border: "1px solid var(--da-green-mid)", background: "var(--da-green-tint)", color: "var(--da-green-text-2)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, "↓ Session CSV")
         ) : null,
         // Legend
         h("div", { className: "da-card", style: { padding: 12 } },
-          h("h3", { style: { margin: "0 0 8px", fontSize: 13, fontWeight: 800, color: "#0f172a" } }, "Reading these statistics"),
-          h("ul", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "#475569", lineHeight: 1.7 } },
+          h("h3", { style: { margin: "0 0 8px", fontSize: 13, fontWeight: 800, color: "var(--da-ink)" } }, "Reading these statistics"),
+          h("ul", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "var(--da-ink-3)", lineHeight: 1.7 } },
             h("li", null, h("strong", null, "Mean MI"), " — the average modifiability response in your caseload. The first stable reference point a clinician can use to say 'this student is above/below typical for our population.'"),
             h("li", null, h("strong", null, "SD MI"), " — spread. Large SD = high heterogeneity (students respond very differently to mediation). Small SD = homogeneous response."),
             h("li", null, h("strong", null, "Cohen's d"), " — pretest → posttest effect size in pooled-SD units. Conventional thresholds: 0.2 small, 0.5 medium, 0.8 large (Cohen, 1988). For DA, medium effects (d ≥ 0.5) at the population level are consistent with the published literature on graduated-prompt methodology."),
             h("li", null, h("strong", null, "Tier distribution"), " — what % of your caseload falls into each MI tier. A roughly bell-shaped distribution with most students in 'moderate' is consistent with DA's design assumption that modifiability varies continuously.")
           ),
-          h("p", { style: { margin: "10px 0 0", fontSize: 11, color: "#64748b", fontStyle: "italic", lineHeight: 1.55 } },
+          h("p", { style: { margin: "10px 0 0", fontSize: 11, color: "var(--da-muted)", fontStyle: "italic", lineHeight: 1.55 } },
             "These are the descriptive statistics you would report in a content-validity / pilot study paper. Combined with item analytics (Phase AA) + calibration data (Phase Z) + an inter-rater reliability study, they constitute the empirical foundation for publishing DA as a research instrument.")
         )
       );
@@ -7554,16 +8047,24 @@
       function sortHeader(label, key) {
         var isActive = analyticsState.sortBy === key;
         var arrow = isActive ? (analyticsState.sortDir === "asc" ? " ↑" : " ↓") : "";
+        // th keeps columnheader semantics (scope + aria-sort); the BUTTON
+        // carries the interaction so Enter/Space sort from the keyboard.
         return h("th", {
-          style: { textAlign: "left", padding: "6px 8px", border: "1px solid #cbd5e1", cursor: "pointer", userSelect: "none", background: isActive ? "#dbeafe" : "#f1f5f9" },
-          onClick: function () {
-            updateAnalyticsState({
-              sortBy: key,
-              sortDir: isActive && analyticsState.sortDir === "desc" ? "asc" : "desc"
-            });
-          },
-          role: "button", "aria-label": "Sort by " + label, tabIndex: 0
-        }, label + arrow);
+          scope: "col",
+          "aria-sort": isActive ? (analyticsState.sortDir === "asc" ? "ascending" : "descending") : undefined,
+          style: { textAlign: "left", padding: 0, border: "1px solid var(--da-border-2)", background: isActive ? "var(--da-blue-tint-2)" : "var(--da-surface-3)" }
+        },
+          h("button", {
+            onClick: function () {
+              updateAnalyticsState({
+                sortBy: key,
+                sortDir: isActive && analyticsState.sortDir === "desc" ? "asc" : "desc"
+              });
+            },
+            "aria-label": "Sort by " + label + (isActive ? (analyticsState.sortDir === "asc" ? ", currently ascending" : ", currently descending") : ""),
+            style: { width: "100%", textAlign: "left", padding: "6px 8px", border: "none", background: "transparent", color: "var(--da-ink)", font: "inherit", fontWeight: 700, cursor: "pointer", userSelect: "none" }
+          }, label + arrow)
+        );
       }
 
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 1000, margin: "0 auto", padding: 20 } },
@@ -7571,21 +8072,21 @@
           h("button", {
             onClick: function () { setStartScreenView("sessions"); },
             "aria-label": "Back to sessions",
-            style: { background: "transparent", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
+            style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
           }, "← Sessions"),
           h("div", { style: { flex: 1, minWidth: 220 } },
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
               "Phase AA · Item analytics"),
-            h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "#0f172a" } },
+            h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "var(--da-ink)" } },
               "📊 Item bank diagnostics · " + allStats.length + " items seen")
           )
         ),
 
         // Caveat
-        h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "#fffbeb", borderColor: "#fbbf24" } },
-          h("div", { style: { fontSize: 11, color: "#a16207", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 4 } },
+        h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "var(--da-amber-tint)", borderColor: "var(--da-amber-border)" } },
+          h("div", { style: { fontSize: 11, color: "var(--da-amber-text)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 4 } },
             "⚠ Use as instrument-development data, not single-session decisions"),
-          h("p", { style: { margin: 0, fontSize: 12, color: "#7c2d12", lineHeight: 1.55 } },
+          h("p", { style: { margin: 0, fontSize: 12, color: "var(--da-orange-deep)", lineHeight: 1.55 } },
             "These statistics describe how items are performing across all your saved sessions. Useful for identifying items that need revision (too easy, too hard, non-discriminating) or for the empirical validation work needed to publish DA as a normed instrument. Items with n < 3 are excluded. Flags are heuristic; small samples (n < 10) are inherently unstable.")
         ),
 
@@ -7593,7 +8094,7 @@
         h("div", { className: "da-card", style: { marginBottom: 14, padding: 12 } },
           h("div", { style: { display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" } },
             h("div", null,
-              h("div", { style: { fontSize: 10.5, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } }, "Domain"),
+              h("div", { style: { fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } }, "Domain"),
               h("div", { style: { display: "flex", gap: 4, flexWrap: "wrap" } },
                 ["all", "math", "reading", "working-memory", "language", "custom"].map(function (d) {
                   var active = analyticsState.filterDomain === d;
@@ -7601,13 +8102,13 @@
                     key: "da-aa-d-" + d,
                     onClick: function () { updateAnalyticsState({ filterDomain: d }); },
                     "aria-pressed": active,
-                    style: { padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700, border: active ? "1.5px solid #1e3a8a" : "1px solid #cbd5e1", background: active ? "#1e3a8a" : "#ffffff", color: active ? "#ffffff" : "#475569", cursor: "pointer", fontFamily: "inherit" }
+                    style: { padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700, border: active ? "1.5px solid var(--da-accent)" : "1px solid var(--da-border-2)", background: active ? "var(--da-accent)" : "var(--da-surface)", color: active ? "var(--da-on-accent)" : "var(--da-ink-3)", cursor: "pointer", fontFamily: "inherit" }
                   }, d);
                 })
               )
             ),
             h("div", null,
-              h("div", { style: { fontSize: 10.5, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } }, "Show"),
+              h("div", { style: { fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } }, "Show"),
               h("div", { style: { display: "flex", gap: 4, flexWrap: "wrap" } },
                 [
                   { id: "all", label: "All items" },
@@ -7621,7 +8122,7 @@
                     key: "da-aa-f-" + f.id,
                     onClick: function () { updateAnalyticsState({ filterFlag: f.id }); },
                     "aria-pressed": active,
-                    style: { padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700, border: active ? "1.5px solid #1e3a8a" : "1px solid #cbd5e1", background: active ? "#1e3a8a" : "#ffffff", color: active ? "#ffffff" : "#475569", cursor: "pointer", fontFamily: "inherit" }
+                    style: { padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700, border: active ? "1.5px solid var(--da-accent)" : "1px solid var(--da-border-2)", background: active ? "var(--da-accent)" : "var(--da-surface)", color: active ? "var(--da-on-accent)" : "var(--da-ink-3)", cursor: "pointer", fontFamily: "inherit" }
                   }, f.label);
                 })
               )
@@ -7645,14 +8146,14 @@
               },
               "aria-label": "Download item analytics as CSV",
               title: "Per-item psychometric stats — useful for IRB / research / instrument-development work",
-              style: { padding: "5px 12px", borderRadius: 8, border: "1px solid #15803d", background: "#f0fdf4", color: "#15803d", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "5px 12px", borderRadius: 8, border: "1px solid var(--da-green-mid)", background: "var(--da-green-tint)", color: "var(--da-green-text-2)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
             }, "↓ CSV") : null
           )
         ),
 
         // Empty state
         stats.length === 0 ? h("div", { className: "da-card", style: { textAlign: "center", padding: 24 } },
-          h("p", { style: { margin: 0, fontSize: 13, color: "#64748b" } },
+          h("p", { style: { margin: 0, fontSize: 13, color: "var(--da-muted)" } },
             allStats.length === 0 ? "No items have been administered yet. Complete a session and save it."
               : "No items match this filter.")
         ) :
@@ -7671,41 +8172,41 @@
                 sortHeader("Mean L", "meanScaffoldLevel"),
                 sortHeader("Mod-sens", "modifiabilitySensitivity"),
                 sortHeader("Transfer", "transferPassRate"),
-                h("th", { style: { textAlign: "left", padding: "6px 8px", border: "1px solid #cbd5e1", background: "#f1f5f9" } }, "Flags")
+                h("th", { scope: "col", style: { textAlign: "left", padding: "6px 8px", border: "1px solid var(--da-border-2)", background: "var(--da-surface-3)" } }, "Flags")
               )
             ),
             h("tbody", null,
               stats.map(function (it) {
-                var bgRow = it.flags.length === 0 ? "#ffffff" : "#fffbeb";
+                var bgRow = it.flags.length === 0 ? "var(--da-surface)" : "var(--da-amber-tint)";
                 return h("tr", { key: "da-aa-row-" + it.itemId, style: { background: bgRow } },
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", fontWeight: 700, maxWidth: 220 } }, it.construct),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", color: "#64748b" } }, it.domain),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", color: "#64748b" } }, it.difficulty),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", textAlign: "right", fontFamily: "ui-monospace, monospace" } }, it.n),
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)", fontWeight: 700, maxWidth: 220 } }, it.construct),
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)", color: "var(--da-muted)" } }, it.domain),
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)", color: "var(--da-muted)" } }, it.difficulty),
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)", textAlign: "right", fontFamily: "ui-monospace, monospace" } }, it.n),
                   h("td", {
-                    style: { padding: "6px 8px", border: "1px solid #e2e8f0", textAlign: "right", fontFamily: "ui-monospace, monospace",
-                             color: it.pretestPassRate === null ? "#94a3b8" : (it.pretestPassRate >= 0.85 ? "#a16207" : it.pretestPassRate <= 0.1 ? "#9d174d" : "#0f172a") }
+                    style: { padding: "6px 8px", border: "1px solid var(--da-border)", textAlign: "right", fontFamily: "ui-monospace, monospace",
+                             color: it.pretestPassRate === null ? "var(--da-faint)" : (it.pretestPassRate >= 0.85 ? "var(--da-amber-text)" : it.pretestPassRate <= 0.1 ? "var(--da-rose-text)" : "var(--da-ink)") }
                   }, fmtPct(it.pretestPassRate) + (it.pretestN > 0 ? " (n=" + it.pretestN + ")" : "")),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", textAlign: "right", fontFamily: "ui-monospace, monospace" } },
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)", textAlign: "right", fontFamily: "ui-monospace, monospace" } },
                     fmtPct(it.posttestPassRate) + (it.posttestN > 0 ? " (n=" + it.posttestN + ")" : "")),
                   h("td", {
-                    style: { padding: "6px 8px", border: "1px solid #e2e8f0", textAlign: "right", fontFamily: "ui-monospace, monospace",
-                             color: it.meanScaffoldLevel === null ? "#94a3b8" : (it.meanScaffoldLevel >= 3.5 ? "#b91c1c" : it.meanScaffoldLevel <= 1.0 ? "#16a34a" : "#0f172a") }
+                    style: { padding: "6px 8px", border: "1px solid var(--da-border)", textAlign: "right", fontFamily: "ui-monospace, monospace",
+                             color: it.meanScaffoldLevel === null ? "var(--da-faint)" : (it.meanScaffoldLevel >= 3.5 ? "var(--da-red-text)" : it.meanScaffoldLevel <= 1.0 ? "var(--da-green-text)" : "var(--da-ink)") }
                   }, fmtNum(it.meanScaffoldLevel)),
                   h("td", {
-                    style: { padding: "6px 8px", border: "1px solid #e2e8f0", textAlign: "right", fontFamily: "ui-monospace, monospace",
-                             color: it.modifiabilitySensitivity === null ? "#94a3b8" : (it.modifiabilitySensitivity >= 0.4 ? "#16a34a" : it.modifiabilitySensitivity < 0.1 ? "#b91c1c" : "#0f172a") }
+                    style: { padding: "6px 8px", border: "1px solid var(--da-border)", textAlign: "right", fontFamily: "ui-monospace, monospace",
+                             color: it.modifiabilitySensitivity === null ? "var(--da-faint)" : (it.modifiabilitySensitivity >= 0.4 ? "var(--da-green-text)" : it.modifiabilitySensitivity < 0.1 ? "var(--da-red-text)" : "var(--da-ink)") }
                   }, fmtPct(it.modifiabilitySensitivity) + (it.modSensSeen > 0 ? " (n=" + it.modSensSeen + ")" : "")),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", textAlign: "right", fontFamily: "ui-monospace, monospace" } },
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)", textAlign: "right", fontFamily: "ui-monospace, monospace" } },
                     fmtPct(it.transferPassRate) + (it.transferN > 0 ? " (n=" + it.transferN + ")" : "")),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0" } },
-                    it.flags.length === 0 ? h("span", { style: { color: "#16a34a", fontWeight: 700 } }, "✓ OK") :
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)" } },
+                    it.flags.length === 0 ? h("span", { style: { color: "var(--da-green-text)", fontWeight: 700 } }, "✓ OK") :
                     h("div", { style: { display: "flex", flexWrap: "wrap", gap: 4 } },
                       it.flags.map(function (f) {
                         return h("span", {
                           key: "da-aa-flag-" + it.itemId + "-" + f.id,
                           title: f.desc,
-                          style: { padding: "1px 7px", borderRadius: 999, fontSize: 10, fontWeight: 800, background: f.color + "22", color: f.color, border: "1px solid " + f.color + "55", cursor: "help" }
+                          style: { padding: "1px 7px", borderRadius: 999, fontSize: 10, fontWeight: 800, background: daHex(f.color) + "22", color: daHex(f.color), border: "1px solid " + daHex(f.color) + "55", cursor: "help" }
                         }, f.label);
                       })
                     ))
@@ -7717,15 +8218,15 @@
 
         // Legend
         h("div", { className: "da-card", style: { marginTop: 14, padding: 12 } },
-          h("h3", { style: { margin: "0 0 8px", fontSize: 13, fontWeight: 800, color: "#0f172a" } }, "How to read this"),
-          h("ul", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "#475569", lineHeight: 1.7 } },
+          h("h3", { style: { margin: "0 0 8px", fontSize: 13, fontWeight: 800, color: "var(--da-ink)" } }, "How to read this"),
+          h("ul", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "var(--da-ink-3)", lineHeight: 1.7 } },
             h("li", null, h("strong", null, "Pretest pass"), " — proportion who solved unprompted. Ideal: 0.3–0.7 (most diagnostic). Above 0.85 = too easy; below 0.1 = too hard."),
             h("li", null, h("strong", null, "Posttest pass"), " — proportion correct on the re-test alone. Compare to pretest to gauge whether mediation transferred."),
             h("li", null, h("strong", null, "Mean L"), " — average scaffold level reached during mediation (0 = unprompted; 4 = direct teach). Above 3.5 = scaffolds may not be effective."),
             h("li", null, h("strong", null, "Mod-sens (modifiability sensitivity)"), " — proportion of students who went from wrong-at-pretest to right-at-posttest. This is the DA-specific signal: ", h("strong", null, "high = mediation works here"), ". Below 0.1 with n ≥ 5 = item may not be modifiable at this difficulty."),
             h("li", null, h("strong", null, "Transfer"), " — proportion correct on the transfer twin. Low transfer despite high posttest = surface learning, not deep transfer.")
           ),
-          h("p", { style: { margin: "10px 0 0", fontSize: 11, color: "#64748b", fontStyle: "italic", lineHeight: 1.55 } },
+          h("p", { style: { margin: "10px 0 0", fontSize: 11, color: "var(--da-muted)", fontStyle: "italic", lineHeight: 1.55 } },
             "These statistics are exactly what you'd use for content-validity work toward publishing DA as a research instrument: flag items, revise scaffolds, re-test, iterate. The CSV export gives you the raw rows for external analysis (R, SPSS, Excel).")
         )
       );
@@ -7740,7 +8241,7 @@
           h("p", null, "No longitudinal data available for this student."),
           h("button", {
             onClick: function () { setStartScreenView("sessions"); setLongitudinalStudent(null); },
-            style: { padding: "6px 12px", border: "1px solid #cbd5e1", borderRadius: 8, background: "#ffffff", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
+            style: { padding: "6px 12px", border: "1px solid var(--da-border-2)", borderRadius: 8, background: "var(--da-surface)", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
           }, "← Back to sessions")
         );
       }
@@ -7796,62 +8297,62 @@
           h("button", {
             onClick: function () { setStartScreenView("sessions"); setLongitudinalStudent(null); },
             "aria-label": "Back to sessions",
-            style: { background: "transparent", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
+            style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
           }, "← Sessions"),
           h("div", { style: { flex: 1, minWidth: 200 } },
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
               "Phase J · Longitudinal profile"),
-            h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "#0f172a" } },
+            h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "var(--da-ink)" } },
               "📈 " + name),
-            h("div", { style: { fontSize: 12, color: "#64748b", marginTop: 4 } },
+            h("div", { style: { fontSize: 12, color: "var(--da-muted)", marginTop: 4 } },
               sessionsForStudent.length + " sessions · " + firstDate + " → " + lastDate +
               " · domains: " + domainsList.join(", "))
           )
         ),
 
         // Trend headline card
-        h("div", { className: "da-card", style: { marginBottom: 14, padding: 14, borderColor: trend.color + "55", background: trend.color + "0d" } },
-          h("div", { style: { fontSize: 11, color: "#475569", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, marginBottom: 6 } },
+        h("div", { className: "da-card", style: { marginBottom: 14, padding: 14, borderColor: daHex(trend.color) + "55", background: daHex(trend.color) + "0d" } },
+          h("div", { style: { fontSize: 11, color: "var(--da-ink-3)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, marginBottom: 6 } },
             "Trajectory"),
-          h("div", { style: { fontSize: 18, fontWeight: 800, color: trend.color, marginBottom: 6 } }, trend.label),
-          h("p", { style: { margin: 0, fontSize: 13, color: "#334155", lineHeight: 1.6 } }, trend.desc)
+          h("div", { style: { fontSize: 18, fontWeight: 800, color: daHex(trend.color), marginBottom: 6 } }, trend.label),
+          h("p", { style: { margin: 0, fontSize: 13, color: "var(--da-ink-2)", lineHeight: 1.6 } }, trend.desc)
         ),
 
         // Caveat box — critical for clinical honesty
-        h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "#fffbeb", borderColor: "#fbbf24" } },
-          h("div", { style: { fontSize: 11, color: "#a16207", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 4 } },
+        h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "var(--da-amber-tint)", borderColor: "var(--da-amber-border)" } },
+          h("div", { style: { fontSize: 11, color: "var(--da-amber-text)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 4 } },
             "⚠ Interpretation caveat"),
-          h("p", { style: { margin: 0, fontSize: 12, color: "#7c2d12", lineHeight: 1.55 } },
+          h("p", { style: { margin: 0, fontSize: 12, color: "var(--da-orange-deep)", lineHeight: 1.55 } },
             "Dynamic Assessment scores across sessions are not directly comparable item-for-item. Each session uses different probes, sometimes different domains, and may reflect practice effects from prior mediation exposure. Use this trajectory as a clinical pattern, NOT a normed growth measurement. Always check the per-session column for domain/difficulty consistency before interpreting trend direction.")
         ),
 
         // MI chart (SVG)
         h("div", { className: "da-card", style: { marginBottom: 14, padding: 12 } },
-          h("h3", { style: { margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: "#0f172a" } },
+          h("h3", { style: { margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: "var(--da-ink)" } },
             "Modifiability Index across sessions"),
           h("svg", {
             width: "100%", viewBox: "0 0 " + chartW + " " + chartH,
             role: "img", "aria-label": "Modifiability Index across " + sessionsForStudent.length + " sessions for " + name,
-            style: { display: "block", maxWidth: "100%", height: "auto", background: "#f8fafc", borderRadius: 6 }
+            style: { display: "block", maxWidth: "100%", height: "auto", background: "var(--da-surface-2)", borderRadius: 6 }
           },
             // Y axis gridlines + labels for MI = 1, 0.6, 0.3, 0, -1
             [1, 0.6, 0.3, 0, -1].map(function (mi, gi) {
               return h(window.React.Fragment, { key: "da-grid-" + gi },
                 h("line", {
                   x1: padL, x2: padL + plotW, y1: yAt(mi), y2: yAt(mi),
-                  stroke: mi === 0 ? "#94a3b8" : "#e2e8f0",
+                  stroke: mi === 0 ? daTone.faint : daTone.grid,
                   strokeWidth: mi === 0 ? 1.5 : 1,
                   strokeDasharray: mi === 0 ? "none" : "4 4"
                 }),
                 h("text", {
                   x: padL - 6, y: yAt(mi) + 3,
-                  textAnchor: "end", fontSize: 10, fill: "#64748b", fontFamily: "ui-monospace, monospace"
+                  textAnchor: "end", fontSize: 10, fill: daTone.muted, fontFamily: "ui-monospace, monospace"
                 }, (mi >= 0 ? "+" : "") + mi.toFixed(2))
               );
             }),
             // Tier label band on the right
-            h("text", { x: padL + plotW + 4, y: yAt(0.6) + 3, fontSize: 9, fill: "#16a34a", fontWeight: 700 }, "high"),
-            h("text", { x: padL + plotW + 4, y: yAt(0.3) + 3, fontSize: 9, fill: "#a16207", fontWeight: 700 }, "moderate"),
+            h("text", { x: padL + plotW + 4, y: yAt(0.6) + 3, fontSize: 9, fill: daTone.green, fontWeight: 700 }, "high"),
+            h("text", { x: padL + plotW + 4, y: yAt(0.3) + 3, fontSize: 9, fill: daTone.amber, fontWeight: 700 }, "moderate"),
             // X axis date labels
             miPoints.map(function (p, pi) {
               var dt = "";
@@ -7862,7 +8363,7 @@
               return h("text", {
                 key: "da-xlbl-" + pi,
                 x: p.x, y: padT + plotH + 18,
-                textAnchor: "middle", fontSize: 10, fill: "#475569"
+                textAnchor: "middle", fontSize: 10, fill: daTone.slate
               }, dt);
             }),
             // Trend line (linear fit) — only render if 2+ points
@@ -7873,18 +8374,18 @@
               return h("line", {
                 x1: padL, x2: padL + plotW,
                 y1: yAt(fitFirstY), y2: yAt(fitLastY),
-                stroke: trend.color, strokeWidth: 1.5, strokeDasharray: "6 4", opacity: 0.5
+                stroke: daHex(trend.color), strokeWidth: 1.5, strokeDasharray: "6 4", opacity: 0.5
               });
             })() : null,
             // Connect points
             sessionsForStudent.length >= 2 ? h("path", {
-              d: pathD, fill: "none", stroke: "#1e3a8a", strokeWidth: 2
+              d: pathD, fill: "none", stroke: daTone.blue, strokeWidth: 2
             }) : null,
             // Plot points
             miPoints.map(function (p, pi) {
-              var color = p.mi >= 0.6 ? "#16a34a" : p.mi >= 0.3 ? "#a16207" : p.mi >= 0 ? "#b91c1c" : "#475569";
+              var color = daHex(p.mi >= 0.6 ? "#16a34a" : p.mi >= 0.3 ? "#a16207" : p.mi >= 0 ? "#b91c1c" : "#475569");
               return h(window.React.Fragment, { key: "da-pt-" + pi },
-                h("circle", { cx: p.x, cy: p.y, r: 6, fill: color, stroke: "#ffffff", strokeWidth: 2 }),
+                h("circle", { cx: p.x, cy: p.y, r: 6, fill: color, stroke: daTone.surface, strokeWidth: 2 }),
                 h("text", {
                   x: p.x, y: p.y - 10,
                   textAnchor: "middle", fontSize: 10, fontWeight: 800, fill: color,
@@ -7897,21 +8398,21 @@
 
         // Per-session comparison table
         h("div", { className: "da-card", style: { marginBottom: 14 } },
-          h("h3", { style: { margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: "#0f172a" } },
+          h("h3", { style: { margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: "var(--da-ink)" } },
             "Per-session comparison"),
-          h("p", { style: { margin: "0 0 8px", fontSize: 11, color: "#64748b", fontStyle: "italic" } },
+          h("p", { style: { margin: "0 0 8px", fontSize: 11, color: "var(--da-muted)", fontStyle: "italic" } },
             "Check domain + difficulty + items before reading the MI column as growth."),
           h("table", { style: { width: "100%", borderCollapse: "collapse", fontSize: 12 } },
             h("thead", null,
-              h("tr", { style: { background: "#f1f5f9" } },
-                h("th", { style: { textAlign: "left", padding: "6px 8px", border: "1px solid #cbd5e1" } }, "Date"),
-                h("th", { style: { textAlign: "left", padding: "6px 8px", border: "1px solid #cbd5e1" } }, "Domain"),
-                h("th", { style: { textAlign: "left", padding: "6px 8px", border: "1px solid #cbd5e1" } }, "Difficulty"),
-                h("th", { style: { textAlign: "left", padding: "6px 8px", border: "1px solid #cbd5e1" } }, "Mode"),
-                h("th", { style: { textAlign: "right", padding: "6px 8px", border: "1px solid #cbd5e1" } }, "Items"),
-                h("th", { style: { textAlign: "right", padding: "6px 8px", border: "1px solid #cbd5e1" } }, "MI"),
-                h("th", { style: { textAlign: "left", padding: "6px 8px", border: "1px solid #cbd5e1" } }, "Tier"),
-                h("th", { style: { textAlign: "center", padding: "6px 8px", border: "1px solid #cbd5e1" } }, "")
+              h("tr", { style: { background: "var(--da-surface-3)" } },
+                h("th", { scope: "col", style: { textAlign: "left", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "Date"),
+                h("th", { scope: "col", style: { textAlign: "left", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "Domain"),
+                h("th", { scope: "col", style: { textAlign: "left", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "Difficulty"),
+                h("th", { scope: "col", style: { textAlign: "left", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "Mode"),
+                h("th", { scope: "col", style: { textAlign: "right", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "Items"),
+                h("th", { scope: "col", style: { textAlign: "right", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "MI"),
+                h("th", { scope: "col", style: { textAlign: "left", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "Tier"),
+                h("th", { scope: "col", style: { textAlign: "center", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "")
               )
             ),
             h("tbody", null,
@@ -7919,23 +8420,23 @@
                 var dt = "";
                 try { dt = new Date(sn.dateCompleted || sn.dateStarted).toLocaleDateString(); } catch (e) {}
                 var idx = (typeof sn.modifiabilityIndex === "number" ? sn.modifiabilityIndex : 0);
-                var idxColor = idx >= 0.6 ? "#16a34a" : idx >= 0.3 ? "#a16207" : idx >= 0 ? "#b91c1c" : "#475569";
+                var idxColor = daHex(idx >= 0.6 ? "#16a34a" : idx >= 0.3 ? "#a16207" : idx >= 0 ? "#b91c1c" : "#475569");
                 var tierLabel = sn.modifiabilityTier ? sn.modifiabilityTier.label : "—";
                 return h("tr", { key: "da-long-row-" + sn.id },
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0" } }, dt),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0" } }, sn.domain || "—"),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", color: "#64748b" } }, sn.difficulty || "—"),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", fontSize: 11 } }, sn.mode === "ai" ? "🤖 AI" : "🧑‍⚕️ Clinician"),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", textAlign: "right", fontFamily: "ui-monospace, monospace" } },
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)" } }, dt),
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)" } }, sn.domain || "—"),
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)", color: "var(--da-muted)" } }, sn.difficulty || "—"),
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)", fontSize: 11 } }, sn.mode === "ai" ? "🤖 AI" : "🧑‍⚕️ Clinician"),
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)", textAlign: "right", fontFamily: "ui-monospace, monospace" } },
                     sn.sessionItemIds ? sn.sessionItemIds.length : "?"),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", textAlign: "right", fontFamily: "ui-monospace, monospace", fontWeight: 800, color: idxColor } },
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)", textAlign: "right", fontFamily: "ui-monospace, monospace", fontWeight: 800, color: idxColor } },
                     (idx >= 0 ? "+" : "") + idx.toFixed(2)),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", fontSize: 11, fontStyle: "italic", color: idxColor } }, tierLabel),
-                  h("td", { style: { padding: "4px 8px", border: "1px solid #e2e8f0", textAlign: "center" } },
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)", fontSize: 11, fontStyle: "italic", color: idxColor } }, tierLabel),
+                  h("td", { style: { padding: "4px 8px", border: "1px solid var(--da-border)", textAlign: "center" } },
                     h("button", {
                       onClick: function () { setViewingSessionId(sn.id); setStartScreenView("session-detail"); },
                       "aria-label": "Open session detail",
-                      style: { padding: "3px 8px", borderRadius: 4, border: "1px solid #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                      style: { padding: "3px 8px", borderRadius: 4, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                     }, "View")
                   )
                 );
@@ -7946,26 +8447,26 @@
 
         // Aggregated observation tag patterns
         aggTagList.length > 0 ? h("div", { className: "da-card", style: { marginBottom: 14 } },
-          h("h3", { style: { margin: "0 0 4px", fontSize: 14, fontWeight: 800, color: "#0f172a" } },
+          h("h3", { style: { margin: "0 0 4px", fontSize: 14, fontWeight: 800, color: "var(--da-ink)" } },
             "Recurring observation patterns across sessions"),
-          h("p", { style: { margin: "0 0 8px", fontSize: 11, color: "#64748b", fontStyle: "italic" } },
+          h("p", { style: { margin: "0 0 8px", fontSize: 11, color: "var(--da-muted)", fontStyle: "italic" } },
             "Tags recorded across all this student's sessions. Patterns that recur across re-assessment occasions are more likely to be stable clinical signals than session-specific noise."),
-          h("div", { style: { display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: "#475569" } },
+          h("div", { style: { display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: "var(--da-ink-3)" } },
             aggTagList.map(function (t) {
               var maxCount = aggTagList[0].count;
               var bar = Math.min(1, t.count / Math.max(1, maxCount));
               return h("div", { key: "da-long-tag-" + t.id, style: { display: "flex", alignItems: "center", gap: 8 } },
                 h("span", { style: { minWidth: 170 } }, t.label),
-                h("div", { style: { flex: 1, height: 8, background: "#f1f5f9", borderRadius: 4, overflow: "hidden" } },
-                  h("div", { style: { height: "100%", width: Math.round(bar * 100) + "%", background: "#1e3a8a" } })),
-                h("span", { style: { fontFamily: "ui-monospace, monospace", fontWeight: 700, color: "#0f172a", minWidth: 30, textAlign: "right" } }, "×" + t.count)
+                h("div", { style: { flex: 1, height: 8, background: "var(--da-surface-3)", borderRadius: 4, overflow: "hidden" } },
+                  h("div", { style: { height: "100%", width: Math.round(bar * 100) + "%", background: "var(--da-accent)" } })),
+                h("span", { style: { fontFamily: "ui-monospace, monospace", fontWeight: 700, color: "var(--da-ink)", minWidth: 30, textAlign: "right" } }, "×" + t.count)
               );
             })
           )
         ) : null,
 
         // Footer caveat repeated
-        h("div", { style: { marginTop: 8, padding: 10, background: "#f8fafc", borderRadius: 6, fontSize: 11, color: "#475569", fontStyle: "italic", lineHeight: 1.55 } },
+        h("div", { style: { marginTop: 8, padding: 10, background: "var(--da-surface-2)", borderRadius: 6, fontSize: 11, color: "var(--da-ink-3)", fontStyle: "italic", lineHeight: 1.55 } },
           "Reminder: DA trajectory is a clinical pattern across structured probes, not a standardized growth metric. Pair this view with classroom observation, intervention response logs, and standardized assessment data when planning instruction or eligibility decisions.")
       );
     }
@@ -7993,24 +8494,24 @@
           h("button", {
             onClick: function () { setStartScreenView("start"); },
             "aria-label": "Back to start",
-            style: { background: "transparent", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
+            style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
           }, "← Back"),
           h("div", { style: { flex: 1, minWidth: 200 } },
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
               "Phase Z · Calibration mode"),
-            h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "#0f172a" } },
+            h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "var(--da-ink)" } },
               "🎓 Inter-rater calibration training")
           )
         ),
         h("div", { className: "da-card", style: { marginBottom: 14 } },
-          h("p", { style: { margin: "0 0 10px", fontSize: 14, color: "#334155", lineHeight: 1.7 } },
+          h("p", { style: { margin: "0 0 10px", fontSize: 14, color: "var(--da-ink-2)", lineHeight: 1.7 } },
             "Practice DA scoring on pre-vetted scenarios. Each presents an item + a real-shaped student response. You score it, then see the expert verdict + the clinical reasoning + the common-misalignment teaching point. ",
             h("strong", null, "Nothing is saved to your sessions list."), " This is training only."),
-          h("p", { style: { margin: 0, fontSize: 12, color: "#64748b", lineHeight: 1.6, fontStyle: "italic" } },
+          h("p", { style: { margin: 0, fontSize: 12, color: "var(--da-muted)", lineHeight: 1.6, fontStyle: "italic" } },
             "Use this before your first independent DA sessions, before training a new colleague, or whenever you want to check your scoring drift. Inter-rater reliability is a foundational threshold for any legitimate assessment, including DA.")
         ),
         h("div", { className: "da-card", style: { marginBottom: 14 } },
-          h("div", { style: { fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 } },
+          h("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 } },
             "Filter by domain"),
           h("div", { style: { display: "flex", flexWrap: "wrap", gap: 6 } },
             [
@@ -8027,9 +8528,9 @@
                 "aria-pressed": active,
                 style: {
                   padding: "5px 12px", borderRadius: 999, fontSize: 11.5, fontWeight: 700,
-                  border: active ? "1.5px solid #1e3a8a" : "1px solid #cbd5e1",
-                  background: active ? "#1e3a8a" : "#ffffff",
-                  color: active ? "#ffffff" : "#475569",
+                  border: active ? "1.5px solid var(--da-accent)" : "1px solid var(--da-border-2)",
+                  background: active ? "var(--da-accent)" : "var(--da-surface)",
+                  color: active ? "var(--da-on-accent)" : "var(--da-ink-3)",
                   cursor: "pointer", fontFamily: "inherit"
                 }
               }, opt.label);
@@ -8037,14 +8538,14 @@
           )
         ),
         h("div", { className: "da-card" },
-          h("h2", { style: { margin: "0 0 10px", fontSize: 15, fontWeight: 800, color: "#0f172a" } },
+          h("h2", { style: { margin: "0 0 10px", fontSize: 15, fontWeight: 800, color: "var(--da-ink)" } },
             "Available scenarios · " + scenarios.length),
-          scenarios.length === 0 ? h("p", { style: { color: "#64748b", fontStyle: "italic" } }, "No scenarios match this filter.") :
-          h("ol", { style: { paddingLeft: 22, fontSize: 13, lineHeight: 1.6, color: "#334155", margin: 0 } },
+          scenarios.length === 0 ? h("p", { style: { color: "var(--da-muted)", fontStyle: "italic" } }, "No scenarios match this filter.") :
+          h("ol", { style: { paddingLeft: 22, fontSize: 13, lineHeight: 1.6, color: "var(--da-ink-2)", margin: 0 } },
             scenarios.map(function (sc, si) {
               return h("li", { key: "da-cal-list-" + sc.id, style: { marginBottom: 4 } },
                 h("strong", null, sc.title),
-                h("span", { style: { color: "#64748b", fontSize: 11.5, marginLeft: 6 } },
+                h("span", { style: { color: "var(--da-muted)", fontSize: 11.5, marginLeft: 6 } },
                   "· " + sc.domain + " · " + sc.phase + " phase"));
             })
           ),
@@ -8058,7 +8559,7 @@
               },
               disabled: scenarios.length === 0,
               "aria-label": "Begin calibration session",
-              style: { padding: "10px 22px", borderRadius: 10, border: "none", background: scenarios.length > 0 ? "#1e3a8a" : "#94a3b8", color: "#ffffff", fontWeight: 800, fontSize: 14, cursor: scenarios.length > 0 ? "pointer" : "not-allowed", fontFamily: "inherit" }
+              style: { padding: "10px 22px", borderRadius: 10, border: "none", background: scenarios.length > 0 ? "var(--da-accent)" : "var(--da-faint)", color: "var(--da-on-accent)", fontWeight: 800, fontSize: 14, cursor: scenarios.length > 0 ? "pointer" : "not-allowed", fontFamily: "inherit" }
             }, "▶ Begin calibration")
           )
         )
@@ -8070,74 +8571,83 @@
       if (!sc) return renderCalibrationSummary();
       var cr = calibState.currentResponse;
       var canSubmit = cr.finalCorrect !== null;
-      var phaseColors = { pretest: "#475569", mediation: "#3b82f6", posttest: "#16a34a" };
-      var phaseColor = phaseColors[sc.phase] || "#64748b";
+      var phaseColors = { pretest: daTone.slate, mediation: daTone.blueMid, posttest: daTone.green };
+      var phaseColor = phaseColors[sc.phase] || daTone.muted;
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 820, margin: "0 auto", padding: 20 } },
         // Header
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" } },
           h("button", {
             onClick: function () {
-              if (window.confirm("Exit calibration? Progress discarded.")) { resetCalibration(); setStartScreenView("start"); }
+              daAskConfirm({
+                message: "Exit calibration? Progress will be discarded.",
+                confirmLabel: "Exit calibration",
+                onConfirm: function () { resetCalibration(); setStartScreenView("start"); }
+              });
             },
-            style: { background: "transparent", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12 }
+            style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12 }
           }, "✕ Exit"),
           h("div", { style: { flex: 1, minWidth: 220 } },
             h("div", { style: { fontSize: 11, color: phaseColor, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800 } },
               "Calibration · scenario " + (calibState.scenarioIdx + 1) + " of " + scenarios.length + " · " + sc.phase + " phase"),
-            h("div", { style: { fontSize: 14, fontWeight: 700, color: "#0f172a", marginTop: 2 } }, sc.title)
+            h("div", { style: { fontSize: 14, fontWeight: 700, color: "var(--da-ink)", marginTop: 2 } }, sc.title)
           )
         ),
         // Progress bar
-        h("div", { style: { height: 4, background: "#e2e8f0", borderRadius: 2, overflow: "hidden", marginBottom: 14 } },
+        h("div", {
+          role: "progressbar",
+          "aria-valuemin": 0, "aria-valuemax": scenarios.length, "aria-valuenow": calibState.scenarioIdx,
+          "aria-label": "Calibration progress: scenario " + (calibState.scenarioIdx + 1) + " of " + scenarios.length,
+          style: { height: 4, background: "var(--da-border)", borderRadius: 2, overflow: "hidden", marginBottom: 14 }
+        },
           h("div", { style: { width: Math.round((calibState.scenarioIdx / scenarios.length) * 100) + "%", height: "100%", background: phaseColor, transition: "width 0.3s ease" } })
         ),
         // Item card
         h("div", { className: "da-card", style: { marginBottom: 14 } },
-          h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700, marginBottom: 6 } },
+          h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700, marginBottom: 6 } },
             sc.item.construct + " · grades " + sc.item.gradeBand),
-          h("p", { style: { margin: 0, fontSize: 15.5, color: "#0f172a", lineHeight: 1.65 } }, sc.item.prompt),
+          h("p", { style: { margin: 0, fontSize: 15.5, color: "var(--da-ink)", lineHeight: 1.65 } }, sc.item.prompt),
           h("details", { style: { marginTop: 8 } },
-            h("summary", { style: { fontSize: 11, color: "#64748b", cursor: "pointer", fontStyle: "italic" } }, "Reveal canonical answer"),
-            h("div", { style: { marginTop: 4, padding: 6, background: "#f1f5f9", borderRadius: 4, fontSize: 12, fontFamily: "ui-monospace, monospace", color: "#0f172a" } }, sc.item.correctAnswer)
+            h("summary", { style: { fontSize: 11, color: "var(--da-muted)", cursor: "pointer", fontStyle: "italic" } }, "Reveal canonical answer"),
+            h("div", { style: { marginTop: 4, padding: 6, background: "var(--da-surface-3)", borderRadius: 4, fontSize: 12, fontFamily: "ui-monospace, monospace", color: "var(--da-ink)" } }, sc.item.correctAnswer)
           )
         ),
         // Scaffold delivered indicator (mediation only)
-        sc.phase === "mediation" ? h("div", { className: "da-card", style: { marginBottom: 14, background: "#fffbeb", borderColor: "#fbbf24" } },
-          h("div", { style: { fontSize: 11, color: "#a16207", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 4 } },
+        sc.phase === "mediation" ? h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-amber-tint)", borderColor: "var(--da-amber-border)" } },
+          h("div", { style: { fontSize: 11, color: "var(--da-amber-text)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 4 } },
             "Scaffolds delivered up to this point: L" + sc.scaffoldsDelivered),
-          h("p", { style: { margin: 0, fontSize: 12, color: "#92400e", fontStyle: "italic", lineHeight: 1.55 } },
+          h("p", { style: { margin: 0, fontSize: 12, color: "var(--da-amber-text-2)", fontStyle: "italic", lineHeight: 1.55 } },
             "The examiner delivered scaffolds up through level " + sc.scaffoldsDelivered + ". The student's response below came after those scaffolds.")
         ) : null,
         // Student response card
-        h("div", { className: "da-card", style: { marginBottom: 14, background: "#eff6ff", borderColor: "#bfdbfe" } },
-          h("div", { style: { fontSize: 11, color: "#1e3a8a", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 6 } },
+        h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-blue-tint)", borderColor: "var(--da-blue-border)" } },
+          h("div", { style: { fontSize: 11, color: "var(--da-accent-text)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 6 } },
             "Student response"),
-          h("p", { style: { margin: 0, fontSize: 14.5, color: "#0f172a", lineHeight: 1.7, fontStyle: "italic" } },
+          h("p", { style: { margin: 0, fontSize: 14.5, color: "var(--da-ink)", lineHeight: 1.7, fontStyle: "italic" } },
             "“" + sc.studentResponse + "”")
         ),
         // Your scoring inputs
         h("div", { className: "da-card", style: { marginBottom: 14 } },
-          h("h3", { style: { margin: "0 0 10px", fontSize: 14, fontWeight: 800, color: "#0f172a" } },
+          h("h3", { style: { margin: "0 0 10px", fontSize: 14, fontWeight: 800, color: "var(--da-ink)" } },
             "Your scoring"),
           // Correct / wrong
           h("div", { style: { marginBottom: 10 } },
-            h("div", { style: { fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } }, "Final correct?"),
+            h("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } }, "Final correct?"),
             h("div", { style: { display: "flex", gap: 6 } },
               h("button", {
                 onClick: function () { updateCalibResponse({ finalCorrect: true }); },
                 "aria-pressed": cr.finalCorrect === true,
-                style: { padding: "6px 16px", borderRadius: 6, border: "1px solid " + (cr.finalCorrect === true ? "#16a34a" : "#cbd5e1"), background: cr.finalCorrect === true ? "#16a34a" : "#ffffff", color: cr.finalCorrect === true ? "#ffffff" : "#475569", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                style: { padding: "6px 16px", borderRadius: 6, border: "1px solid " + (cr.finalCorrect === true ? "var(--da-green-mid)" : "var(--da-border-2)"), background: cr.finalCorrect === true ? "var(--da-green-mid)" : "var(--da-surface)", color: cr.finalCorrect === true ? "var(--da-on-accent)" : "var(--da-ink-3)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
               }, "✓ Correct"),
               h("button", {
                 onClick: function () { updateCalibResponse({ finalCorrect: false }); },
                 "aria-pressed": cr.finalCorrect === false,
-                style: { padding: "6px 16px", borderRadius: 6, border: "1px solid " + (cr.finalCorrect === false ? "#b91c1c" : "#cbd5e1"), background: cr.finalCorrect === false ? "#fef2f2" : "#ffffff", color: cr.finalCorrect === false ? "#b91c1c" : "#475569", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                style: { padding: "6px 16px", borderRadius: 6, border: "1px solid " + (cr.finalCorrect === false ? "var(--da-red-text)" : "var(--da-border-2)"), background: cr.finalCorrect === false ? "var(--da-red-tint)" : "var(--da-surface)", color: cr.finalCorrect === false ? "var(--da-red-text)" : "var(--da-ink-3)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
               }, "✗ Wrong")
             )
           ),
           // Support type
           h("div", { style: { marginBottom: 10 } },
-            h("div", { style: { fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } },
+            h("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } },
               "Support type" + (sc.phase === "mediation" ? "" : " (pretest/posttest = 'none')")),
             h("div", { style: { display: "flex", flexWrap: "wrap", gap: 4 } },
               [
@@ -8153,14 +8663,14 @@
                   key: "da-cal-sup-" + opt.id,
                   onClick: function () { updateCalibResponse({ supportType: opt.id }); },
                   "aria-pressed": active,
-                  style: { padding: "4px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700, border: active ? "1.5px solid #1e3a8a" : "1px solid #cbd5e1", background: active ? "#1e3a8a" : "#ffffff", color: active ? "#ffffff" : "#475569", cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "4px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700, border: active ? "1.5px solid var(--da-accent)" : "1px solid var(--da-border-2)", background: active ? "var(--da-accent)" : "var(--da-surface)", color: active ? "var(--da-on-accent)" : "var(--da-ink-3)", cursor: "pointer", fontFamily: "inherit" }
                 }, opt.label);
               })
             )
           ),
           // Observation tags
           h("div", null,
-            h("div", { style: { fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } }, "Observation tags (optional)"),
+            h("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } }, "Observation tags (optional)"),
             h("div", { style: { display: "flex", flexWrap: "wrap", gap: 4 } },
               OBSERVATION_TAGS.map(function (tag) {
                 var active = (cr.observationTags || []).indexOf(tag.id) >= 0;
@@ -8169,7 +8679,7 @@
                   onClick: function () { toggleCalibTag(tag.id); },
                   "aria-pressed": active,
                   title: tag.hint,
-                  style: { padding: "3px 9px", borderRadius: 999, fontSize: 11, fontWeight: 700, border: active ? "1px solid #1e3a8a" : "1px solid #cbd5e1", background: active ? "#1e3a8a" : "#ffffff", color: active ? "#ffffff" : "#475569", cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "3px 9px", borderRadius: 999, fontSize: 11, fontWeight: 700, border: active ? "1px solid var(--da-accent)" : "1px solid var(--da-border-2)", background: active ? "var(--da-accent)" : "var(--da-surface)", color: active ? "var(--da-on-accent)" : "var(--da-ink-3)", cursor: "pointer", fontFamily: "inherit" }
                 }, tag.label);
               })
             )
@@ -8193,7 +8703,7 @@
             },
             disabled: !canSubmit,
             "aria-label": "Submit scoring and see expert verdict",
-            style: { padding: "10px 22px", borderRadius: 10, border: "none", background: canSubmit ? "#1e3a8a" : "#94a3b8", color: "#ffffff", fontWeight: 800, fontSize: 14, cursor: canSubmit ? "pointer" : "not-allowed", fontFamily: "inherit" }
+            style: { padding: "10px 22px", borderRadius: 10, border: "none", background: canSubmit ? "var(--da-accent)" : "var(--da-faint)", color: "var(--da-on-accent)", fontWeight: 800, fontSize: 14, cursor: canSubmit ? "pointer" : "not-allowed", fontFamily: "inherit" }
           }, "Compare to expert →")
         )
       );
@@ -8203,9 +8713,9 @@
       var sc = scenarios[calibState.scenarioIdx];
       var lastResult = calibState.results[calibState.results.length - 1];
       if (!sc || !lastResult) return renderCalibrationSummary();
-      var agreementColors = { "full": "#16a34a", "minor-only": "#a16207", "major-disagreement": "#b91c1c" };
+      var agreementColors = { "full": daTone.green, "minor-only": daTone.amber, "major-disagreement": daTone.red };
       var agreementLabels = { "full": "Full agreement", "minor-only": "Minor-disagreement only", "major-disagreement": "Major disagreement" };
-      var color = agreementColors[lastResult.agreement] || "#64748b";
+      var color = agreementColors[lastResult.agreement] || daTone.muted;
       var isLast = calibState.scenarioIdx >= scenarios.length - 1;
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 820, margin: "0 auto", padding: 20 } },
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" } },
@@ -8220,59 +8730,59 @@
         lastResult.mismatches.length > 0 ? h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, borderColor: color + "55", background: color + "0d" } },
           h("div", { style: { fontSize: 11, color: color, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 6 } },
             "Differences from expert"),
-          h("ul", { style: { margin: 0, paddingLeft: 22, fontSize: 12.5, color: "#334155", lineHeight: 1.6 } },
+          h("ul", { style: { margin: 0, paddingLeft: 22, fontSize: 12.5, color: "var(--da-ink-2)", lineHeight: 1.6 } },
             lastResult.mismatches.map(function (m, mi) {
               return h("li", { key: "da-cal-mismatch-" + mi, style: { marginBottom: 4 } },
-                h("span", { style: { fontSize: 10, fontWeight: 800, color: m.severity === "major" ? "#b91c1c" : "#a16207", textTransform: "uppercase", letterSpacing: "0.05em", marginRight: 6 } }, "[" + m.severity + "]"),
+                h("span", { style: { fontSize: 10, fontWeight: 800, color: m.severity === "major" ? "var(--da-red-text)" : "var(--da-amber-text)", textTransform: "uppercase", letterSpacing: "0.05em", marginRight: 6 } }, "[" + m.severity + "]"),
                 m.description);
             })
           )
-        ) : h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, borderColor: "#86efac", background: "#f0fdf4" } },
-          h("p", { style: { margin: 0, fontSize: 13, color: "#15803d", fontWeight: 600 } },
+        ) : h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, borderColor: "var(--da-green-border)", background: "var(--da-green-tint)" } },
+          h("p", { style: { margin: 0, fontSize: 13, color: "var(--da-green-text-2)", fontWeight: 600 } },
             "✓ Your scoring matches the expert verdict exactly. Nicely done.")
         ),
         // Expert reasoning
         h("div", { className: "da-card", style: { marginBottom: 14 } },
-          h("div", { style: { fontSize: 11, color: "#1e3a8a", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 6 } },
+          h("div", { style: { fontSize: 11, color: "var(--da-accent-text)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 6 } },
             "Expert reasoning · score: " + sc.expertScoring.scoreAwarded + " pts"),
-          h("p", { style: { margin: 0, fontSize: 13, color: "#0f172a", lineHeight: 1.65 } },
+          h("p", { style: { margin: 0, fontSize: 13, color: "var(--da-ink)", lineHeight: 1.65 } },
             sc.expertScoring.reasoning)
         ),
         // Teaching point
-        h("div", { className: "da-card", style: { marginBottom: 14, background: "#fdfaf3", borderColor: "#f3d28a" } },
-          h("div", { style: { fontSize: 11, color: "#92400e", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 6 } },
+        h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-amber-tint-3)", borderColor: "var(--da-amber-border-2)" } },
+          h("div", { style: { fontSize: 11, color: "var(--da-amber-text-2)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 6 } },
             "📚 Teaching point"),
-          h("p", { style: { margin: 0, fontSize: 13, color: "#7c2d12", lineHeight: 1.65 } },
+          h("p", { style: { margin: 0, fontSize: 13, color: "var(--da-orange-deep)", lineHeight: 1.65 } },
             sc.expertScoring.teachingPoint)
         ),
         // Side-by-side
         h("div", { className: "da-card", style: { marginBottom: 14 } },
-          h("div", { style: { fontSize: 11, fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 } },
+          h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 } },
             "Side by side"),
           h("table", { style: { width: "100%", borderCollapse: "collapse", fontSize: 12 } },
             h("thead", null,
-              h("tr", { style: { background: "#f1f5f9" } },
-                h("th", { style: { padding: "5px 8px", textAlign: "left", border: "1px solid #cbd5e1", fontSize: 11 } }, "Field"),
-                h("th", { style: { padding: "5px 8px", textAlign: "left", border: "1px solid #cbd5e1", fontSize: 11 } }, "You"),
-                h("th", { style: { padding: "5px 8px", textAlign: "left", border: "1px solid #cbd5e1", fontSize: 11 } }, "Expert")
+              h("tr", { style: { background: "var(--da-surface-3)" } },
+                h("th", { scope: "col", style: { padding: "5px 8px", textAlign: "left", border: "1px solid var(--da-border-2)", fontSize: 11 } }, "Field"),
+                h("th", { scope: "col", style: { padding: "5px 8px", textAlign: "left", border: "1px solid var(--da-border-2)", fontSize: 11 } }, "You"),
+                h("th", { scope: "col", style: { padding: "5px 8px", textAlign: "left", border: "1px solid var(--da-border-2)", fontSize: 11 } }, "Expert")
               )
             ),
             h("tbody", null,
               h("tr", null,
-                h("td", { style: { padding: "5px 8px", border: "1px solid #e2e8f0", fontWeight: 700 } }, "Correct?"),
-                h("td", { style: { padding: "5px 8px", border: "1px solid #e2e8f0" } }, lastResult.clinicianScore.finalCorrect ? "✓" : "✗"),
-                h("td", { style: { padding: "5px 8px", border: "1px solid #e2e8f0" } }, sc.expertScoring.finalCorrect ? "✓" : "✗")
+                h("td", { style: { padding: "5px 8px", border: "1px solid var(--da-border)", fontWeight: 700 } }, "Correct?"),
+                h("td", { style: { padding: "5px 8px", border: "1px solid var(--da-border)" } }, lastResult.clinicianScore.finalCorrect ? "✓" : "✗"),
+                h("td", { style: { padding: "5px 8px", border: "1px solid var(--da-border)" } }, sc.expertScoring.finalCorrect ? "✓" : "✗")
               ),
               h("tr", null,
-                h("td", { style: { padding: "5px 8px", border: "1px solid #e2e8f0", fontWeight: 700 } }, "Support"),
-                h("td", { style: { padding: "5px 8px", border: "1px solid #e2e8f0" } }, lastResult.clinicianScore.supportType || "none"),
-                h("td", { style: { padding: "5px 8px", border: "1px solid #e2e8f0" } }, sc.expertScoring.supportType)
+                h("td", { style: { padding: "5px 8px", border: "1px solid var(--da-border)", fontWeight: 700 } }, "Support"),
+                h("td", { style: { padding: "5px 8px", border: "1px solid var(--da-border)" } }, lastResult.clinicianScore.supportType || "none"),
+                h("td", { style: { padding: "5px 8px", border: "1px solid var(--da-border)" } }, sc.expertScoring.supportType)
               ),
               h("tr", null,
-                h("td", { style: { padding: "5px 8px", border: "1px solid #e2e8f0", fontWeight: 700 } }, "Tags"),
-                h("td", { style: { padding: "5px 8px", border: "1px solid #e2e8f0" } },
+                h("td", { style: { padding: "5px 8px", border: "1px solid var(--da-border)", fontWeight: 700 } }, "Tags"),
+                h("td", { style: { padding: "5px 8px", border: "1px solid var(--da-border)" } },
                   (lastResult.clinicianScore.observationTags || []).map(function (t) { var d = OBSERVATION_TAGS_BY_ID[t]; return d ? d.label : t; }).join(", ") || "—"),
-                h("td", { style: { padding: "5px 8px", border: "1px solid #e2e8f0" } },
+                h("td", { style: { padding: "5px 8px", border: "1px solid var(--da-border)" } },
                   (sc.expertScoring.observationTags || []).map(function (t) { var d = OBSERVATION_TAGS_BY_ID[t]; return d ? d.label : t; }).join(", ") || "—")
               )
             )
@@ -8293,7 +8803,7 @@
               }
             },
             "aria-label": isLast ? "See summary" : "Next scenario",
-            style: { padding: "10px 22px", borderRadius: 10, border: "none", background: "#1e3a8a", color: "#ffffff", fontWeight: 800, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "10px 22px", borderRadius: 10, border: "none", background: "var(--da-accent)", color: "var(--da-on-accent)", fontWeight: 800, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }
           }, isLast ? "See summary →" : "Next scenario →")
         )
       );
@@ -8322,53 +8832,53 @@
       // Interpretation
       var interpLabel, interpColor, interpDesc;
       if (fullPct >= 80) {
-        interpLabel = "Strong scoring consistency"; interpColor = "#16a34a";
+        interpLabel = "Strong scoring consistency"; interpColor = daTone.green;
         interpDesc = "Your scoring aligns closely with expert verdicts. Continue practicing periodically to check for drift, especially before high-stakes evaluations.";
       } else if (consistentPct >= 80) {
-        interpLabel = "Acceptable scoring with minor variation"; interpColor = "#a16207";
+        interpLabel = "Acceptable scoring with minor variation"; interpColor = daTone.amber;
         interpDesc = "Your major-criterion decisions (correct/wrong, support level) align with expert verdicts. Minor disagreements (observation tag selection) are common and acceptable, though worth reviewing.";
       } else {
-        interpLabel = "Significant scoring drift — review teaching points"; interpColor = "#b91c1c";
+        interpLabel = "Significant scoring drift — review teaching points"; interpColor = daTone.red;
         interpDesc = "Major disagreements (correct/wrong or support level) appeared in " + Math.round((majorDisagree / total) * 100) + "% of scenarios. Re-read the teaching points on each disagreement before running real sessions. Consider a second pass through these scenarios.";
       }
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 720, margin: "0 auto", padding: 20 } },
         h("div", { style: { marginBottom: 14 } },
-          h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } }, "Calibration complete"),
-          h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "#0f172a" } }, "🎓 Your scoring profile")
+          h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } }, "Calibration complete"),
+          h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "var(--da-ink)" } }, "🎓 Your scoring profile")
         ),
         h("div", { className: "da-card da-pop", style: { marginBottom: 14, padding: 18, borderColor: interpColor + "55", background: interpColor + "0d" } },
-          h("div", { style: { fontSize: 11, color: "#475569", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800, marginBottom: 6 } },
+          h("div", { style: { fontSize: 11, color: "var(--da-ink-3)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800, marginBottom: 6 } },
             "Overall · " + total + " scenarios"),
-          h("div", { style: { fontSize: 42, fontWeight: 900, color: "#0f172a", lineHeight: 1 } }, fullPct + "%"),
-          h("div", { style: { fontSize: 12, color: "#475569", marginTop: 4 } }, "full agreement · " + consistentPct + "% major-criterion agreement"),
+          h("div", { style: { fontSize: 42, fontWeight: 900, color: "var(--da-ink)", lineHeight: 1 } }, fullPct + "%"),
+          h("div", { style: { fontSize: 12, color: "var(--da-ink-3)", marginTop: 4 } }, "full agreement · " + consistentPct + "% major-criterion agreement"),
           h("div", { style: { fontSize: 15, fontWeight: 700, color: interpColor, marginTop: 10 } }, interpLabel),
-          h("p", { style: { margin: "8px 0 0", fontSize: 13, color: "#334155", lineHeight: 1.65 } }, interpDesc)
+          h("p", { style: { margin: "8px 0 0", fontSize: 13, color: "var(--da-ink-2)", lineHeight: 1.65 } }, interpDesc)
         ),
         h("div", { style: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 14 } },
           h("div", { className: "da-card", style: { textAlign: "center", padding: 12 } },
-            h("div", { style: { fontSize: 26, fontWeight: 900, color: "#16a34a" } }, fullAgreement),
-            h("div", { style: { fontSize: 10.5, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 } }, "Full agreement")),
+            h("div", { style: { fontSize: 26, fontWeight: 900, color: "var(--da-green-text)" } }, fullAgreement),
+            h("div", { style: { fontSize: 10.5, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 } }, "Full agreement")),
           h("div", { className: "da-card", style: { textAlign: "center", padding: 12 } },
-            h("div", { style: { fontSize: 26, fontWeight: 900, color: "#a16207" } }, minorOnly),
-            h("div", { style: { fontSize: 10.5, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 } }, "Minor only")),
+            h("div", { style: { fontSize: 26, fontWeight: 900, color: "var(--da-amber-text)" } }, minorOnly),
+            h("div", { style: { fontSize: 10.5, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 } }, "Minor only")),
           h("div", { className: "da-card", style: { textAlign: "center", padding: 12 } },
-            h("div", { style: { fontSize: 26, fontWeight: 900, color: "#b91c1c" } }, majorDisagree),
-            h("div", { style: { fontSize: 10.5, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 } }, "Major"))
+            h("div", { style: { fontSize: 26, fontWeight: 900, color: "var(--da-red-text)" } }, majorDisagree),
+            h("div", { style: { fontSize: 10.5, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 } }, "Major"))
         ),
         criterionList.length > 0 ? h("div", { className: "da-card", style: { marginBottom: 14 } },
-          h("h3", { style: { margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: "#0f172a" } },
+          h("h3", { style: { margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: "var(--da-ink)" } },
             "Where disagreements clustered"),
-          h("p", { style: { margin: "0 0 8px", fontSize: 11, color: "#64748b", fontStyle: "italic" } },
+          h("p", { style: { margin: "0 0 8px", fontSize: 11, color: "var(--da-muted)", fontStyle: "italic" } },
             "Criteria where your scoring most often differed from expert verdicts. High-frequency entries point to areas worth deliberate practice."),
-          h("div", { style: { display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: "#475569" } },
+          h("div", { style: { display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: "var(--da-ink-3)" } },
             criterionList.map(function (c) {
               var max = criterionList[0].count;
               var bar = Math.min(1, c.count / Math.max(1, max));
               return h("div", { key: "da-cal-crit-" + c.criterion, style: { display: "flex", alignItems: "center", gap: 8 } },
                 h("span", { style: { minWidth: 170, fontFamily: "ui-monospace, monospace", fontSize: 11 } }, c.criterion),
-                h("div", { style: { flex: 1, height: 8, background: "#f1f5f9", borderRadius: 4, overflow: "hidden" } },
-                  h("div", { style: { height: "100%", width: Math.round(bar * 100) + "%", background: "#1e3a8a" } })),
-                h("span", { style: { fontFamily: "ui-monospace, monospace", fontWeight: 700, color: "#0f172a", minWidth: 30, textAlign: "right" } }, "×" + c.count));
+                h("div", { style: { flex: 1, height: 8, background: "var(--da-surface-3)", borderRadius: 4, overflow: "hidden" } },
+                  h("div", { style: { height: "100%", width: Math.round(bar * 100) + "%", background: "var(--da-accent)" } })),
+                h("span", { style: { fontFamily: "ui-monospace, monospace", fontWeight: 700, color: "var(--da-ink)", minWidth: 30, textAlign: "right" } }, "×" + c.count));
             })
           )
         ) : null,
@@ -8380,11 +8890,11 @@
                 currentResponse: { finalCorrect: null, supportType: "none", observationTags: [] }
               });
             },
-            style: { padding: "10px 18px", borderRadius: 10, border: "none", background: "#1e3a8a", color: "#ffffff", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "10px 18px", borderRadius: 10, border: "none", background: "var(--da-accent)", color: "var(--da-on-accent)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "↻ Run again"),
           h("button", {
             onClick: function () { resetCalibration(); setStartScreenView("start"); },
-            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "Done")
         )
       );
@@ -8412,9 +8922,9 @@
       ];
       // Shared section styling
       var sectionStyle = { marginBottom: 22, paddingTop: 4 };
-      var sectionTitleStyle = { fontSize: 17, fontWeight: 800, margin: "0 0 10px", color: "#0f172a", borderBottom: "2px solid #1e3a8a", paddingBottom: 6 };
-      var subTitleStyle = { fontSize: 14, fontWeight: 800, margin: "14px 0 6px", color: "#0f172a" };
-      var bodyStyle = { fontSize: 13, lineHeight: 1.7, color: "#334155", margin: "0 0 10px" };
+      var sectionTitleStyle = { fontSize: 17, fontWeight: 800, margin: "0 0 10px", color: "var(--da-ink)", borderBottom: "2px solid var(--da-accent)", paddingBottom: 6 };
+      var subTitleStyle = { fontSize: 14, fontWeight: 800, margin: "14px 0 6px", color: "var(--da-ink)" };
+      var bodyStyle = { fontSize: 13, lineHeight: 1.7, color: "var(--da-ink-2)", margin: "0 0 10px" };
       var tierBox = { padding: "10px 14px", borderRadius: 10, marginBottom: 8 };
 
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 800, margin: "0 auto", padding: 20 } },
@@ -8423,19 +8933,19 @@
           h("button", {
             onClick: function () { setStartScreenView("start"); },
             "aria-label": "Back to start",
-            style: { background: "transparent", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
+            style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
           }, "← Back"),
           h("div", null,
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
               "Phase H · Clinical reference"),
-            h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "#0f172a" } },
+            h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "var(--da-ink)" } },
               "📚 Interpretation guide")
           )
         ),
 
         // Lead paragraph
-        h("div", { className: "da-card", style: { marginBottom: 14, background: "#eff6ff", borderColor: "#bfdbfe" } },
-          h("p", { style: { margin: 0, fontSize: 13, color: "#1e3a8a", lineHeight: 1.65 } },
+        h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-blue-tint)", borderColor: "var(--da-blue-border)" } },
+          h("p", { style: { margin: 0, fontSize: 13, color: "var(--da-accent-text)", lineHeight: 1.65 } },
             "This guide is for clinicians using the Dynamic Assessment Studio. It covers what the methodology measures, how to interpret the indices, when DA is and isn't appropriate, and how to frame findings in IEP-ready reports. ",
             h("strong", null, "It is not a substitute for training in dynamic assessment methodology"),
             ". For deeper preparation see the citations in section 8.")
@@ -8443,14 +8953,14 @@
 
         // Section nav
         h("div", { className: "da-card", style: { marginBottom: 18 } },
-          h("div", { style: { fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 } },
+          h("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 } },
             "Jump to"),
           h("div", { style: { display: "flex", flexWrap: "wrap", gap: 6 } },
             SECTIONS.map(function (sec) {
               return h("button", {
                 key: "ref-nav-" + sec.id,
                 onClick: function () { scrollToSection(sec.id); },
-                style: { padding: "5px 10px", borderRadius: 6, border: "1px solid #cbd5e1", background: "#f8fafc", color: "#0f172a", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                style: { padding: "5px 10px", borderRadius: 6, border: "1px solid var(--da-border-2)", background: "var(--da-surface-2)", color: "var(--da-ink)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
               }, sec.label);
             })
           )
@@ -8487,32 +8997,34 @@
           h("h2", { style: sectionTitleStyle }, "2. Modifiability Index tiers"),
           h("p", { style: bodyStyle },
             "The Modifiability Index is computed as ",
-            h("code", { style: { background: "#f1f5f9", padding: "1px 6px", borderRadius: 4, fontFamily: "ui-monospace, monospace" } }, "(posttest − pretest) ÷ (maxPossible − pretest)"),
-            " — the proportion of available growth that was realized after the mediation phase. Bounded [−1, 1]."),
+            h("code", { style: { background: "var(--da-surface-3)", padding: "1px 6px", borderRadius: 4, fontFamily: "ui-monospace, monospace" } }, "(posttest − pretest) ÷ (maxPossible − pretest)"),
+            " — the proportion of available growth that was realized after the mediation phase. Bounded [−1, 1]. ",
+            h("strong", null, "The tier cut-points below (0.30 / 0.60) are interpretation conventions of this tool"),
+            " — chosen to structure clinical reasoning, not derived from normative or validation data. Treat the tiers as a reading frame, and the underlying pattern (clear gain / partial gain / little change / regression) as the finding."),
           // High
-          h("div", { style: { ...tierBox, background: "#f0fdf4", border: "1px solid #86efac" } },
-            h("div", { style: { fontWeight: 800, color: "#15803d", fontSize: 13.5, marginBottom: 4 } }, "MI ≥ 0.6 — Responsive to mediation"),
-            h("p", { style: { margin: 0, fontSize: 12.5, color: "#166534", lineHeight: 1.6 } },
+          h("div", { style: { ...tierBox, background: "var(--da-green-tint)", border: "1px solid var(--da-green-border)" } },
+            h("div", { style: { fontWeight: 800, color: "var(--da-green-text-2)", fontSize: 13.5, marginBottom: 4 } }, "MI ≥ 0.6 — Responsive to mediation"),
+            h("p", { style: { margin: 0, fontSize: 12.5, color: "var(--da-green-deep-2)", lineHeight: 1.6 } },
               "Substantial growth between pretest and posttest. The scaffolds used were well-matched to the student's profile. Continued instruction with similar mediation patterns is likely to be productive. Clinically: this is a strong positive signal that the construct is within the student's ZPD given appropriate support.")
           ),
           // Moderate
-          h("div", { style: { ...tierBox, background: "#fffbeb", border: "1px solid #fbbf24" } },
-            h("div", { style: { fontWeight: 800, color: "#a16207", fontSize: 13.5, marginBottom: 4 } }, "MI 0.3–0.6 — Moderately responsive"),
-            h("p", { style: { margin: 0, fontSize: 12.5, color: "#92400e", lineHeight: 1.6 } },
+          h("div", { style: { ...tierBox, background: "var(--da-amber-tint)", border: "1px solid var(--da-amber-border)" } },
+            h("div", { style: { fontWeight: 800, color: "var(--da-amber-text)", fontSize: 13.5, marginBottom: 4 } }, "MI 0.3–0.6 — Moderately responsive"),
+            h("p", { style: { margin: 0, fontSize: 12.5, color: "var(--da-amber-text-2)", lineHeight: 1.6 } },
               "Some growth observed with scaffolding. The student benefited from mediation but needs repeated exposure to consolidate gains. Consider targeted Tier-2 intervention using the scaffold types that worked. This is the most common pattern in clinical practice — most students fall here.")
           ),
           // Low
-          h("div", { style: { ...tierBox, background: "#fef2f2", border: "1px solid #fca5a5" } },
-            h("div", { style: { fontWeight: 800, color: "#b91c1c", fontSize: 13.5, marginBottom: 4 } }, "MI 0.0–0.3 — Limited modifiability under these conditions"),
-            h("p", { style: { margin: 0, fontSize: 12.5, color: "#7f1d1d", lineHeight: 1.6 } },
+          h("div", { style: { ...tierBox, background: "var(--da-red-tint)", border: "1px solid var(--da-red-border)" } },
+            h("div", { style: { fontWeight: 800, color: "var(--da-red-text)", fontSize: 13.5, marginBottom: 4 } }, "MI 0.0–0.3 — Limited modifiability under these conditions"),
+            h("p", { style: { margin: 0, fontSize: 12.5, color: "var(--da-red-deep)", lineHeight: 1.6 } },
               "Minimal change between pretest and posttest. This may indicate that the scaffolds used were not well-matched, OR that a different construct should be probed, OR that the student has limited modifiability in this specific construct under these specific mediation conditions. ",
               h("strong", null, "Do not interpret as 'unable to learn.' "),
               "Try alternate mediation strategies before drawing conclusions.")
           ),
           // Regression
-          h("div", { style: { ...tierBox, background: "#f1f5f9", border: "1px solid #cbd5e1" } },
-            h("div", { style: { fontWeight: 800, color: "#475569", fontSize: 13.5, marginBottom: 4 } }, "MI < 0 — Regression"),
-            h("p", { style: { margin: 0, fontSize: 12.5, color: "#334155", lineHeight: 1.6 } },
+          h("div", { style: { ...tierBox, background: "var(--da-surface-3)", border: "1px solid var(--da-border-2)" } },
+            h("div", { style: { fontWeight: 800, color: "var(--da-ink-3)", fontSize: 13.5, marginBottom: 4 } }, "MI < 0 — Regression"),
+            h("p", { style: { margin: 0, fontSize: 12.5, color: "var(--da-ink-2)", lineHeight: 1.6 } },
               "Posttest performance below pretest. Almost always reflects fatigue, anxiety, motivation drop, or session-length issues — not ability. Re-test on a different day with a shorter session.")
           )
         ),
@@ -8526,24 +9038,24 @@
             "Transfer probes the cleaner question: did the mediation produce ",
             h("em", null, "generalizable"),
             " change?"),
-          h("div", { style: { ...tierBox, background: "#f0fdf4", border: "1px solid #86efac" } },
-            h("div", { style: { fontWeight: 800, color: "#16a34a", fontSize: 13.5, marginBottom: 4 } }, "Transfer ≥ 70% — Strong transfer"),
-            h("p", { style: { margin: 0, fontSize: 12.5, color: "#166534", lineHeight: 1.6 } },
+          h("div", { style: { ...tierBox, background: "var(--da-green-tint)", border: "1px solid var(--da-green-border)" } },
+            h("div", { style: { fontWeight: 800, color: "var(--da-green-text)", fontSize: 13.5, marginBottom: 4 } }, "Transfer ≥ 70% — Strong transfer"),
+            h("p", { style: { margin: 0, fontSize: 12.5, color: "var(--da-green-deep-2)", lineHeight: 1.6 } },
               "Performance on transfer items was strong. The student appears to have learned the underlying construct, not just memorized the practiced items. Clearest pattern of generalizable learning.")
           ),
-          h("div", { style: { ...tierBox, background: "#fffbeb", border: "1px solid #fbbf24" } },
-            h("div", { style: { fontWeight: 800, color: "#a16207", fontSize: 13.5, marginBottom: 4 } }, "Partial transfer (≥70% of posttest)"),
-            h("p", { style: { margin: 0, fontSize: 12.5, color: "#92400e", lineHeight: 1.6 } },
+          h("div", { style: { ...tierBox, background: "var(--da-amber-tint)", border: "1px solid var(--da-amber-border)" } },
+            h("div", { style: { fontWeight: 800, color: "var(--da-amber-text)", fontSize: 13.5, marginBottom: 4 } }, "Partial transfer (≥70% of posttest)"),
+            h("p", { style: { margin: 0, fontSize: 12.5, color: "var(--da-amber-text-2)", lineHeight: 1.6 } },
               "Transfer-item performance approached but did not match posttest performance. The student retained much of what was learned but generalization is incomplete. Continued exposure to varied surface features is indicated.")
           ),
-          h("div", { style: { ...tierBox, background: "#fef3c7", border: "1px solid #f97316" } },
-            h("div", { style: { fontWeight: 800, color: "#c2410c", fontSize: 13.5, marginBottom: 4 } }, "Weak transfer (40–70% of posttest)"),
-            h("p", { style: { margin: 0, fontSize: 12.5, color: "#9a3412", lineHeight: 1.6 } },
+          h("div", { style: { ...tierBox, background: "var(--da-amber-tint-2)", border: "1px solid var(--da-orange-mid-2)" } },
+            h("div", { style: { fontWeight: 800, color: "var(--da-orange-text)", fontSize: 13.5, marginBottom: 4 } }, "Weak transfer (40–70% of posttest)"),
+            h("p", { style: { margin: 0, fontSize: 12.5, color: "var(--da-orange-text-2)", lineHeight: 1.6 } },
               "Transfer performance was meaningfully below posttest. The posttest gain may reflect item-specific learning or memory of mediation rather than construct mastery. Plan additional generalization practice before drawing instructional conclusions.")
           ),
-          h("div", { style: { ...tierBox, background: "#fef2f2", border: "1px solid #fca5a5" } },
-            h("div", { style: { fontWeight: 800, color: "#b91c1c", fontSize: 13.5, marginBottom: 4 } }, "Minimal transfer"),
-            h("p", { style: { margin: 0, fontSize: 12.5, color: "#7f1d1d", lineHeight: 1.6 } },
+          h("div", { style: { ...tierBox, background: "var(--da-red-tint)", border: "1px solid var(--da-red-border)" } },
+            h("div", { style: { fontWeight: 800, color: "var(--da-red-text)", fontSize: 13.5, marginBottom: 4 } }, "Minimal transfer"),
+            h("p", { style: { margin: 0, fontSize: 12.5, color: "var(--da-red-deep)", lineHeight: 1.6 } },
               "Performance on novel items collapsed back to baseline. The posttest gains appear to reflect item-specific memory. The construct has not yet been mastered in a generalizable form. ",
               h("strong", null, "This is a critical clinical signal: "),
               "do not interpret the posttest gain as evidence of learning — interpret the transfer collapse as evidence of un-generalized learning.")
@@ -8574,7 +9086,7 @@
           h("p", { style: bodyStyle },
             h("strong", null, "Should: "), "give the canonical answer with brief reasoning. This is the floor of the ladder — if the student is still wrong after L4, they receive 0 points for the item. ",
             h("strong", null, "Common failures: "), "rare — L4 is the easiest level to write."),
-          h("p", { style: { ...bodyStyle, fontStyle: "italic", color: "#64748b" } },
+          h("p", { style: { ...bodyStyle, fontStyle: "italic", color: "var(--da-muted)" } },
             "If reviewing an AI-generated probe surfaces any of these failure modes, use the per-item Regenerate button OR edit the ladder text inline before running the session.")
         ),
 
@@ -8585,7 +9097,7 @@
             "DA is most valuable as a supplementary clinical observation tool. Strongest clinical indications:"),
           h("ul", { style: { ...bodyStyle, paddingLeft: 22, margin: 0 } },
             h("li", null, h("strong", null, "Re-evaluations. "), "Standardized scores already exist; DA adds qualitative depth + responsiveness data without duplicating effort."),
-            h("li", null, h("strong", null, "EL students or culturally diverse populations. "), "Standardized cognitive measures have documented bias. DA reduces over-identification of these groups for special-education services (Lidz, 2003; Tzuriel, 2001)."),
+            h("li", null, h("strong", null, "EL students or culturally diverse populations. "), "Standardized cognitive measures have documented bias. DA has been shown in some studies to reduce identification bias for these groups (e.g., Peña, Iglesias, & Lidz, 2001; see also Lidz, 2003; Tzuriel, 2001) — supportive evidence, not a guarantee of unbiased measurement."),
             h("li", null, h("strong", null, "Tier-2 RTI triage. "), "A 15-minute brief probe before a formal eval can clarify whether a referred student needs more intensive assessment or whether a Tier-2 intervention is likely to suffice."),
             h("li", null, h("strong", null, "Discrepant test data. "), "When standardized scores are inconsistent with classroom performance, DA can probe whether the gap is in skill acquisition, processing demand, or motivation."),
             h("li", null, h("strong", null, "Intervention planning. "), "Knowing which scaffold types produced success informs the specific accommodations + intervention recommendations.")
@@ -8657,7 +9169,7 @@
             h("li", null, "Peña, E. D., Iglesias, A., & Lidz, C. S. (2001). Reducing test bias through dynamic assessment of children's word-learning ability. ", h("em", null, "American Journal of Speech-Language Pathology"), ", 10(2), 138–154."),
             h("li", null, "NASP (2010). Best practices for school psychologists with culturally and linguistically diverse populations.")
           ),
-          h("p", { style: { ...bodyStyle, fontStyle: "italic", color: "#64748b", marginTop: 14 } },
+          h("p", { style: { ...bodyStyle, fontStyle: "italic", color: "var(--da-muted)", marginTop: 14 } },
             "This tool's methodology is grounded in but does not directly implement any specific published instrument (LPAD, ACFS, ARROW, etc.). The Modifiability Index is descriptive and was designed for this tool; it is not normed against published populations.")
         )
       );
@@ -8697,12 +9209,12 @@
           h("button", {
             onClick: function () { setStartScreenView("start"); setSessionFilter(""); },
             "aria-label": "Back to start",
-            style: { background: "transparent", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
+            style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
           }, "← Back"),
           h("div", { style: { flex: 1, minWidth: 200 } },
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
               "Phase F · Sessions browser"),
-            h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "#0f172a" } },
+            h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "var(--da-ink)" } },
               "📁 All sessions · " + allSessions.length)
           ),
           // Phase AA — item analytics entry (only meaningful with sessions)
@@ -8710,14 +9222,14 @@
             onClick: function () { setStartScreenView("analytics"); },
             "aria-label": "Open item analytics — psychometric stats across all sessions",
             title: "Per-item pretest pass rate, modifiability sensitivity, scaffold escalation, transfer rate",
-            style: { padding: "6px 12px", borderRadius: 8, border: "1px solid #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, "📊 Item analytics") : null,
           // Phase BB — population stats entry
           allSessions.length >= 1 ? h("button", {
             onClick: function () { setStartScreenView("population"); },
             "aria-label": "Open population statistics — effect sizes and MI distribution across your caseload",
             title: "Cohen's d, MI distribution, tier breakdown, local-norm reference data",
-            style: { padding: "6px 12px", borderRadius: 8, border: "1px solid #6d28d9", background: "#faf5ff", color: "#6d28d9", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--da-violet-mid-2)", background: "var(--da-violet-tint)", color: "var(--da-violet-mid-2)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, "📈 Population stats") : null,
           // Phase EE — back up all sessions to a JSON file (guards the trajectory
           // + local-norm data against a cache clear / device change).
@@ -8725,7 +9237,7 @@
             onClick: function () { exportAllSessionsAsJson(); },
             "aria-label": "Back up all sessions to a JSON file",
             title: "Save a JSON backup of your entire session history (protects trajectory + local-norm data)",
-            style: { padding: "6px 12px", borderRadius: 8, border: "1px solid #15803d", background: "#f0fdf4", color: "#15803d", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--da-green-mid)", background: "var(--da-green-tint)", color: "var(--da-green-text-2)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, "💾 Back up") : null,
           // Phase EE — restore from a JSON backup (always available — this is the
           // recovery path after a cache clear or on a new device).
@@ -8733,16 +9245,16 @@
             onClick: function () { importSessionsFromFile(); },
             "aria-label": "Restore sessions from a JSON backup file",
             title: "Load a previously saved backup; merges in any sessions you don't already have",
-            style: { padding: "6px 12px", borderRadius: 8, border: "1px solid #b45309", background: "#fffbeb", color: "#92400e", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--da-amber-text-3)", background: "var(--da-amber-tint)", color: "var(--da-amber-text-2)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, "📂 Restore")
         ),
 
         // Empty state
         allSessions.length === 0 ? h("div", { className: "da-card", style: { textAlign: "center", padding: 32 } },
           h("div", { style: { fontSize: 32, marginBottom: 12 } }, "📭"),
-          h("p", { style: { margin: "0 0 6px", fontSize: 14, color: "#475569", fontWeight: 700 } },
+          h("p", { style: { margin: "0 0 6px", fontSize: 14, color: "var(--da-ink-3)", fontWeight: 700 } },
             "No saved sessions yet."),
-          h("p", { style: { margin: 0, fontSize: 12, color: "#64748b", fontStyle: "italic" } },
+          h("p", { style: { margin: 0, fontSize: 12, color: "var(--da-muted)", fontStyle: "italic" } },
             "Complete a session and click 'Save session' to see it here.")
         ) : null,
 
@@ -8752,34 +9264,34 @@
             type: "text", value: sessionFilter,
             onChange: function (e) { setSessionFilter(e.target.value); },
             placeholder: "Filter by student codename or domain…",
-            style: { width: "100%", padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
+            style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
           }),
-          filtered.length !== allSessions.length ? h("div", { style: { fontSize: 11, color: "#64748b", marginTop: 4, fontStyle: "italic" } },
+          filtered.length !== allSessions.length ? h("div", { style: { fontSize: 11, color: "var(--da-muted)", marginTop: 4, fontStyle: "italic" } },
             "Showing " + filtered.length + " of " + allSessions.length + " sessions") : null
         ) : null,
 
         // Longitudinal strips for students with 2+ sessions
-        longitudinalStudents.length > 0 ? h("div", { className: "da-card", style: { marginBottom: 14, background: "#eff6ff", borderColor: "#bfdbfe" } },
-          h("div", { style: { fontSize: 11, color: "#1e3a8a", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, marginBottom: 6 } },
+        longitudinalStudents.length > 0 ? h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-blue-tint)", borderColor: "var(--da-blue-border)" } },
+          h("div", { style: { fontSize: 11, color: "var(--da-accent-text)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, marginBottom: 6 } },
             "📈 Longitudinal patterns"),
           h("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
             longitudinalStudents.map(function (name) {
               var studentSessions = byStudent[name].slice().reverse(); // oldest → newest for trajectory
-              return h("div", { key: "da-long-" + name, style: { padding: 8, background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: 8 } },
+              return h("div", { key: "da-long-" + name, style: { padding: 8, background: "var(--da-surface)", border: "1px solid var(--da-border-2)", borderRadius: 8 } },
                 h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4, flexWrap: "wrap" } },
-                  h("div", { style: { fontSize: 13, fontWeight: 800, color: "#0f172a" } },
+                  h("div", { style: { fontSize: 13, fontWeight: 800, color: "var(--da-ink)" } },
                     "👤 " + name + " · " + studentSessions.length + " sessions"),
                   h("button", {
                     onClick: function () { setLongitudinalStudent(name); setStartScreenView("longitudinal"); },
                     "aria-label": "Open full longitudinal view for " + name,
                     title: "Full trajectory view with chart, trend interpretation, and per-session comparison",
-                    style: { padding: "4px 10px", borderRadius: 6, border: "1px solid #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                    style: { padding: "4px 10px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                   }, "📈 Full view")
                 ),
                 h("div", { style: { display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap" } },
                   studentSessions.map(function (sn, si) {
                     var idx = (typeof sn.modifiabilityIndex === "number" ? sn.modifiabilityIndex : 0);
-                    var color = idx >= 0.6 ? "#16a34a" : idx >= 0.3 ? "#a16207" : idx >= 0 ? "#b91c1c" : "#475569";
+                    var color = daHex(idx >= 0.6 ? "#16a34a" : idx >= 0.3 ? "#a16207" : idx >= 0 ? "#b91c1c" : "#475569");
                     var dt = "";
                     try { dt = new Date(sn.dateCompleted).toLocaleDateString(undefined, { month: "short", day: "numeric" }); } catch (e) {}
                     return h(window.React.Fragment, { key: "da-trail-" + sn.id },
@@ -8789,9 +9301,9 @@
                         style: { padding: "4px 8px", border: "1.5px solid " + color, borderRadius: 6, background: color + "11", color: color, fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 56 }
                       },
                         h("div", { style: { lineHeight: 1 } }, (idx >= 0 ? "+" : "") + idx.toFixed(2)),
-                        h("div", { style: { fontSize: 9, color: "#475569", marginTop: 2, lineHeight: 1 } }, dt)
+                        h("div", { style: { fontSize: 9, color: "var(--da-ink-3)", marginTop: 2, lineHeight: 1 } }, dt)
                       ),
-                      si < studentSessions.length - 1 ? h("span", { style: { color: "#475569", fontSize: 14 } }, "→") : null
+                      si < studentSessions.length - 1 ? h("span", { style: { color: "var(--da-ink-3)", fontSize: 14 } }, "→") : null
                     );
                   })
                 )
@@ -8806,20 +9318,20 @@
             var dt = "";
             try { dt = new Date(sn.dateCompleted || sn.dateStarted).toLocaleString(); } catch (e) {}
             var idx = (typeof sn.modifiabilityIndex === "number" ? sn.modifiabilityIndex : 0);
-            var idxColor = idx >= 0.6 ? "#16a34a" : idx >= 0.3 ? "#a16207" : idx >= 0 ? "#b91c1c" : "#475569";
+            var idxColor = daHex(idx >= 0.6 ? "#16a34a" : idx >= 0.3 ? "#a16207" : idx >= 0 ? "#b91c1c" : "#475569");
             var tierLabel = sn.modifiabilityTier ? sn.modifiabilityTier.label : "(not finalized)";
             return h("div", { key: "da-sess-" + sn.id, className: "da-card", style: { padding: 12 } },
               h("div", { style: { display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" } },
                 // Index badge
                 h("div", { style: { textAlign: "center", minWidth: 64, padding: 6, border: "2px solid " + idxColor, borderRadius: 8, background: idxColor + "11" } },
                   h("div", { style: { fontSize: 17, fontWeight: 900, color: idxColor, lineHeight: 1 } }, (idx >= 0 ? "+" : "") + idx.toFixed(2)),
-                  h("div", { style: { fontSize: 9, color: "#64748b", marginTop: 2, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" } }, "MI")
+                  h("div", { style: { fontSize: 9, color: "var(--da-muted)", marginTop: 2, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" } }, "MI")
                 ),
                 // Meta
                 h("div", { style: { flex: 1, minWidth: 200 } },
-                  h("div", { style: { fontSize: 13, fontWeight: 800, color: "#0f172a" } },
+                  h("div", { style: { fontSize: 13, fontWeight: 800, color: "var(--da-ink)" } },
                     (sn.studentNickname || "Anonymous") + " · " + sn.domain + " (" + sn.difficulty + ")"),
-                  h("div", { style: { fontSize: 11, color: "#64748b", marginTop: 2 } },
+                  h("div", { style: { fontSize: 11, color: "var(--da-muted)", marginTop: 2 } },
                     dt + " · " + (sn.mode === "ai" ? "🤖 AI-mediated" : "🧑‍⚕️ Clinician-led") +
                     " · " + (sn.sessionItemIds ? sn.sessionItemIds.length : "?") + " items"),
                   h("div", { style: { fontSize: 11, color: idxColor, marginTop: 3, fontWeight: 700, fontStyle: "italic" } },
@@ -8833,30 +9345,34 @@
                       setStartScreenView("session-detail");
                     },
                     title: "View detail",
-                    style: { padding: "5px 12px", borderRadius: 6, border: "1px solid #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                    style: { padding: "5px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                   }, "View"),
                   h("button", {
                     onClick: function () {
                       exportSessionAsJson(sn);
                     },
                     title: "Download as JSON",
-                    style: { padding: "5px 10px", borderRadius: 6, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                    style: { padding: "5px 10px", borderRadius: 6, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                   }, "↓ JSON"),
                   h("button", {
                     onClick: function () {
-                      if (window.confirm("Delete this session? This cannot be undone.")) {
-                        patch({ sessions: (state.sessions || []).filter(function (s) { return s.id !== sn.id; }) });
-                      }
+                      daAskConfirm({
+                        message: "Delete this session? This cannot be undone.",
+                        confirmLabel: "Delete session",
+                        onConfirm: function () {
+                          patch({ sessions: (state.sessions || []).filter(function (s) { return s.id !== sn.id; }) });
+                        }
+                      });
                     },
                     "aria-label": "Delete session",
                     title: "Delete",
-                    style: { padding: "5px 8px", borderRadius: 6, border: "1px solid #fca5a5", background: "transparent", color: "#b91c1c", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                    style: { padding: "5px 8px", borderRadius: 6, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                   }, "✕")
                 )
               )
             );
           })
-        ) : (allSessions.length > 0 ? h("div", { className: "da-card", style: { textAlign: "center", padding: 16, color: "#64748b" } },
+        ) : (allSessions.length > 0 ? h("div", { className: "da-card", style: { textAlign: "center", padding: 16, color: "var(--da-muted)" } },
           "No sessions match the filter.") : null)
       );
     }
@@ -8892,33 +9408,33 @@
           h("button", {
             onClick: function () { setStartScreenView("sessions"); setViewingSessionId(null); },
             "aria-label": "Back to sessions",
-            style: { background: "transparent", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
+            style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
           }, "← Sessions"),
           h("div", { style: { flex: 1, minWidth: 200 } },
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
               "Session detail · saved " + dt),
-            h("h1", { style: { margin: "2px 0 0", fontSize: 20, fontWeight: 800, color: "#0f172a" } },
+            h("h1", { style: { margin: "2px 0 0", fontSize: 20, fontWeight: 800, color: "var(--da-ink)" } },
               (sn.studentNickname || "Anonymous") + " · " + sn.domain + " (" + sn.difficulty + ")")
           ),
           h("button", {
             onClick: function () { exportSessionAsJson(sn); },
-            style: { padding: "6px 12px", borderRadius: 8, border: "1px solid #475569", background: "#ffffff", color: "#0f172a", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--da-ink-3)", background: "var(--da-surface)", color: "var(--da-ink)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, "↓ JSON")
         ),
 
         // Headline
         h("div", { className: "da-card", style: {
           marginBottom: 14, padding: 18,
-          background: tier.id === "high" ? "#f0fdf4" : tier.id === "moderate" ? "#fffbeb" : tier.id === "low" ? "#fef2f2" : "#f1f5f9",
-          borderColor: tier.id === "high" ? "#86efac" : tier.id === "moderate" ? "#fbbf24" : tier.id === "low" ? "#fca5a5" : "#cbd5e1"
+          background: tier.id === "high" ? "var(--da-green-tint)" : tier.id === "moderate" ? "var(--da-amber-tint)" : tier.id === "low" ? "var(--da-red-tint)" : "var(--da-surface-3)",
+          borderColor: tier.id === "high" ? "var(--da-green-border)" : tier.id === "moderate" ? "var(--da-amber-border)" : tier.id === "low" ? "var(--da-red-border)" : "var(--da-border-2)"
         }},
-          h("div", { style: { fontSize: 11, color: "#475569", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800, marginBottom: 6 } }, "Modifiability Index"),
+          h("div", { style: { fontSize: 11, color: "var(--da-ink-3)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800, marginBottom: 6 } }, "Modifiability Index"),
           h("div", { style: { display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap" } },
-            h("div", { style: { fontSize: 42, fontWeight: 900, color: "#0f172a", lineHeight: 1 } },
+            h("div", { style: { fontSize: 42, fontWeight: 900, color: "var(--da-ink)", lineHeight: 1 } },
               (idx >= 0 ? "+" : "") + idx.toFixed(2)),
-            h("div", { style: { fontSize: 16, fontWeight: 700, color: "#0f172a" } }, tier.label)
+            h("div", { style: { fontSize: 16, fontWeight: 700, color: "var(--da-ink)" } }, tier.label)
           ),
-          h("p", { style: { margin: "10px 0 0", fontSize: 13, color: "#334155", lineHeight: 1.65 } }, tier.desc)
+          h("p", { style: { margin: "10px 0 0", fontSize: 13, color: "var(--da-ink-2)", lineHeight: 1.65 } }, tier.desc)
         ),
 
         // Phase V — Intake context (read-only)
@@ -8926,20 +9442,20 @@
           var ik = sn.intake;
           var hasAny = ik.referralReason || ik.hypothesizedBottleneck || ik.specificQuestion || ik.priorInterventions || ik.existingAssessmentData;
           if (!hasAny) return null;
-          return h("details", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "#f5f3ff", borderColor: "#c4b5fd" } },
-            h("summary", { style: { cursor: "pointer", fontSize: 11, fontWeight: 800, color: "#5b21b6", textTransform: "uppercase", letterSpacing: "0.06em" } },
+          return h("details", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "var(--da-violet-tint-2)", borderColor: "var(--da-violet-border)" } },
+            h("summary", { style: { cursor: "pointer", fontSize: 11, fontWeight: 800, color: "var(--da-violet-text-2)", textTransform: "uppercase", letterSpacing: "0.06em" } },
               "📋 Referral context"),
-            h("div", { style: { marginTop: 8, display: "flex", flexDirection: "column", gap: 6, fontSize: 12.5, lineHeight: 1.55, color: "#1e1b4b" } },
+            h("div", { style: { marginTop: 8, display: "flex", flexDirection: "column", gap: 6, fontSize: 12.5, lineHeight: 1.55, color: "var(--da-indigo-deeper)" } },
               ik.referralReason && ik.referralReason.trim() ? h("div", null,
-                h("strong", { style: { fontSize: 10.5, color: "#5b21b6", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Referral: "), ik.referralReason) : null,
+                h("strong", { style: { fontSize: 10.5, color: "var(--da-violet-text-2)", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Referral: "), ik.referralReason) : null,
               ik.specificQuestion && ik.specificQuestion.trim() ? h("div", null,
-                h("strong", { style: { fontSize: 10.5, color: "#5b21b6", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Question: "), ik.specificQuestion) : null,
+                h("strong", { style: { fontSize: 10.5, color: "var(--da-violet-text-2)", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Question: "), ik.specificQuestion) : null,
               ik.hypothesizedBottleneck && ik.hypothesizedBottleneck.trim() ? h("div", null,
-                h("strong", { style: { fontSize: 10.5, color: "#5b21b6", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Hypothesis: "), ik.hypothesizedBottleneck) : null,
+                h("strong", { style: { fontSize: 10.5, color: "var(--da-violet-text-2)", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Hypothesis: "), ik.hypothesizedBottleneck) : null,
               ik.priorInterventions && ik.priorInterventions.trim() ? h("div", null,
-                h("strong", { style: { fontSize: 10.5, color: "#5b21b6", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Prior: "), ik.priorInterventions) : null,
+                h("strong", { style: { fontSize: 10.5, color: "var(--da-violet-text-2)", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Prior: "), ik.priorInterventions) : null,
               ik.existingAssessmentData && ik.existingAssessmentData.trim() ? h("div", null,
-                h("strong", { style: { fontSize: 10.5, color: "#5b21b6", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Existing data: "), ik.existingAssessmentData) : null
+                h("strong", { style: { fontSize: 10.5, color: "var(--da-violet-text-2)", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Existing data: "), ik.existingAssessmentData) : null
             )
           );
         })() : null,
@@ -8950,16 +9466,16 @@
           var hasNote = sn.sessionNote && sn.sessionNote.trim().length > 0;
           if (timing.perItem.length === 0 && !hasNote) return null;
           var avgPerItem = timing.perItem.length > 0 ? timing.activeMs / timing.perItem.length : 0;
-          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "#f8fafc" } },
-            h("div", { style: { display: "flex", gap: 16, flexWrap: "wrap", fontSize: 12, color: "#475569", marginBottom: hasNote ? 8 : 0 } },
-              h("div", null, "⏱ Active time: ", h("strong", { style: { color: "#0f172a" } }, formatDuration(timing.activeMs))),
-              h("div", null, "Total span: ", h("strong", { style: { color: "#0f172a" } }, formatDuration(timing.totalMs))),
-              timing.perItem.length > 0 ? h("div", null, "Avg/item: ", h("strong", { style: { color: "#0f172a" } }, formatDuration(avgPerItem))) : null
+          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "var(--da-surface-2)" } },
+            h("div", { style: { display: "flex", gap: 16, flexWrap: "wrap", fontSize: 12, color: "var(--da-ink-3)", marginBottom: hasNote ? 8 : 0 } },
+              h("div", null, "⏱ Active time: ", h("strong", { style: { color: "var(--da-ink)" } }, formatDuration(timing.activeMs))),
+              h("div", null, "Total span: ", h("strong", { style: { color: "var(--da-ink)" } }, formatDuration(timing.totalMs))),
+              timing.perItem.length > 0 ? h("div", null, "Avg/item: ", h("strong", { style: { color: "var(--da-ink)" } }, formatDuration(avgPerItem))) : null
             ),
-            hasNote ? h("div", { style: { padding: 8, background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: 6 } },
-              h("div", { style: { fontSize: 10.5, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } },
+            hasNote ? h("div", { style: { padding: 8, background: "var(--da-surface)", border: "1px solid var(--da-border-2)", borderRadius: 6 } },
+              h("div", { style: { fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } },
                 "Session-level notes"),
-              h("p", { style: { margin: 0, fontSize: 12.5, color: "#0f172a", lineHeight: 1.55, whiteSpace: "pre-wrap" } }, sn.sessionNote)
+              h("p", { style: { margin: 0, fontSize: 12.5, color: "var(--da-ink)", lineHeight: 1.55, whiteSpace: "pre-wrap" } }, sn.sessionNote)
             ) : null
           );
         })(),
@@ -8967,30 +9483,30 @@
         // Score breakdown
         h("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginBottom: 14 } },
           h("div", { className: "da-card", style: { textAlign: "center" } },
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Pretest"),
-            h("div", { style: { fontSize: 22, fontWeight: 900, color: "#475569", marginTop: 4 } }, pretestSum + " / " + max)
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Pretest"),
+            h("div", { style: { fontSize: 22, fontWeight: 900, color: "var(--da-ink-3)", marginTop: 4 } }, pretestSum + " / " + max)
           ),
           h("div", { className: "da-card", style: { textAlign: "center" } },
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Posttest"),
-            h("div", { style: { fontSize: 22, fontWeight: 900, color: "#16a34a", marginTop: 4 } }, posttestSum + " / " + max)
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Posttest"),
+            h("div", { style: { fontSize: 22, fontWeight: 900, color: "var(--da-green-text)", marginTop: 4 } }, posttestSum + " / " + max)
           ),
           h("div", { className: "da-card", style: { textAlign: "center" } },
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Growth"),
-            h("div", { style: { fontSize: 22, fontWeight: 900, color: posttestSum - pretestSum >= 0 ? "#16a34a" : "#b91c1c", marginTop: 4 } },
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Growth"),
+            h("div", { style: { fontSize: 22, fontWeight: 900, color: posttestSum - pretestSum >= 0 ? "var(--da-green-text)" : "var(--da-red-text)", marginTop: 4 } },
               (posttestSum - pretestSum >= 0 ? "+" : "") + (posttestSum - pretestSum) + " pts")
           ),
-          transferResults.length > 0 ? h("div", { className: "da-card", style: { textAlign: "center", borderColor: "#fbbf24", background: "#fffbeb" } },
-            h("div", { style: { fontSize: 11, color: "#a16207", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Transfer"),
-            h("div", { style: { fontSize: 22, fontWeight: 900, color: "#a16207", marginTop: 4 } }, transferSum + " / " + transferMax)
+          transferResults.length > 0 ? h("div", { className: "da-card", style: { textAlign: "center", borderColor: "var(--da-amber-border)", background: "var(--da-amber-tint)" } },
+            h("div", { style: { fontSize: 11, color: "var(--da-amber-text)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Transfer"),
+            h("div", { style: { fontSize: 22, fontWeight: 900, color: "var(--da-amber-text)", marginTop: 4 } }, transferSum + " / " + transferMax)
           ) : null
         ),
 
         // Transfer interpretation
         transferTierObj ? h("div", { className: "da-card", style: { marginBottom: 14, padding: 14 } },
-          h("div", { style: { fontSize: 11, color: "#475569", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, marginBottom: 6 } },
+          h("div", { style: { fontSize: 11, color: "var(--da-ink-3)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, marginBottom: 6 } },
             "Transfer interpretation"),
-          h("div", { style: { fontSize: 15, fontWeight: 800, color: transferTierObj.color, marginBottom: 6 } }, transferTierObj.label),
-          h("p", { style: { margin: 0, fontSize: 12.5, color: "#334155", lineHeight: 1.6 } }, transferTierObj.desc)
+          h("div", { style: { fontSize: 15, fontWeight: 800, color: daHex(transferTierObj.color), marginBottom: 6 } }, transferTierObj.label),
+          h("p", { style: { margin: 0, fontSize: 12.5, color: "var(--da-ink-2)", lineHeight: 1.6 } }, transferTierObj.desc)
         ) : null,
 
         // Phase I — tag patterns in the session-detail view
@@ -8998,16 +9514,16 @@
           var tagAgg = aggregateObservationTags(sn.itemResults);
           if (tagAgg.length === 0) return null;
           return h("div", { className: "da-card", style: { marginBottom: 14 } },
-            h("h3", { style: { margin: "0 0 4px", fontSize: 14, fontWeight: 800, color: "#0f172a" } },
+            h("h3", { style: { margin: "0 0 4px", fontSize: 14, fontWeight: 800, color: "var(--da-ink)" } },
               "Observed patterns"),
-            h("div", { style: { display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: "#475569" } },
+            h("div", { style: { display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: "var(--da-ink-3)" } },
               tagAgg.map(function (t) {
                 var bar = Math.min(1, t.count / Math.max(1, sn.itemResults.length));
                 return h("div", { key: "da-tag-detail-" + t.id, style: { display: "flex", alignItems: "center", gap: 8 } },
                   h("span", { style: { minWidth: 170 } }, t.label),
-                  h("div", { style: { flex: 1, height: 8, background: "#f1f5f9", borderRadius: 4, overflow: "hidden" } },
-                    h("div", { style: { height: "100%", width: Math.round(bar * 100) + "%", background: "#1e3a8a" } })),
-                  h("span", { style: { fontFamily: "ui-monospace, monospace", fontWeight: 700, color: "#0f172a", minWidth: 30, textAlign: "right" } }, "×" + t.count)
+                  h("div", { "aria-hidden": "true", style: { flex: 1, height: 8, background: "var(--da-surface-3)", borderRadius: 4, overflow: "hidden" } },
+                    h("div", { style: { height: "100%", width: Math.round(bar * 100) + "%", background: "var(--da-accent)" } })),
+                  h("span", { style: { fontFamily: "ui-monospace, monospace", fontWeight: 700, color: "var(--da-ink)", minWidth: 30, textAlign: "right" } }, "×" + t.count)
                 );
               })
             )
@@ -9016,24 +9532,24 @@
 
         // Per-item table
         h("div", { className: "da-card", style: { marginBottom: 14 } },
-          h("h3", { style: { margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: "#0f172a" } }, "Per-item results"),
+          h("h3", { style: { margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: "var(--da-ink)" } }, "Per-item results"),
           h("table", { style: { width: "100%", borderCollapse: "collapse", fontSize: 12 } },
             h("thead", null,
-              h("tr", { style: { background: "#f1f5f9" } },
-                h("th", { style: { textAlign: "left", padding: "6px 8px", border: "1px solid #cbd5e1" } }, "Item"),
-                h("th", { style: { textAlign: "left", padding: "6px 8px", border: "1px solid #cbd5e1" } }, "Phase"),
-                h("th", { style: { textAlign: "left", padding: "6px 8px", border: "1px solid #cbd5e1" } }, "Level"),
-                h("th", { style: { textAlign: "left", padding: "6px 8px", border: "1px solid #cbd5e1" } }, "Score")
+              h("tr", { style: { background: "var(--da-surface-3)" } },
+                h("th", { scope: "col", style: { textAlign: "left", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "Item"),
+                h("th", { scope: "col", style: { textAlign: "left", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "Phase"),
+                h("th", { scope: "col", style: { textAlign: "left", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "Level"),
+                h("th", { scope: "col", style: { textAlign: "left", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "Score")
               )
             ),
             h("tbody", null,
               (sn.itemResults || []).map(function (r, ri) {
                 var it = ITEMS_BY_ID[r.itemId];
                 return h("tr", { key: "da-detail-row-" + ri },
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0" } }, it ? it.construct : r.itemId),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", color: "#64748b" } }, r.phase),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", fontFamily: "ui-monospace, monospace" } }, "L" + r.promptLevelReached),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", fontFamily: "ui-monospace, monospace", fontWeight: 700 } },
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)" } }, it ? it.construct : r.itemId),
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)", color: "var(--da-muted)" } }, r.phase),
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)", fontFamily: "ui-monospace, monospace" } }, "L" + r.promptLevelReached),
+                  h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)", fontFamily: "ui-monospace, monospace", fontWeight: 700 } },
                     r.scoreAwarded + (r.finalCorrect ? "" : " ✗") + (r.scaffoldLeaked ? " ⚠leak" : ""))
                 );
               })
@@ -9041,105 +9557,105 @@
           )
         ),
         // Phase X — saved progress monitoring plan (read-only)
-        sn.progressMonitoring ? h("div", { className: "da-card", style: { marginBottom: 14, background: "#eef2ff", borderColor: "#a5b4fc" } },
+        sn.progressMonitoring ? h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-indigo-tint)", borderColor: "var(--da-indigo-border-2)" } },
           h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" } },
-            h("h3", { style: { margin: 0, fontSize: 14, fontWeight: 800, color: "#3730a3" } }, "📈 Progress monitoring plan"),
+            h("h3", { style: { margin: 0, fontSize: 14, fontWeight: 800, color: "var(--da-indigo-text)" } }, "📈 Progress monitoring plan"),
             h("button", {
               onClick: function () { copyTextToClipboard(formatMonitoringPlanForClipboard(sn.progressMonitoring, sn.studentNickname)); },
               "aria-label": "Copy monitoring plan",
-              style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
             }, "📋 Copy plan")
           ),
-          sn.progressMonitoring.overview ? h("p", { style: { margin: "0 0 8px", fontSize: 12.5, color: "#0f172a", lineHeight: 1.55 } }, sn.progressMonitoring.overview) : null,
+          sn.progressMonitoring.overview ? h("p", { style: { margin: "0 0 8px", fontSize: 12.5, color: "var(--da-ink)", lineHeight: 1.55 } }, sn.progressMonitoring.overview) : null,
           (sn.progressMonitoring.goalMonitoring || []).length > 0 ? h("div", { style: { marginBottom: 6 } },
-            h("div", { style: { fontSize: 11, fontWeight: 800, color: "#3730a3", marginBottom: 4 } }, "Monitoring schedule:"),
-            h("ol", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "#334155", lineHeight: 1.55 } },
+            h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-indigo-text)", marginBottom: 4 } }, "Monitoring schedule:"),
+            h("ol", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "var(--da-ink-2)", lineHeight: 1.55 } },
               sn.progressMonitoring.goalMonitoring.map(function (g, gi) {
                 return h("li", { key: "da-saved-pm-g-" + gi, style: { marginBottom: 4 } },
                   h("strong", null, g.goalSummary),
                   " · ", g.probeType,
-                  g.frequency ? h("em", { style: { color: "#3730a3" } }, " (" + g.frequency + ")") : null,
-                  g.criterion ? h("div", { style: { fontSize: 11, color: "#475569", marginTop: 2 } }, "Criterion: " + g.criterion) : null
+                  g.frequency ? h("em", { style: { color: "var(--da-indigo-text)" } }, " (" + g.frequency + ")") : null,
+                  g.criterion ? h("div", { style: { fontSize: 11, color: "var(--da-ink-3)", marginTop: 2 } }, "Criterion: " + g.criterion) : null
                 );
               })
             )
           ) : null,
           (sn.progressMonitoring.reviewSchedule || []).length > 0 ? h("div", { style: { marginBottom: 6 } },
-            h("div", { style: { fontSize: 11, fontWeight: 800, color: "#3730a3", marginBottom: 4 } }, "Review schedule:"),
-            h("ul", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "#334155", lineHeight: 1.55 } },
+            h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-indigo-text)", marginBottom: 4 } }, "Review schedule:"),
+            h("ul", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "var(--da-ink-2)", lineHeight: 1.55 } },
               sn.progressMonitoring.reviewSchedule.map(function (rs, ri) {
                 return h("li", { key: "da-saved-pm-rs-" + ri }, h("strong", null, rs.timing), " — ", rs.focus);
               })
             )
           ) : null,
-          sn.progressMonitoring.caveat ? h("div", { style: { padding: 8, background: "#fffbeb", borderLeft: "3px solid #f59e0b", fontSize: 11.5, color: "#7c2d12", lineHeight: 1.5 } },
+          sn.progressMonitoring.caveat ? h("div", { style: { padding: 8, background: "var(--da-amber-tint)", borderLeft: "3px solid var(--da-amber-mid)", fontSize: 11.5, color: "var(--da-orange-deep)", lineHeight: 1.5 } },
             h("strong", null, "⚠ "), sn.progressMonitoring.caveat
           ) : null
         ) : null,
         // Phase T — saved teacher handoff (read-only on this view)
-        sn.teacherHandoff ? h("div", { className: "da-card", style: { marginBottom: 14, background: "#ecfeff", borderColor: "#7dd3fc" } },
+        sn.teacherHandoff ? h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-sky-tint-2)", borderColor: "var(--da-sky-border-2)" } },
           h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" } },
-            h("h3", { style: { margin: 0, fontSize: 14, fontWeight: 800, color: "#075985" } }, "🧑‍🏫 Teacher / case manager handoff"),
+            h("h3", { style: { margin: 0, fontSize: 14, fontWeight: 800, color: "var(--da-sky-deep)" } }, "🧑‍🏫 Teacher / case manager handoff"),
             h("button", {
               onClick: function () { copyTextToClipboard(formatTeacherHandoffForClipboard(sn.teacherHandoff, sn.studentNickname)); },
               "aria-label": "Copy handoff to clipboard",
-              style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
             }, "📋 Copy handoff")
           ),
-          h("div", { style: { padding: 8, background: "#ffffff", border: "1px solid #7dd3fc", borderRadius: 6, fontSize: 12.5, color: "#0f172a", lineHeight: 1.6, marginBottom: 8 } },
-            h("strong", { style: { color: "#075985", textTransform: "uppercase", fontSize: 10.5, letterSpacing: "0.05em" } }, "Headline: "),
+          h("div", { style: { padding: 8, background: "var(--da-surface)", border: "1px solid var(--da-sky-border-2)", borderRadius: 6, fontSize: 12.5, color: "var(--da-ink)", lineHeight: 1.6, marginBottom: 8 } },
+            h("strong", { style: { color: "var(--da-sky-deep)", textTransform: "uppercase", fontSize: 10.5, letterSpacing: "0.05em" } }, "Headline: "),
             sn.teacherHandoff.headline
           ),
           (sn.teacherHandoff.whatWorks || []).length > 0 ? h("div", { style: { marginBottom: 6 } },
-            h("div", { style: { fontSize: 11, fontWeight: 800, color: "#075985", marginBottom: 4 } }, "✓ What works:"),
-            h("ol", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "#334155", lineHeight: 1.55 } },
+            h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-sky-deep)", marginBottom: 4 } }, "✓ What works:"),
+            h("ol", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "var(--da-ink-2)", lineHeight: 1.55 } },
               sn.teacherHandoff.whatWorks.map(function (w, wi) {
                 return h("li", { key: "da-saved-th-w-" + wi, style: { marginBottom: 4 } },
                   h("strong", null, w.title), w.description ? ". " + w.description : "",
-                  w.evidenceFromDA ? h("em", { style: { color: "#075985" } }, " (evidence: " + w.evidenceFromDA + ")") : null
+                  w.evidenceFromDA ? h("em", { style: { color: "var(--da-sky-deep)" } }, " (evidence: " + w.evidenceFromDA + ")") : null
                 );
               })
             )
           ) : null,
           (sn.teacherHandoff.whatDidNotWork || []).length > 0 ? h("div", { style: { marginBottom: 6 } },
-            h("div", { style: { fontSize: 11, fontWeight: 800, color: "#b91c1c", marginBottom: 4 } }, "✗ What to avoid:"),
-            h("ol", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "#334155", lineHeight: 1.55 } },
+            h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-red-text)", marginBottom: 4 } }, "✗ What to avoid:"),
+            h("ol", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "var(--da-ink-2)", lineHeight: 1.55 } },
               sn.teacherHandoff.whatDidNotWork.map(function (x, xi) { return h("li", { key: "da-saved-th-x-" + xi }, x); })
             )
           ) : null,
           (sn.teacherHandoff.watchFor || []).length > 0 ? h("div", { style: { marginBottom: 6 } },
-            h("div", { style: { fontSize: 11, fontWeight: 800, color: "#075985", marginBottom: 4 } }, "👀 Watch for:"),
-            h("ol", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "#334155", lineHeight: 1.55 } },
+            h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-sky-deep)", marginBottom: 4 } }, "👀 Watch for:"),
+            h("ol", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "var(--da-ink-2)", lineHeight: 1.55 } },
               sn.teacherHandoff.watchFor.map(function (x, xi) { return h("li", { key: "da-saved-th-wf-" + xi }, x); })
             )
           ) : null,
           (sn.teacherHandoff.quickProbes || []).length > 0 ? h("div", { style: { marginBottom: 6 } },
-            h("div", { style: { fontSize: 11, fontWeight: 800, color: "#075985", marginBottom: 4 } }, "🎯 Quick probes:"),
-            h("ol", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "#334155", lineHeight: 1.55 } },
+            h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-sky-deep)", marginBottom: 4 } }, "🎯 Quick probes:"),
+            h("ol", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "var(--da-ink-2)", lineHeight: 1.55 } },
               sn.teacherHandoff.quickProbes.map(function (p, pi) {
                 return h("li", { key: "da-saved-th-p-" + pi, style: { marginBottom: 3 } },
                   h("strong", null, p.label), p.frequency ? " (" + p.frequency + ")" : "", ". " + p.description);
               })
             )
           ) : null,
-          sn.teacherHandoff.whenToReRefer ? h("div", { style: { padding: 8, background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 6, fontSize: 12, color: "#7f1d1d", lineHeight: 1.55, marginBottom: 6 } },
+          sn.teacherHandoff.whenToReRefer ? h("div", { style: { padding: 8, background: "var(--da-red-tint)", border: "1px solid var(--da-red-border)", borderRadius: 6, fontSize: 12, color: "var(--da-red-deep)", lineHeight: 1.55, marginBottom: 6 } },
             h("strong", null, "⚠ When to re-refer: "), sn.teacherHandoff.whenToReRefer
           ) : null,
           (sn.teacherHandoff.redFlags || []).length > 0 ? h("div", null,
-            h("div", { style: { fontSize: 11, fontWeight: 800, color: "#b91c1c", marginBottom: 4 } }, "🚩 Red flags:"),
-            h("ul", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "#7f1d1d", lineHeight: 1.55 } },
+            h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-red-text)", marginBottom: 4 } }, "🚩 Red flags:"),
+            h("ul", { style: { margin: 0, paddingLeft: 22, fontSize: 12, color: "var(--da-red-deep)", lineHeight: 1.55 } },
               sn.teacherHandoff.redFlags.map(function (x, xi) { return h("li", { key: "da-saved-th-rf-" + xi }, x); })
             )
           ) : null
         ) : null,
         // Phase S — saved family summary (read-only on this view)
-        sn.familySummary ? h("div", { className: "da-card", style: { marginBottom: 14, background: "#fdf2f8", borderColor: "#f9a8d4" } },
+        sn.familySummary ? h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-rose-tint)", borderColor: "var(--da-rose-border)" } },
           h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" } },
-            h("h3", { style: { margin: 0, fontSize: 14, fontWeight: 800, color: "#9d174d" } }, "👨‍👩‍👧 Family-facing summary"),
+            h("h3", { style: { margin: 0, fontSize: 14, fontWeight: 800, color: "var(--da-rose-text)" } }, "👨‍👩‍👧 Family-facing summary"),
             h("button", {
               onClick: function () { copyTextToClipboard(formatFamilySummaryForClipboard(sn.familySummary, sn.studentNickname)); },
               "aria-label": "Copy family letter to clipboard",
-              style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
             }, "📋 Copy as letter")
           ),
           h("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
@@ -9147,48 +9663,48 @@
               if (key === "questions_for_team") {
                 var qs = sn.familySummary[key] || [];
                 if (qs.length === 0) return null;
-                return h("div", { key: "da-saved-fam-" + key, style: { padding: 10, background: "#ffffff", border: "1px solid #f9a8d4", borderRadius: 6 } },
-                  h("div", { style: { fontSize: 11, fontWeight: 800, color: "#9d174d", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } },
+                return h("div", { key: "da-saved-fam-" + key, style: { padding: 10, background: "var(--da-surface)", border: "1px solid var(--da-rose-border)", borderRadius: 6 } },
+                  h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-rose-text)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } },
                     FAMILY_SECTION_LABELS[key]),
-                  h("ol", { style: { margin: "4px 0 0", paddingLeft: 22, fontSize: 12.5, color: "#334155", lineHeight: 1.55 } },
+                  h("ol", { style: { margin: "4px 0 0", paddingLeft: 22, fontSize: 12.5, color: "var(--da-ink-2)", lineHeight: 1.55 } },
                     qs.map(function (q, qi) { return h("li", { key: "da-saved-fam-q-" + qi, style: { marginBottom: 3 } }, q); })
                   )
                 );
               }
               if (!sn.familySummary[key]) return null;
-              return h("div", { key: "da-saved-fam-" + key, style: { padding: 10, background: "#ffffff", border: "1px solid #f9a8d4", borderRadius: 6 } },
-                h("div", { style: { fontSize: 11, fontWeight: 800, color: "#9d174d", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } },
+              return h("div", { key: "da-saved-fam-" + key, style: { padding: 10, background: "var(--da-surface)", border: "1px solid var(--da-rose-border)", borderRadius: 6 } },
+                h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-rose-text)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } },
                   FAMILY_SECTION_LABELS[key]),
-                h("p", { style: { margin: 0, fontSize: 13, color: "#0f172a", lineHeight: 1.6 } }, sn.familySummary[key])
+                h("p", { style: { margin: 0, fontSize: 13, color: "var(--da-ink)", lineHeight: 1.6 } }, sn.familySummary[key])
               );
             })
           )
         ) : null,
         // Phase Q — saved accommodations (read-only on this view)
-        Array.isArray(sn.accommodations) && sn.accommodations.length > 0 ? h("div", { className: "da-card", style: { marginBottom: 14, background: "#f0fdf4", borderColor: "#86efac" } },
+        Array.isArray(sn.accommodations) && sn.accommodations.length > 0 ? h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-green-tint)", borderColor: "var(--da-green-border)" } },
           h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" } },
-            h("h3", { style: { margin: 0, fontSize: 14, fontWeight: 800, color: "#15803d" } }, "🛠 UDL accommodations · " + sn.accommodations.length),
+            h("h3", { style: { margin: 0, fontSize: 14, fontWeight: 800, color: "var(--da-green-text-2)" } }, "🛠 UDL accommodations · " + sn.accommodations.length),
             h("button", {
               onClick: function () {
                 var all = sn.accommodations.map(function (a, i) { return "── " + (i + 1) + ". " + formatAccommodationForClipboard(a); }).join("\n\n");
                 copyTextToClipboard(all);
               },
               "aria-label": "Copy all accommodations as one text block",
-              style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
             }, "📋 Copy all")
           ),
           h("div", { style: { display: "flex", flexDirection: "column", gap: 8 } },
             sn.accommodations.map(function (a, ai) {
-              return h("div", { key: "da-saved-accom-" + a.id, style: { padding: 10, background: "#ffffff", border: "1px solid #86efac", borderRadius: 6 } },
+              return h("div", { key: "da-saved-accom-" + a.id, style: { padding: 10, background: "var(--da-surface)", border: "1px solid var(--da-green-border)", borderRadius: 6 } },
                 h("div", { style: { display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 4 } },
-                  h("span", { style: { fontSize: 9.5, fontWeight: 800, color: "#15803d", textTransform: "uppercase", letterSpacing: "0.05em", background: "#dcfce7", padding: "2px 6px", borderRadius: 4 } },
+                  h("span", { style: { fontSize: 9.5, fontWeight: 800, color: "var(--da-green-text-2)", textTransform: "uppercase", letterSpacing: "0.05em", background: "var(--da-green-tint-2)", padding: "2px 6px", borderRadius: 4 } },
                     ACCOM_CATEGORY_LABELS[a.category] || a.category),
-                  h("span", { style: { fontSize: 9.5, color: "#15803d", fontStyle: "italic" } },
+                  h("span", { style: { fontSize: 9.5, color: "var(--da-green-text-2)", fontStyle: "italic" } },
                     "UDL: " + (UDL_PRINCIPLE_LABELS[a.udlPrinciple] || a.udlPrinciple))
                 ),
-                h("div", { style: { fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 4 } }, a.title),
-                h("p", { style: { margin: "0 0 6px", fontSize: 12.5, color: "#334155", lineHeight: 1.55 } }, a.description),
-                a.rationale ? h("div", { style: { padding: 6, background: "#f0fdf4", borderLeft: "3px solid #16a34a", fontSize: 11, color: "#14532d", lineHeight: 1.5 } },
+                h("div", { style: { fontSize: 13, fontWeight: 700, color: "var(--da-ink)", marginBottom: 4 } }, a.title),
+                h("p", { style: { margin: "0 0 6px", fontSize: 12.5, color: "var(--da-ink-2)", lineHeight: 1.55 } }, a.description),
+                a.rationale ? h("div", { style: { padding: 6, background: "var(--da-green-tint)", borderLeft: "3px solid var(--da-green-mid)", fontSize: 11, color: "var(--da-green-deep)", lineHeight: 1.5 } },
                   h("strong", { style: { fontSize: 10, textTransform: "uppercase", letterSpacing: "0.05em" } }, "Evidence: "),
                   a.rationale
                 ) : null
@@ -9197,28 +9713,28 @@
           )
         ) : null,
         // Phase K — saved IEP goals (read-only on this view; edit lives on the live summary)
-        Array.isArray(sn.iepGoals) && sn.iepGoals.length > 0 ? h("div", { className: "da-card", style: { marginBottom: 14, background: "#fdfaf3", borderColor: "#f3d28a" } },
+        Array.isArray(sn.iepGoals) && sn.iepGoals.length > 0 ? h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-amber-tint-3)", borderColor: "var(--da-amber-border-2)" } },
           h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" } },
-            h("h3", { style: { margin: 0, fontSize: 14, fontWeight: 800, color: "#92400e" } }, "🎯 Drafted IEP goals · " + sn.iepGoals.length),
+            h("h3", { style: { margin: 0, fontSize: 14, fontWeight: 800, color: "var(--da-amber-text-2)" } }, "🎯 Drafted IEP goals · " + sn.iepGoals.length),
             h("button", {
               onClick: function () {
                 var all = sn.iepGoals.map(function (g, i) { return "── Goal " + (i + 1) + " ──\n" + formatGoalForClipboard(g); }).join("\n\n");
                 copyTextToClipboard(all);
               },
               "aria-label": "Copy all goals as one text block",
-              style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
             }, "📋 Copy all")
           ),
           h("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
             sn.iepGoals.map(function (g, gi) {
-              return h("div", { key: "da-saved-iep-" + g.id, style: { padding: 10, background: "#ffffff", border: "1px solid #f3d28a", borderRadius: 6 } },
-                h("div", { style: { fontSize: 11, color: "#92400e", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 800, marginBottom: 4 } },
+              return h("div", { key: "da-saved-iep-" + g.id, style: { padding: 10, background: "var(--da-surface)", border: "1px solid var(--da-amber-border-2)", borderRadius: 6 } },
+                h("div", { style: { fontSize: 11, color: "var(--da-amber-text-2)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 800, marginBottom: 4 } },
                   "Goal " + (gi + 1) + " · " + g.domain),
-                h("p", { style: { margin: "0 0 6px", fontSize: 13, color: "#0f172a", lineHeight: 1.55 } }, g.annualGoal),
-                g.measurementCriterion ? h("p", { style: { margin: "0 0 4px", fontSize: 11.5, color: "#475569" } }, h("strong", null, "Criterion: "), g.measurementCriterion) : null,
-                g.evaluationMethod ? h("p", { style: { margin: "0 0 6px", fontSize: 11.5, color: "#475569" } }, h("strong", null, "Measurement: "), g.evaluationMethod) : null,
-                Array.isArray(g.shortTermObjectives) && g.shortTermObjectives.length > 0 ? h("div", { style: { fontSize: 12, color: "#334155", lineHeight: 1.5 } },
-                  h("strong", { style: { fontSize: 10.5, color: "#92400e", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Short-term objectives:"),
+                h("p", { style: { margin: "0 0 6px", fontSize: 13, color: "var(--da-ink)", lineHeight: 1.55 } }, g.annualGoal),
+                g.measurementCriterion ? h("p", { style: { margin: "0 0 4px", fontSize: 11.5, color: "var(--da-ink-3)" } }, h("strong", null, "Criterion: "), g.measurementCriterion) : null,
+                g.evaluationMethod ? h("p", { style: { margin: "0 0 6px", fontSize: 11.5, color: "var(--da-ink-3)" } }, h("strong", null, "Measurement: "), g.evaluationMethod) : null,
+                Array.isArray(g.shortTermObjectives) && g.shortTermObjectives.length > 0 ? h("div", { style: { fontSize: 12, color: "var(--da-ink-2)", lineHeight: 1.5 } },
+                  h("strong", { style: { fontSize: 10.5, color: "var(--da-amber-text-2)", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Short-term objectives:"),
                   h("ol", { style: { margin: "4px 0 0", paddingLeft: 22 } },
                     g.shortTermObjectives.map(function (sto, soi) { return h("li", { key: "da-saved-sto-" + g.id + "-" + soi, style: { marginBottom: 2 } }, sto); })
                   )
@@ -9402,37 +9918,37 @@
           h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 12 } },
             h("span", { style: { fontSize: 36 } }, step.icon),
             h("div", { style: { flex: 1 } },
-              h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
+              h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
                 "Step " + (tourStep + 1) + " of " + TOUR_STEPS.length),
-              h("h2", { style: { margin: "2px 0 0", fontSize: 19, fontWeight: 800, color: "#0f172a" } }, step.title)
+              h("h2", { style: { margin: "2px 0 0", fontSize: 19, fontWeight: 800, color: "var(--da-ink)" } }, step.title)
             )
           ),
           // Progress dots
           h("div", { style: { display: "flex", gap: 4, marginBottom: 14 } },
             TOUR_STEPS.map(function (_, i) {
               return h("div", { key: "da-tour-dot-" + i,
-                style: { flex: 1, height: 3, borderRadius: 2, background: i <= tourStep ? "#1e3a8a" : "#cbd5e1" } });
+                style: { flex: 1, height: 3, borderRadius: 2, background: i <= tourStep ? "var(--da-accent)" : "var(--da-border-2)" } });
             })
           ),
-          h("p", { style: { margin: 0, fontSize: 13.5, color: "#334155", lineHeight: 1.7 } }, step.body),
+          h("p", { style: { margin: 0, fontSize: 13.5, color: "var(--da-ink-2)", lineHeight: 1.7 } }, step.body),
           // Actions
           h("div", { style: { display: "flex", gap: 8, marginTop: 18, alignItems: "center" } },
             tourStep > 0 ? h("button", {
               onClick: function () { setTourStep(tourStep - 1); },
-              style: { padding: "8px 14px", borderRadius: 8, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "8px 14px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
             }, "← Back") : null,
             h("div", { style: { flex: 1 } }),
             h("button", {
               onClick: closeTour,
               "aria-label": "Skip tour",
-              style: { padding: "8px 12px", border: "none", background: "transparent", color: "#64748b", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "8px 12px", border: "none", background: "transparent", color: "var(--da-muted)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
             }, "Skip"),
             h("button", {
               onClick: function () {
                 if (isLast) closeTour();
                 else setTourStep(tourStep + 1);
               },
-              style: { padding: "8px 18px", borderRadius: 8, border: "none", background: "#1e3a8a", color: "#ffffff", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "8px 18px", borderRadius: 8, border: "none", background: "var(--da-accent)", color: "var(--da-on-accent)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
             }, isLast ? "✓ Got it" : "Next →")
           )
         )
@@ -9458,18 +9974,18 @@
           h("button", {
             onClick: function () { resetCustomBuilder(); },
             "aria-label": "Back to start",
-            style: { background: "transparent", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
+            style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
           }, "← Back"),
           h("div", null,
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } }, "Phase A-bis · AI probe builder"),
-            h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "#0f172a" } }, "✨ Build a custom probe")
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } }, "Phase A-bis · AI probe builder"),
+            h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "var(--da-ink)" } }, "✨ Build a custom probe")
           )
         ),
 
         h("div", { className: "da-card", style: { marginBottom: 14 } },
-          h("p", { style: { margin: "0 0 8px", fontSize: 13, color: "#334155", lineHeight: 1.6 } },
+          h("p", { style: { margin: "0 0 8px", fontSize: 13, color: "var(--da-ink-2)", lineHeight: 1.6 } },
             "Specify a construct, grade band, and optional suspected bottleneck. The AI generates ", h("strong", null, "items + full 4-level prompt ladders + transfer twins"), " that match. You review and edit before running."),
-          h("p", { style: { margin: 0, fontSize: 11, color: "#a16207", fontStyle: "italic", lineHeight: 1.55 } },
+          h("p", { style: { margin: 0, fontSize: 11, color: "var(--da-amber-text)", fontStyle: "italic", lineHeight: 1.55 } },
             "⚠ AI-generated items are not normed or validated. Use as clinical probes, not standardized measures. Always review before use.")
         ),
 
@@ -9477,11 +9993,11 @@
         h("div", { className: "da-card", style: { marginBottom: 14 } },
           // Domain
           h("div", { style: { marginBottom: 12 } },
-            h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", marginBottom: 4 } }, "Domain"),
+            h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, "Domain"),
             h("select", {
               value: customForm.domain,
               onChange: function (e) { setField("domain", e.target.value); },
-              style: { width: "100%", padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
+              style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
             },
               h("option", { value: "math" }, "🧮 Math reasoning"),
               h("option", { value: "reading" }, "📖 Reading comprehension"),
@@ -9492,43 +10008,43 @@
           ),
           // Grade band
           h("div", { style: { marginBottom: 12 } },
-            h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", marginBottom: 4 } }, "Grade band"),
+            h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, "Grade band"),
             h("input", {
               type: "text", value: customForm.gradeBand,
               onChange: function (e) { setField("gradeBand", e.target.value); },
               placeholder: "e.g., 4-5, end of 7th, K-1",
-              style: { width: "100%", padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
+              style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
             })
           ),
           // Target construct
           h("div", { style: { marginBottom: 12 } },
-            h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", marginBottom: 4 } }, "Target construct *"),
+            h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, "Target construct *"),
             h("input", {
               type: "text", value: customForm.construct, maxLength: 240,
               onChange: function (e) { setField("construct", e.target.value); },
               placeholder: "e.g., multi-step word problems with mixed operations",
-              style: { width: "100%", padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
+              style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
             }),
-            h("div", { style: { fontSize: 10.5, color: "#475569", marginTop: 3 } }, "What construct should the probe target? Be specific.")
+            h("div", { style: { fontSize: 10.5, color: "var(--da-ink-3)", marginTop: 3 } }, "What construct should the probe target? Be specific.")
           ),
           // Suspected bottleneck
           h("div", { style: { marginBottom: 12 } },
-            h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", marginBottom: 4 } }, "Suspected bottleneck (optional)"),
+            h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, "Suspected bottleneck (optional)"),
             h("input", {
               type: "text", value: customForm.bottleneck, maxLength: 160,
               onChange: function (e) { setField("bottleneck", e.target.value); },
               placeholder: "e.g., working memory, operation selection, inference, vocabulary",
-              style: { width: "100%", padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
+              style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
             }),
-            h("div", { style: { fontSize: 10.5, color: "#475569", marginTop: 3 } }, "Helps the AI shape scaffolds toward the right bottleneck.")
+            h("div", { style: { fontSize: 10.5, color: "var(--da-ink-3)", marginTop: 3 } }, "Helps the AI shape scaffolds toward the right bottleneck.")
           ),
           // Item count
           h("div", { style: { marginBottom: 12 } },
-            h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", marginBottom: 4 } }, "Number of items"),
+            h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, "Number of items"),
             h("select", {
               value: String(customForm.itemCount),
               onChange: function (e) { setField("itemCount", parseInt(e.target.value, 10) || 3); },
-              style: { width: 200, padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
+              style: { width: 200, padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
             },
               h("option", { value: "3" }, "3 (brief probe · ~12 min)"),
               h("option", { value: "4" }, "4 items"),
@@ -9539,18 +10055,18 @@
           ),
           // Optional clinical context (PII-warning)
           h("div", { style: { marginBottom: 8 } },
-            h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", marginBottom: 4 } }, "Additional clinical context (optional, PII auto-stripped)"),
+            h("label", { style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, "Additional clinical context (optional, PII auto-stripped)"),
             h("textarea", {
               rows: 2, value: customForm.context, maxLength: 800,
               onChange: function (e) { setField("context", e.target.value); },
               placeholder: "Construct-focused only. e.g., 'comfortable with concrete representations; struggles with abstract symbol manipulation'",
-              style: { width: "100%", padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: 8, fontFamily: "inherit", fontSize: 12, boxSizing: "border-box", resize: "vertical" }
+              style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 12, boxSizing: "border-box", resize: "vertical" }
             }),
-            h("div", { style: { fontSize: 10.5, color: "#a16207", marginTop: 3, fontStyle: "italic", lineHeight: 1.45 } },
+            h("div", { style: { fontSize: 10.5, color: "var(--da-amber-text)", marginTop: 3, fontStyle: "italic", lineHeight: 1.45 } },
               "⚠ Do not include the student's name, school, or other identifying details. A soft lint strips obvious name patterns before the AI call, but treat this as defense in depth — write construct-focused.")
           ),
           // Phase Y — Self-critique loop toggle (default ON for SOTA quality)
-          h("div", { style: { marginTop: 10, padding: 10, background: "#f5f3ff", border: "1px solid #c4b5fd", borderRadius: 8 } },
+          h("div", { style: { marginTop: 10, padding: 10, background: "var(--da-violet-tint-2)", border: "1px solid var(--da-violet-border)", borderRadius: 8 } },
             h("label", { style: { display: "flex", alignItems: "flex-start", gap: 8, cursor: "pointer" } },
               h("input", {
                 type: "checkbox", checked: useSelfCritique,
@@ -9559,9 +10075,9 @@
                 style: { marginTop: 3 }
               }),
               h("div", null,
-                h("div", { style: { fontSize: 12.5, fontWeight: 700, color: "#5b21b6" } },
+                h("div", { style: { fontSize: 12.5, fontWeight: 700, color: "var(--da-violet-text-2)" } },
                   "🔬 Self-critique loop (recommended)"),
-                h("div", { style: { fontSize: 11, color: "#4c1d95", marginTop: 2, lineHeight: 1.5 } },
+                h("div", { style: { fontSize: 11, color: "var(--da-violet-deep)", marginTop: 2, lineHeight: 1.5 } },
                   "Three-pass pipeline: AI drafts → AI critiques its own draft against 5 quality criteria → AI refines any flagged items. Costs ~3× the API time but materially raises L3 modeling quality and catches answer leakage. Critique notes shown on review screen.")
               )
             )
@@ -9575,8 +10091,8 @@
             disabled: !canGenerate,
             style: {
               padding: "10px 22px", borderRadius: 10, border: "none",
-              background: canGenerate ? "#1e3a8a" : "#94a3b8",
-              color: "#ffffff", fontWeight: 800, fontSize: 14,
+              background: canGenerate ? "var(--da-accent)" : "var(--da-faint)",
+              color: "var(--da-on-accent)", fontWeight: 800, fontSize: 14,
               cursor: canGenerate ? "pointer" : "not-allowed", fontFamily: "inherit"
             }
           }, genBusy
@@ -9585,27 +10101,27 @@
                  : genStage === "refine" ? "✏️ Refining flagged items…"
                  : "🤖 Generating…")
               : "✨ Generate items"),
-          !hasGemini ? h("span", { style: { fontSize: 12, color: "#b91c1c" } },
+          !hasGemini ? h("span", { style: { fontSize: 12, color: "var(--da-red-text)" } },
             "AI generation requires callGemini (not wired in this host)") : null,
-          customForm.construct.trim().length < 3 ? h("span", { style: { fontSize: 12, color: "#64748b", fontStyle: "italic" } },
+          customForm.construct.trim().length < 3 ? h("span", { style: { fontSize: 12, color: "var(--da-muted)", fontStyle: "italic" } },
             "Fill in 'Target construct' to enable") : null
         ),
         // Stage progress strip (only while busy with self-critique)
-        genBusy && useSelfCritique && genStage ? h("div", { style: { marginTop: 10, display: "flex", gap: 6, alignItems: "center", fontSize: 11.5, color: "#5b21b6" } },
+        genBusy && useSelfCritique && genStage ? h("div", { style: { marginTop: 10, display: "flex", gap: 6, alignItems: "center", fontSize: 11.5, color: "var(--da-violet-text-2)" } },
           ["draft", "critique", "refine"].map(function (stg, si) {
             var isActive = genStage === stg;
             var hasPassed = ["draft", "critique", "refine"].indexOf(stg) < ["draft", "critique", "refine"].indexOf(genStage);
             var label = { draft: "Draft", critique: "Critique", refine: "Refine" }[stg];
             return h("div", { key: "da-y-stg-" + stg, style: { display: "flex", alignItems: "center", gap: 4 } },
-              h("span", { style: { width: 10, height: 10, borderRadius: "50%", background: isActive ? "#7c3aed" : hasPassed ? "#a78bfa" : "#e5e7eb", display: "inline-block" } }),
+              h("span", { style: { width: 10, height: 10, borderRadius: "50%", background: isActive ? "var(--da-violet-mid)" : hasPassed ? "var(--da-violet-border-3)" : "var(--da-border)", display: "inline-block" } }),
               h("span", { style: { fontWeight: isActive ? 800 : 600 } }, label),
-              si < 2 ? h("span", { style: { color: "#475569", margin: "0 4px" } }, "→") : null
+              si < 2 ? h("span", { style: { color: "var(--da-ink-3)", margin: "0 4px" } }, "→") : null
             );
           })
         ) : null,
 
         genError ? h("div", {
-          style: { marginTop: 14, padding: "10px 12px", background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 8, fontSize: 12, color: "#b91c1c", lineHeight: 1.55, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }
+          style: { marginTop: 14, padding: "10px 12px", background: "var(--da-red-tint)", border: "1px solid var(--da-red-border)", borderRadius: 8, fontSize: 12, color: "var(--da-red-text)", lineHeight: 1.55, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }
         },
           h("span", { style: { flex: 1, minWidth: 200 } }, "⚠ " + genError),
           h("button", {
@@ -9613,12 +10129,12 @@
               if (canGenerate) generateCustomProbe(customForm);
             },
             "aria-label": "Retry the generation",
-            style: { padding: "4px 10px", borderRadius: 6, border: "1px solid #b91c1c", background: "#ffffff", color: "#b91c1c", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "4px 10px", borderRadius: 6, border: "1px solid var(--da-red-text)", background: "var(--da-surface)", color: "var(--da-red-text)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, "↻ Retry"),
           h("button", {
             onClick: function () { setGenError(null); },
             "aria-label": "Dismiss",
-            style: { padding: "4px 8px", borderRadius: 6, border: "none", background: "transparent", color: "#7f1d1d", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "4px 8px", borderRadius: 6, border: "none", background: "transparent", color: "var(--da-red-deep)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, "✕")
         ) : null
       );
@@ -9636,25 +10152,25 @@
           h("button", {
             onClick: function () { setStartScreenView("custom-builder"); },
             "aria-label": "Back to builder form",
-            style: { background: "transparent", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
+            style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
           }, "← Edit spec"),
           h("div", { style: { flex: 1, minWidth: 200 } },
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } },
               "Review · " + generatedItems.length + " item" + (generatedItems.length === 1 ? "" : "s") +
               (includedItems.length !== generatedItems.length ? " (" + includedItems.length + " included)" : "")),
-            h("h1", { style: { margin: "2px 0 0", fontSize: 20, fontWeight: 800, color: "#0f172a" } },
+            h("h1", { style: { margin: "2px 0 0", fontSize: 20, fontWeight: 800, color: "var(--da-ink)" } },
               "Edit, regenerate, or run")
           )
         ),
 
-        h("div", { className: "da-card", style: { marginBottom: 14, background: "#eff6ff", borderColor: "#bfdbfe" } },
-          h("p", { style: { margin: 0, fontSize: 12, color: "#1e3a8a", lineHeight: 1.55 } },
+        h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-blue-tint)", borderColor: "var(--da-blue-border)" } },
+          h("p", { style: { margin: 0, fontSize: 12, color: "var(--da-accent-text)", lineHeight: 1.55 } },
             "Edit any field in place. Click ", h("strong", null, "Regenerate"), " to re-roll a single item with the same spec. ",
             h("strong", null, "Exclude"), " drops an item from the bank without deleting it. Watch for ladder steps that leak the answer (L1/L2) or fail to model (L3) — those are the most common AI failure modes.")
         ),
 
         genError ? h("div", {
-          style: { marginBottom: 14, padding: "10px 12px", background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 8, fontSize: 12, color: "#b91c1c" }
+          style: { marginBottom: 14, padding: "10px 12px", background: "var(--da-red-tint)", border: "1px solid var(--da-red-border)", borderRadius: 8, fontSize: 12, color: "var(--da-red-text)" }
         }, "⚠ " + genError) : null,
 
         // Items
@@ -9671,7 +10187,7 @@
               id: "da-save-template", type: "checkbox", checked: saveTemplate,
               onChange: function (e) { setSaveTemplate(!!e.target.checked); }
             }),
-            h("label", { htmlFor: "da-save-template", style: { fontSize: 13, color: "#0f172a", fontWeight: 700 } },
+            h("label", { htmlFor: "da-save-template", style: { fontSize: 13, color: "var(--da-ink)", fontWeight: 700 } },
               "Save to my probe library for reuse")
           ),
           saveTemplate ? h("div", { style: { marginTop: 10 } },
@@ -9680,9 +10196,9 @@
               onChange: function (e) { setTemplateName(e.target.value); },
               placeholder: "Template name (optional — auto-named if blank)",
               maxLength: 80,
-              style: { width: "100%", padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
+              style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
             }),
-            h("div", { style: { fontSize: 10.5, color: "#64748b", marginTop: 4, fontStyle: "italic" } },
+            h("div", { style: { fontSize: 10.5, color: "var(--da-muted)", marginTop: 4, fontStyle: "italic" } },
               "Templates are stored on this device only. Useful for re-running the same probe with different students.")
           ) : null
         ) : null,
@@ -9706,8 +10222,8 @@
             disabled: !hasIncluded,
             style: {
               padding: "10px 22px", borderRadius: 10, border: "none",
-              background: hasIncluded ? "#1e3a8a" : "#94a3b8",
-              color: "#ffffff", fontWeight: 800, fontSize: 14,
+              background: hasIncluded ? "var(--da-accent)" : "var(--da-faint)",
+              color: "var(--da-on-accent)", fontWeight: 800, fontSize: 14,
               cursor: hasIncluded ? "pointer" : "not-allowed", fontFamily: "inherit"
             }
           }, saveTemplate ? "💾 Save + Run probe →" : "▶ Run probe →"),
@@ -9716,11 +10232,11 @@
               saveProbeTemplate(customForm, includedItems);
               resetCustomBuilder();
             },
-            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid #16a34a", background: "#f0fdf4", color: "#15803d", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-green-mid)", background: "var(--da-green-tint)", color: "var(--da-green-text-2)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "💾 Save only (don't run)") : null,
           h("button", {
             onClick: function () { resetCustomBuilder(); },
-            style: { padding: "10px 16px", borderRadius: 10, border: "1px solid #cbd5e1", background: "transparent", color: "#475569", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "10px 16px", borderRadius: 10, border: "1px solid var(--da-border-2)", background: "transparent", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "Cancel")
         )
       );
@@ -10311,11 +10827,11 @@
     // place (manipulative / word-sounds) OR regenerates (glossary).
     function renderChipEditor(itemIdx, sr, draft) {
       var ed = function (patch) { setEditingChip(Object.assign({}, editingChip, { draft: Object.assign({}, draft, patch) })); };
-      var commonBox = { marginTop: 6, padding: 8, background: "#ffffff", border: "1px dashed #fbbf24", borderRadius: 4 };
-      var labelStyle = { display: "block", fontSize: 10, fontWeight: 700, color: "#92400e", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 };
-      var inputStyle = { width: "100%", padding: "4px 6px", border: "1px solid #cbd5e1", borderRadius: 4, fontFamily: "inherit", fontSize: 11, boxSizing: "border-box" };
-      var saveBtnStyle = { padding: "3px 12px", borderRadius: 4, border: "1px solid #15803d", background: "#16a34a", color: "#ffffff", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" };
-      var cancelBtnStyle = { padding: "3px 10px", borderRadius: 4, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", marginLeft: 6 };
+      var commonBox = { marginTop: 6, padding: 8, background: "var(--da-surface)", border: "1px dashed var(--da-amber-border)", borderRadius: 4 };
+      var labelStyle = { display: "block", fontSize: 10, fontWeight: 700, color: "var(--da-amber-text-2)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 };
+      var inputStyle = { width: "100%", padding: "4px 6px", border: "1px solid var(--da-border-2)", borderRadius: 4, fontFamily: "inherit", fontSize: 11, boxSizing: "border-box" };
+      var saveBtnStyle = { padding: "3px 12px", borderRadius: 4, border: "1px solid var(--da-btn-green)", background: "var(--da-btn-green)", color: "var(--da-on-accent)", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" };
+      var cancelBtnStyle = { padding: "3px 10px", borderRadius: 4, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", marginLeft: 6 };
 
       if (sr.kind === "glossary") {
         var termsStr = (draft.seedTerms || []).join(", ");
@@ -10332,7 +10848,7 @@
             onChange: function (e) { ed({ title: e.target.value }); },
             style: inputStyle
           }),
-          h("div", { style: { marginTop: 8, fontSize: 10, color: "#92400e", fontStyle: "italic", lineHeight: 1.4 } },
+          h("div", { style: { marginTop: 8, fontSize: 10, color: "var(--da-amber-text-2)", fontStyle: "italic", lineHeight: 1.4 } },
             "Saving regenerates the glossary with the new terms + auto-icons. The old glossary entry stays in your resource pack (you can delete it manually if needed)."),
           h("div", { style: { marginTop: 6 } },
             h("button", { onClick: function () { saveGlossaryEdit(itemIdx, sr, draft); }, style: saveBtnStyle }, "Regenerate with new terms"),
@@ -10372,7 +10888,7 @@
                   var parts = chunk.split(":").map(function (s) { return s.trim(); });
                   var v = parseFloat(parts[0]);
                   if (!isFinite(v)) return null;
-                  return { value: v, color: "#ef4444", label: parts[1] || "" };
+                  return { value: v, color: "var(--da-red-mid-2)", label: parts[1] || "" };
                 }).filter(Boolean).slice(0, 6);
                 ed({ preset: Object.assign({}, preset, { markers: newMarkers }) });
               },
@@ -10414,7 +10930,7 @@
           toolForm,
           h("label", { style: Object.assign({}, labelStyle, { marginTop: 6 }) }, "Title (optional)"),
           h("input", { type: "text", value: draft.title || "", maxLength: 80, onChange: function (e) { ed({ title: e.target.value }); }, style: inputStyle }),
-          h("div", { style: { marginTop: 8, fontSize: 10, color: "#92400e", fontStyle: "italic", lineHeight: 1.4 } },
+          h("div", { style: { marginTop: 8, fontSize: 10, color: "var(--da-amber-text-2)", fontStyle: "italic", lineHeight: 1.4 } },
             "Saving updates this manipulative in place — same resource id, same history entry, no re-render of student devices needed."),
           h("div", { style: { marginTop: 6 } },
             h("button", { onClick: function () { saveManipulativeEdit(itemIdx, sr, draft); }, style: saveBtnStyle }, "Apply changes"),
@@ -10445,7 +10961,7 @@
           }),
           h("label", { style: Object.assign({}, labelStyle, { marginTop: 6 }) }, "Title (optional)"),
           h("input", { type: "text", value: draft.title || "", maxLength: 80, onChange: function (e) { ed({ title: e.target.value }); }, style: inputStyle }),
-          h("div", { style: { marginTop: 8, fontSize: 10, color: "#92400e", fontStyle: "italic", lineHeight: 1.4 } },
+          h("div", { style: { marginTop: 8, fontSize: 10, color: "var(--da-amber-text-2)", fontStyle: "italic", lineHeight: 1.4 } },
             "Saving updates this probe in place — same resource id."),
           h("div", { style: { marginTop: 6 } },
             h("button", { onClick: function () { saveWordSoundsEdit(itemIdx, sr, draft); }, style: saveBtnStyle }, "Apply changes"),
@@ -10464,64 +10980,64 @@
         key: "da-gen-item-" + idx,
         className: "da-card",
         style: {
-          background: isExcluded ? "#f8fafc" : "#ffffff",
+          background: isExcluded ? "var(--da-surface-2)" : "var(--da-surface)",
           opacity: isExcluded ? 0.55 : 1,
-          borderColor: warnings.length > 0 ? "#fbbf24" : "#e2e8f0"
+          borderColor: warnings.length > 0 ? "var(--da-amber-border)" : "var(--da-border)"
         }
       },
         // Header row
         h("div", { style: { display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" } },
-          h("div", { style: { fontSize: 12, fontWeight: 800, color: "#0f172a" } }, "Item " + (idx + 1) + " — " + (item.construct || "")),
+          h("div", { style: { fontSize: 12, fontWeight: 800, color: "var(--da-ink)" } }, "Item " + (idx + 1) + " — " + (item.construct || "")),
           warnings.length > 0 ? h("span", {
-            style: { fontSize: 10.5, color: "#a16207", background: "#fef3c7", padding: "2px 8px", borderRadius: 999, fontWeight: 700 }
+            style: { fontSize: 10.5, color: "var(--da-amber-text)", background: "var(--da-amber-tint-2)", padding: "2px 8px", borderRadius: 999, fontWeight: 700 }
           }, "⚠ " + warnings.length + " warning" + (warnings.length === 1 ? "" : "s")) : null,
           h("div", { style: { flex: 1 } }),
           h("button", {
             onClick: function () { regenerateOneItem(idx); },
             disabled: genBusy,
-            style: { padding: "4px 10px", borderRadius: 6, border: "1px solid #cbd5e1", background: "#ffffff", color: "#0f172a", fontSize: 11, fontWeight: 700, cursor: genBusy ? "wait" : "pointer", fontFamily: "inherit" }
+            style: { padding: "4px 10px", borderRadius: 6, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink)", fontSize: 11, fontWeight: 700, cursor: genBusy ? "wait" : "pointer", fontFamily: "inherit" }
           }, "↻ Regenerate"),
           h("button", {
             onClick: function () { editGeneratedItem(idx, function (i) { return Object.assign({}, i, { _excluded: !i._excluded }); }); },
-            style: { padding: "4px 10px", borderRadius: 6, border: "1px solid " + (isExcluded ? "#16a34a" : "#fca5a5"), background: "transparent", color: isExcluded ? "#15803d" : "#b91c1c", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "4px 10px", borderRadius: 6, border: "1px solid " + (isExcluded ? "var(--da-green-mid)" : "var(--da-red-border)"), background: "transparent", color: isExcluded ? "var(--da-green-text-2)" : "var(--da-red-text)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, isExcluded ? "+ Include" : "✕ Exclude")
         ),
         // Warnings list (heuristic validator output)
-        warnings.length > 0 ? h("div", { style: { marginBottom: 8, padding: "6px 10px", background: "#fef3c7", borderRadius: 6, fontSize: 11, color: "#92400e" } },
+        warnings.length > 0 ? h("div", { style: { marginBottom: 8, padding: "6px 10px", background: "var(--da-amber-tint-2)", borderRadius: 6, fontSize: 11, color: "var(--da-amber-text-2)" } },
           warnings.map(function (w, wi) {
             return h("div", { key: "da-warn-" + idx + "-" + wi }, "• " + w);
           })
         ) : null,
         // Phase Y — Self-critique transparency: show AI's critique notes + refinement notes per item
-        item._critique || item._refined || item._refinementSkipped || item._critiqueSkipped ? h("div", { style: { marginBottom: 8, padding: 8, background: "#f5f3ff", borderRadius: 6, fontSize: 11, color: "#4c1d95", lineHeight: 1.55, borderLeft: "3px solid #7c3aed" } },
-          h("div", { style: { fontWeight: 800, marginBottom: 4, color: "#5b21b6", textTransform: "uppercase", letterSpacing: "0.05em", fontSize: 10 } },
+        item._critique || item._refined || item._refinementSkipped || item._critiqueSkipped ? h("div", { style: { marginBottom: 8, padding: 8, background: "var(--da-violet-tint-2)", borderRadius: 6, fontSize: 11, color: "var(--da-violet-deep)", lineHeight: 1.55, borderLeft: "3px solid var(--da-violet-mid)" } },
+          h("div", { style: { fontWeight: 800, marginBottom: 4, color: "var(--da-violet-text-2)", textTransform: "uppercase", letterSpacing: "0.05em", fontSize: 10 } },
             "🔬 AI self-critique"),
           // Critique skipped (the pass returned no usable results)
-          item._critiqueSkipped ? h("div", { style: { fontStyle: "italic", color: "#7c2d12" } },
+          item._critiqueSkipped ? h("div", { style: { fontStyle: "italic", color: "var(--da-orange-deep)" } },
             "Self-critique pass returned no results — this item shipped without refinement. Review L1 + L3 carefully.") : null,
           // Refinement skipped (critique flagged issues but refinement pass failed)
-          item._refinementSkipped ? h("div", { style: { fontStyle: "italic", color: "#7c2d12" } },
+          item._refinementSkipped ? h("div", { style: { fontStyle: "italic", color: "var(--da-orange-deep)" } },
             "Critique flagged issues but the refinement pass failed. See raw critique below; consider hand-editing or regenerating.") : null,
           // Refined: show what changed
-          item._refined && item._refinementNotes ? h("div", { style: { fontWeight: 700, color: "#15803d", marginBottom: 4 } },
+          item._refined && item._refinementNotes ? h("div", { style: { fontWeight: 700, color: "var(--da-green-text-2)", marginBottom: 4 } },
             "✓ Refined: " + item._refinementNotes) : null,
           // Critique result (always shown if present)
           item._critique ? h("div", { style: { marginTop: item._refined ? 6 : 0 } },
-            h("div", { style: { fontSize: 10.5, fontWeight: 700, color: "#5b21b6" } },
+            h("div", { style: { fontSize: 10.5, fontWeight: 700, color: "var(--da-violet-text-2)" } },
               "Overall quality: ",
               h("span", {
                 style: {
-                  color: item._critique.overallQuality === "good" ? "#15803d"
-                       : item._critique.overallQuality === "needs-minor-refinement" ? "#a16207"
-                       : "#b91c1c"
+                  color: item._critique.overallQuality === "good" ? "var(--da-green-text-2)"
+                       : item._critique.overallQuality === "needs-minor-refinement" ? "var(--da-amber-text)"
+                       : "var(--da-red-text)"
                 }
               }, item._critique.overallQuality)),
-            (item._critique.issues || []).length > 0 ? h("ul", { style: { margin: "4px 0 0 18px", padding: 0, fontSize: 10.5, color: "#4c1d95" } },
+            (item._critique.issues || []).length > 0 ? h("ul", { style: { margin: "4px 0 0 18px", padding: 0, fontSize: 10.5, color: "var(--da-violet-deep)" } },
               item._critique.issues.map(function (iss, ii) {
                 return h("li", { key: "da-iss-" + idx + "-" + ii, style: { marginBottom: 2 } },
                   h("strong", null, iss.criterion + (iss.level ? " · L" + iss.level : "") + " (" + iss.severity + "): "),
                   iss.description,
-                  iss.suggestedFix ? h("em", { style: { color: "#7c3aed", display: "block" } }, "→ Fix: " + iss.suggestedFix) : null
+                  iss.suggestedFix ? h("em", { style: { color: "var(--da-violet-mid)", display: "block" } }, "→ Fix: " + iss.suggestedFix) : null
                 );
               })
             ) : null
@@ -10529,12 +11045,12 @@
         ) : null,
         // Prompt field
         h("div", { style: { marginBottom: 8 } },
-          h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Prompt"),
+          h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Prompt"),
           // Phase Z — preview row of resource link chips when present (read-only,
           // sits above the editable textarea so clinicians can both click the link
           // AND edit the underlying text).
           (item.prompt && item.prompt.indexOf("](resource:") >= 0) ? h("div", {
-            style: { marginBottom: 4, fontSize: 12, color: "#0f172a", lineHeight: 1.55 }
+            style: { marginBottom: 4, fontSize: 12, color: "var(--da-ink)", lineHeight: 1.55 }
           }, renderTextWithResourceLinks(item.prompt, "rev-prompt-" + idx)) : null,
           h("textarea", {
             rows: 2, value: item.prompt,
@@ -10542,7 +11058,7 @@
               var v = e.target.value;
               editGeneratedItem(idx, function (i) { return Object.assign({}, i, { prompt: v }); });
             },
-            style: { width: "100%", padding: "6px 10px", border: "1px solid #cbd5e1", borderRadius: 6, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box", resize: "vertical" }
+            style: { width: "100%", padding: "6px 10px", border: "1px solid var(--da-border-2)", borderRadius: 6, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box", resize: "vertical" }
           })
         ),
         // Phase Z — Supplementary resources panel.
@@ -10572,10 +11088,10 @@
             return "🔗";
           };
           return h("div", {
-            style: { marginBottom: 8, padding: 8, background: "#eef2ff", borderRadius: 6, border: "1px solid #c7d2fe", fontSize: 11, lineHeight: 1.5 }
+            style: { marginBottom: 8, padding: 8, background: "var(--da-indigo-tint)", borderRadius: 6, border: "1px solid var(--da-indigo-border)", fontSize: 11, lineHeight: 1.5 }
           },
             h("div", { style: { display: "flex", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "wrap" } },
-              h("span", { style: { fontWeight: 800, color: "#3730a3", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.05em", flex: 1 } },
+              h("span", { style: { fontWeight: 800, color: "var(--da-indigo-text)", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.05em", flex: 1 } },
                 "🔗 Inline supports for this item"),
               !hasActiveGlossary ? h("button", {
                 onClick: function () { addManualGlossaryToItem(idx); },
@@ -10583,7 +11099,7 @@
                 title: typeof props.onGenerateGlossary === "function" ? "Generate a glossary for vocabulary in this prompt" : "Host glossary callback not wired",
                 style: {
                   padding: "2px 10px", borderRadius: 4,
-                  border: "1px solid #6366f1", background: "#ffffff", color: "#4338ca",
+                  border: "1px solid var(--da-indigo-mid)", background: "var(--da-surface)", color: "var(--da-indigo-mid-2)",
                   fontSize: 10, fontWeight: 800, cursor: typeof props.onGenerateGlossary === "function" ? "pointer" : "not-allowed",
                   fontFamily: "inherit"
                 }
@@ -10594,7 +11110,7 @@
                 title: typeof props.onGenerateManipulative === "function" ? "Attach an interactive math manipulative (number line, fraction bar, or area model)" : "Host manipulative callback not wired",
                 style: {
                   padding: "2px 10px", borderRadius: 4,
-                  border: "1px solid #d97706", background: "#ffffff", color: "#92400e",
+                  border: "1px solid var(--da-amber-mid-2)", background: "var(--da-surface)", color: "var(--da-amber-text-2)",
                   fontSize: 10, fontWeight: 800, cursor: typeof props.onGenerateManipulative === "function" ? "pointer" : "not-allowed",
                   fontFamily: "inherit"
                 }
@@ -10605,7 +11121,7 @@
                 title: typeof props.onGenerateWordSoundsProbe === "function" ? "Attach a Word Sounds Studio probe (phoneme counting, segmentation, blending, etc.)" : "Host word-sounds callback not wired",
                 style: {
                   padding: "2px 10px", borderRadius: 4,
-                  border: "1px solid #0891b2", background: "#ffffff", color: "#155e75",
+                  border: "1px solid var(--da-cyan-text)", background: "var(--da-surface)", color: "var(--da-cyan-deep)",
                   fontSize: 10, fontWeight: 800, cursor: typeof props.onGenerateWordSoundsProbe === "function" ? "pointer" : "not-allowed",
                   fontFamily: "inherit"
                 }
@@ -10616,7 +11132,7 @@
                 title: typeof props.onGenerateVisualOrganizer === "function" ? "Attach a graphic organizer (concept map, mind map, outline, timeline, or concept sort)" : "Host visual-organizer callback not wired",
                 style: {
                   padding: "2px 10px", borderRadius: 4,
-                  border: "1px solid #0d9488", background: "#ffffff", color: "#0f766e",
+                  border: "1px solid var(--da-teal-mid)", background: "var(--da-surface)", color: "var(--da-teal-text)",
                   fontSize: 10, fontWeight: 800, cursor: typeof props.onGenerateVisualOrganizer === "function" ? "pointer" : "not-allowed",
                   fontFamily: "inherit"
                 }
@@ -10627,7 +11143,7 @@
                 title: typeof props.onGenerateSentenceFrames === "function" ? "Attach fill-in sentence frames that scaffold the student producing a response" : "Host sentence-frames callback not wired",
                 style: {
                   padding: "2px 10px", borderRadius: 4,
-                  border: "1px solid #db2777", background: "#ffffff", color: "#9d174d",
+                  border: "1px solid var(--da-pink-mid)", background: "var(--da-surface)", color: "var(--da-rose-text)",
                   fontSize: 10, fontWeight: 800, cursor: typeof props.onGenerateSentenceFrames === "function" ? "pointer" : "not-allowed",
                   fontFamily: "inherit"
                 }
@@ -10635,10 +11151,10 @@
             ),
             supps.length > 0
               ? h("div", null, supps.map(function (sr, sri) {
-                  var statusColor = sr.status === "generated" ? "#15803d"
-                                  : sr.status === "failed" ? "#b91c1c"
-                                  : sr.status === "generating" ? "#a16207"
-                                  : "#64748b";
+                  var statusColor = sr.status === "generated" ? "var(--da-green-text-2)"
+                                  : sr.status === "failed" ? "var(--da-red-text)"
+                                  : sr.status === "generating" ? "var(--da-amber-text)"
+                                  : "var(--da-muted)";
                   var statusLabel = sr.status === "generated" ? "✓ generated"
                                   : sr.status === "failed" ? "✗ failed"
                                   : sr.status === "generating" ? "… generating"
@@ -10647,78 +11163,78 @@
                   var canEdit = sr.status === "generated" && sr.resourceId
                     && (sr.kind === "glossary" || sr.kind === "math-manipulative" || sr.kind === "word-sounds-probe");
                   var canDetach = sr.status === "generated" && sr.resourceId;
-                  return h("div", { key: "da-supp-" + idx + "-" + sri, style: { marginBottom: 4, padding: 4, borderRadius: 4, background: isEditing ? "#fef3c7" : "transparent" } },
+                  return h("div", { key: "da-supp-" + idx + "-" + sri, style: { marginBottom: 4, padding: 4, borderRadius: 4, background: isEditing ? "var(--da-amber-tint-2)" : "transparent" } },
                     h("div", { style: { display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" } },
-                      h("span", { style: { fontWeight: 700, color: "#3730a3" } }, iconForKind(sr.kind, sr.toolId) + " " + (sr.title || "Resource")),
+                      h("span", { style: { fontWeight: 700, color: "var(--da-indigo-text)" } }, iconForKind(sr.kind, sr.toolId) + " " + (sr.title || "Resource")),
                       // Rung selector (changes anchor on the fly). For chips with status=generated only.
                       canDetach ? h("select", {
                         value: String(sr.anchorRung || 1),
                         onChange: function (e) { moveChipRung(idx, sr, parseInt(e.target.value, 10)); },
                         title: "Move this support to a different scaffold rung",
-                        style: { padding: "0 4px", borderRadius: 4, border: "1px solid #c7d2fe", background: "#ffffff", color: "#3730a3", fontSize: 10, fontWeight: 700, fontFamily: "inherit", cursor: "pointer" }
+                        style: { padding: "0 4px", borderRadius: 4, border: "1px solid var(--da-indigo-border)", background: "var(--da-surface)", color: "var(--da-indigo-text)", fontSize: 10, fontWeight: 700, fontFamily: "inherit", cursor: "pointer" }
                       },
                         h("option", { value: "1" }, "L1"),
                         h("option", { value: "2" }, "L2"),
                         h("option", { value: "3" }, "L3"),
                         h("option", { value: "4" }, "L4")
-                      ) : h("span", { style: { color: "#64748b", fontSize: 10 } }, "L" + (sr.anchorRung || 1)),
+                      ) : h("span", { style: { color: "var(--da-muted)", fontSize: 10 } }, "L" + (sr.anchorRung || 1)),
                       h("span", { style: { color: statusColor, fontSize: 10, fontWeight: 700 } }, statusLabel),
                       sr.status === "generated" && sr.resourceId && typeof props.onOpenResource === "function" ? h("button", {
                         onClick: function (e) { try { e.preventDefault(); } catch (_) {} props.onOpenResource(sr.resourceId); },
-                        style: { padding: "1px 8px", borderRadius: 4, border: "1px solid #c7d2fe", background: "#ffffff", color: "#3730a3", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                        style: { padding: "1px 8px", borderRadius: 4, border: "1px solid var(--da-indigo-border)", background: "var(--da-surface)", color: "var(--da-indigo-text)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                       }, "Open") : null,
                       canEdit ? h("button", {
                         onClick: function () { isEditing ? closeChipEditor() : openChipEditor(idx, sr); },
                         title: "Edit this resource (terms / preset / words)",
-                        style: { padding: "1px 8px", borderRadius: 4, border: "1px solid #fbbf24", background: "#ffffff", color: "#92400e", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                        style: { padding: "1px 8px", borderRadius: 4, border: "1px solid var(--da-amber-border)", background: "var(--da-surface)", color: "var(--da-amber-text-2)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                       }, isEditing ? "Cancel" : "✏️ Edit") : null,
                       canDetach ? h("button", {
                         onClick: function () { detachChipFromItem(idx, sr); },
                         title: "Remove this link from the rung (keeps the resource in your pack)",
-                        style: { padding: "1px 8px", borderRadius: 4, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                        style: { padding: "1px 8px", borderRadius: 4, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                       }, "⛓️‍💥 Detach") : null,
-                      sr.status === "failed" && sr._failureMessage ? h("span", { style: { color: "#7f1d1d", fontSize: 10, fontStyle: "italic" } }, "— " + sr._failureMessage) : null
+                      sr.status === "failed" && sr._failureMessage ? h("span", { style: { color: "var(--da-red-deep)", fontSize: 10, fontStyle: "italic" } }, "— " + sr._failureMessage) : null
                     ),
                     isEditing ? renderChipEditor(idx, sr, editingChip.draft) : null
                   );
                 }))
-              : h("div", { style: { color: "#64748b", fontSize: 10.5, fontStyle: "italic" } },
+              : h("div", { style: { color: "var(--da-muted)", fontSize: 10.5, fontStyle: "italic" } },
                   "No inline supports attached. Add a ", h("strong", null, "glossary"), " (vocabulary), ", h("strong", null, "manipulative"), " (math tool), ", h("strong", null, "phonics probe"), " (Word Sounds Studio), ", h("strong", null, "organizer"), " (concept map / timeline / sort), or ", h("strong", null, "sentence frames"), " (scaffold the student's response).")
           );
         })(),
         // Correct answer field
         h("div", { style: { marginBottom: 8, display: "grid", gridTemplateColumns: "1fr 2fr", gap: 8 } },
           h("div", null,
-            h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Correct"),
+            h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Correct"),
             h("input", {
               type: "text", value: item.correctAnswer,
               onChange: function (e) {
                 var v = e.target.value;
                 editGeneratedItem(idx, function (i) { return Object.assign({}, i, { correctAnswer: v }); });
               },
-              style: { width: "100%", padding: "6px 10px", border: "1px solid #cbd5e1", borderRadius: 6, fontFamily: "ui-monospace, monospace", fontSize: 12, boxSizing: "border-box" }
+              style: { width: "100%", padding: "6px 10px", border: "1px solid var(--da-border-2)", borderRadius: 6, fontFamily: "ui-monospace, monospace", fontSize: 12, boxSizing: "border-box" }
             })
           ),
           h("div", null,
-            h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Acceptable variants (comma-separated)"),
+            h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Acceptable variants (comma-separated)"),
             h("input", {
               type: "text", value: (item.acceptableAnswers || []).join(", "),
               onChange: function (e) {
                 var v = e.target.value.split(",").map(function (a) { return a.trim(); }).filter(function (a) { return a.length > 0; });
                 editGeneratedItem(idx, function (i) { return Object.assign({}, i, { acceptableAnswers: v }); });
               },
-              style: { width: "100%", padding: "6px 10px", border: "1px solid #cbd5e1", borderRadius: 6, fontFamily: "ui-monospace, monospace", fontSize: 12, boxSizing: "border-box" }
+              style: { width: "100%", padding: "6px 10px", border: "1px solid var(--da-border-2)", borderRadius: 6, fontFamily: "ui-monospace, monospace", fontSize: 12, boxSizing: "border-box" }
             })
           )
         ),
         // Ladder steps — collapsible
         h("details", { open: true },
-          h("summary", { style: { fontSize: 10.5, fontWeight: 700, color: "#64748b", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Scaffold ladder (4 levels)"),
+          h("summary", { style: { fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Scaffold ladder (4 levels)"),
           h("div", { style: { marginTop: 6, display: "flex", flexDirection: "column", gap: 6 } },
             (item.promptLadder || []).map(function (step, li) {
               var labels = { cue: "L1 — Cue", leading: "L2 — Leading", model: "L3 — Model", directTeach: "L4 — Direct teach" };
-              return h("div", { key: "da-step-" + idx + "-" + li, style: { padding: 8, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 6 } },
-                h("div", { style: { fontSize: 10.5, fontWeight: 700, color: "#0f172a", marginBottom: 3, display: "flex", alignItems: "center", gap: 6 } },
+              return h("div", { key: "da-step-" + idx + "-" + li, style: { padding: 8, background: "var(--da-surface-2)", border: "1px solid var(--da-border)", borderRadius: 6 } },
+                h("div", { style: { fontSize: 10.5, fontWeight: 700, color: "var(--da-ink)", marginBottom: 3, display: "flex", alignItems: "center", gap: 6 } },
                   h("span", { style: { flex: 1 } }, labels[step.type] || ("L" + step.level)),
                   // Per-level regenerate. Hits Gemini with a focused prompt that
                   // rewrites JUST this rung against the rest of the item — much
@@ -10731,7 +11247,7 @@
                     disabled: genBusy,
                     style: {
                       padding: "2px 8px", borderRadius: 4,
-                      border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569",
+                      border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)",
                       fontSize: 10, fontWeight: 700,
                       cursor: genBusy ? "wait" : "pointer", fontFamily: "inherit",
                       opacity: genBusy ? 0.5 : 1
@@ -10743,7 +11259,7 @@
                 // above the editable textarea, so clinicians can click into the
                 // resource AND still hand-edit the underlying text.
                 (step.text && step.text.indexOf("](resource:") >= 0) ? h("div", {
-                  style: { marginBottom: 3, fontSize: 11.5, color: "#0f172a", lineHeight: 1.5 }
+                  style: { marginBottom: 3, fontSize: 11.5, color: "var(--da-ink)", lineHeight: 1.5 }
                 }, renderTextWithResourceLinks(step.text, "rev-step-" + idx + "-" + li)) : null,
                 h("textarea", {
                   rows: 2, value: step.text,
@@ -10755,7 +11271,7 @@
                       return Object.assign({}, i, { promptLadder: newLadder });
                     });
                   },
-                  style: { width: "100%", padding: "6px 10px", border: "1px solid #cbd5e1", borderRadius: 6, fontFamily: "inherit", fontSize: 12, boxSizing: "border-box", resize: "vertical" }
+                  style: { width: "100%", padding: "6px 10px", border: "1px solid var(--da-border-2)", borderRadius: 6, fontFamily: "inherit", fontSize: 12, boxSizing: "border-box", resize: "vertical" }
                 })
               );
             })
@@ -10763,10 +11279,10 @@
         ),
         // Transfer twin — if present
         item.transferTwin ? h("details", { style: { marginTop: 6 } },
-          h("summary", { style: { fontSize: 10.5, fontWeight: 700, color: "#64748b", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Transfer twin (parallel item, different surface)"),
-          h("div", { style: { marginTop: 6, padding: 8, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, color: "#0f172a" } },
+          h("summary", { style: { fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Transfer twin (parallel item, different surface)"),
+          h("div", { style: { marginTop: 6, padding: 8, background: "var(--da-surface-2)", border: "1px solid var(--da-border)", borderRadius: 6, fontSize: 12, color: "var(--da-ink)" } },
             h("div", { style: { marginBottom: 4 } }, h("strong", null, "Prompt: "), item.transferTwin.prompt),
-            h("div", null, h("strong", null, "Answer: "), h("code", { style: { fontFamily: "ui-monospace, monospace", background: "#fff", padding: "1px 6px", borderRadius: 4 } }, item.transferTwin.correctAnswer))
+            h("div", null, h("strong", null, "Answer: "), h("code", { style: { fontFamily: "ui-monospace, monospace", background: "var(--da-surface)", padding: "1px 6px", borderRadius: 4 } }, item.transferTwin.correctAnswer))
           )
         ) : null
       );
@@ -10823,15 +11339,31 @@
       }
 
       var phaseInfo = {
-        pretest:  { label: "Pretest",  color: "#475569", hint: "No scaffolds. Record what the student does alone." },
-        mediation:{ label: "Mediation", color: "#3b82f6", hint: "Same items — use the scaffold ladder. Record what support produced success." },
-        posttest: { label: "Posttest", color: "#16a34a", hint: "Re-test alone. Compare to pretest." },
-        transfer: { label: "Transfer probe", color: "#a16207", hint: "Novel items, same construct. Tests whether learning generalized (not just memorized)." }
-      }[phase] || { label: phase, color: "#64748b", hint: "" };
+        pretest:  { label: "Pretest",  color: "var(--da-ink-3)", hint: "No scaffolds. Record what the student does alone." },
+        mediation:{ label: "Mediation", color: "var(--da-accent-2)", hint: "Same items — use the scaffold ladder. Record what support produced success." },
+        posttest: { label: "Posttest", color: "var(--da-green-text)", hint: "Re-test alone. Compare to pretest." },
+        transfer: { label: "Transfer probe", color: "var(--da-amber-text)", hint: "Novel items, same construct. Tests whether learning generalized (not just memorized)." }
+      }[phase] || { label: phase, color: "var(--da-muted)", hint: "" };
 
       var totalInPhase = s.sessionItemIds.length;
       var pct = Math.round(((idx) / totalInPhase) * 100);
       var canScaffold = phase === "mediation";
+
+      // Session-arc stepper: which phases this session will run, in order.
+      // Transfer appears only when at least one item ships a transferTwin
+      // (same condition submitResponse uses to route posttest → transfer).
+      var hasAnyTwinStep = s.sessionItemIds.some(function (iid) {
+        var it2 = ITEMS_BY_ID[iid];
+        return it2 && it2.transferTwin && it2.transferTwin.prompt;
+      });
+      var stepperPhases = [
+        { id: "pretest", label: "Pretest" },
+        { id: "mediation", label: "Mediation" },
+        { id: "posttest", label: "Posttest" }
+      ].concat(hasAnyTwinStep ? [{ id: "transfer", label: "Transfer" }] : [])
+       .concat([{ id: "summary", label: "Results" }]);
+      var currentStepIdx = 0;
+      stepperPhases.forEach(function (sp, spi) { if (sp.id === phase) currentStepIdx = spi; });
 
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 820, margin: "0 auto", padding: 20 } },
         // Header
@@ -10841,25 +11373,72 @@
             onClick: pauseSession,
             "aria-label": "Pause this session — return to start screen, session preserved",
             title: "Pause without losing progress. Resume from the start screen.",
-            style: { background: "#fef3c7", border: "1px solid #f59e0b", color: "#92400e", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700 }
+            style: { background: "var(--da-amber-tint-2)", border: "1px solid var(--da-amber-mid)", color: "var(--da-amber-text-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700 }
           }, "⏸ Pause"),
           h("button", {
             onClick: function () {
-              if (window.confirm("Discard this session? Progress will be lost.")) discardSession();
+              daAskConfirm({
+                message: "Discard this session? Progress will be lost.",
+                confirmLabel: "Discard session",
+                onConfirm: discardSession
+              });
             },
             "aria-label": "Discard session — all in-progress data lost",
-            style: { background: "transparent", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12 }
+            style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12 }
           }, "✕ Discard"),
+          // Undo — re-present the last recorded item (mis-click insurance)
+          s.itemResults.length > 0 ? h("button", {
+            onClick: undoLastResult,
+            "aria-label": "Undo the last recorded item and re-present it",
+            title: "Re-presents the most recently recorded item with its response and observations restored.",
+            style: { background: "transparent", border: "1px solid var(--da-border-2)", color: "var(--da-ink-3)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700 }
+          }, "↩ Undo item") : null,
           h("div", { style: { flex: 1, minWidth: 220 } },
             h("div", { style: { fontSize: 11, color: phaseInfo.color, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800 } },
               phaseInfo.label + " phase · item " + (idx + 1) + " of " + totalInPhase),
-            h("div", { style: { fontSize: 12, color: "#64748b", fontStyle: "italic", marginTop: 2 } }, phaseInfo.hint)
+            h("div", { style: { fontSize: 12, color: "var(--da-muted)", fontStyle: "italic", marginTop: 2 } }, phaseInfo.hint)
           ),
-          s.studentNickname ? h("div", { style: { fontSize: 11, color: "#64748b" } },
+          s.studentNickname ? h("div", { style: { fontSize: 11, color: "var(--da-muted)" } },
             "Student: " + s.studentNickname) : null
         ),
-        // Progress bar
-        h("div", { style: { height: 4, background: "#e2e8f0", borderRadius: 2, overflow: "hidden", marginBottom: 14 } },
+        // Session-arc stepper — orients the examiner in the test-teach-retest
+        // arc (pretest → mediation → posttest [→ transfer] → results).
+        h("ol", {
+          "aria-label": "Session phases",
+          style: { display: "flex", alignItems: "center", gap: 4, listStyle: "none", margin: "0 0 8px", padding: 0, flexWrap: "wrap" }
+        },
+          stepperPhases.map(function (sp, spi) {
+            var stepState = spi < currentStepIdx ? "done" : spi === currentStepIdx ? "current" : "todo";
+            return h("li", {
+              key: "da-step-arc-" + sp.id,
+              "aria-current": stepState === "current" ? "step" : undefined,
+              style: { display: "flex", alignItems: "center", gap: 4 }
+            },
+              h("span", {
+                style: {
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700,
+                  border: stepState === "current" ? "2px solid " + phaseInfo.color : "1px solid var(--da-border-2)",
+                  background: stepState === "current" ? "var(--da-surface)" : stepState === "done" ? "var(--da-surface-3)" : "transparent",
+                  color: stepState === "current" ? phaseInfo.color : stepState === "done" ? "var(--da-ink-3)" : "var(--da-muted)"
+                }
+              },
+                stepState === "done" ? h("span", { "aria-hidden": "true" }, "✓") : null,
+                sp.label,
+                h("span", { style: { position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", border: 0 } },
+                  stepState === "done" ? " (completed)" : stepState === "current" ? " (current phase)" : " (upcoming)")
+              ),
+              spi < stepperPhases.length - 1 ? h("span", { "aria-hidden": "true", style: { color: "var(--da-border-2)", fontSize: 11 } }, "→") : null
+            );
+          })
+        ),
+        // Progress bar (items within the current phase)
+        h("div", {
+          role: "progressbar",
+          "aria-valuemin": 0, "aria-valuemax": totalInPhase, "aria-valuenow": idx,
+          "aria-label": phaseInfo.label + " phase progress: item " + (idx + 1) + " of " + totalInPhase,
+          style: { height: 4, background: "var(--da-border)", borderRadius: 2, overflow: "hidden", marginBottom: 14 }
+        },
           h("div", { style: { width: pct + "%", height: "100%", background: phaseInfo.color, transition: "width 0.3s ease" } })
         ),
 
@@ -10867,7 +11446,7 @@
         // throughout the session for overarching observations separate from
         // per-item examinerObservation)
         h("details", { className: "da-card", style: { marginBottom: 14, padding: 10 } },
-          h("summary", { style: { cursor: "pointer", fontSize: 11, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.06em" } },
+          h("summary", { style: { cursor: "pointer", fontSize: 11, fontWeight: 800, color: "var(--da-ink-3)", textTransform: "uppercase", letterSpacing: "0.06em" } },
             "📝 Session-level notes" + (s.sessionNote && s.sessionNote.length > 0 ? " · " + s.sessionNote.length + " chars" : "")
           ),
           h("textarea", {
@@ -10876,14 +11455,14 @@
             rows: 3, maxLength: 4000,
             placeholder: "Overarching observations across the whole session — affect, fatigue, anything that doesn't belong to a single item…",
             "aria-label": "Session-level notes",
-            style: { width: "100%", marginTop: 6, padding: "6px 8px", border: "1px solid #cbd5e1", borderRadius: 6, fontFamily: "inherit", fontSize: 12, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box" }
+            style: { width: "100%", marginTop: 6, padding: "6px 8px", border: "1px solid var(--da-border-2)", borderRadius: 6, fontFamily: "inherit", fontSize: 12, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box" }
           })
         ),
 
         // ─── ITEM CARD ───
         h("div", { className: "da-card", style: { marginBottom: 14 } },
           h("div", { style: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 } },
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } },
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } },
               item.construct + " · " + item.difficulty + " · grades " + item.gradeBand),
             // Read-aloud: lets the student HEAR the item instead of reading it
             // (accessibility + the modality access lever).
@@ -10892,10 +11471,10 @@
               onClick: function () { daSpeak(item.prompt); },
               title: "Read this item aloud (Gemini voice)",
               "aria-label": "Read this item aloud",
-              style: { flexShrink: 0, padding: "2px 8px", borderRadius: 6, border: "1px solid #c7d2fe", background: "#eef2ff", color: "#3730a3", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+              style: { flexShrink: 0, padding: "2px 8px", borderRadius: 6, border: "1px solid var(--da-indigo-border)", background: "var(--da-indigo-tint)", color: "var(--da-indigo-text)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
             }, "🔊 Read aloud") : null
           ),
-          h("p", { style: { margin: 0, fontSize: 16, color: "#0f172a", lineHeight: 1.65 } }, item.prompt),
+          h("p", { style: { margin: 0, fontSize: 16, color: "var(--da-ink)", lineHeight: 1.65 } }, item.prompt),
           // Access contrast (linguistic load): on-demand simpler-language version.
           h("div", { style: { marginTop: 8 } },
             !simplifiedTextDraft ? h("button", {
@@ -10904,19 +11483,19 @@
               onClick: function () { generateSimplifiedItem(item.prompt); },
               title: "Generate a simpler-language version of this item (same problem, easier words) to test whether language load is the barrier",
               "aria-label": "Show a simpler-language version of this item",
-              style: { padding: "3px 10px", borderRadius: 6, border: "1px solid #c4b5fd", background: simplifiedBusy ? "#f5f3ff" : "#faf5ff", color: "#6b21a8", fontSize: 11, fontWeight: 700, cursor: simplifiedBusy ? "wait" : "pointer", fontFamily: "inherit" }
+              style: { padding: "3px 10px", borderRadius: 6, border: "1px solid var(--da-violet-border)", background: simplifiedBusy ? "var(--da-violet-tint-2)" : "var(--da-violet-tint)", color: "var(--da-violet-text)", fontSize: 11, fontWeight: 700, cursor: simplifiedBusy ? "wait" : "pointer", fontFamily: "inherit" }
             }, simplifiedBusy ? "✍️ Simplifying…" : "✍️ Show simpler-language version") : null,
-            simplifiedTextDraft ? h("div", { style: { marginTop: 6, padding: "8px 10px", borderRadius: 8, background: "#faf5ff", border: "1px dashed #c4b5fd" } },
+            simplifiedTextDraft ? h("div", { style: { marginTop: 6, padding: "8px 10px", borderRadius: 8, background: "var(--da-violet-tint)", border: "1px dashed var(--da-violet-border)" } },
               h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4 } },
-                h("span", { style: { fontSize: 10, fontWeight: 800, color: "#6b21a8", textTransform: "uppercase", letterSpacing: "0.06em" } }, "Simpler-language version (same problem)"),
+                h("span", { style: { fontSize: 10, fontWeight: 800, color: "var(--da-violet-text)", textTransform: "uppercase", letterSpacing: "0.06em" } }, "Simpler-language version (same problem)"),
                 daTtsAvailable() ? h("button", {
                   type: "button", onClick: function () { daSpeak(simplifiedTextDraft); },
                   title: "Read the simpler version aloud", "aria-label": "Read the simpler version aloud",
-                  style: { padding: "1px 7px", borderRadius: 6, border: "1px solid #c4b5fd", background: "#ffffff", color: "#6b21a8", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "1px 7px", borderRadius: 6, border: "1px solid var(--da-violet-border)", background: "var(--da-surface)", color: "var(--da-violet-text)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "🔊") : null
               ),
-              h("p", { style: { margin: 0, fontSize: 14, color: "#0f172a", lineHeight: 1.6 } }, simplifiedTextDraft),
-              h("div", { style: { marginTop: 4, fontSize: 10, color: "#6b21a8", fontStyle: "italic" } },
+              h("p", { style: { margin: 0, fontSize: 14, color: "var(--da-ink)", lineHeight: 1.6 } }, simplifiedTextDraft),
+              h("div", { style: { marginTop: 4, fontSize: 10, color: "var(--da-violet-text)", fontStyle: "italic" } },
                 "Check the language is simpler but the problem is unchanged before using.")
             ) : null
           ),
@@ -10929,7 +11508,7 @@
                 onChange: function (e) { setHomeLangDraft(e.target.value); },
                 placeholder: "Home language (e.g., Somali)",
                 "aria-label": "Student's home language for the translation contrast",
-                style: { padding: "3px 8px", borderRadius: 6, border: "1px solid #cbd5e1", fontFamily: "inherit", fontSize: 11, width: 170, boxSizing: "border-box" }
+                style: { padding: "3px 8px", borderRadius: 6, border: "1px solid var(--da-border-2)", fontFamily: "inherit", fontSize: 11, width: 170, boxSizing: "border-box" }
               }),
               !l1TextDraft ? h("button", {
                 type: "button",
@@ -10937,31 +11516,45 @@
                 onClick: function () { generateL1Item(item.prompt, homeLangDraft.trim()); },
                 title: homeLangDraft.trim() ? ("Translate this item into " + homeLangDraft.trim() + " (same problem) to test whether the language of testing is the barrier") : "Enter the student's home language first",
                 "aria-label": "Show this item in the student's home language",
-                style: { padding: "3px 10px", borderRadius: 6, border: "1px solid #c4b5fd", background: (l1Busy || !homeLangDraft.trim()) ? "#f5f3ff" : "#faf5ff", color: "#6b21a8", fontSize: 11, fontWeight: 700, cursor: (l1Busy || !homeLangDraft.trim()) ? "not-allowed" : "pointer", fontFamily: "inherit" }
+                style: { padding: "3px 10px", borderRadius: 6, border: "1px solid var(--da-violet-border)", background: (l1Busy || !homeLangDraft.trim()) ? "var(--da-violet-tint-2)" : "var(--da-violet-tint)", color: "var(--da-violet-text)", fontSize: 11, fontWeight: 700, cursor: (l1Busy || !homeLangDraft.trim()) ? "not-allowed" : "pointer", fontFamily: "inherit" }
               }, l1Busy ? "🌐 Translating…" : ("🌐 Show in " + (homeLangDraft.trim() || "home language"))) : null
             ),
-            l1TextDraft ? h("div", { style: { marginTop: 6, padding: "8px 10px", borderRadius: 8, background: "#faf5ff", border: "1px dashed #c4b5fd" } },
+            l1TextDraft ? h("div", { style: { marginTop: 6, padding: "8px 10px", borderRadius: 8, background: "var(--da-violet-tint)", border: "1px dashed var(--da-violet-border)" } },
               h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4 } },
-                h("span", { style: { fontSize: 10, fontWeight: 800, color: "#6b21a8", textTransform: "uppercase", letterSpacing: "0.06em" } }, (homeLangDraft.trim() || "Home-language") + " version (same problem)"),
+                h("span", { style: { fontSize: 10, fontWeight: 800, color: "var(--da-violet-text)", textTransform: "uppercase", letterSpacing: "0.06em" } }, (homeLangDraft.trim() || "Home-language") + " version (same problem)"),
                 daTtsAvailable() ? h("button", {
                   type: "button", onClick: function () { daSpeak(l1TextDraft, homeLangDraft.trim()); },
                   title: "Read the home-language version aloud", "aria-label": "Read the home-language version aloud",
-                  style: { padding: "1px 7px", borderRadius: 6, border: "1px solid #c4b5fd", background: "#ffffff", color: "#6b21a8", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "1px 7px", borderRadius: 6, border: "1px solid var(--da-violet-border)", background: "var(--da-surface)", color: "var(--da-violet-text)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "🔊") : null
               ),
-              h("p", { dir: "auto", style: { margin: 0, fontSize: 14, color: "#0f172a", lineHeight: 1.6 } }, l1TextDraft),
-              h("div", { style: { marginTop: 4, fontSize: 10, color: "#6b21a8", fontStyle: "italic" } },
+              h("p", { dir: "auto", style: { margin: 0, fontSize: 14, color: "var(--da-ink)", lineHeight: 1.6 } }, l1TextDraft),
+              h("div", { style: { marginTop: 4, fontSize: 10, color: "var(--da-violet-text)", fontStyle: "italic" } },
                 "⚠ AI translation — verify equivalence with a proficient speaker before relying on it. The problem must be unchanged.")
             ) : null
           )
         ),
 
         // ─── SCAFFOLD LADDER (only in mediation phase) ───
-        canScaffold ? h("div", { className: "da-card", style: { marginBottom: 14, background: "#fffbeb", borderColor: "#fbbf24" } },
-          h("div", { style: { fontSize: 11, color: "#a16207", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 6 } },
+        canScaffold ? h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-amber-tint)", borderColor: "var(--da-amber-border)" } },
+          h("div", { style: { fontSize: 11, color: "var(--da-amber-text)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 6 } },
             "Scaffold ladder · current level " + s.currentLadderLevel),
-          h("div", { style: { fontSize: 11, color: "#92400e", fontStyle: "italic", marginBottom: 10 } },
+          h("div", { style: { fontSize: 11, color: "var(--da-amber-text-2)", fontStyle: "italic", marginBottom: 6 } },
             "Click a level to reveal it to yourself. You decide when to deliver each scaffold to the student. The level you record below should match the highest level needed."),
+          // Mediation-quality reminders (Feuerstein's MLE criteria + wait time).
+          // Collapsed by default so experienced examiners aren't slowed down.
+          h("details", { style: { marginBottom: 10 } },
+            h("summary", { style: { cursor: "pointer", fontSize: 10.5, fontWeight: 800, color: "var(--da-amber-text)", textTransform: "uppercase", letterSpacing: "0.05em" } },
+              "🧭 Mediation quality reminders (MLE)"),
+            h("ul", { style: { margin: "6px 0 0", paddingLeft: 18, fontSize: 11.5, color: "var(--da-ink-2)", lineHeight: 1.6 } },
+              h("li", null, h("strong", null, "Wait time first."), " Give 5–10 seconds after each scaffold before escalating — many \"failed\" scaffolds are interrupted processing, and premature escalation inflates the support the score records."),
+              h("li", null, h("strong", null, "Intentionality & reciprocity."), " Tell the student what you're working on together and why; check they're engaged with you, not just enduring the task."),
+              h("li", null, h("strong", null, "Meaning."), " Say why this problem type matters in the student's world (\"knowing totals vs. leftovers helps you check your change at a store\")."),
+              h("li", null, h("strong", null, "Transcendence."), " After a success, bridge beyond the item (\"where else could you use that move?\") — gains that bridge are the ones most likely to show up on the transfer probe.")
+            ),
+            h("p", { style: { margin: "6px 0 0", fontSize: 10.5, color: "var(--da-amber-text)", fontStyle: "italic", lineHeight: 1.5 } },
+              "Drawn from Feuerstein's Mediated Learning Experience criteria and graduated-prompt practice (Lidz, 2003). These support mediation quality; they are reminders, not a scored fidelity measure.")
+          ),
           h("div", { style: { display: "flex", flexDirection: "column", gap: 8 } },
             item.promptLadder.map(function (step) {
               var isActive = s.currentLadderLevel === step.level;
@@ -10972,26 +11565,26 @@
                 className: "da-ladder-step" + (isActive ? " active" : "") + (hasBeenUsed && !isActive ? " used" : "")
               },
                 h("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
-                  h("span", { style: { fontSize: 12, fontWeight: 800, color: "#0f172a", minWidth: 30 } }, "L" + step.level),
-                  h("span", { style: { flex: 1, fontSize: 12, fontWeight: 700, color: "#0f172a" } }, stepLabel),
+                  h("span", { style: { fontSize: 12, fontWeight: 800, color: "var(--da-ink)", minWidth: 30 } }, "L" + step.level),
+                  h("span", { style: { flex: 1, fontSize: 12, fontWeight: 700, color: "var(--da-ink)" } }, stepLabel),
                   h("button", {
                     onClick: function () { setLadderLevel(step.level); },
                     "aria-label": "Reveal level " + step.level + " scaffold",
                     style: {
-                      padding: "4px 10px", borderRadius: 6, border: "1px solid " + (hasBeenUsed ? "#fbbf24" : "#cbd5e1"),
-                      background: hasBeenUsed ? "#fef3c7" : "#ffffff", color: "#0f172a",
+                      padding: "4px 10px", borderRadius: 6, border: "1px solid " + (hasBeenUsed ? "var(--da-amber-border)" : "var(--da-border-2)"),
+                      background: hasBeenUsed ? "var(--da-amber-tint-2)" : "var(--da-surface)", color: "var(--da-ink)",
                       fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit"
                     }
                   }, hasBeenUsed ? "Re-show" : "Show")
                 ),
                 hasBeenUsed ? h("div", { style: { display: "flex", alignItems: "flex-start", gap: 6, margin: "6px 0 0", paddingLeft: 38 } },
-                  h("p", { style: { margin: 0, flex: 1, fontSize: 12, color: "#334155", lineHeight: 1.55 } }, '"' + step.text + '"'),
+                  h("p", { style: { margin: 0, flex: 1, fontSize: 12, color: "var(--da-ink-2)", lineHeight: 1.55 } }, '"' + step.text + '"'),
                   daTtsAvailable() ? h("button", {
                     type: "button",
                     onClick: function () { daSpeak(step.text); },
                     title: "Read this scaffold aloud to the student",
                     "aria-label": "Read this scaffold aloud",
-                    style: { flexShrink: 0, padding: "1px 7px", borderRadius: 6, border: "1px solid #fbbf24", background: "#ffffff", color: "#92400e", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                    style: { flexShrink: 0, padding: "1px 7px", borderRadius: 6, border: "1px solid var(--da-amber-border)", background: "var(--da-surface)", color: "var(--da-amber-text-2)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                   }, "🔊") : null
                 ) : null
               );
@@ -11003,7 +11596,7 @@
         h("div", { className: "da-card", style: { marginBottom: 14 } },
           h("label", {
             htmlFor: "da-response",
-            style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", marginBottom: 4 }
+            style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 }
           }, "Student response"),
           h("textarea", {
             id: "da-response", rows: 2, value: responseDraft,
@@ -11011,7 +11604,7 @@
             onChange: function (e) { setResponseDraft(e.target.value); },
             placeholder: "Type or paraphrase what the student said…",
             "aria-label": "Student response — type what the student said",
-            style: { width: "100%", padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box", resize: "vertical" }
+            style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box", resize: "vertical" }
           })
         ),
 
@@ -11019,17 +11612,17 @@
         h("div", { className: "da-card", style: { marginBottom: 14 } },
           h("label", {
             htmlFor: "da-observation",
-            style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", marginBottom: 4 }
+            style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 }
           }, "Examiner observation (local only — not synced)"),
           h("textarea", {
             id: "da-observation", rows: 2, value: observationDraft,
             onChange: function (e) { setObservationDraft(e.target.value); },
             placeholder: "Strategy used, hesitation, affect, anything notable…",
-            style: { width: "100%", padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box", resize: "vertical" }
+            style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box", resize: "vertical" }
           }),
           // Phase I — quick-tap observation tags (optional; aggregate across items)
           h("div", { style: { marginTop: 8 } },
-            h("div", { style: { fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#475569", marginBottom: 4 } },
+            h("div", { style: { fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-ink-3)", marginBottom: 4 } },
               "Quick tags (optional · aggregate across the session)"),
             h("div", { role: "group", "aria-label": "Observation tags", style: { display: "flex", flexWrap: "wrap", gap: 6 } },
               OBSERVATION_TAGS.map(function (tag) {
@@ -11042,9 +11635,9 @@
                   title: tag.hint,
                   style: {
                     padding: "4px 10px", borderRadius: 999, fontSize: 11.5, fontWeight: 700,
-                    border: active ? "1px solid #1e3a8a" : "1px solid #cbd5e1",
-                    background: active ? "#1e3a8a" : "#ffffff",
-                    color: active ? "#ffffff" : "#475569",
+                    border: active ? "1px solid var(--da-accent)" : "1px solid var(--da-border-2)",
+                    background: active ? "var(--da-accent)" : "var(--da-surface)",
+                    color: active ? "var(--da-on-accent)" : "var(--da-ink-3)",
                     cursor: "pointer", fontFamily: "inherit"
                   }
                 }, tag.label);
@@ -11059,20 +11652,20 @@
         // then credits one level higher (the rung isn't valid evidence of
         // competence at that level). Keeps the Modifiability/mediation read honest.
         (canScaffold && (s.currentLadderLevel >= 1) ? h("div", {
-          role: "button", tabIndex: 0,
-          "aria-pressed": scaffoldLeakedDraft ? "true" : "false",
+          role: "checkbox", tabIndex: 0,
+          "aria-checked": scaffoldLeakedDraft ? "true" : "false",
           "aria-label": "Flag that the current scaffold gave away the answer",
           onClick: function () { setScaffoldLeakedDraft(!scaffoldLeakedDraft); },
           onKeyDown: function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setScaffoldLeakedDraft(!scaffoldLeakedDraft); } },
           style: {
             display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8, padding: "6px 10px",
             borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
-            border: "1px solid " + (scaffoldLeakedDraft ? "#d97706" : "#e2e8f0"),
-            background: scaffoldLeakedDraft ? "#fffbeb" : "#f8fafc"
+            border: "1px solid " + (scaffoldLeakedDraft ? "var(--da-amber-mid-2)" : "var(--da-border)"),
+            background: scaffoldLeakedDraft ? "var(--da-amber-tint)" : "var(--da-surface-2)"
           }
         },
           h("span", { "aria-hidden": "true", style: { fontSize: 14, lineHeight: 1.3 } }, scaffoldLeakedDraft ? "☑" : "☐"),
-          h("span", { style: { fontSize: 11.5, color: scaffoldLeakedDraft ? "#92400e" : "#475569", lineHeight: 1.45 } },
+          h("span", { style: { fontSize: 11.5, color: scaffoldLeakedDraft ? "var(--da-amber-text-2)" : "var(--da-ink-3)", lineHeight: 1.45 } },
             h("strong", null, "⚠ This scaffold gave away the answer"),
             " — if checked, a correct response is credited one level higher (this rung isn't valid evidence of competence here).")
         ) : null),
@@ -11084,20 +11677,20 @@
         // feeds the access-condition lens as direct evidence that reading/decoding
         // access — not the construct — gated this item. Shown whenever TTS is available.
         (daTtsAvailable() ? h("div", {
-          role: "button", tabIndex: 0,
-          "aria-pressed": accessReadAloudDraft ? "true" : "false",
+          role: "checkbox", tabIndex: 0,
+          "aria-checked": accessReadAloudDraft ? "true" : "false",
           "aria-label": "Flag that the student succeeded only when the item was read aloud",
           onClick: function () { setAccessReadAloudDraft(!accessReadAloudDraft); },
           onKeyDown: function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAccessReadAloudDraft(!accessReadAloudDraft); } },
           style: {
             display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8, padding: "6px 10px",
             borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
-            border: "1px solid " + (accessReadAloudDraft ? "#7c3aed" : "#e2e8f0"),
-            background: accessReadAloudDraft ? "#faf5ff" : "#f8fafc"
+            border: "1px solid " + (accessReadAloudDraft ? "var(--da-violet-mid)" : "var(--da-border)"),
+            background: accessReadAloudDraft ? "var(--da-violet-tint)" : "var(--da-surface-2)"
           }
         },
           h("span", { "aria-hidden": "true", style: { fontSize: 14, lineHeight: 1.3 } }, accessReadAloudDraft ? "☑" : "☐"),
-          h("span", { style: { fontSize: 11.5, color: accessReadAloudDraft ? "#6b21a8" : "#475569", lineHeight: 1.45 } },
+          h("span", { style: { fontSize: 11.5, color: accessReadAloudDraft ? "var(--da-violet-text)" : "var(--da-ink-3)", lineHeight: 1.45 } },
             h("strong", null, "🔊 Succeeded only when read aloud"),
             " — check if the student got this right when they HEARD it but not when reading it themselves. (Access-contrast evidence; does not change the score.)")
         ) : null),
@@ -11105,20 +11698,20 @@
         // ─── Tier-2 access contrast (linguistic load): simplified-language flip flag ───
         // Only meaningful once a simpler-language version has been generated/shown.
         (simplifiedTextDraft ? h("div", {
-          role: "button", tabIndex: 0,
-          "aria-pressed": accessSimplifiedDraft ? "true" : "false",
+          role: "checkbox", tabIndex: 0,
+          "aria-checked": accessSimplifiedDraft ? "true" : "false",
           "aria-label": "Flag that the student succeeded only with the simpler-language version",
           onClick: function () { setAccessSimplifiedDraft(!accessSimplifiedDraft); },
           onKeyDown: function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAccessSimplifiedDraft(!accessSimplifiedDraft); } },
           style: {
             display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8, padding: "6px 10px",
             borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
-            border: "1px solid " + (accessSimplifiedDraft ? "#7c3aed" : "#e2e8f0"),
-            background: accessSimplifiedDraft ? "#faf5ff" : "#f8fafc"
+            border: "1px solid " + (accessSimplifiedDraft ? "var(--da-violet-mid)" : "var(--da-border)"),
+            background: accessSimplifiedDraft ? "var(--da-violet-tint)" : "var(--da-surface-2)"
           }
         },
           h("span", { "aria-hidden": "true", style: { fontSize: 14, lineHeight: 1.3 } }, accessSimplifiedDraft ? "☑" : "☐"),
-          h("span", { style: { fontSize: 11.5, color: accessSimplifiedDraft ? "#6b21a8" : "#475569", lineHeight: 1.45 } },
+          h("span", { style: { fontSize: 11.5, color: accessSimplifiedDraft ? "var(--da-violet-text)" : "var(--da-ink-3)", lineHeight: 1.45 } },
             h("strong", null, "✍️ Succeeded only with simpler language"),
             " — check if the student got this right with the simpler-language version but not at full language complexity. (Access-contrast evidence; does not change the score.)")
         ) : null),
@@ -11126,31 +11719,31 @@
         // ─── Tier-2 access contrast (home language / L1): flip flag ───
         // Only meaningful once a home-language version has been generated/shown.
         (l1TextDraft ? h("div", {
-          role: "button", tabIndex: 0,
-          "aria-pressed": accessL1Draft ? "true" : "false",
+          role: "checkbox", tabIndex: 0,
+          "aria-checked": accessL1Draft ? "true" : "false",
           "aria-label": "Flag that the student succeeded only in their home language",
           onClick: function () { setAccessL1Draft(!accessL1Draft); },
           onKeyDown: function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAccessL1Draft(!accessL1Draft); } },
           style: {
             display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8, padding: "6px 10px",
             borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
-            border: "1px solid " + (accessL1Draft ? "#7c3aed" : "#e2e8f0"),
-            background: accessL1Draft ? "#faf5ff" : "#f8fafc"
+            border: "1px solid " + (accessL1Draft ? "var(--da-violet-mid)" : "var(--da-border)"),
+            background: accessL1Draft ? "var(--da-violet-tint)" : "var(--da-surface-2)"
           }
         },
           h("span", { "aria-hidden": "true", style: { fontSize: 14, lineHeight: 1.3 } }, accessL1Draft ? "☑" : "☐"),
-          h("span", { style: { fontSize: 11.5, color: accessL1Draft ? "#6b21a8" : "#475569", lineHeight: 1.45 } },
+          h("span", { style: { fontSize: 11.5, color: accessL1Draft ? "var(--da-violet-text)" : "var(--da-ink-3)", lineHeight: 1.45 } },
             h("strong", null, "🌐 Succeeded only in home language"),
             " — check if the student got this right with the home-language version but not in the language of testing. (Access-contrast evidence; does not change the score.)")
         ) : null),
 
         // ─── SCORING ROW ───
         h("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" } },
-          h("div", { style: { fontSize: 12, color: "#475569" } },
+          h("div", { style: { fontSize: 12, color: "var(--da-ink-3)" } },
             canScaffold
               ? "Auto-detect or override below. Auto-check matches student response against canonical answer."
               : "Auto-check matches student response against the canonical answer.",
-            h("span", { style: { display: "block", marginTop: 2, fontSize: 10.5, color: "#475569", fontStyle: "italic" } },
+            h("span", { style: { display: "block", marginTop: 2, fontSize: 10.5, color: "var(--da-ink-3)", fontStyle: "italic" } },
               "Tip: Cmd/Ctrl + Enter activates the primary button. Esc on pre-session screens goes back.")
           ),
           h("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } },
@@ -11176,7 +11769,7 @@
               "data-da-primary": "true",
               "aria-label": "Auto-check the student's response and advance",
               title: "Cmd/Ctrl + Enter to activate",
-              style: { padding: "8px 16px", borderRadius: 10, border: "none", background: "#1e3a8a", color: "#ffffff", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "8px 16px", borderRadius: 10, border: "none", background: "var(--da-accent)", color: "var(--da-on-accent)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
             }, "✓ Auto-check + record"),
             // Manual override
             h("button", {
@@ -11196,7 +11789,7 @@
                   supportType: canScaffold ? (item.promptLadder[level - 1] ? item.promptLadder[level - 1].type : "none") : "none"
                 });
               },
-              style: { padding: "8px 16px", borderRadius: 10, border: "1px solid #16a34a", background: "#f0fdf4", color: "#15803d", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "8px 16px", borderRadius: 10, border: "1px solid var(--da-green-mid)", background: "var(--da-green-tint)", color: "var(--da-green-text-2)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
             }, "Mark correct"),
             h("button", {
               onClick: function () {
@@ -11211,7 +11804,7 @@
                   supportType: canScaffold ? "directTeach" : "none"
                 });
               },
-              style: { padding: "8px 16px", borderRadius: 10, border: "1px solid #dc2626", background: "#fef2f2", color: "#b91c1c", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "8px 16px", borderRadius: 10, border: "1px solid var(--da-red-mid)", background: "var(--da-red-tint)", color: "var(--da-red-text)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
             }, "Mark wrong"),
             // Skip — record as wrong, level 0
             h("button", {
@@ -11225,15 +11818,15 @@
                   supportType: "skipped"
                 });
               },
-              style: { padding: "8px 12px", borderRadius: 10, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
             }, "Skip")
           )
         ),
         // Canonical answer reveal (collapsed by default)
         h("details", { style: { marginTop: 10 } },
-          h("summary", { style: { fontSize: 11, color: "#64748b", cursor: "pointer", fontStyle: "italic" } },
+          h("summary", { style: { fontSize: 11, color: "var(--da-muted)", cursor: "pointer", fontStyle: "italic" } },
             "Reveal canonical answer (examiner only)"),
-          h("div", { style: { marginTop: 6, padding: 8, background: "#f1f5f9", borderRadius: 6, fontSize: 13, color: "#0f172a", fontFamily: "ui-monospace, monospace" } },
+          h("div", { style: { marginTop: 6, padding: 8, background: "var(--da-surface-3)", borderRadius: 6, fontSize: 13, color: "var(--da-ink)", fontFamily: "ui-monospace, monospace" } },
             item.correctAnswer)
         )
       );
@@ -11277,31 +11870,47 @@
             onClick: pauseSession,
             "aria-label": "Pause this session — return to start screen, session preserved",
             title: "Pause without losing progress. Resume from the start screen.",
-            style: { background: "#fef3c7", border: "1px solid #f59e0b", color: "#92400e", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700 }
+            style: { background: "var(--da-amber-tint-2)", border: "1px solid var(--da-amber-mid)", color: "var(--da-amber-text-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700 }
           }, "⏸ Pause"),
           h("button", {
             onClick: function () {
-              if (window.confirm("Discard this session? Progress will be lost.")) discardSession();
+              daAskConfirm({
+                message: "Discard this session? Progress will be lost.",
+                confirmLabel: "Discard session",
+                onConfirm: discardSession
+              });
             },
             "aria-label": "Discard session",
-            style: { background: "transparent", border: "1px solid #cbd5e1", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12 }
+            style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12 }
           }, "✕ Discard"),
+          // Undo — re-present the last recorded item (AI attempts restart)
+          s.itemResults.length > 0 ? h("button", {
+            onClick: undoLastResult,
+            "aria-label": "Undo the last recorded item and re-present it",
+            title: "Re-presents the most recently recorded item with its response restored. AI mediation attempts restart for that item.",
+            style: { background: "transparent", border: "1px solid var(--da-border-2)", color: "var(--da-ink-3)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700 }
+          }, "↩ Undo item") : null,
           h("div", { style: { flex: 1, minWidth: 220 } },
-            h("div", { style: { fontSize: 11, color: "#3b82f6", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800 } },
+            h("div", { style: { fontSize: 11, color: "var(--da-accent-2)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800 } },
               "🤖 AI mediation · item " + (idx + 1) + " of " + totalInPhase),
-            h("div", { style: { fontSize: 12, color: "#64748b", fontStyle: "italic", marginTop: 2 } },
+            h("div", { style: { fontSize: 12, color: "var(--da-muted)", fontStyle: "italic", marginTop: 2 } },
               "Gemini evaluates each response and chooses the next scaffold. Examiner records observations alongside.")
           ),
-          s.studentNickname ? h("div", { style: { fontSize: 11, color: "#64748b" } },
+          s.studentNickname ? h("div", { style: { fontSize: 11, color: "var(--da-muted)" } },
             "Student: " + s.studentNickname) : null
         ),
         // Progress bar
-        h("div", { style: { height: 4, background: "#e2e8f0", borderRadius: 2, overflow: "hidden", marginBottom: 14 } },
-          h("div", { style: { width: pct + "%", height: "100%", background: "#3b82f6", transition: "width 0.3s ease" } })
+        h("div", {
+          role: "progressbar",
+          "aria-valuemin": 0, "aria-valuemax": totalInPhase, "aria-valuenow": idx,
+          "aria-label": "AI mediation progress: item " + (idx + 1) + " of " + totalInPhase,
+          style: { height: 4, background: "var(--da-border)", borderRadius: 2, overflow: "hidden", marginBottom: 14 }
+        },
+          h("div", { style: { width: pct + "%", height: "100%", background: "var(--da-accent-2)", transition: "width 0.3s ease" } })
         ),
         // Phase U — Session-level note drawer
         h("details", { className: "da-card", style: { marginBottom: 14, padding: 10 } },
-          h("summary", { style: { cursor: "pointer", fontSize: 11, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.06em" } },
+          h("summary", { style: { cursor: "pointer", fontSize: 11, fontWeight: 800, color: "var(--da-ink-3)", textTransform: "uppercase", letterSpacing: "0.06em" } },
             "📝 Session-level notes" + (s.sessionNote && s.sessionNote.length > 0 ? " · " + s.sessionNote.length + " chars" : "")
           ),
           h("textarea", {
@@ -11310,28 +11919,28 @@
             rows: 3, maxLength: 4000,
             placeholder: "Overarching observations across the whole session — affect, fatigue, anything that doesn't belong to a single item…",
             "aria-label": "Session-level notes",
-            style: { width: "100%", marginTop: 6, padding: "6px 8px", border: "1px solid #cbd5e1", borderRadius: 6, fontFamily: "inherit", fontSize: 12, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box" }
+            style: { width: "100%", marginTop: 6, padding: "6px 8px", border: "1px solid var(--da-border-2)", borderRadius: 6, fontFamily: "inherit", fontSize: 12, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box" }
           })
         ),
         // Item card
         h("div", { className: "da-card", style: { marginBottom: 14 } },
-          h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700, marginBottom: 6 } },
+          h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700, marginBottom: 6 } },
             item.construct + " · " + item.difficulty + " · grades " + item.gradeBand),
-          h("p", { style: { margin: 0, fontSize: 16, color: "#0f172a", lineHeight: 1.65 } },
+          h("p", { style: { margin: 0, fontSize: 16, color: "var(--da-ink)", lineHeight: 1.65 } },
             renderTextWithResourceLinks(item.prompt, "live-prompt"))
         ),
         // Latest scaffold (if any). Phase Z: pipe through resource-link rewriter
         // so any [title](resource:id) tokens embedded in the rung text by the
         // supplementary-resource orchestrator render as clickable chips.
-        lastScaffoldText ? h("div", { className: "da-card da-fade-in", style: { marginBottom: 14, background: "#fffbeb", borderColor: "#fbbf24" } },
-          h("div", { style: { fontSize: 11, color: "#a16207", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 4 } },
+        lastScaffoldText ? h("div", { className: "da-card da-fade-in", style: { marginBottom: 14, background: "var(--da-amber-tint)", borderColor: "var(--da-amber-border)" } },
+          h("div", { style: { fontSize: 11, color: "var(--da-amber-text)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 4 } },
             "AI scaffold delivered · L" + currentLevel),
-          h("p", { style: { margin: 0, fontSize: 14, color: "#92400e", lineHeight: 1.6, fontStyle: "italic" } },
+          h("p", { style: { margin: 0, fontSize: 14, color: "var(--da-amber-text-2)", lineHeight: 1.6, fontStyle: "italic" } },
             "“", renderTextWithResourceLinks(lastScaffoldText, "live-scaffold"), "”")
         ) : null,
         // Error banner (when fallback kicked in) — with retry
         aiError ? h("div", {
-          style: { marginBottom: 14, padding: "8px 12px", background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 8, fontSize: 12, color: "#b91c1c", display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }
+          style: { marginBottom: 14, padding: "8px 12px", background: "var(--da-red-tint)", border: "1px solid var(--da-red-border)", borderRadius: 8, fontSize: 12, color: "var(--da-red-text)", display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }
         },
           h("span", { style: { flex: 1, minWidth: 200 } }, aiError),
           h("button", {
@@ -11340,19 +11949,19 @@
               if (responseDraft.trim() && !aiBusy) runAiMediate(item, responseDraft);
             },
             "aria-label": "Retry the AI mediation call",
-            style: { padding: "4px 10px", borderRadius: 6, border: "1px solid #b91c1c", background: "#ffffff", color: "#b91c1c", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "4px 10px", borderRadius: 6, border: "1px solid var(--da-red-text)", background: "var(--da-surface)", color: "var(--da-red-text)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, "↻ Retry"),
           h("button", {
             onClick: function () { setAiError(null); },
             "aria-label": "Dismiss this error",
-            style: { padding: "4px 8px", borderRadius: 6, border: "none", background: "transparent", color: "#7f1d1d", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "4px 8px", borderRadius: 6, border: "none", background: "transparent", color: "var(--da-red-deep)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, "✕")
         ) : null,
         // Response input
         h("div", { className: "da-card", style: { marginBottom: 14 } },
           h("label", {
             htmlFor: "da-ai-response",
-            style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", marginBottom: 4 }
+            style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 }
           }, aiAttempts.length === 0 ? "Student response (first attempt)" : "Student response (retry after L" + currentLevel + " scaffold)"),
           h("textarea", {
             id: "da-ai-response", rows: 2, value: responseDraft, disabled: aiBusy,
@@ -11360,24 +11969,24 @@
             onChange: function (e) { setResponseDraft(e.target.value); },
             placeholder: "Type or paraphrase what the student said…",
             "aria-label": "Student response for AI-mediated attempt",
-            style: { width: "100%", padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box", resize: "vertical", opacity: aiBusy ? 0.6 : 1 }
+            style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box", resize: "vertical", opacity: aiBusy ? 0.6 : 1 }
           })
         ),
         // Examiner observation
         h("div", { className: "da-card", style: { marginBottom: 14 } },
           h("label", {
             htmlFor: "da-ai-obs",
-            style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", marginBottom: 4 }
+            style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 }
           }, "Examiner observation (local only — appended to AI notes)"),
           h("textarea", {
             id: "da-ai-obs", rows: 2, value: observationDraft,
             onChange: function (e) { setObservationDraft(e.target.value); },
             placeholder: "Strategy, hesitation, affect, anything notable…",
-            style: { width: "100%", padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box", resize: "vertical" }
+            style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box", resize: "vertical" }
           }),
           // Phase I — quick-tap observation tags (shared with clinician-led path)
           h("div", { style: { marginTop: 8 } },
-            h("div", { style: { fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#475569", marginBottom: 4 } },
+            h("div", { style: { fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-ink-3)", marginBottom: 4 } },
               "Quick tags (optional)"),
             h("div", { role: "group", "aria-label": "Observation tags", style: { display: "flex", flexWrap: "wrap", gap: 6 } },
               OBSERVATION_TAGS.map(function (tag) {
@@ -11390,9 +11999,9 @@
                   title: tag.hint,
                   style: {
                     padding: "4px 10px", borderRadius: 999, fontSize: 11.5, fontWeight: 700,
-                    border: active ? "1px solid #1e3a8a" : "1px solid #cbd5e1",
-                    background: active ? "#1e3a8a" : "#ffffff",
-                    color: active ? "#ffffff" : "#475569",
+                    border: active ? "1px solid var(--da-accent)" : "1px solid var(--da-border-2)",
+                    background: active ? "var(--da-accent)" : "var(--da-surface)",
+                    color: active ? "var(--da-on-accent)" : "var(--da-ink-3)",
                     cursor: "pointer", fontFamily: "inherit"
                   }
                 }, tag.label);
@@ -11402,7 +12011,7 @@
         ),
         // Action row
         h("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" } },
-          h("div", { style: { fontSize: 12, color: "#475569" } },
+          h("div", { role: "status", "aria-busy": aiBusy ? "true" : "false", style: { fontSize: 12, color: "var(--da-ink-3)" } },
             aiBusy ? "🤖 AI is evaluating…" :
             alreadyHadL4 ? "Direct teach already delivered. Mark as wrong to advance." :
             "Submit response → AI evaluates → next scaffold appears (if needed)."),
@@ -11419,8 +12028,8 @@
               title: "Cmd/Ctrl + Enter to activate",
               style: {
                 padding: "8px 16px", borderRadius: 10, border: "none",
-                background: (aiBusy || !responseDraft.trim()) ? "#94a3b8" : "#1e3a8a",
-                color: "#ffffff", fontWeight: 800, fontSize: 13,
+                background: (aiBusy || !responseDraft.trim()) ? "var(--da-faint)" : "var(--da-accent)",
+                color: "var(--da-on-accent)", fontWeight: 800, fontSize: 13,
                 cursor: (aiBusy || !responseDraft.trim()) ? "not-allowed" : "pointer",
                 fontFamily: "inherit"
               }
@@ -11439,7 +12048,7 @@
                 }]), true);
               },
               disabled: aiBusy,
-              style: { padding: "8px 14px", borderRadius: 10, border: "1px solid #16a34a", background: "#f0fdf4", color: "#15803d", fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "8px 14px", borderRadius: 10, border: "1px solid var(--da-green-mid)", background: "var(--da-green-tint)", color: "var(--da-green-text-2)", fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
             }, "Mark correct"),
             h("button", {
               onClick: function () {
@@ -11453,27 +12062,27 @@
                 }]), false);
               },
               disabled: aiBusy,
-              style: { padding: "8px 14px", borderRadius: 10, border: "1px solid #dc2626", background: "#fef2f2", color: "#b91c1c", fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
+              style: { padding: "8px 14px", borderRadius: 10, border: "1px solid var(--da-red-mid)", background: "var(--da-red-tint)", color: "var(--da-red-text)", fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
             }, "Mark wrong")
           )
         ),
         // Attempts log (this item's mediation cycle)
         aiAttempts.length > 0 ? h("details", { open: true, style: { marginTop: 14 } },
-          h("summary", { style: { fontSize: 11, fontWeight: 700, color: "#475569", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.06em" } },
+          h("summary", { style: { fontSize: 11, fontWeight: 700, color: "var(--da-ink-3)", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.06em" } },
             "Mediation cycle · " + aiAttempts.length + " attempt" + (aiAttempts.length === 1 ? "" : "s")),
           h("div", { style: { marginTop: 8, display: "flex", flexDirection: "column", gap: 6 } },
             aiAttempts.map(function (a, ai) {
-              var verdictColor = a.verdict === "correct" ? "#16a34a" : a.verdict === "partial" ? "#a16207" : "#b91c1c";
+              var verdictColor = a.verdict === "correct" ? "var(--da-green-text)" : a.verdict === "partial" ? "var(--da-amber-text)" : "var(--da-red-text)";
               return h("div", { key: "da-ai-att-" + ai, className: "da-card", style: { padding: 10 } },
-                h("div", { style: { fontSize: 11, color: "#64748b", fontWeight: 700, marginBottom: 4 } },
+                h("div", { style: { fontSize: 11, color: "var(--da-muted)", fontWeight: 700, marginBottom: 4 } },
                   "Attempt " + (ai + 1) + " · ",
                   h("span", { style: { color: verdictColor } }, a.verdict),
                   " · L" + a.levelAfter),
-                h("div", { style: { fontSize: 12, color: "#0f172a", marginBottom: 3 } },
+                h("div", { style: { fontSize: 12, color: "var(--da-ink)", marginBottom: 3 } },
                   h("strong", null, "Response: "), "“" + a.response + "”"),
-                a.scaffoldShown ? h("div", { style: { fontSize: 11, color: "#92400e", fontStyle: "italic", marginBottom: 3 } },
+                a.scaffoldShown ? h("div", { style: { fontSize: 11, color: "var(--da-amber-text-2)", fontStyle: "italic", marginBottom: 3 } },
                   "→ Scaffold: " + a.scaffoldShown) : null,
-                a.observationHint ? h("div", { style: { fontSize: 11, color: "#64748b" } },
+                a.observationHint ? h("div", { style: { fontSize: 11, color: "var(--da-muted)" } },
                   "AI note: " + a.observationHint) : null
               );
             })
@@ -11481,9 +12090,9 @@
         ) : null,
         // Canonical answer (collapsed)
         h("details", { style: { marginTop: 10 } },
-          h("summary", { style: { fontSize: 11, color: "#64748b", cursor: "pointer", fontStyle: "italic" } },
+          h("summary", { style: { fontSize: 11, color: "var(--da-muted)", cursor: "pointer", fontStyle: "italic" } },
             "Reveal canonical answer (examiner only)"),
-          h("div", { style: { marginTop: 6, padding: 8, background: "#f1f5f9", borderRadius: 6, fontSize: 13, color: "#0f172a", fontFamily: "ui-monospace, monospace" } },
+          h("div", { style: { marginTop: 6, padding: 8, background: "var(--da-surface-3)", borderRadius: 6, fontSize: 13, color: "var(--da-ink)", fontFamily: "ui-monospace, monospace" } },
             item.correctAnswer)
         )
       );
@@ -11793,12 +12402,20 @@
 
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 820, margin: "0 auto", padding: 20 } },
         // Header
-        h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14 } },
-          h("div", null,
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } }, "Session complete"),
-            h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "#0f172a" } },
+        h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" } },
+          h("div", { style: { flex: 1, minWidth: 220 } },
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } }, "Session complete"),
+            h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "var(--da-ink)" } },
               "Modifiability profile · " + (s.studentNickname || "Anonymous"))
-          )
+          ),
+          // Mis-click insurance: step back into the session at the last item
+          // (nothing is lost — the item is re-presented for re-scoring).
+          s.itemResults.length > 0 ? h("button", {
+            onClick: undoLastResult,
+            "aria-label": "Reopen the session at the last recorded item to re-score it",
+            title: "Steps back into the session, re-presenting the most recently recorded item with its response restored.",
+            style: { background: "transparent", border: "1px solid var(--da-border-2)", color: "var(--da-ink-3)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700 }
+          }, "↩ Reopen last item") : null
         ),
 
         // Headline modifiability card
@@ -11806,29 +12423,127 @@
           className: "da-card da-pop",
           style: {
             marginBottom: 14, padding: 18,
-            background: tier.id === "high" ? "#f0fdf4" : tier.id === "moderate" ? "#fffbeb" : tier.id === "low" ? "#fef2f2" : "#f1f5f9",
-            borderColor: tier.id === "high" ? "#86efac" : tier.id === "moderate" ? "#fbbf24" : tier.id === "low" ? "#fca5a5" : "#cbd5e1"
+            background: tier.id === "high" ? "var(--da-green-tint)" : tier.id === "moderate" ? "var(--da-amber-tint)" : tier.id === "low" ? "var(--da-red-tint)" : "var(--da-surface-3)",
+            borderColor: tier.id === "high" ? "var(--da-green-border)" : tier.id === "moderate" ? "var(--da-amber-border)" : tier.id === "low" ? "var(--da-red-border)" : "var(--da-border-2)"
           }
         },
-          h("div", { style: { fontSize: 11, color: "#475569", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800, marginBottom: 6 } },
+          h("div", { style: { fontSize: 11, color: "var(--da-ink-3)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800, marginBottom: 6 } },
             "Modifiability Index"),
           h("div", { style: { display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap" } },
-            h("div", { style: { fontSize: 42, fontWeight: 900, color: "#0f172a", lineHeight: 1 } },
+            h("div", { style: { fontSize: 42, fontWeight: 900, color: "var(--da-ink)", lineHeight: 1 } },
               (modIdx >= 0 ? "+" : "") + modIdx.toFixed(2)),
-            h("div", { style: { fontSize: 16, fontWeight: 700, color: "#0f172a" } }, tier.label)
+            h("div", { style: { fontSize: 16, fontWeight: 700, color: "var(--da-ink)" } }, tier.label)
           ),
-          h("p", { style: { margin: "10px 0 0", fontSize: 13, color: "#334155", lineHeight: 1.65 } }, tier.desc),
+          // MI gauge — the index placed on its full −1…+1 range with the tier
+          // bands visible, so the number reads as a position, not a grade.
+          (function () {
+            var gW = 320, gH = 34, gPad = 6, barY = 10, barH = 10;
+            var gx = function (v) { return gPad + ((Math.max(-1, Math.min(1, v)) + 1) / 2) * (gW - 2 * gPad); };
+            var bands = [
+              { from: -1, to: 0, fill: daTone.grid, label: "regression" },
+              { from: 0, to: 0.3, fill: daHex("#b91c1c") + "55", label: "low" },
+              { from: 0.3, to: 0.6, fill: daHex("#a16207") + "55", label: "moderate" },
+              { from: 0.6, to: 1, fill: daHex("#16a34a") + "55", label: "high" }
+            ];
+            var markerX = gx(modIdx);
+            return h("svg", {
+              viewBox: "0 0 " + gW + " " + gH, width: "100%", height: gH,
+              role: "img",
+              "aria-label": "Modifiability Index gauge: " + (modIdx >= 0 ? "+" : "") + modIdx.toFixed(2) +
+                ", in the " + tier.label + " band. Bands: below 0 regression, 0 to 0.3 low, 0.3 to 0.6 moderate, 0.6 and above high.",
+              style: { display: "block", maxWidth: gW, marginTop: 10 }
+            },
+              bands.map(function (b, bi) {
+                return h("rect", { key: "da-gauge-b-" + bi, x: gx(b.from), y: barY, width: gx(b.to) - gx(b.from), height: barH, fill: b.fill, rx: bi === 0 ? 3 : 0 });
+              }),
+              // tier cut-point ticks at 0, 0.3, 0.6
+              [0, 0.3, 0.6].map(function (v, vi) {
+                return h("line", { key: "da-gauge-t-" + vi, x1: gx(v), x2: gx(v), y1: barY - 2, y2: barY + barH + 2, stroke: daTone.muted, strokeWidth: 1 });
+              }),
+              h("text", { x: gx(-1), y: barY + barH + 12, fontSize: 8, fill: daTone.muted }, "-1"),
+              h("text", { x: gx(0) - 3, y: barY + barH + 12, fontSize: 8, fill: daTone.muted }, "0"),
+              h("text", { x: gx(1) - 10, y: barY + barH + 12, fontSize: 8, fill: daTone.muted }, "+1"),
+              // marker: triangle above the bar at this session's MI
+              h("path", {
+                d: "M " + (markerX - 5) + " 2 L " + (markerX + 5) + " 2 L " + markerX + " " + (barY - 1) + " Z",
+                fill: daTone.ink
+              }),
+              h("line", { x1: markerX, x2: markerX, y1: barY, y2: barY + barH, stroke: daTone.ink, strokeWidth: 2 })
+            );
+          })(),
+          h("p", { style: { margin: "10px 0 0", fontSize: 13, color: "var(--da-ink-2)", lineHeight: 1.65 } }, tier.desc),
+          h("p", { style: { margin: "6px 0 0", fontSize: 10.5, color: "var(--da-muted)", fontStyle: "italic", lineHeight: 1.5 } },
+            "Band cut-points (0.30 / 0.60) are interpretation conventions of this tool — they are not empirically derived or normed thresholds."),
+          // Single-item sensitivity — the quantified version of the small-N
+          // caution: how far one adjacent-level scoring judgment moves the MI.
+          (function () {
+            var sens = computeMiSensitivity(pretestSum, posttestSum, s.sessionItemIds.length);
+            if (!sens || (sens.hi - sens.lo) < 0.005) return null;
+            var fmtMi = function (v) { return (v >= 0 ? "+" : "") + v.toFixed(2); };
+            return h("p", { style: { margin: "4px 0 0", fontSize: 10.5, color: "var(--da-muted)", fontStyle: "italic", lineHeight: 1.5 } },
+              "Sensitivity: judging one item's scaffold level a single step differently would put the index between " +
+              fmtMi(sens.lo) + " and " + fmtMi(sens.hi) + " — read differences smaller than that range as noise.");
+          })(),
           // A1 — small-N measurement-error caution. The MI is a ratio of two
           // small score sums; with few items per phase one mis-scored item
           // swings it substantially. Present it as a direction, not a precise
           // value, so the 2-decimal figure isn't read as more exact than the
           // data can support. Threshold: < 5 items/phase (default is 3).
           (s.sessionItemIds.length < 5 ? h("div", {
-            style: { marginTop: 10, padding: "7px 11px", background: "rgba(180,83,9,0.08)", border: "1px solid rgba(180,83,9,0.28)", borderRadius: 8, fontSize: 11.5, color: "#92400e", lineHeight: 1.55 }
+            style: { marginTop: 10, padding: "7px 11px", background: "rgba(180,83,9,0.08)", border: "1px solid rgba(180,83,9,0.28)", borderRadius: 8, fontSize: 11.5, color: "var(--da-amber-text-2)", lineHeight: 1.55 }
           },
             "⚠ Based on " + s.sessionItemIds.length + " item" + (s.sessionItemIds.length === 1 ? "" : "s") + " per phase. At this length the index carries substantial measurement error — read it as a broad direction (clear gain / little change / regression), not a precise number. Run more items for a more stable estimate."
           ) : null)
         ),
+
+        // ─── Learning-zone (ZPD) snapshot ───
+        // Turns the session's own item data into the Vygotskian read the MI
+        // alone doesn't give: WHERE to teach next. Independent = already
+        // secure; ZPD = fails alone but succeeds with L1–L3 scaffolds (teach
+        // here); frustration = not yet reachable through prompting.
+        (function () {
+          var zpd = computeZpdProfile(s);
+          if (zpd.nClassified === 0) return null;
+          var cols = [
+            { key: "independent", icon: "✅", title: "Independent", sub: "Solved unprompted at pretest",
+              items: zpd.independent.map(function (z) { return z.construct; }),
+              tone: "green", note: "Already secure — maintain, don't reteach." },
+            { key: "zpd", icon: "🌱", title: "Teachable band (ZPD)", sub: "Solved with L1–L3 scaffolds",
+              items: zpd.zpd.map(function (z) { return z.construct + " (L" + z.level + ")"; }),
+              tone: "amber", note: "Pitch instruction here, using the scaffold types that worked." },
+            { key: "frustration", icon: "🧗", title: "Needs direct teaching", sub: "Required L4, or unsolved",
+              items: zpd.frustration.map(function (z) { return z.construct + (z.solvedWithTeach ? " (solved after teach)" : " (unsolved)"); }),
+              tone: "red", note: "Not yet reachable via prompts — reteach foundations first." }
+          ];
+          var toneStyles = {
+            green: { bg: "var(--da-green-tint)", border: "var(--da-green-border)", text: "var(--da-green-text-2)" },
+            amber: { bg: "var(--da-amber-tint)", border: "var(--da-amber-border-2)", text: "var(--da-amber-text)" },
+            red: { bg: "var(--da-red-tint)", border: "var(--da-red-border)", text: "var(--da-red-text)" }
+          };
+          return h("div", { className: "da-card", style: { marginBottom: 14 } },
+            h("h3", { style: { margin: "0 0 4px", fontSize: 14, fontWeight: 800, color: "var(--da-ink)" } },
+              "Learning-zone snapshot"),
+            h("p", { style: { margin: "0 0 10px", fontSize: 11, color: "var(--da-muted)", fontStyle: "italic", lineHeight: 1.5 } },
+              "Each item placed by the support it took — the zone-of-proximal-development read (Vygotsky, 1978) behind the index. Descriptive of this session's items only; not a normed placement."),
+            h("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 8 } },
+              cols.map(function (c) {
+                var ts = toneStyles[c.tone];
+                return h("div", { key: "da-zpd-" + c.key, style: { padding: "10px 12px", borderRadius: 10, background: ts.bg, border: "1px solid " + ts.border } },
+                  h("div", { style: { display: "flex", alignItems: "baseline", gap: 6 } },
+                    h("span", { "aria-hidden": "true", style: { fontSize: 14 } }, c.icon),
+                    h("span", { style: { fontSize: 12.5, fontWeight: 800, color: "var(--da-ink)" } }, c.title),
+                    h("span", { style: { fontSize: 15, fontWeight: 900, color: ts.text, marginLeft: "auto" } }, c.items.length)
+                  ),
+                  h("div", { style: { fontSize: 10, color: "var(--da-muted)", marginTop: 2, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 700 } }, c.sub),
+                  c.items.length > 0 ? h("ul", { style: { margin: "6px 0 0", paddingLeft: 16, fontSize: 11.5, color: "var(--da-ink-2)", lineHeight: 1.5 } },
+                    c.items.map(function (label, li) { return h("li", { key: "da-zpd-" + c.key + "-" + li }, label); })
+                  ) : h("div", { style: { marginTop: 6, fontSize: 11.5, color: "var(--da-muted)", fontStyle: "italic" } }, "None this session."),
+                  h("div", { style: { marginTop: 6, fontSize: 10.5, color: ts.text, lineHeight: 1.45 } }, c.note)
+                );
+              })
+            )
+          );
+        })(),
 
         // ─── Phase BB — Contextual mini-card: this MI vs population ───
         // Only meaningful with ≥ 5 prior sessions to compare against.
@@ -11843,26 +12558,26 @@
           if (z === null || pct === null) return null;
           var zStr = (z >= 0 ? "+" : "") + z.toFixed(2);
           var pctStr = pct + (pct === 1 ? "st" : pct === 2 ? "nd" : pct === 3 ? "rd" : pct >= 11 && pct <= 13 ? "th" : (pct % 10 === 1) ? "st" : (pct % 10 === 2) ? "nd" : (pct % 10 === 3) ? "rd" : "th");
-          var color = z >= 1 ? "#16a34a" : z >= 0 ? "#1e3a8a" : z >= -1 ? "#a16207" : "#b91c1c";
-          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "#faf5ff", borderColor: "#c4b5fd" } },
+          var color = daHex(z >= 1 ? "#16a34a" : z >= 0 ? "#1e3a8a" : z >= -1 ? "#a16207" : "#b91c1c");
+          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "var(--da-violet-tint)", borderColor: "var(--da-violet-border)" } },
             h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" } },
               h("div", null,
-                h("div", { style: { fontSize: 11, color: "#5b21b6", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800 } },
+                h("div", { style: { fontSize: 11, color: "var(--da-violet-text-2)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800 } },
                   "Compared to your own sessions · n = " + stats.n),
                 // A2 — descriptive framing first. "Percentile" / "z" read as a
                 // standardized norm; this is only a comparison against sessions
                 // the clinician has personally run. Lead with plain language,
                 // demote the statistic to a parenthetical, and ALWAYS state it
                 // is not an external norm.
-                h("div", { style: { fontSize: 13.5, color: "#0f172a", marginTop: 4, lineHeight: 1.55 } },
+                h("div", { style: { fontSize: 13.5, color: "var(--da-ink)", marginTop: 4, lineHeight: 1.55 } },
                   "This result is higher than about ",
                   h("strong", { style: { color: color } }, pct + "%"),
                   " of the sessions you've run in this tool",
-                  h("span", { style: { color: "#64748b", fontSize: 11.5 } },
+                  h("span", { style: { color: "var(--da-muted)", fontSize: 11.5 } },
                     " (z = " + zStr + " vs your mean " + stats.miMean.toFixed(2) + ", SD = " + (stats.miSD || 0).toFixed(2) + ")."
                   )
                 ),
-                h("div", { style: { fontSize: 11, color: "#7c3aed", fontStyle: "italic", marginTop: 4, lineHeight: 1.5 } },
+                h("div", { style: { fontSize: 11, color: "var(--da-violet-mid)", fontStyle: "italic", marginTop: 4, lineHeight: 1.5 } },
                   "This compares only against your own saved sessions — it is NOT a percentile against any standardized or external norm."
                   + (stats.n < 30 ? " Below ~30 sessions, treat it as exploratory context only." : "")
                 )
@@ -11870,7 +12585,7 @@
               h("button", {
                 onClick: function () { setStartScreenView("population"); },
                 "aria-label": "Open full population statistics view",
-                style: { padding: "6px 12px", borderRadius: 8, border: "1px solid #6d28d9", background: "#ffffff", color: "#6d28d9", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                style: { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--da-violet-mid-2)", background: "var(--da-surface)", color: "var(--da-violet-mid-2)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
               }, "📈 Full stats")
             )
           );
@@ -11906,7 +12621,7 @@
           pts.push({ mi: modIdx, domain: s.domain || "custom", date: s.dateStarted || "", items: s.sessionItemIds.length, current: true });
           if (pts.length < 2) return null; // need ≥2 points for a trajectory
 
-          var miColor = function (v) { return v >= 0.6 ? "#16a34a" : v >= 0.3 ? "#a16207" : v >= 0 ? "#1e3a8a" : "#b91c1c"; };
+          var miColor = function (v) { return daHex(v >= 0.6 ? "#16a34a" : v >= 0.3 ? "#a16207" : v >= 0 ? "#1e3a8a" : "#b91c1c"); };
           var fmtDate = function (iso) { var d = String(iso).slice(0, 10); return d || "—"; };
           var domainLabels = { math: "Math", reading: "Reading", "working-memory": "Working memory", wm: "Working memory", language: "Language", custom: "Custom" };
           var domainsPresent = {};
@@ -11926,8 +12641,8 @@
           var direction = Math.abs(delta) < 0.15 ? "held about steady" : (delta > 0 ? "trended upward" : "trended downward");
           var ariaSummary = "This student's Modifiability Index across " + pts.length + " sessions, from " + first.mi.toFixed(2) + " to " + last.mi.toFixed(2) + ", " + direction + ".";
 
-          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "#f0f9ff", borderColor: "#7dd3fc" } },
-            h("div", { style: { fontSize: 11, color: "#0369a1", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, marginBottom: 6 } },
+          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "var(--da-sky-tint)", borderColor: "var(--da-sky-border-2)" } },
+            h("div", { style: { fontSize: 11, color: "var(--da-sky-text)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, marginBottom: 6 } },
               "📈 " + nick + " over time · " + pts.length + " sessions"),
             // Inline SVG sparkline
             h("svg", {
@@ -11936,12 +12651,12 @@
               style: { display: "block", maxWidth: W, marginBottom: 6 }
             },
               // zero baseline
-              h("line", { x1: padL, y1: zeroY.toFixed(1), x2: (W - padR).toFixed(1), y2: zeroY.toFixed(1), stroke: "#cbd5e1", strokeWidth: 1, strokeDasharray: "3 3" }),
-              // top/bottom guide labels
-              h("text", { x: padL, y: padT + 3, fontSize: 7, fill: "#94a3b8" }, "+1"),
-              h("text", { x: padL, y: (H - padB + 1).toFixed(1), fontSize: 7, fill: "#94a3b8" }, "-1"),
-              // trend line
-              h("polyline", { points: polyPoints, fill: "none", stroke: "#0ea5e9", strokeWidth: 2, strokeLinejoin: "round", strokeLinecap: "round" }),
+              h("line", { x1: padL, y1: zeroY.toFixed(1), x2: (W - padR).toFixed(1), y2: zeroY.toFixed(1), stroke: daTone.border, strokeWidth: 1, strokeDasharray: "3 3" }),
+              // top/bottom guide labels (muted, not faint — 1.4.3 contrast on tint bg)
+              h("text", { x: padL, y: padT + 3, fontSize: 7, fill: daTone.muted }, "+1"),
+              h("text", { x: padL, y: (H - padB + 1).toFixed(1), fontSize: 7, fill: daTone.muted }, "-1"),
+              // trend line (sky tone ≥3:1 on the tinted card in both themes)
+              h("polyline", { points: polyPoints, fill: "none", stroke: daTone.sky, strokeWidth: 2, strokeLinejoin: "round", strokeLinecap: "round" }),
               // dots
               pts.map(function (p, i) {
                 return h("circle", {
@@ -11949,15 +12664,15 @@
                   cx: xAt(i).toFixed(1), cy: yAt(p.mi).toFixed(1),
                   r: p.current ? 4.5 : 3.5,
                   fill: miColor(p.mi),
-                  stroke: p.current ? "#0f172a" : "#ffffff", strokeWidth: p.current ? 1.5 : 1
+                  stroke: p.current ? daTone.ink : daTone.surface, strokeWidth: p.current ? 1.5 : 1
                 }, h("title", null, fmtDate(p.date) + " · " + (domainLabels[p.domain] || p.domain) + " · MI " + (p.mi >= 0 ? "+" : "") + p.mi.toFixed(2) + (p.current ? " (this session)" : "")));
               })
             ),
-            h("div", { style: { fontSize: 13, color: "#0f172a", lineHeight: 1.55 } },
+            h("div", { style: { fontSize: 13, color: "var(--da-ink)", lineHeight: 1.55 } },
               "Across these sessions the index has ",
               h("strong", null, direction),
               " (" + (first.mi >= 0 ? "+" : "") + first.mi.toFixed(2) + " → " + (last.mi >= 0 ? "+" : "") + last.mi.toFixed(2) + "). The filled dark-ringed dot is this session."),
-            h("div", { style: { fontSize: 11, color: "#0369a1", fontStyle: "italic", marginTop: 4, lineHeight: 1.5 } },
+            h("div", { style: { fontSize: 11, color: "var(--da-sky-text)", fontStyle: "italic", marginTop: 4, lineHeight: 1.5 } },
               multiDomain
                 ? "⚠ These sessions span more than one domain (" + Object.keys(domainsPresent).map(function (d) { return domainLabels[d] || d; }).join(", ") + "). The Modifiability Index is construct-relative — compare points WITHIN the same domain, not across. Descriptive trajectory, not a growth norm."
                 : "Descriptive trajectory across the sessions you've run with this student — not a standardized growth norm."
@@ -11976,18 +12691,18 @@
           if (!ac) return null;
           var egs = ac.exampleConstructs.length ? " (e.g., " + ac.exampleConstructs.join("; ") + ")" : "";
           var children = [
-            h("div", { key: "hdr", style: { fontSize: 11, color: "#86198f", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, marginBottom: 6 } },
+            h("div", { key: "hdr", style: { fontSize: 11, color: "var(--da-fuchsia-text)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, marginBottom: 6 } },
               "🌐 Access-condition lens · exploratory")
           ];
           // (a) Support-coincidence signal (correlational; needs >=2 supported successes).
           if (ac.supportedSucc >= 2) {
-            children.push(h("div", { key: "supp", style: { fontSize: 13, color: "#0f172a", lineHeight: 1.55 } },
+            children.push(h("div", { key: "supp", style: { fontSize: 13, color: "var(--da-ink)", lineHeight: 1.55 } },
               (ac.languageConcentrated
                 ? "This student succeeded most often when supports that REDUCE LANGUAGE DEMAND were available"
                 : "Supports that helped were mixed across language-reducing and construct-level types"),
               " — on " + ac.langSucc + " of " + ac.supportedSucc + " supported mediation successes" + egs + "."));
             if (ac.languageConcentrated) {
-              children.push(h("div", { key: "hyp", style: { fontSize: 12.5, color: "#0f172a", lineHeight: 1.55, marginTop: 6 } },
+              children.push(h("div", { key: "hyp", style: { fontSize: 12.5, color: "var(--da-ink)", lineHeight: 1.55, marginTop: 6 } },
                 "This pattern is worth exploring: it is ",
                 h("strong", null, "consistent with academic-language access — rather than the underlying skill — limiting performance"),
                 ". It is a hypothesis, not a determination."));
@@ -11995,7 +12710,7 @@
           }
           // (b) Direct MODALITY contrast (controlled: same item, reading demand removed).
           if (ac.readAloudFlips >= 1) {
-            children.push(h("div", { key: "mod", style: { fontSize: 12.5, color: "#0f172a", lineHeight: 1.55, marginTop: 6 } },
+            children.push(h("div", { key: "mod", style: { fontSize: 12.5, color: "var(--da-ink)", lineHeight: 1.55, marginTop: 6 } },
               "🔊 On ",
               h("strong", null, ac.readAloudFlips + " item" + (ac.readAloudFlips === 1 ? "" : "s")),
               ", the student succeeded ", h("strong", null, "only when it was read aloud"),
@@ -12003,7 +12718,7 @@
           }
           // (c) Direct LINGUISTIC-LOAD contrast (same problem, simpler language).
           if (ac.simplifiedFlips >= 1) {
-            children.push(h("div", { key: "simp", style: { fontSize: 12.5, color: "#0f172a", lineHeight: 1.55, marginTop: 6 } },
+            children.push(h("div", { key: "simp", style: { fontSize: 12.5, color: "var(--da-ink)", lineHeight: 1.55, marginTop: 6 } },
               "✍️ On ",
               h("strong", null, ac.simplifiedFlips + " item" + (ac.simplifiedFlips === 1 ? "" : "s")),
               ", the student succeeded ", h("strong", null, "only with simpler language"),
@@ -12011,15 +12726,15 @@
           }
           // (d) Direct HOME-LANGUAGE (L1) contrast (same problem, language of testing → L1).
           if (ac.l1Flips >= 1) {
-            children.push(h("div", { key: "l1", style: { fontSize: 12.5, color: "#0f172a", lineHeight: 1.55, marginTop: 6 } },
+            children.push(h("div", { key: "l1", style: { fontSize: 12.5, color: "var(--da-ink)", lineHeight: 1.55, marginTop: 6 } },
               "🌐 On ",
               h("strong", null, ac.l1Flips + " item" + (ac.l1Flips === 1 ? "" : "s")),
               ", the student succeeded ", h("strong", null, "only in their home language"),
               " — a direct contrast (same problem, language of testing → home language) indicating the language of testing, rather than the underlying skill, was the barrier on those items. Verify the translation with a proficient speaker."));
           }
-          children.push(h("div", { key: "cav", style: { fontSize: 11, color: "#86198f", fontStyle: "italic", marginTop: 6, lineHeight: 1.5 } },
+          children.push(h("div", { key: "cav", style: { fontSize: 11, color: "var(--da-fuchsia-text)", fontStyle: "italic", marginTop: 6, lineHeight: 1.5 } },
             "⚠ Exploratory, small-N. The read-aloud, simpler-language, and home-language contrasts are controlled manipulations (home-language translations should be verified with a proficient speaker); the support-coincidence pattern is correlational. Interpret only alongside this student's language-proficiency data and the home-language context noted at intake. This lens appears because a language background was recorded at intake."));
-          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "#fdf4ff", borderColor: "#e9d5ff" } }, children);
+          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "var(--da-violet-tint-3)", borderColor: "var(--da-violet-border-2)" } }, children);
         })(),
 
         // ─── Phase W — Outputs dashboard ───
@@ -12123,11 +12838,11 @@
           var doneCount = outputs.filter(function (o) { return o.done; }).length;
           var totalAi = 5; // Clinical narrative is auto; 5 AI-generated outputs (incl monitoring)
           var aiDone = outputs.filter(function (o) { return o.id !== "out-narrative" && o.done; }).length;
-          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 14, background: "#fafaf9", borderColor: "#d4d4d8" } },
+          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 14, background: "var(--da-surface-2)", borderColor: "var(--da-border-2)" } },
             h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 10, flexWrap: "wrap" } },
               h("div", null,
-                h("div", { style: { fontSize: 11, color: "#52525b", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800 } }, "Outputs dashboard"),
-                h("h3", { style: { margin: "2px 0 0", fontSize: 15, fontWeight: 800, color: "#0f172a" } },
+                h("div", { style: { fontSize: 11, color: "var(--da-zinc-text)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800 } }, "Outputs dashboard"),
+                h("h3", { style: { margin: "2px 0 0", fontSize: 15, fontWeight: 800, color: "var(--da-ink)" } },
                   "📦 " + doneCount + " of " + outputs.length + " ready · " + aiDone + "/" + totalAi + " AI outputs drafted")
               ),
               aiDone < totalAi ? h("button", {
@@ -12140,7 +12855,7 @@
                   addToast("✨ Generating " + (totalAi - aiDone) + " output" + (totalAi - aiDone === 1 ? "" : "s") + " in parallel…");
                 },
                 "aria-label": "Generate all remaining AI outputs in parallel",
-                style: { padding: "6px 14px", borderRadius: 8, border: "none", background: "#6d28d9", color: "#ffffff", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }
+                style: { padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--da-btn-violet)", color: "var(--da-on-accent)", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }
               }, "✨ Generate remaining (" + (totalAi - aiDone) + ")") : null
             ),
             h("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 8 } },
@@ -12149,32 +12864,32 @@
                   key: o.id,
                   style: {
                     padding: 10,
-                    background: o.done ? "#f0fdf4" : "#ffffff",
-                    border: "1px solid " + (o.done ? "#86efac" : "#e4e4e7"),
+                    background: o.done ? "var(--da-green-tint)" : "var(--da-surface)",
+                    border: "1px solid " + (o.done ? "var(--da-green-border)" : "var(--da-border)"),
                     borderRadius: 8,
                     display: "flex", flexDirection: "column", gap: 4
                   }
                 },
                   h("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
                     h("span", { style: { fontSize: 18 } }, o.icon),
-                    h("span", { style: { fontSize: 13, fontWeight: 800, color: "#0f172a", flex: 1 } }, o.label)
+                    h("span", { style: { fontSize: 13, fontWeight: 800, color: "var(--da-ink)", flex: 1 } }, o.label)
                   ),
-                  h("div", { style: { fontSize: 11, color: o.statusColor, fontWeight: 600, lineHeight: 1.4 } }, o.statusText),
+                  h("div", { style: { fontSize: 11, color: daHex(o.statusColor), fontWeight: 600, lineHeight: 1.4 } }, o.statusText),
                   o.action ? h("div", { style: { display: "flex", gap: 4, marginTop: 4 } },
                     o.done && o.anchor ? h("button", {
                       onClick: function () { scrollToOutputId(o.anchor); },
                       "aria-label": "Jump to " + o.label,
-                      style: { padding: "3px 8px", borderRadius: 4, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                      style: { padding: "3px 8px", borderRadius: 4, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                     }, "↓ Jump") : null,
                     !o.done ? h("button", {
                       onClick: o.action,
                       disabled: o.busy,
                       "aria-label": "Generate " + o.label,
-                      style: { padding: "3px 10px", borderRadius: 4, border: "none", background: o.busy ? "#94a3b8" : o.statusColor, color: "#ffffff", fontSize: 10.5, fontWeight: 800, cursor: o.busy ? "wait" : "pointer", fontFamily: "inherit" }
+                      style: { padding: "3px 10px", borderRadius: 4, border: "none", background: o.busy ? "var(--da-faint)" : o.statusColor, color: "var(--da-on-accent)", fontSize: 10.5, fontWeight: 800, cursor: o.busy ? "wait" : "pointer", fontFamily: "inherit" }
                     }, o.busy ? "Drafting…" : "Generate") : h("button", {
                       onClick: o.action,
                       "aria-label": "Open " + o.label + " panel",
-                      style: { padding: "3px 10px", borderRadius: 4, border: "1px solid " + o.statusColor, background: "transparent", color: o.statusColor, fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                      style: { padding: "3px 10px", borderRadius: 4, border: "1px solid " + daHex(o.statusColor), background: "transparent", color: daHex(o.statusColor), fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                     }, "Open")
                   ) : null
                 );
@@ -12188,20 +12903,20 @@
           var ik = s.intake;
           var hasAny = ik.referralReason || ik.hypothesizedBottleneck || ik.specificQuestion || ik.priorInterventions || ik.existingAssessmentData;
           if (!hasAny) return null;
-          return h("details", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "#f5f3ff", borderColor: "#c4b5fd" } },
-            h("summary", { style: { cursor: "pointer", fontSize: 11, fontWeight: 800, color: "#5b21b6", textTransform: "uppercase", letterSpacing: "0.06em" } },
+          return h("details", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "var(--da-violet-tint-2)", borderColor: "var(--da-violet-border)" } },
+            h("summary", { style: { cursor: "pointer", fontSize: 11, fontWeight: 800, color: "var(--da-violet-text-2)", textTransform: "uppercase", letterSpacing: "0.06em" } },
               "📋 Referral context"),
-            h("div", { style: { marginTop: 8, display: "flex", flexDirection: "column", gap: 6, fontSize: 12.5, lineHeight: 1.55, color: "#1e1b4b" } },
+            h("div", { style: { marginTop: 8, display: "flex", flexDirection: "column", gap: 6, fontSize: 12.5, lineHeight: 1.55, color: "var(--da-indigo-deeper)" } },
               ik.referralReason && ik.referralReason.trim() ? h("div", null,
-                h("strong", { style: { fontSize: 10.5, color: "#5b21b6", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Referral: "), ik.referralReason) : null,
+                h("strong", { style: { fontSize: 10.5, color: "var(--da-violet-text-2)", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Referral: "), ik.referralReason) : null,
               ik.specificQuestion && ik.specificQuestion.trim() ? h("div", null,
-                h("strong", { style: { fontSize: 10.5, color: "#5b21b6", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Question: "), ik.specificQuestion) : null,
+                h("strong", { style: { fontSize: 10.5, color: "var(--da-violet-text-2)", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Question: "), ik.specificQuestion) : null,
               ik.hypothesizedBottleneck && ik.hypothesizedBottleneck.trim() ? h("div", null,
-                h("strong", { style: { fontSize: 10.5, color: "#5b21b6", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Hypothesis: "), ik.hypothesizedBottleneck) : null,
+                h("strong", { style: { fontSize: 10.5, color: "var(--da-violet-text-2)", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Hypothesis: "), ik.hypothesizedBottleneck) : null,
               ik.priorInterventions && ik.priorInterventions.trim() ? h("div", null,
-                h("strong", { style: { fontSize: 10.5, color: "#5b21b6", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Prior: "), ik.priorInterventions) : null,
+                h("strong", { style: { fontSize: 10.5, color: "var(--da-violet-text-2)", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Prior: "), ik.priorInterventions) : null,
               ik.existingAssessmentData && ik.existingAssessmentData.trim() ? h("div", null,
-                h("strong", { style: { fontSize: 10.5, color: "#5b21b6", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Existing data: "), ik.existingAssessmentData) : null
+                h("strong", { style: { fontSize: 10.5, color: "var(--da-violet-text-2)", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Existing data: "), ik.existingAssessmentData) : null
             )
           );
         })() : null,
@@ -12212,18 +12927,18 @@
           var hasNote = s.sessionNote && s.sessionNote.trim().length > 0;
           if (timing.perItem.length === 0 && !hasNote) return null;
           var avgPerItem = timing.perItem.length > 0 ? timing.activeMs / timing.perItem.length : 0;
-          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "#f8fafc" } },
+          return h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "var(--da-surface-2)" } },
             h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: hasNote ? 8 : 0 } },
-              h("div", { style: { display: "flex", gap: 16, flexWrap: "wrap", fontSize: 12, color: "#475569" } },
-                h("div", null, "⏱ Active time: ", h("strong", { style: { color: "#0f172a" } }, formatDuration(timing.activeMs))),
-                h("div", null, "Total span: ", h("strong", { style: { color: "#0f172a" } }, formatDuration(timing.totalMs))),
-                timing.perItem.length > 0 ? h("div", null, "Avg/item: ", h("strong", { style: { color: "#0f172a" } }, formatDuration(avgPerItem))) : null
+              h("div", { style: { display: "flex", gap: 16, flexWrap: "wrap", fontSize: 12, color: "var(--da-ink-3)" } },
+                h("div", null, "⏱ Active time: ", h("strong", { style: { color: "var(--da-ink)" } }, formatDuration(timing.activeMs))),
+                h("div", null, "Total span: ", h("strong", { style: { color: "var(--da-ink)" } }, formatDuration(timing.totalMs))),
+                timing.perItem.length > 0 ? h("div", null, "Avg/item: ", h("strong", { style: { color: "var(--da-ink)" } }, formatDuration(avgPerItem))) : null
               )
             ),
-            hasNote ? h("div", { style: { padding: 8, background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: 6 } },
-              h("div", { style: { fontSize: 10.5, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } },
+            hasNote ? h("div", { style: { padding: 8, background: "var(--da-surface)", border: "1px solid var(--da-border-2)", borderRadius: 6 } },
+              h("div", { style: { fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } },
                 "Session-level notes"),
-              h("p", { style: { margin: 0, fontSize: 12.5, color: "#0f172a", lineHeight: 1.55, whiteSpace: "pre-wrap" } }, s.sessionNote)
+              h("p", { style: { margin: 0, fontSize: 12.5, color: "var(--da-ink)", lineHeight: 1.55, whiteSpace: "pre-wrap" } }, s.sessionNote)
             ) : null
           );
         })(),
@@ -12231,26 +12946,26 @@
         // Score breakdown
         h("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginBottom: 14 } },
           h("div", { className: "da-card", style: { textAlign: "center" } },
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Pretest baseline"),
-            h("div", { style: { fontSize: 26, fontWeight: 900, color: "#475569", marginTop: 4 } }, pretestSum + " / " + max),
-            h("div", { style: { fontSize: 10, color: "#64748b" } }, "unprompted credit only")
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Pretest baseline"),
+            h("div", { style: { fontSize: 26, fontWeight: 900, color: "var(--da-ink-3)", marginTop: 4 } }, pretestSum + " / " + max),
+            h("div", { style: { fontSize: 10, color: "var(--da-muted)" } }, "unprompted credit only")
           ),
           h("div", { className: "da-card", style: { textAlign: "center" } },
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Posttest score"),
-            h("div", { style: { fontSize: 26, fontWeight: 900, color: "#16a34a", marginTop: 4 } }, posttestSum + " / " + max),
-            h("div", { style: { fontSize: 10, color: "#64748b" } }, "after mediation")
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Posttest score"),
+            h("div", { style: { fontSize: 26, fontWeight: 900, color: "var(--da-green-text)", marginTop: 4 } }, posttestSum + " / " + max),
+            h("div", { style: { fontSize: 10, color: "var(--da-muted)" } }, "after mediation")
           ),
           h("div", { className: "da-card", style: { textAlign: "center" } },
-            h("div", { style: { fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Growth"),
-            h("div", { style: { fontSize: 26, fontWeight: 900, color: posttestSum - pretestSum >= 0 ? "#16a34a" : "#b91c1c", marginTop: 4 } },
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Growth"),
+            h("div", { style: { fontSize: 26, fontWeight: 900, color: posttestSum - pretestSum >= 0 ? "var(--da-green-text)" : "var(--da-red-text)", marginTop: 4 } },
               (posttestSum - pretestSum >= 0 ? "+" : "") + (posttestSum - pretestSum) + " pts"),
-            h("div", { style: { fontSize: 10, color: "#64748b" } }, "absolute change")
+            h("div", { style: { fontSize: 10, color: "var(--da-muted)" } }, "absolute change")
           ),
           // Phase E — Transfer card (only when transfer phase ran)
-          transferResults.length > 0 ? h("div", { className: "da-card", style: { textAlign: "center", borderColor: "#fbbf24", background: "#fffbeb" } },
-            h("div", { style: { fontSize: 11, color: "#a16207", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Transfer probe"),
-            h("div", { style: { fontSize: 26, fontWeight: 900, color: "#a16207", marginTop: 4 } }, transferSum + " / " + transferMax),
-            h("div", { style: { fontSize: 10, color: "#a16207" } }, "novel items, same construct")
+          transferResults.length > 0 ? h("div", { className: "da-card", style: { textAlign: "center", borderColor: "var(--da-amber-border)", background: "var(--da-amber-tint)" } },
+            h("div", { style: { fontSize: 11, color: "var(--da-amber-text)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Transfer probe"),
+            h("div", { style: { fontSize: 26, fontWeight: 900, color: "var(--da-amber-text)", marginTop: 4 } }, transferSum + " / " + transferMax),
+            h("div", { style: { fontSize: 10, color: "var(--da-amber-text)" } }, "novel items, same construct")
           ) : null
         ),
         // Phase E — Transfer interpretation panel (separate, fuller)
@@ -12258,31 +12973,31 @@
           className: "da-card",
           style: {
             marginBottom: 14, padding: 16,
-            background: transferTierObj.id === "strong-transfer" ? "#f0fdf4" :
-                        transferTierObj.id === "partial-transfer" ? "#fffbeb" :
-                        transferTierObj.id === "weak-transfer" ? "#fef3c7" : "#fef2f2",
-            borderColor: transferTierObj.color
+            background: transferTierObj.id === "strong-transfer" ? "var(--da-green-tint)" :
+                        transferTierObj.id === "partial-transfer" ? "var(--da-amber-tint)" :
+                        transferTierObj.id === "weak-transfer" ? "var(--da-amber-tint-2)" : "var(--da-red-tint)",
+            borderColor: daHex(transferTierObj.color)
           }
         },
-          h("div", { style: { fontSize: 11, color: "#475569", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800, marginBottom: 6 } },
+          h("div", { style: { fontSize: 11, color: "var(--da-ink-3)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800, marginBottom: 6 } },
             "Transfer interpretation"),
-          h("div", { style: { fontSize: 15, fontWeight: 800, color: transferTierObj.color, marginBottom: 6 } },
+          h("div", { style: { fontSize: 15, fontWeight: 800, color: daHex(transferTierObj.color), marginBottom: 6 } },
             transferTierObj.label),
-          h("p", { style: { margin: 0, fontSize: 12.5, color: "#334155", lineHeight: 1.6 } },
+          h("p", { style: { margin: 0, fontSize: 12.5, color: "var(--da-ink-2)", lineHeight: 1.6 } },
             transferTierObj.desc),
-          h("p", { style: { margin: "8px 0 0", fontSize: 11, color: "#64748b", fontStyle: "italic", lineHeight: 1.55 } },
+          h("p", { style: { margin: "8px 0 0", fontSize: 11, color: "var(--da-muted)", fontStyle: "italic", lineHeight: 1.55 } },
             "Note: pretest→posttest growth on SAME items conflates memory with learning. Transfer probes the same construct on DIFFERENT surface features — the clearer measure of whether mediation produced generalizable change.")
         ) : null,
 
         // Mediation scaffold histogram
         h("div", { className: "da-card", style: { marginBottom: 14 } },
-          h("h3", { style: { margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: "#0f172a" } }, "Scaffolds used during mediation"),
-          h("div", { style: { display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: "#475569" } },
+          h("h3", { style: { margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: "var(--da-ink)" } }, "Scaffolds used during mediation"),
+          h("div", { style: { display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: "var(--da-ink-3)" } },
             ["cue", "leading", "model", "directTeach", "none", "skipped"].filter(function (k) { return scaffoldTypes[k] > 0; }).map(function (k) {
               var labels = { cue: "L1 — Declarative cues", leading: "L2 — Leading questions", model: "L3 — Modeling", directTeach: "L4 — Direct teaching", none: "L0 — Solved unprompted", skipped: "Skipped" };
               return h("div", { key: "da-hist-" + k, style: { display: "flex", justifyContent: "space-between" } },
                 h("span", null, labels[k]),
-                h("span", { style: { fontFamily: "ui-monospace, monospace", fontWeight: 700, color: "#0f172a" } }, "×" + scaffoldTypes[k])
+                h("span", { style: { fontFamily: "ui-monospace, monospace", fontWeight: 700, color: "var(--da-ink)" } }, "×" + scaffoldTypes[k])
               );
             })
           )
@@ -12293,50 +13008,88 @@
           var tagAgg = aggregateObservationTags(s.itemResults);
           if (tagAgg.length === 0) return null;
           return h("div", { className: "da-card", style: { marginBottom: 14 } },
-            h("h3", { style: { margin: "0 0 4px", fontSize: 14, fontWeight: 800, color: "#0f172a" } },
+            h("h3", { style: { margin: "0 0 4px", fontSize: 14, fontWeight: 800, color: "var(--da-ink)" } },
               "Observed patterns across items"),
-            h("p", { style: { margin: "0 0 10px", fontSize: 11, color: "#64748b", fontStyle: "italic" } },
+            h("p", { style: { margin: "0 0 10px", fontSize: 11, color: "var(--da-muted)", fontStyle: "italic" } },
               "Quick-tag chips you recorded on each item, aggregated. Patterns that show up on most items often point to the construct that mattered most."),
-            h("div", { style: { display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: "#475569" } },
+            h("div", { style: { display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: "var(--da-ink-3)" } },
               tagAgg.map(function (t) {
                 var bar = Math.min(1, t.count / Math.max(1, s.itemResults.length));
                 return h("div", { key: "da-tag-row-" + t.id, style: { display: "flex", alignItems: "center", gap: 8 } },
                   h("span", { style: { minWidth: 170 } }, t.label),
-                  h("div", { style: { flex: 1, height: 8, background: "#f1f5f9", borderRadius: 4, overflow: "hidden" } },
-                    h("div", { style: { height: "100%", width: Math.round(bar * 100) + "%", background: "#1e3a8a" } })),
-                  h("span", { style: { fontFamily: "ui-monospace, monospace", fontWeight: 700, color: "#0f172a", minWidth: 30, textAlign: "right" } }, "×" + t.count)
+                  h("div", { "aria-hidden": "true", style: { flex: 1, height: 8, background: "var(--da-surface-3)", borderRadius: 4, overflow: "hidden" } },
+                    h("div", { style: { height: "100%", width: Math.round(bar * 100) + "%", background: "var(--da-accent)" } })),
+                  h("span", { style: { fontFamily: "ui-monospace, monospace", fontWeight: 700, color: "var(--da-ink)", minWidth: 30, textAlign: "right" } }, "×" + t.count)
                 );
               })
             )
           );
         })(),
 
-        // Per-item table
-        h("div", { className: "da-card", style: { marginBottom: 14 } },
-          h("h3", { style: { margin: "0 0 8px", fontSize: 14, fontWeight: 800, color: "#0f172a" } }, "Per-item results"),
-          h("table", { style: { width: "100%", borderCollapse: "collapse", fontSize: 12 } },
-            h("thead", null,
-              h("tr", { style: { background: "#f1f5f9" } },
-                h("th", { style: { textAlign: "left", padding: "6px 8px", border: "1px solid #cbd5e1" } }, "Item"),
-                h("th", { style: { textAlign: "left", padding: "6px 8px", border: "1px solid #cbd5e1" } }, "Phase"),
-                h("th", { style: { textAlign: "left", padding: "6px 8px", border: "1px solid #cbd5e1" } }, "Level"),
-                h("th", { style: { textAlign: "left", padding: "6px 8px", border: "1px solid #cbd5e1" } }, "Score")
+        // Per-item MOVEMENT table — one row per item pivoted across phases
+        // (pre → mediation → post → transfer), with an explicit movement
+        // read. Replaces the old flat chronological list, which made the
+        // reader reconstruct each item's arc from interleaved rows. (The
+        // chronological record survives in the saved-session detail view.)
+        (function () {
+          var byItem = {};
+          s.sessionItemIds.forEach(function (iid) { byItem[iid] = {}; });
+          s.itemResults.forEach(function (r) {
+            if (!byItem[r.itemId]) byItem[r.itemId] = {};
+            byItem[r.itemId][r.phase] = r;
+          });
+          var hasTransferCol = s.itemResults.some(function (r) { return r.phase === "transfer"; });
+          var cellStyle = { padding: "6px 8px", border: "1px solid var(--da-border)", fontFamily: "ui-monospace, monospace", textAlign: "center" };
+          function scoreCell(r, extra) {
+            if (!r) return h("td", { style: cellStyle }, h("span", { style: { color: "var(--da-faint)" } }, "—"));
+            var marks = (r.finalCorrect ? "✓ " : "✗ ") + r.scoreAwarded + "/5" + (extra || "");
+            return h("td", { style: Object.assign({}, cellStyle, { color: r.finalCorrect ? "var(--da-green-text-2)" : "var(--da-red-text)", fontWeight: 700 }) }, marks);
+          }
+          function movement(pre, post) {
+            if (!pre || !post) return { label: "—", color: "var(--da-faint)" };
+            if (!pre.finalCorrect && post.finalCorrect) return { label: "▲ gained", color: "var(--da-green-text-2)" };
+            if (pre.finalCorrect && post.finalCorrect) return { label: "held", color: "var(--da-muted)" };
+            if (pre.finalCorrect && !post.finalCorrect) return { label: "▼ lost", color: "var(--da-red-text)" };
+            return { label: "not yet", color: "var(--da-amber-text)" };
+          }
+          return h("div", { className: "da-card", style: { marginBottom: 14 } },
+            h("h3", { style: { margin: "0 0 4px", fontSize: 14, fontWeight: 800, color: "var(--da-ink)" } }, "Per-item movement"),
+            h("p", { style: { margin: "0 0 8px", fontSize: 11, color: "var(--da-muted)", fontStyle: "italic" } },
+              "Each item's arc across phases. Mediation shows the scaffold level the item needed (L0 = unprompted)."),
+            h("div", { style: { overflowX: "auto" } },
+              h("table", { style: { width: "100%", borderCollapse: "collapse", fontSize: 12 } },
+                h("thead", null,
+                  h("tr", { style: { background: "var(--da-surface-3)" } },
+                    h("th", { scope: "col", style: { textAlign: "left", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "Item"),
+                    h("th", { scope: "col", style: { textAlign: "center", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "Pretest"),
+                    h("th", { scope: "col", style: { textAlign: "center", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "Mediation"),
+                    h("th", { scope: "col", style: { textAlign: "center", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "Posttest"),
+                    hasTransferCol ? h("th", { scope: "col", style: { textAlign: "center", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "Transfer") : null,
+                    h("th", { scope: "col", style: { textAlign: "left", padding: "6px 8px", border: "1px solid var(--da-border-2)" } }, "Movement")
+                  )
+                ),
+                h("tbody", null,
+                  s.sessionItemIds.map(function (iid, ii) {
+                    var item = ITEMS_BY_ID[iid];
+                    var ph = byItem[iid] || {};
+                    var med = ph.mediation;
+                    var mv = movement(ph.pretest, ph.posttest);
+                    return h("tr", { key: "da-mv-" + ii },
+                      h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)" } }, item ? item.construct : iid),
+                      scoreCell(ph.pretest),
+                      med
+                        ? scoreCell(med, " · L" + med.promptLevelReached + (med.scaffoldLeaked ? " ⚠leak" : ""))
+                        : h("td", { style: cellStyle }, h("span", { style: { color: "var(--da-faint)" } }, "—")),
+                      scoreCell(ph.posttest),
+                      hasTransferCol ? scoreCell(ph.transfer) : null,
+                      h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)", fontWeight: 700, color: mv.color } }, mv.label)
+                    );
+                  })
+                )
               )
-            ),
-            h("tbody", null,
-              s.itemResults.map(function (r, ri) {
-                var item = ITEMS_BY_ID[r.itemId];
-                return h("tr", { key: "da-row-" + ri },
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0" } }, item ? item.construct : r.itemId),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", color: "#64748b" } }, r.phase),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", fontFamily: "ui-monospace, monospace" } }, "L" + r.promptLevelReached),
-                  h("td", { style: { padding: "6px 8px", border: "1px solid #e2e8f0", fontFamily: "ui-monospace, monospace", fontWeight: 700 } },
-                    r.scoreAwarded + (r.finalCorrect ? "" : " ✗") + (r.scaffoldLeaked ? " ⚠leak" : ""))
-                );
-              })
             )
-          )
-        ),
+          );
+        })(),
         // ── Phase B — AI mediation cycle transcripts ──
         // For each mediation item that has an aiAttemptsLog, render the
         // full Q-A-scaffold-retry transcript so the examiner has the
@@ -12347,27 +13100,27 @@
           });
           if (aiItems.length === 0) return null;
           return h("div", { className: "da-card", style: { marginBottom: 14 } },
-            h("h3", { style: { margin: "0 0 4px", fontSize: 14, fontWeight: 800, color: "#0f172a" } },
+            h("h3", { style: { margin: "0 0 4px", fontSize: 14, fontWeight: 800, color: "var(--da-ink)" } },
               "🤖 AI mediation transcripts"),
-            h("p", { style: { margin: "0 0 10px", fontSize: 11, color: "#64748b", fontStyle: "italic" } },
+            h("p", { style: { margin: "0 0 10px", fontSize: 11, color: "var(--da-muted)", fontStyle: "italic" } },
               "Full Q-A-scaffold-retry log for each mediation item. Useful as qualitative evidence in the report."),
             h("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
               aiItems.map(function (r, ri) {
                 var item = ITEMS_BY_ID[r.itemId];
-                return h("details", { key: "da-ai-trans-" + ri, style: { padding: "8px 10px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8 } },
-                  h("summary", { style: { fontSize: 12, fontWeight: 700, color: "#0f172a", cursor: "pointer" } },
+                return h("details", { key: "da-ai-trans-" + ri, style: { padding: "8px 10px", background: "var(--da-surface-2)", border: "1px solid var(--da-border)", borderRadius: 8 } },
+                  h("summary", { style: { fontSize: 12, fontWeight: 700, color: "var(--da-ink)", cursor: "pointer" } },
                     (item ? item.construct : r.itemId) + " · " + r.aiAttemptsLog.length + " attempt" + (r.aiAttemptsLog.length === 1 ? "" : "s") + " · final L" + r.promptLevelReached + " · " + r.scoreAwarded + " pts"),
                   h("div", { style: { marginTop: 8, display: "flex", flexDirection: "column", gap: 6 } },
                     r.aiAttemptsLog.map(function (a, ai) {
-                      var verdictColor = a.verdict === "correct" ? "#16a34a" : a.verdict === "partial" ? "#a16207" : "#b91c1c";
-                      return h("div", { key: "da-ai-trans-" + ri + "-" + ai, style: { padding: 8, background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 11.5 } },
-                        h("div", { style: { color: "#64748b", fontWeight: 700, marginBottom: 3 } },
+                      var verdictColor = a.verdict === "correct" ? "var(--da-green-text)" : a.verdict === "partial" ? "var(--da-amber-text)" : "var(--da-red-text)";
+                      return h("div", { key: "da-ai-trans-" + ri + "-" + ai, style: { padding: 8, background: "var(--da-surface)", border: "1px solid var(--da-border)", borderRadius: 6, fontSize: 11.5 } },
+                        h("div", { style: { color: "var(--da-muted)", fontWeight: 700, marginBottom: 3 } },
                           "Attempt " + (ai + 1) + " · ",
                           h("span", { style: { color: verdictColor } }, a.verdict),
                           " · L" + a.levelAfter),
-                        h("div", { style: { color: "#0f172a", marginBottom: 2 } }, h("strong", null, "Response: "), "“" + a.response + "”"),
-                        a.scaffoldShown ? h("div", { style: { color: "#92400e", fontStyle: "italic", marginBottom: 2 } }, "→ Scaffold: " + a.scaffoldShown) : null,
-                        a.observationHint ? h("div", { style: { color: "#64748b" } }, "AI note: " + a.observationHint) : null
+                        h("div", { style: { color: "var(--da-ink)", marginBottom: 2 } }, h("strong", null, "Response: "), "“" + a.response + "”"),
+                        a.scaffoldShown ? h("div", { style: { color: "var(--da-amber-text-2)", fontStyle: "italic", marginBottom: 2 } }, "→ Scaffold: " + a.scaffoldShown) : null,
+                        a.observationHint ? h("div", { style: { color: "var(--da-muted)" } }, "AI note: " + a.observationHint) : null
                       );
                     })
                   )
@@ -12390,92 +13143,92 @@
             iepGoals: iepGoals && iepGoals.length > 0 ? iepGoals.slice() : []
           });
           var pm = progressMonitoring;
-          return h("div", { id: "out-monitoring-anchor", className: "da-card", style: { marginBottom: 14, padding: 16, background: "#eef2ff", borderColor: "#a5b4fc", scrollMarginTop: 16 } },
+          return h("div", { id: "out-monitoring-anchor", className: "da-card", style: { marginBottom: 14, padding: 16, background: "var(--da-indigo-tint)", borderColor: "var(--da-indigo-border-2)", scrollMarginTop: 16 } },
             h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" } },
               h("div", null,
-                h("div", { style: { fontSize: 11, color: "#3730a3", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800 } }, "Phase X · Progress monitoring"),
-                h("h3", { style: { margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "#0f172a" } }, "📈 Progress monitoring plan")
+                h("div", { style: { fontSize: 11, color: "var(--da-indigo-text)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800 } }, "Phase X · Progress monitoring"),
+                h("h3", { style: { margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "var(--da-ink)" } }, "📈 Progress monitoring plan")
               ),
               h("div", { style: { display: "flex", gap: 6, flexWrap: "wrap" } },
                 h("button", {
                   onClick: function () { generateProgressMonitoringForSession(sessionForGen); },
                   disabled: monitoringBusy,
                   "aria-label": pm ? "Regenerate monitoring plan" : "Generate monitoring plan",
-                  style: { padding: "6px 12px", borderRadius: 8, border: "none", background: "#3730a3", color: "#ffffff", fontSize: 12, fontWeight: 800, cursor: monitoringBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: monitoringBusy ? 0.7 : 1 }
+                  style: { padding: "6px 12px", borderRadius: 8, border: "none", background: "var(--da-btn-indigo)", color: "var(--da-on-accent)", fontSize: 12, fontWeight: 800, cursor: monitoringBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: monitoringBusy ? 0.7 : 1 }
                 }, monitoringBusy ? "🤖 Drafting…" : (pm ? "Regenerate" : "Generate plan")),
                 pm ? h("button", {
                   onClick: function () { setProgressMonitoring(null); setMonitoringError(null); },
-                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "Clear") : null,
                 h("button", {
                   onClick: function () { setMonitoringPanelOpen(false); },
                   "aria-label": "Close monitoring panel",
-                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "✕ Close")
               )
             ),
             // Caveat
-            h("p", { style: { margin: "0 0 10px", fontSize: 12, color: "#312e81", lineHeight: 1.55, fontStyle: "italic" } },
+            h("p", { style: { margin: "0 0 10px", fontSize: 12, color: "var(--da-indigo-deep)", lineHeight: 1.55, fontStyle: "italic" } },
               "Plans align with NCII / RTI standards: 4-point rule, trend analysis, minimum 6-8 data points before instructional change. Anchored to evidence-based CBM tools (AIMSweb, FastBridge, DIBELS, mCLASS, iReady). Edit the team-specific details before sharing."),
             // Error
-            monitoringError ? h("div", { style: { padding: 10, marginBottom: 10, background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 8, color: "#7f1d1d", fontSize: 12 } }, monitoringError) : null,
+            monitoringError ? h("div", { style: { padding: 10, marginBottom: 10, background: "var(--da-red-tint)", border: "1px solid var(--da-red-border)", borderRadius: 8, color: "var(--da-red-deep)", fontSize: 12 } }, monitoringError) : null,
             // Empty state
-            !pm && !monitoringBusy ? h("div", { style: { padding: 14, textAlign: "center", color: "#312e81", fontSize: 13 } },
+            !pm && !monitoringBusy ? h("div", { style: { padding: 14, textAlign: "center", color: "var(--da-indigo-deep)", fontSize: 13 } },
               h("p", { style: { margin: "0 0 6px" } }, "Click ", h("strong", null, "Generate plan"), " to draft a CBM-anchored monitoring plan with decision rules and a review schedule."),
-              iepGoals.length === 0 ? h("p", { style: { margin: 0, fontSize: 11, fontStyle: "italic", color: "#3730a3" } },
+              iepGoals.length === 0 ? h("p", { style: { margin: 0, fontSize: 11, fontStyle: "italic", color: "var(--da-indigo-text)" } },
                 "💡 Tip: Draft IEP goals first — the plan will be more specific when it can monitor each goal individually.") : null
             ) : null,
             // Content
             pm ? h("div", { style: { display: "flex", flexDirection: "column", gap: 12 } },
               // Overview
-              h("div", { style: { padding: 10, background: "#ffffff", border: "1px solid #a5b4fc", borderRadius: 8 } },
-                h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 800, color: "#3730a3", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } }, "Overview"),
+              h("div", { style: { padding: 10, background: "var(--da-surface)", border: "1px solid var(--da-indigo-border-2)", borderRadius: 8 } },
+                h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 800, color: "var(--da-indigo-text)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } }, "Overview"),
                 h("textarea", {
                   value: pm.overview, rows: 2,
                   onChange: function (e) { updateMonitoringField("overview", e.target.value); },
                   "aria-label": "Plan overview",
-                  style: { width: "100%", padding: "6px 8px", border: "1px solid #e2e8f0", borderRadius: 6, fontFamily: "inherit", fontSize: 13, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box" }
+                  style: { width: "100%", padding: "6px 8px", border: "1px solid var(--da-border)", borderRadius: 6, fontFamily: "inherit", fontSize: 13, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box" }
                 })
               ),
               // Goal monitoring entries
-              h("div", { style: { padding: 10, background: "#ffffff", border: "1px solid #a5b4fc", borderRadius: 8 } },
-                h("div", { style: { fontSize: 11, fontWeight: 800, color: "#3730a3", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
+              h("div", { style: { padding: 10, background: "var(--da-surface)", border: "1px solid var(--da-indigo-border-2)", borderRadius: 8 } },
+                h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-indigo-text)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
                   "What to monitor · " + (pm.goalMonitoring || []).length),
                 h("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
                   (pm.goalMonitoring || []).map(function (g, gi) {
-                    return h("div", { key: "da-pm-g-" + gi, style: { padding: 10, background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 6 } },
+                    return h("div", { key: "da-pm-g-" + gi, style: { padding: 10, background: "var(--da-indigo-tint)", border: "1px solid var(--da-indigo-border)", borderRadius: 6 } },
                       // Summary + probe type row
                       h("div", { style: { display: "flex", gap: 4, alignItems: "flex-start", marginBottom: 6 } },
                         h("input", {
                           type: "text", value: g.goalSummary,
                           onChange: function (e) { updateMonitoringArrayObjectField("goalMonitoring", gi, "goalSummary", e.target.value); },
                           "aria-label": "What's being monitored",
-                          style: { flex: 1, padding: "4px 7px", border: "1px solid #c7d2fe", borderRadius: 4, fontFamily: "inherit", fontSize: 12.5, fontWeight: 700, color: "#0f172a", boxSizing: "border-box" }
+                          style: { flex: 1, padding: "4px 7px", border: "1px solid var(--da-indigo-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 12.5, fontWeight: 700, color: "var(--da-ink)", boxSizing: "border-box" }
                         }),
                         h("button", {
                           onClick: function () { removeMonitoringArrayItem("goalMonitoring", gi); },
                           "aria-label": "Remove this monitoring entry",
-                          style: { padding: "3px 7px", borderRadius: 4, border: "1px solid #fca5a5", background: "transparent", color: "#b91c1c", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                          style: { padding: "3px 7px", borderRadius: 4, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                         }, "✕")
                       ),
                       // Probe type + frequency row
                       h("div", { style: { display: "grid", gridTemplateColumns: "2fr 1fr", gap: 6, marginBottom: 4 } },
                         h("div", null,
-                          h("label", { style: { display: "block", fontSize: 9.5, fontWeight: 700, color: "#3730a3", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Probe / CBM tool"),
+                          h("label", { style: { display: "block", fontSize: 9.5, fontWeight: 700, color: "var(--da-indigo-text)", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Probe / CBM tool"),
                           h("input", {
                             type: "text", value: g.probeType,
                             onChange: function (e) { updateMonitoringArrayObjectField("goalMonitoring", gi, "probeType", e.target.value); },
                             "aria-label": "Probe type / tool",
-                            style: { width: "100%", padding: "3px 6px", border: "1px solid #e2e8f0", borderRadius: 4, fontFamily: "inherit", fontSize: 11.5, boxSizing: "border-box" }
+                            style: { width: "100%", padding: "3px 6px", border: "1px solid var(--da-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 11.5, boxSizing: "border-box" }
                           })
                         ),
                         h("div", null,
-                          h("label", { style: { display: "block", fontSize: 9.5, fontWeight: 700, color: "#3730a3", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Frequency"),
+                          h("label", { style: { display: "block", fontSize: 9.5, fontWeight: 700, color: "var(--da-indigo-text)", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Frequency"),
                           h("input", {
                             type: "text", value: g.frequency,
                             onChange: function (e) { updateMonitoringArrayObjectField("goalMonitoring", gi, "frequency", e.target.value); },
                             "aria-label": "Frequency",
-                            style: { width: "100%", padding: "3px 6px", border: "1px solid #e2e8f0", borderRadius: 4, fontFamily: "inherit", fontSize: 11.5, boxSizing: "border-box" }
+                            style: { width: "100%", padding: "3px 6px", border: "1px solid var(--da-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 11.5, boxSizing: "border-box" }
                           })
                         )
                       ),
@@ -12483,43 +13236,43 @@
                         value: g.probeDescription, rows: 2, placeholder: "Probe description",
                         onChange: function (e) { updateMonitoringArrayObjectField("goalMonitoring", gi, "probeDescription", e.target.value); },
                         "aria-label": "Probe description",
-                        style: { width: "100%", padding: "4px 7px", border: "1px solid #e2e8f0", borderRadius: 4, fontFamily: "inherit", fontSize: 11.5, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box", marginBottom: 4 }
+                        style: { width: "100%", padding: "4px 7px", border: "1px solid var(--da-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 11.5, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box", marginBottom: 4 }
                       }),
                       h("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 4 } },
                         h("input", {
                           type: "text", value: g.criterion, placeholder: "Criterion (e.g. ROI 1.0/wk)",
                           onChange: function (e) { updateMonitoringArrayObjectField("goalMonitoring", gi, "criterion", e.target.value); },
                           "aria-label": "Criterion",
-                          style: { padding: "3px 6px", border: "1px solid #e2e8f0", borderRadius: 4, fontFamily: "inherit", fontSize: 11, boxSizing: "border-box" }
+                          style: { padding: "3px 6px", border: "1px solid var(--da-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 11, boxSizing: "border-box" }
                         }),
                         h("input", {
                           type: "text", value: g.dataPointsNeeded, placeholder: "Data points needed",
                           onChange: function (e) { updateMonitoringArrayObjectField("goalMonitoring", gi, "dataPointsNeeded", e.target.value); },
                           "aria-label": "Data points needed",
-                          style: { padding: "3px 6px", border: "1px solid #e2e8f0", borderRadius: 4, fontFamily: "inherit", fontSize: 11, boxSizing: "border-box" }
+                          style: { padding: "3px 6px", border: "1px solid var(--da-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 11, boxSizing: "border-box" }
                         })
                       ),
                       // Decision rules (read-only since they're prescriptive)
-                      g.decisionRules && g.decisionRules.length > 0 ? h("div", { style: { padding: 6, background: "#ffffff", borderLeft: "3px solid #6366f1", marginBottom: 4 } },
-                        h("div", { style: { fontSize: 10, fontWeight: 700, color: "#3730a3", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 } },
+                      g.decisionRules && g.decisionRules.length > 0 ? h("div", { style: { padding: 6, background: "var(--da-surface)", borderLeft: "3px solid var(--da-indigo-mid)", marginBottom: 4 } },
+                        h("div", { style: { fontSize: 10, fontWeight: 700, color: "var(--da-indigo-text)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 3 } },
                           "Decision rules"),
                         g.decisionRules.map(function (r, ri) {
-                          return h("div", { key: "da-pm-r-" + gi + "-" + ri, style: { fontSize: 11, color: "#312e81", lineHeight: 1.5 } },
+                          return h("div", { key: "da-pm-r-" + gi + "-" + ri, style: { fontSize: 11, color: "var(--da-indigo-deep)", lineHeight: 1.5 } },
                             "If ", h("strong", null, r.trigger), " → ", r.action);
                         })
                       ) : null,
                       // Tools
-                      g.tools && g.tools.length > 0 ? h("div", { style: { fontSize: 10.5, color: "#475569", fontStyle: "italic" } },
+                      g.tools && g.tools.length > 0 ? h("div", { style: { fontSize: 10.5, color: "var(--da-ink-3)", fontStyle: "italic" } },
                         "Tools: " + g.tools.join("; ")) : null
                     );
                   })
                 )
               ),
               // Review schedule
-              (pm.reviewSchedule || []).length > 0 ? h("div", { style: { padding: 10, background: "#ffffff", border: "1px solid #a5b4fc", borderRadius: 8 } },
-                h("div", { style: { fontSize: 11, fontWeight: 800, color: "#3730a3", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
+              (pm.reviewSchedule || []).length > 0 ? h("div", { style: { padding: 10, background: "var(--da-surface)", border: "1px solid var(--da-indigo-border-2)", borderRadius: 8 } },
+                h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-indigo-text)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
                   "Review schedule"),
-                h("ol", { style: { margin: 0, paddingLeft: 22, fontSize: 12.5, color: "#0f172a", lineHeight: 1.55 } },
+                h("ol", { style: { margin: 0, paddingLeft: 22, fontSize: 12.5, color: "var(--da-ink)", lineHeight: 1.55 } },
                   pm.reviewSchedule.map(function (rs, ri) {
                     return h("li", { key: "da-pm-rs-" + ri, style: { marginBottom: 3 } },
                       h("strong", null, rs.timing), " — ", rs.focus);
@@ -12527,18 +13280,18 @@
                 )
               ) : null,
               // Responsibilities
-              (pm.responsibilities || []).length > 0 ? h("div", { style: { padding: 10, background: "#ffffff", border: "1px solid #a5b4fc", borderRadius: 8 } },
-                h("div", { style: { fontSize: 11, fontWeight: 800, color: "#3730a3", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
+              (pm.responsibilities || []).length > 0 ? h("div", { style: { padding: 10, background: "var(--da-surface)", border: "1px solid var(--da-indigo-border-2)", borderRadius: 8 } },
+                h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-indigo-text)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
                   "Responsibilities"),
-                h("ol", { style: { margin: 0, paddingLeft: 22, fontSize: 12.5, color: "#0f172a", lineHeight: 1.55 } },
+                h("ol", { style: { margin: 0, paddingLeft: 22, fontSize: 12.5, color: "var(--da-ink)", lineHeight: 1.55 } },
                   pm.responsibilities.map(function (r, ri) {
                     return h("li", { key: "da-pm-resp-" + ri, style: { marginBottom: 3 } },
-                      h("strong", null, r.role), ": ", r.action, r.cadence ? h("em", { style: { color: "#475569" } }, " — " + r.cadence) : null);
+                      h("strong", null, r.role), ": ", r.action, r.cadence ? h("em", { style: { color: "var(--da-ink-3)" } }, " — " + r.cadence) : null);
                   })
                 )
               ) : null,
               // Caveat
-              pm.caveat ? h("div", { style: { padding: 8, background: "#fffbeb", borderLeft: "3px solid #f59e0b", fontSize: 11.5, color: "#7c2d12", lineHeight: 1.55 } },
+              pm.caveat ? h("div", { style: { padding: 8, background: "var(--da-amber-tint)", borderLeft: "3px solid var(--da-amber-mid)", fontSize: 11.5, color: "var(--da-orange-deep)", lineHeight: 1.55 } },
                 h("strong", { style: { fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.05em" } }, "⚠ "), pm.caveat
               ) : null,
               // Footer
@@ -12546,7 +13299,7 @@
                 h("button", {
                   onClick: function () { copyTextToClipboard(formatMonitoringPlanForClipboard(pm, s.studentNickname)); },
                   "aria-label": "Copy monitoring plan to clipboard",
-                  style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "📋 Copy plan")
               )
             ) : null
@@ -12565,92 +13318,92 @@
             modifiabilityTier: modifiabilityTier(modIdxLocal)
           });
           var hh = teacherHandoff;
-          return h("div", { id: "out-teacher-anchor", className: "da-card", style: { marginBottom: 14, padding: 16, background: "#ecfeff", borderColor: "#7dd3fc", scrollMarginTop: 16 } },
+          return h("div", { id: "out-teacher-anchor", className: "da-card", style: { marginBottom: 14, padding: 16, background: "var(--da-sky-tint-2)", borderColor: "var(--da-sky-border-2)", scrollMarginTop: 16 } },
             h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" } },
               h("div", null,
-                h("div", { style: { fontSize: 11, color: "#075985", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800 } }, "Phase T · Teacher handoff"),
-                h("h3", { style: { margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "#0f172a" } }, "🧑‍🏫 Classroom handoff page")
+                h("div", { style: { fontSize: 11, color: "var(--da-sky-deep)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800 } }, "Phase T · Teacher handoff"),
+                h("h3", { style: { margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "var(--da-ink)" } }, "🧑‍🏫 Classroom handoff page")
               ),
               h("div", { style: { display: "flex", gap: 6, flexWrap: "wrap" } },
                 h("button", {
                   onClick: function () { generateTeacherHandoffForSession(sessionForGen); },
                   disabled: teacherBusy,
                   "aria-label": hh ? "Regenerate teacher handoff" : "Generate teacher handoff",
-                  style: { padding: "6px 12px", borderRadius: 8, border: "none", background: "#075985", color: "#ffffff", fontSize: 12, fontWeight: 800, cursor: teacherBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: teacherBusy ? 0.7 : 1 }
+                  style: { padding: "6px 12px", borderRadius: 8, border: "none", background: "var(--da-btn-sky)", color: "var(--da-on-accent)", fontSize: 12, fontWeight: 800, cursor: teacherBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: teacherBusy ? 0.7 : 1 }
                 }, teacherBusy ? "🤖 Drafting…" : (hh ? "Regenerate" : "Generate handoff")),
                 hh ? h("button", {
                   onClick: function () { setTeacherHandoff(null); setTeacherError(null); },
-                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "Clear") : null,
                 h("button", {
                   onClick: function () { setTeacherPanelOpen(false); },
                   "aria-label": "Close teacher handoff panel",
-                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "✕ Close")
               )
             ),
             // Caveat
-            h("p", { style: { margin: "0 0 10px", fontSize: 12, color: "#0c4a6e", lineHeight: 1.55, fontStyle: "italic" } },
+            h("p", { style: { margin: "0 0 10px", fontSize: 12, color: "var(--da-sky-deeper)", lineHeight: 1.55, fontStyle: "italic" } },
               "Practical handoff for the implementing teacher / case manager. Technical language OK. Be honest about what didn't work — this audience needs accuracy more than encouragement."),
             // Error
-            teacherError ? h("div", { style: { padding: 10, marginBottom: 10, background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 8, color: "#7f1d1d", fontSize: 12 } }, teacherError) : null,
+            teacherError ? h("div", { style: { padding: 10, marginBottom: 10, background: "var(--da-red-tint)", border: "1px solid var(--da-red-border)", borderRadius: 8, color: "var(--da-red-deep)", fontSize: 12 } }, teacherError) : null,
             // Empty state
-            !hh && !teacherBusy ? h("div", { style: { padding: 14, textAlign: "center", color: "#0c4a6e", fontSize: 13 } },
+            !hh && !teacherBusy ? h("div", { style: { padding: 14, textAlign: "center", color: "var(--da-sky-deeper)", fontSize: 13 } },
               h("p", { style: { margin: "0 0 6px" } }, "Click ", h("strong", null, "Generate handoff"), " to draft a one-page handoff for the implementing teacher."),
-              h("p", { style: { margin: 0, fontSize: 11, fontStyle: "italic", color: "#075985" } },
+              h("p", { style: { margin: 0, fontSize: 11, fontStyle: "italic", color: "var(--da-sky-deep)" } },
                 "Includes: clinical headline · what works · what to avoid · what to watch for · quick probes · when to re-refer · red flags")
             ) : null,
             // Content
             hh ? h("div", { style: { display: "flex", flexDirection: "column", gap: 12 } },
               // Headline
-              h("div", { style: { padding: 10, background: "#ffffff", border: "1px solid #7dd3fc", borderRadius: 8 } },
-                h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 800, color: "#075985", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } }, "Clinical headline"),
+              h("div", { style: { padding: 10, background: "var(--da-surface)", border: "1px solid var(--da-sky-border-2)", borderRadius: 8 } },
+                h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 800, color: "var(--da-sky-deep)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } }, "Clinical headline"),
                 h("textarea", {
                   value: hh.headline,
                   onChange: function (e) { updateTeacherField("headline", e.target.value); },
                   rows: 2,
                   "aria-label": "Clinical headline",
-                  style: { width: "100%", padding: "6px 8px", border: "1px solid #e2e8f0", borderRadius: 6, fontFamily: "inherit", fontSize: 13, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box" }
+                  style: { width: "100%", padding: "6px 8px", border: "1px solid var(--da-border)", borderRadius: 6, fontFamily: "inherit", fontSize: 13, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box" }
                 })
               ),
               // What works
-              h("div", { style: { padding: 10, background: "#ffffff", border: "1px solid #7dd3fc", borderRadius: 8 } },
-                h("div", { style: { fontSize: 11, fontWeight: 800, color: "#075985", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
+              h("div", { style: { padding: 10, background: "var(--da-surface)", border: "1px solid var(--da-sky-border-2)", borderRadius: 8 } },
+                h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-sky-deep)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
                   "✓ What works · " + (hh.whatWorks || []).length),
                 h("div", { style: { display: "flex", flexDirection: "column", gap: 8 } },
                   (hh.whatWorks || []).map(function (w, wi) {
-                    return h("div", { key: "da-th-w-" + wi, style: { padding: 8, background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 6 } },
+                    return h("div", { key: "da-th-w-" + wi, style: { padding: 8, background: "var(--da-sky-tint)", border: "1px solid var(--da-sky-border)", borderRadius: 6 } },
                       h("div", { style: { display: "flex", gap: 4, alignItems: "flex-start" } },
                         h("input", {
                           type: "text", value: w.title,
                           onChange: function (e) { updateTeacherObjectArrayField("whatWorks", wi, "title", e.target.value); },
                           "aria-label": "Strategy title",
-                          style: { flex: 1, padding: "4px 6px", border: "1px solid #bae6fd", borderRadius: 4, fontFamily: "inherit", fontSize: 12.5, fontWeight: 700, color: "#0f172a", boxSizing: "border-box" }
+                          style: { flex: 1, padding: "4px 6px", border: "1px solid var(--da-sky-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 12.5, fontWeight: 700, color: "var(--da-ink)", boxSizing: "border-box" }
                         }),
                         h("button", {
                           onClick: function () { removeTeacherArrayItem("whatWorks", wi); },
                           "aria-label": "Remove strategy",
-                          style: { padding: "3px 7px", borderRadius: 4, border: "1px solid #fca5a5", background: "transparent", color: "#b91c1c", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                          style: { padding: "3px 7px", borderRadius: 4, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                         }, "✕")
                       ),
                       h("textarea", {
                         value: w.description, rows: 2,
                         onChange: function (e) { updateTeacherObjectArrayField("whatWorks", wi, "description", e.target.value); },
                         "aria-label": "Strategy description",
-                        style: { width: "100%", marginTop: 4, padding: "5px 7px", border: "1px solid #e2e8f0", borderRadius: 4, fontFamily: "inherit", fontSize: 12, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box" }
+                        style: { width: "100%", marginTop: 4, padding: "5px 7px", border: "1px solid var(--da-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 12, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box" }
                       }),
                       h("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginTop: 4 } },
                         h("input", {
                           type: "text", value: w.evidenceFromDA || "", placeholder: "Evidence from DA",
                           onChange: function (e) { updateTeacherObjectArrayField("whatWorks", wi, "evidenceFromDA", e.target.value); },
                           "aria-label": "Evidence from DA",
-                          style: { padding: "3px 6px", border: "1px solid #e2e8f0", borderRadius: 4, fontFamily: "inherit", fontSize: 11, boxSizing: "border-box", color: "#075985", fontStyle: "italic" }
+                          style: { padding: "3px 6px", border: "1px solid var(--da-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 11, boxSizing: "border-box", color: "var(--da-sky-deep)", fontStyle: "italic" }
                         }),
                         h("input", {
                           type: "text", value: w.suggestedFrequency || "", placeholder: "Frequency",
                           onChange: function (e) { updateTeacherObjectArrayField("whatWorks", wi, "suggestedFrequency", e.target.value); },
                           "aria-label": "Suggested frequency",
-                          style: { padding: "3px 6px", border: "1px solid #e2e8f0", borderRadius: 4, fontFamily: "inherit", fontSize: 11, boxSizing: "border-box" }
+                          style: { padding: "3px 6px", border: "1px solid var(--da-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 11, boxSizing: "border-box" }
                         })
                       )
                     );
@@ -12658,114 +13411,114 @@
                 )
               ),
               // What did NOT work
-              (hh.whatDidNotWork && hh.whatDidNotWork.length > 0) || true ? h("div", { style: { padding: 10, background: "#ffffff", border: "1px solid #fca5a5", borderRadius: 8 } },
-                h("div", { style: { fontSize: 11, fontWeight: 800, color: "#b91c1c", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
+              (hh.whatDidNotWork && hh.whatDidNotWork.length > 0) || true ? h("div", { style: { padding: 10, background: "var(--da-surface)", border: "1px solid var(--da-red-border)", borderRadius: 8 } },
+                h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-red-text)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
                   "✗ What to avoid · " + (hh.whatDidNotWork || []).length),
                 h("div", { style: { display: "flex", flexDirection: "column", gap: 4 } },
                   (hh.whatDidNotWork || []).map(function (x, xi) {
                     return h("div", { key: "da-th-x-" + xi, style: { display: "flex", gap: 6, alignItems: "flex-start" } },
-                      h("div", { style: { fontSize: 11, color: "#b91c1c", fontWeight: 800, paddingTop: 6, minWidth: 16 } }, (xi + 1) + "."),
+                      h("div", { style: { fontSize: 11, color: "var(--da-red-text)", fontWeight: 800, paddingTop: 6, minWidth: 16 } }, (xi + 1) + "."),
                       h("textarea", {
                         value: x, rows: 2,
                         onChange: function (e) { updateTeacherArrayItem("whatDidNotWork", xi, e.target.value); },
                         "aria-label": "Avoid item " + (xi + 1),
-                        style: { flex: 1, padding: "5px 7px", border: "1px solid #fee2e2", borderRadius: 4, fontFamily: "inherit", fontSize: 12, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box" }
+                        style: { flex: 1, padding: "5px 7px", border: "1px solid var(--da-red-tint-2)", borderRadius: 4, fontFamily: "inherit", fontSize: 12, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box" }
                       }),
                       h("button", {
                         onClick: function () { removeTeacherArrayItem("whatDidNotWork", xi); },
                         "aria-label": "Remove",
-                        style: { padding: "3px 7px", borderRadius: 4, border: "1px solid #fca5a5", background: "transparent", color: "#b91c1c", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                        style: { padding: "3px 7px", borderRadius: 4, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                       }, "✕")
                     );
                   })
                 )
               ) : null,
               // Watch for
-              h("div", { style: { padding: 10, background: "#ffffff", border: "1px solid #7dd3fc", borderRadius: 8 } },
-                h("div", { style: { fontSize: 11, fontWeight: 800, color: "#075985", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
+              h("div", { style: { padding: 10, background: "var(--da-surface)", border: "1px solid var(--da-sky-border-2)", borderRadius: 8 } },
+                h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-sky-deep)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
                   "👀 Watch for · " + (hh.watchFor || []).length),
                 h("div", { style: { display: "flex", flexDirection: "column", gap: 4 } },
                   (hh.watchFor || []).map(function (x, xi) {
                     return h("div", { key: "da-th-wf-" + xi, style: { display: "flex", gap: 6, alignItems: "flex-start" } },
-                      h("div", { style: { fontSize: 11, color: "#075985", fontWeight: 800, paddingTop: 6, minWidth: 16 } }, (xi + 1) + "."),
+                      h("div", { style: { fontSize: 11, color: "var(--da-sky-deep)", fontWeight: 800, paddingTop: 6, minWidth: 16 } }, (xi + 1) + "."),
                       h("textarea", {
                         value: x, rows: 2,
                         onChange: function (e) { updateTeacherArrayItem("watchFor", xi, e.target.value); },
                         "aria-label": "Watch for item " + (xi + 1),
-                        style: { flex: 1, padding: "5px 7px", border: "1px solid #e2e8f0", borderRadius: 4, fontFamily: "inherit", fontSize: 12, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box" }
+                        style: { flex: 1, padding: "5px 7px", border: "1px solid var(--da-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 12, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box" }
                       }),
                       h("button", {
                         onClick: function () { removeTeacherArrayItem("watchFor", xi); },
                         "aria-label": "Remove",
-                        style: { padding: "3px 7px", borderRadius: 4, border: "1px solid #fca5a5", background: "transparent", color: "#b91c1c", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                        style: { padding: "3px 7px", borderRadius: 4, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                       }, "✕")
                     );
                   })
                 )
               ),
               // Quick probes
-              hh.quickProbes && hh.quickProbes.length > 0 ? h("div", { style: { padding: 10, background: "#ffffff", border: "1px solid #7dd3fc", borderRadius: 8 } },
-                h("div", { style: { fontSize: 11, fontWeight: 800, color: "#075985", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
+              hh.quickProbes && hh.quickProbes.length > 0 ? h("div", { style: { padding: 10, background: "var(--da-surface)", border: "1px solid var(--da-sky-border-2)", borderRadius: 8 } },
+                h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-sky-deep)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
                   "🎯 Quick probes for ongoing check-ins · " + hh.quickProbes.length),
                 h("div", { style: { display: "flex", flexDirection: "column", gap: 8 } },
                   hh.quickProbes.map(function (p, pi) {
-                    return h("div", { key: "da-th-p-" + pi, style: { padding: 8, background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 6 } },
+                    return h("div", { key: "da-th-p-" + pi, style: { padding: 8, background: "var(--da-sky-tint)", border: "1px solid var(--da-sky-border)", borderRadius: 6 } },
                       h("div", { style: { display: "flex", gap: 4, alignItems: "flex-start" } },
                         h("input", {
                           type: "text", value: p.label,
                           onChange: function (e) { updateTeacherObjectArrayField("quickProbes", pi, "label", e.target.value); },
                           "aria-label": "Probe label",
-                          style: { flex: 1, padding: "4px 6px", border: "1px solid #bae6fd", borderRadius: 4, fontFamily: "inherit", fontSize: 12.5, fontWeight: 700, color: "#0f172a", boxSizing: "border-box" }
+                          style: { flex: 1, padding: "4px 6px", border: "1px solid var(--da-sky-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 12.5, fontWeight: 700, color: "var(--da-ink)", boxSizing: "border-box" }
                         }),
                         h("input", {
                           type: "text", value: p.frequency || "", placeholder: "Frequency",
                           onChange: function (e) { updateTeacherObjectArrayField("quickProbes", pi, "frequency", e.target.value); },
                           "aria-label": "Probe frequency",
-                          style: { width: 100, padding: "4px 6px", border: "1px solid #bae6fd", borderRadius: 4, fontFamily: "inherit", fontSize: 11, boxSizing: "border-box" }
+                          style: { width: 100, padding: "4px 6px", border: "1px solid var(--da-sky-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 11, boxSizing: "border-box" }
                         }),
                         h("button", {
                           onClick: function () { removeTeacherArrayItem("quickProbes", pi); },
                           "aria-label": "Remove probe",
-                          style: { padding: "3px 7px", borderRadius: 4, border: "1px solid #fca5a5", background: "transparent", color: "#b91c1c", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                          style: { padding: "3px 7px", borderRadius: 4, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                         }, "✕")
                       ),
                       h("textarea", {
                         value: p.description, rows: 2,
                         onChange: function (e) { updateTeacherObjectArrayField("quickProbes", pi, "description", e.target.value); },
                         "aria-label": "Probe description",
-                        style: { width: "100%", marginTop: 4, padding: "5px 7px", border: "1px solid #e2e8f0", borderRadius: 4, fontFamily: "inherit", fontSize: 12, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box" }
+                        style: { width: "100%", marginTop: 4, padding: "5px 7px", border: "1px solid var(--da-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 12, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box" }
                       })
                     );
                   })
                 )
               ) : null,
               // When to re-refer + red flags
-              h("div", { style: { padding: 10, background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 8 } },
-                h("div", { style: { fontSize: 11, fontWeight: 800, color: "#b91c1c", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
+              h("div", { style: { padding: 10, background: "var(--da-red-tint)", border: "1px solid var(--da-red-border)", borderRadius: 8 } },
+                h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-red-text)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
                   "⚠ When to re-refer"),
                 h("textarea", {
                   value: hh.whenToReRefer || "", rows: 2,
                   onChange: function (e) { updateTeacherField("whenToReRefer", e.target.value); },
                   "aria-label": "When to re-refer",
-                  style: { width: "100%", padding: "6px 8px", border: "1px solid #fee2e2", borderRadius: 6, fontFamily: "inherit", fontSize: 12.5, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box", marginBottom: 6 }
+                  style: { width: "100%", padding: "6px 8px", border: "1px solid var(--da-red-tint-2)", borderRadius: 6, fontFamily: "inherit", fontSize: 12.5, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box", marginBottom: 6 }
                 }),
                 hh.redFlags && hh.redFlags.length > 0 ? h("div", null,
-                  h("div", { style: { fontSize: 10, fontWeight: 700, color: "#b91c1c", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } },
+                  h("div", { style: { fontSize: 10, fontWeight: 700, color: "var(--da-red-text)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } },
                     "Red flags (concrete triggers)"),
                   h("div", { style: { display: "flex", flexDirection: "column", gap: 4 } },
                     hh.redFlags.map(function (x, xi) {
                       return h("div", { key: "da-th-rf-" + xi, style: { display: "flex", gap: 6, alignItems: "flex-start" } },
-                        h("div", { style: { fontSize: 11, color: "#b91c1c", fontWeight: 800, paddingTop: 6, minWidth: 16 } }, "🚩"),
+                        h("div", { style: { fontSize: 11, color: "var(--da-red-text)", fontWeight: 800, paddingTop: 6, minWidth: 16 } }, "🚩"),
                         h("textarea", {
                           value: x, rows: 1,
                           onChange: function (e) { updateTeacherArrayItem("redFlags", xi, e.target.value); },
                           "aria-label": "Red flag " + (xi + 1),
-                          style: { flex: 1, padding: "4px 7px", border: "1px solid #fee2e2", borderRadius: 4, fontFamily: "inherit", fontSize: 12, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box" }
+                          style: { flex: 1, padding: "4px 7px", border: "1px solid var(--da-red-tint-2)", borderRadius: 4, fontFamily: "inherit", fontSize: 12, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box" }
                         }),
                         h("button", {
                           onClick: function () { removeTeacherArrayItem("redFlags", xi); },
                           "aria-label": "Remove red flag",
-                          style: { padding: "3px 7px", borderRadius: 4, border: "1px solid #fca5a5", background: "transparent", color: "#b91c1c", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                          style: { padding: "3px 7px", borderRadius: 4, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                         }, "✕")
                       );
                     })
@@ -12777,7 +13530,7 @@
                 h("button", {
                   onClick: function () { copyTextToClipboard(formatTeacherHandoffForClipboard(hh, s.studentNickname)); },
                   "aria-label": "Copy handoff to clipboard",
-                  style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "📋 Copy handoff"),
                 h("button", {
                   onClick: function () {
@@ -12789,7 +13542,7 @@
                   },
                   "aria-label": "Print handoff",
                   title: "Prints just the handoff page in a clean B&W layout",
-                  style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #475569", background: "#ffffff", color: "#0f172a", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-ink-3)", background: "var(--da-surface)", color: "var(--da-ink)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "🖨 Print handoff")
               )
             ) : null
@@ -12807,96 +13560,96 @@
             modifiabilityIndex: modIdxLocal,
             modifiabilityTier: modifiabilityTier(modIdxLocal)
           });
-          return h("div", { id: "out-family-anchor", className: "da-card", style: { marginBottom: 14, padding: 16, background: "#fdf2f8", borderColor: "#f9a8d4", scrollMarginTop: 16 } },
+          return h("div", { id: "out-family-anchor", className: "da-card", style: { marginBottom: 14, padding: 16, background: "var(--da-rose-tint)", borderColor: "var(--da-rose-border)", scrollMarginTop: 16 } },
             h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" } },
               h("div", null,
-                h("div", { style: { fontSize: 11, color: "#9d174d", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800 } }, "Phase S · Family-facing summary"),
-                h("h3", { style: { margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "#0f172a" } }, "👨‍👩‍👧 Plain-language letter for the family")
+                h("div", { style: { fontSize: 11, color: "var(--da-rose-text)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800 } }, "Phase S · Family-facing summary"),
+                h("h3", { style: { margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "var(--da-ink)" } }, "👨‍👩‍👧 Plain-language letter for the family")
               ),
               h("div", { style: { display: "flex", gap: 6, flexWrap: "wrap" } },
                 h("button", {
                   onClick: function () { generateFamilySummaryForSession(sessionForGen); },
                   disabled: familyBusy,
                   "aria-label": familySummary ? "Regenerate family summary" : "Generate family summary",
-                  style: { padding: "6px 12px", borderRadius: 8, border: "none", background: "#9d174d", color: "#ffffff", fontSize: 12, fontWeight: 800, cursor: familyBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: familyBusy ? 0.7 : 1 }
+                  style: { padding: "6px 12px", borderRadius: 8, border: "none", background: "var(--da-btn-rose)", color: "var(--da-on-accent)", fontSize: 12, fontWeight: 800, cursor: familyBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: familyBusy ? 0.7 : 1 }
                 }, familyBusy ? "🤖 Drafting…" : (familySummary ? "Regenerate" : "Generate summary")),
                 familySummary ? h("button", {
                   onClick: function () { setFamilySummary(null); setFamilyError(null); },
-                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "Clear") : null,
                 h("button", {
                   onClick: function () { setFamilyPanelOpen(false); },
                   "aria-label": "Close family summary panel",
-                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "✕ Close")
               )
             ),
             // Caveat
-            h("p", { style: { margin: "0 0 10px", fontSize: 12, color: "#831843", lineHeight: 1.55, fontStyle: "italic" } },
+            h("p", { style: { margin: "0 0 10px", fontSize: 12, color: "var(--da-rose-deep)", lineHeight: 1.55, fontStyle: "italic" } },
               "6th-grade reading level. No clinical jargon. Designed to share with the family before an IEP meeting. Always re-read with the family's literacy level + home language in mind before sending."),
             // Error
-            familyError ? h("div", { style: { padding: 10, marginBottom: 10, background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 8, color: "#7f1d1d", fontSize: 12 } }, familyError) : null,
+            familyError ? h("div", { style: { padding: 10, marginBottom: 10, background: "var(--da-red-tint)", border: "1px solid var(--da-red-border)", borderRadius: 8, color: "var(--da-red-deep)", fontSize: 12 } }, familyError) : null,
             // Empty state
-            !familySummary && !familyBusy ? h("div", { style: { padding: 14, textAlign: "center", color: "#831843", fontSize: 13 } },
+            !familySummary && !familyBusy ? h("div", { style: { padding: 14, textAlign: "center", color: "var(--da-rose-deep)", fontSize: 13 } },
               h("p", { style: { margin: "0 0 6px" } }, "Click ", h("strong", null, "Generate summary"), " to draft a plain-language letter for the family describing what you learned today."),
-              h("p", { style: { margin: 0, fontSize: 11, fontStyle: "italic", color: "#9d174d" } },
+              h("p", { style: { margin: 0, fontSize: 11, fontStyle: "italic", color: "var(--da-rose-text)" } },
                 "Seven sections: opener · what we learned · strengths · growth areas · what helps · next steps · questions for the team")
             ) : null,
             // Validation warnings (jargon detection)
-            familySummary && familySummary._warnings && familySummary._warnings.length > 0 ? h("div", { style: { padding: 8, marginBottom: 10, background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 6, fontSize: 11, color: "#7f1d1d" } },
+            familySummary && familySummary._warnings && familySummary._warnings.length > 0 ? h("div", { style: { padding: 8, marginBottom: 10, background: "var(--da-red-tint)", border: "1px solid var(--da-red-border)", borderRadius: 6, fontSize: 11, color: "var(--da-red-deep)" } },
               h("strong", null, "⚠ "), familySummary._warnings.join("; ")
             ) : null,
             // Sections — edit-in-place
             familySummary ? h("div", { style: { display: "flex", flexDirection: "column", gap: 12 } },
               FAMILY_SECTION_ORDER.map(function (key) {
                 if (key === "questions_for_team") {
-                  return h("div", { key: "da-fam-sec-" + key, style: { padding: 10, background: "#ffffff", border: "1px solid #f9a8d4", borderRadius: 8 } },
-                    h("label", { style: { display: "block", fontSize: 11, fontWeight: 800, color: "#9d174d", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
+                  return h("div", { key: "da-fam-sec-" + key, style: { padding: 10, background: "var(--da-surface)", border: "1px solid var(--da-rose-border)", borderRadius: 8 } },
+                    h("label", { style: { display: "block", fontSize: 11, fontWeight: 800, color: "var(--da-rose-text)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 } },
                       FAMILY_SECTION_LABELS[key]),
                     h("div", { style: { display: "flex", flexDirection: "column", gap: 6 } },
                       (familySummary[key] || []).map(function (q, qi) {
                         return h("div", { key: "da-fam-q-" + qi, style: { display: "flex", gap: 6, alignItems: "flex-start" } },
-                          h("div", { style: { fontSize: 12, color: "#9d174d", fontWeight: 800, paddingTop: 6, minWidth: 16 } }, (qi + 1) + "."),
+                          h("div", { style: { fontSize: 12, color: "var(--da-rose-text)", fontWeight: 800, paddingTop: 6, minWidth: 16 } }, (qi + 1) + "."),
                           h("textarea", {
                             value: q, rows: 2,
                             onChange: function (e) { updateFamilyQuestion(qi, e.target.value); },
                             "aria-label": "Family question " + (qi + 1),
-                            style: { flex: 1, padding: "5px 8px", border: "1px solid #e2e8f0", borderRadius: 6, fontFamily: "inherit", fontSize: 12.5, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box" }
+                            style: { flex: 1, padding: "5px 8px", border: "1px solid var(--da-border)", borderRadius: 6, fontFamily: "inherit", fontSize: 12.5, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box" }
                           }),
                           h("button", {
                             onClick: function () { removeFamilyQuestion(qi); },
                             "aria-label": "Remove this question",
-                            style: { padding: "3px 7px", borderRadius: 5, border: "1px solid #fca5a5", background: "transparent", color: "#b91c1c", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                            style: { padding: "3px 7px", borderRadius: 5, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                           }, "✕")
                         );
                       }),
                       h("button", {
                         onClick: addFamilyQuestion,
                         "aria-label": "Add another question",
-                        style: { padding: "5px 10px", borderRadius: 5, border: "1px dashed #f9a8d4", background: "transparent", color: "#9d174d", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", alignSelf: "flex-start" }
+                        style: { padding: "5px 10px", borderRadius: 5, border: "1px dashed var(--da-rose-border)", background: "transparent", color: "var(--da-rose-text)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", alignSelf: "flex-start" }
                       }, "+ Add a question")
                     )
                   );
                 }
-                return h("div", { key: "da-fam-sec-" + key, style: { padding: 10, background: "#ffffff", border: "1px solid #f9a8d4", borderRadius: 8 } },
-                  h("label", { style: { display: "block", fontSize: 11, fontWeight: 800, color: "#9d174d", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } },
+                return h("div", { key: "da-fam-sec-" + key, style: { padding: 10, background: "var(--da-surface)", border: "1px solid var(--da-rose-border)", borderRadius: 8 } },
+                  h("label", { style: { display: "block", fontSize: 11, fontWeight: 800, color: "var(--da-rose-text)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } },
                     FAMILY_SECTION_LABELS[key]),
                   h("textarea", {
                     value: familySummary[key] || "",
                     onChange: function (e) { updateFamilySummaryField(key, e.target.value); },
                     rows: key === "opener" ? 2 : 3,
                     "aria-label": FAMILY_SECTION_LABELS[key],
-                    style: { width: "100%", padding: "6px 8px", border: "1px solid #e2e8f0", borderRadius: 6, fontFamily: "inherit", fontSize: 13, lineHeight: 1.6, resize: "vertical", boxSizing: "border-box" }
+                    style: { width: "100%", padding: "6px 8px", border: "1px solid var(--da-border)", borderRadius: 6, fontFamily: "inherit", fontSize: 13, lineHeight: 1.6, resize: "vertical", boxSizing: "border-box" }
                   })
                 );
               })
             ) : null,
             // Footer actions
-            familySummary ? h("div", { style: { marginTop: 12, paddingTop: 10, borderTop: "1px solid #f9a8d4", display: "flex", justifyContent: "flex-end", gap: 6, flexWrap: "wrap" } },
+            familySummary ? h("div", { style: { marginTop: 12, paddingTop: 10, borderTop: "1px solid var(--da-rose-border)", display: "flex", justifyContent: "flex-end", gap: 6, flexWrap: "wrap" } },
               h("button", {
                 onClick: function () { copyTextToClipboard(formatFamilySummaryForClipboard(familySummary, s.studentNickname)); },
                 "aria-label": "Copy family letter to clipboard",
-                style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
               }, "📋 Copy as letter"),
               h("button", {
                 onClick: function () {
@@ -12910,7 +13663,7 @@
                 },
                 "aria-label": "Print family letter",
                 title: "Prints just this letter on a single page in a family-friendly layout",
-                style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #475569", background: "#ffffff", color: "#0f172a", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-ink-3)", background: "var(--da-surface)", color: "var(--da-ink)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
               }, "🖨 Print as letter")
             ) : null
           );
@@ -12933,39 +13686,39 @@
             var key = a.udlPrinciple in grouped ? a.udlPrinciple : "representation";
             grouped[key].push({ accom: a, originalIdx: originalIdx });
           });
-          return h("div", { id: "out-accom-anchor", className: "da-card", style: { marginBottom: 14, padding: 16, background: "#f0fdf4", borderColor: "#86efac", scrollMarginTop: 16 } },
+          return h("div", { id: "out-accom-anchor", className: "da-card", style: { marginBottom: 14, padding: 16, background: "var(--da-green-tint)", borderColor: "var(--da-green-border)", scrollMarginTop: 16 } },
             h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" } },
               h("div", null,
-                h("div", { style: { fontSize: 11, color: "#15803d", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800 } }, "Phase Q · UDL accommodations"),
-                h("h3", { style: { margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "#0f172a" } }, "🛠 Classroom accommodations")
+                h("div", { style: { fontSize: 11, color: "var(--da-green-text-2)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800 } }, "Phase Q · UDL accommodations"),
+                h("h3", { style: { margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "var(--da-ink)" } }, "🛠 Classroom accommodations")
               ),
               h("div", { style: { display: "flex", gap: 6, flexWrap: "wrap" } },
                 h("button", {
                   onClick: function () { generateAccommodationsForSession(sessionForGen); },
                   disabled: accomBusy,
                   "aria-label": accommodations.length === 0 ? "Generate accommodations from this session" : "Regenerate all accommodations",
-                  style: { padding: "6px 12px", borderRadius: 8, border: "none", background: "#15803d", color: "#ffffff", fontSize: 12, fontWeight: 800, cursor: accomBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: accomBusy ? 0.7 : 1 }
+                  style: { padding: "6px 12px", borderRadius: 8, border: "none", background: "var(--da-btn-green)", color: "var(--da-on-accent)", fontSize: 12, fontWeight: 800, cursor: accomBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: accomBusy ? 0.7 : 1 }
                 }, accomBusy ? "🤖 Drafting…" : (accommodations.length === 0 ? "Generate accommodations" : "Regenerate all")),
                 accommodations.length > 0 ? h("button", {
                   onClick: function () { setAccommodations([]); setAccomError(null); },
-                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "Clear") : null,
                 h("button", {
                   onClick: function () { setAccomPanelOpen(false); },
                   "aria-label": "Close accommodations panel",
-                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "✕ Close")
               )
             ),
             // Caveat
-            h("p", { style: { margin: "0 0 10px", fontSize: 12, color: "#14532d", lineHeight: 1.55, fontStyle: "italic" } },
+            h("p", { style: { margin: "0 0 10px", fontSize: 12, color: "var(--da-green-deep)", lineHeight: 1.55, fontStyle: "italic" } },
               "Drafted from your DA findings. Each accommodation is anchored to a specific mediation outcome, observation pattern, or construct. Review with classroom realism in mind — the AI can't see your school's logistics. Clinician owns final wording."),
             // Error
-            accomError ? h("div", { style: { padding: 10, marginBottom: 10, background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 8, color: "#7f1d1d", fontSize: 12 } }, accomError) : null,
+            accomError ? h("div", { style: { padding: 10, marginBottom: 10, background: "var(--da-red-tint)", border: "1px solid var(--da-red-border)", borderRadius: 8, color: "var(--da-red-deep)", fontSize: 12 } }, accomError) : null,
             // Empty state
-            accommodations.length === 0 && !accomBusy ? h("div", { style: { padding: 14, textAlign: "center", color: "#14532d", fontSize: 13 } },
+            accommodations.length === 0 && !accomBusy ? h("div", { style: { padding: 14, textAlign: "center", color: "var(--da-green-deep)", fontSize: 13 } },
               h("p", { style: { margin: "0 0 6px" } }, "Click ", h("strong", null, "Generate accommodations"), " to draft 4-7 specific, evidence-anchored UDL accommodations from this session's mediation findings."),
-              h("p", { style: { margin: 0, fontSize: 11, fontStyle: "italic", color: "#15803d" } },
+              h("p", { style: { margin: 0, fontSize: 11, fontStyle: "italic", color: "var(--da-green-text-2)" } },
                 "Output is grouped by UDL principle: Engagement, Representation, Action & Expression.")
             ) : null,
             // Grouped accommodation cards
@@ -12973,35 +13726,35 @@
               Object.keys(grouped).filter(function (k) { return grouped[k].length > 0; }).map(function (principleKey) {
                 var items = grouped[principleKey];
                 return h("div", { key: "da-accom-group-" + principleKey },
-                  h("div", { style: { fontSize: 11, fontWeight: 800, color: "#15803d", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6, paddingBottom: 4, borderBottom: "1px solid #86efac" } },
+                  h("div", { style: { fontSize: 11, fontWeight: 800, color: "var(--da-green-text-2)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6, paddingBottom: 4, borderBottom: "1px solid var(--da-green-border)" } },
                     "UDL · " + UDL_PRINCIPLE_LABELS[principleKey] + " · " + items.length),
                   h("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
                     items.map(function (wrap) {
                       var a = wrap.accom;
                       var gi = wrap.originalIdx;
-                      return h("div", { key: "da-accom-" + a.id, style: { padding: 12, background: "#ffffff", border: "1px solid #86efac", borderRadius: 8 } },
+                      return h("div", { key: "da-accom-" + a.id, style: { padding: 12, background: "var(--da-surface)", border: "1px solid var(--da-green-border)", borderRadius: 8 } },
                         // Header row
                         h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, marginBottom: 6, flexWrap: "wrap" } },
                           h("div", { style: { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" } },
-                            h("span", { style: { fontSize: 9.5, fontWeight: 800, color: "#15803d", textTransform: "uppercase", letterSpacing: "0.05em", background: "#dcfce7", padding: "2px 6px", borderRadius: 4 } },
+                            h("span", { style: { fontSize: 9.5, fontWeight: 800, color: "var(--da-green-text-2)", textTransform: "uppercase", letterSpacing: "0.05em", background: "var(--da-green-tint-2)", padding: "2px 6px", borderRadius: 4 } },
                               ACCOM_CATEGORY_LABELS[a.category] || a.category)
                           ),
                           h("div", { style: { display: "flex", gap: 4 } },
                             h("button", {
                               onClick: function () { copyTextToClipboard(formatAccommodationForClipboard(a)); },
                               "aria-label": "Copy accommodation to clipboard",
-                              style: { padding: "3px 9px", borderRadius: 5, border: "1px solid #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                              style: { padding: "3px 9px", borderRadius: 5, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                             }, "📋 Copy"),
                             h("button", {
                               onClick: function () { regenerateOneAccommodation(gi, sessionForGen); },
                               disabled: accomBusy,
                               "aria-label": "Regenerate this accommodation",
-                              style: { padding: "3px 9px", borderRadius: 5, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 10.5, fontWeight: 700, cursor: accomBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: accomBusy ? 0.6 : 1 }
+                              style: { padding: "3px 9px", borderRadius: 5, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 10.5, fontWeight: 700, cursor: accomBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: accomBusy ? 0.6 : 1 }
                             }, "🔁"),
                             h("button", {
                               onClick: function () { removeAccommodation(gi); },
                               "aria-label": "Remove this accommodation",
-                              style: { padding: "3px 7px", borderRadius: 5, border: "1px solid #fca5a5", background: "transparent", color: "#b91c1c", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                              style: { padding: "3px 7px", borderRadius: 5, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                             }, "✕")
                           )
                         ),
@@ -13010,7 +13763,7 @@
                           type: "text", value: a.title,
                           onChange: function (e) { updateAccommodationField(gi, "title", e.target.value); },
                           "aria-label": "Accommodation title",
-                          style: { width: "100%", padding: "5px 8px", border: "1px solid #cbd5e1", borderRadius: 6, fontFamily: "inherit", fontSize: 13.5, fontWeight: 700, color: "#0f172a", boxSizing: "border-box", marginBottom: 6 }
+                          style: { width: "100%", padding: "5px 8px", border: "1px solid var(--da-border-2)", borderRadius: 6, fontFamily: "inherit", fontSize: 13.5, fontWeight: 700, color: "var(--da-ink)", boxSizing: "border-box", marginBottom: 6 }
                         }),
                         // Description (edit-in-place)
                         h("textarea", {
@@ -13018,20 +13771,20 @@
                           onChange: function (e) { updateAccommodationField(gi, "description", e.target.value); },
                           rows: 3,
                           "aria-label": "Accommodation description",
-                          style: { width: "100%", padding: "5px 8px", border: "1px solid #e2e8f0", borderRadius: 6, fontFamily: "inherit", fontSize: 12.5, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box", marginBottom: 6 }
+                          style: { width: "100%", padding: "5px 8px", border: "1px solid var(--da-border)", borderRadius: 6, fontFamily: "inherit", fontSize: 12.5, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box", marginBottom: 6 }
                         }),
                         // Rationale (edit-in-place, lighter visual treatment)
-                        a.rationale !== undefined ? h("div", { style: { padding: 6, background: "#f0fdf4", borderLeft: "3px solid #16a34a", fontSize: 11.5, color: "#14532d", lineHeight: 1.5 } },
+                        a.rationale !== undefined ? h("div", { style: { padding: 6, background: "var(--da-green-tint)", borderLeft: "3px solid var(--da-green-mid)", fontSize: 11.5, color: "var(--da-green-deep)", lineHeight: 1.5 } },
                           h("strong", { style: { fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.05em" } }, "Evidence anchor: "),
                           h("input", {
                             type: "text", value: a.rationale,
                             onChange: function (e) { updateAccommodationField(gi, "rationale", e.target.value); },
                             "aria-label": "Accommodation rationale / evidence anchor",
-                            style: { width: "calc(100% - 110px)", padding: "2px 6px", border: "1px solid #bbf7d0", borderRadius: 4, fontFamily: "inherit", fontSize: 11.5, background: "transparent", color: "#14532d" }
+                            style: { width: "calc(100% - 110px)", padding: "2px 6px", border: "1px solid var(--da-green-border-2)", borderRadius: 4, fontFamily: "inherit", fontSize: 11.5, background: "transparent", color: "var(--da-green-deep)" }
                           })
                         ) : null,
                         // Warnings
-                        a._warnings && a._warnings.length > 0 ? h("div", { style: { marginTop: 6, padding: 5, background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 5, fontSize: 10, color: "#7f1d1d" } },
+                        a._warnings && a._warnings.length > 0 ? h("div", { style: { marginTop: 6, padding: 5, background: "var(--da-red-tint)", border: "1px solid var(--da-red-border)", borderRadius: 5, fontSize: 10, color: "var(--da-red-deep)" } },
                           h("strong", null, "⚠ "), a._warnings.join("; ")
                         ) : null
                       );
@@ -13041,14 +13794,14 @@
               })
             ) : null,
             // Footer: copy-all
-            accommodations.length > 1 ? h("div", { style: { marginTop: 12, paddingTop: 10, borderTop: "1px solid #86efac", display: "flex", justifyContent: "flex-end", gap: 6 } },
+            accommodations.length > 1 ? h("div", { style: { marginTop: 12, paddingTop: 10, borderTop: "1px solid var(--da-green-border)", display: "flex", justifyContent: "flex-end", gap: 6 } },
               h("button", {
                 onClick: function () {
                   var all = accommodations.map(function (a, i) { return "── " + (i + 1) + ". " + formatAccommodationForClipboard(a); }).join("\n\n");
                   copyTextToClipboard(all);
                 },
                 "aria-label": "Copy all accommodations as one text block",
-                style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
               }, "📋 Copy all accommodations")
             ) : null
           );
@@ -13065,135 +13818,135 @@
             modifiabilityIndex: modIdxLocal,
             modifiabilityTier: modifiabilityTier(modIdxLocal)
           });
-          return h("div", { id: "out-iep-anchor", className: "da-card", style: { marginBottom: 14, padding: 16, background: "#fdfaf3", borderColor: "#f3d28a", scrollMarginTop: 16 } },
+          return h("div", { id: "out-iep-anchor", className: "da-card", style: { marginBottom: 14, padding: 16, background: "var(--da-amber-tint-3)", borderColor: "var(--da-amber-border-2)", scrollMarginTop: 16 } },
             h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" } },
               h("div", null,
-                h("div", { style: { fontSize: 11, color: "#92400e", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800 } }, "Phase K · AI-drafted IEP goals"),
-                h("h3", { style: { margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "#0f172a" } }, "🎯 Draft IEP goals from this DA")
+                h("div", { style: { fontSize: 11, color: "var(--da-amber-text-2)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800 } }, "Phase K · AI-drafted IEP goals"),
+                h("h3", { style: { margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "var(--da-ink)" } }, "🎯 Draft IEP goals from this DA")
               ),
               h("div", { style: { display: "flex", gap: 6, flexWrap: "wrap" } },
                 h("button", {
                   onClick: function () { generateIepGoalsForSession(sessionForGen); },
                   disabled: iepBusy,
                   "aria-label": iepGoals.length === 0 ? "Generate IEP goals from this session" : "Regenerate all IEP goals",
-                  style: { padding: "6px 12px", borderRadius: 8, border: "none", background: "#92400e", color: "#ffffff", fontSize: 12, fontWeight: 800, cursor: iepBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: iepBusy ? 0.7 : 1 }
+                  style: { padding: "6px 12px", borderRadius: 8, border: "none", background: "var(--da-btn-amber)", color: "var(--da-on-accent)", fontSize: 12, fontWeight: 800, cursor: iepBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: iepBusy ? 0.7 : 1 }
                 }, iepBusy ? "🤖 Drafting…" : (iepGoals.length === 0 ? "Generate goals" : "Regenerate all")),
                 iepGoals.length > 0 ? h("button", {
                   onClick: function () { setIepGoals([]); setIepError(null); },
                   "aria-label": "Clear all generated goals",
-                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "Clear") : null,
                 h("button", {
                   onClick: function () { setIepPanelOpen(false); },
                   "aria-label": "Close IEP goals panel",
-                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                  style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "✕ Close")
               )
             ),
             // Caveat
-            h("p", { style: { margin: "0 0 10px", fontSize: 12, color: "#7c2d12", lineHeight: 1.55, fontStyle: "italic" } },
+            h("p", { style: { margin: "0 0 10px", fontSize: 12, color: "var(--da-orange-deep)", lineHeight: 1.55, fontStyle: "italic" } },
               "Drafted from your DA data. The clinician owns final wording — review every goal for accuracy, observability, and fit to this student's context before adding to the IEP. AI cannot judge classroom realism."),
             // Error
-            iepError ? h("div", { style: { padding: 10, marginBottom: 10, background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 8, color: "#7f1d1d", fontSize: 12 } }, iepError) : null,
+            iepError ? h("div", { style: { padding: 10, marginBottom: 10, background: "var(--da-red-tint)", border: "1px solid var(--da-red-border)", borderRadius: 8, color: "var(--da-red-deep)", fontSize: 12 } }, iepError) : null,
             // Empty state
-            iepGoals.length === 0 && !iepBusy ? h("div", { style: { padding: 14, textAlign: "center", color: "#7c2d12", fontSize: 13 } },
+            iepGoals.length === 0 && !iepBusy ? h("div", { style: { padding: 14, textAlign: "center", color: "var(--da-orange-deep)", fontSize: 13 } },
               h("p", { style: { margin: "0 0 6px" } }, "Click ", h("strong", null, "Generate goals"), " to draft 2-4 SMART-format annual goals + short-term objectives from this session's mediation findings."),
-              h("p", { style: { margin: 0, fontSize: 11, fontStyle: "italic", color: "#92400e" } },
+              h("p", { style: { margin: 0, fontSize: 11, fontStyle: "italic", color: "var(--da-amber-text-2)" } },
                 "Goals are anchored to scaffolds that actually worked + observation patterns recorded during mediation.")
             ) : null,
             // Generated goals list
             iepGoals.length > 0 ? h("div", { style: { display: "flex", flexDirection: "column", gap: 12 } },
               iepGoals.map(function (g, gi) {
-                return h("div", { key: "da-iep-" + g.id, style: { padding: 12, background: "#ffffff", border: "1px solid #f3d28a", borderRadius: 8 } },
+                return h("div", { key: "da-iep-" + g.id, style: { padding: 12, background: "var(--da-surface)", border: "1px solid var(--da-amber-border-2)", borderRadius: 8 } },
                   // Header row
                   h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" } },
-                    h("div", { style: { fontSize: 11, color: "#92400e", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800 } },
+                    h("div", { style: { fontSize: 11, color: "var(--da-amber-text-2)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800 } },
                       "Goal " + (gi + 1) + " · " + g.domain),
                     h("div", { style: { display: "flex", gap: 4 } },
                       h("button", {
                         onClick: function () { copyTextToClipboard(formatGoalForClipboard(g)); },
                         "aria-label": "Copy goal " + (gi + 1) + " to clipboard",
                         title: "Copy goal + objectives as plain text",
-                        style: { padding: "4px 10px", borderRadius: 6, border: "1px solid #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                        style: { padding: "4px 10px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                       }, "📋 Copy"),
                       h("button", {
                         onClick: function () { regenerateOneIepGoal(gi, sessionForGen); },
                         disabled: iepBusy,
                         "aria-label": "Regenerate goal " + (gi + 1),
                         title: "Regenerate this single goal",
-                        style: { padding: "4px 10px", borderRadius: 6, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontSize: 10.5, fontWeight: 700, cursor: iepBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: iepBusy ? 0.6 : 1 }
+                        style: { padding: "4px 10px", borderRadius: 6, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 10.5, fontWeight: 700, cursor: iepBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: iepBusy ? 0.6 : 1 }
                       }, "🔁 Regenerate"),
                       h("button", {
                         onClick: function () { removeIepGoal(gi); },
                         "aria-label": "Remove goal " + (gi + 1),
                         title: "Drop this goal",
-                        style: { padding: "4px 8px", borderRadius: 6, border: "1px solid #fca5a5", background: "transparent", color: "#b91c1c", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                        style: { padding: "4px 8px", borderRadius: 6, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                       }, "✕")
                     )
                   ),
                   // Annual goal — edit-in-place
-                  h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Annual goal"),
+                  h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Annual goal"),
                   h("textarea", {
                     value: g.annualGoal,
                     onChange: function (e) { updateIepGoalField(gi, "annualGoal", e.target.value); },
                     rows: 3,
-                    style: { width: "100%", padding: "6px 8px", border: "1px solid #cbd5e1", borderRadius: 6, fontFamily: "inherit", fontSize: 12.5, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box", marginBottom: 8 }
+                    style: { width: "100%", padding: "6px 8px", border: "1px solid var(--da-border-2)", borderRadius: 6, fontFamily: "inherit", fontSize: 12.5, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box", marginBottom: 8 }
                   }),
                   // Rationale
-                  g.rationale ? h("div", { style: { marginBottom: 8, padding: 8, background: "#fffbeb", borderLeft: "3px solid #f59e0b", fontSize: 11.5, color: "#7c2d12", lineHeight: 1.5 } },
+                  g.rationale ? h("div", { style: { marginBottom: 8, padding: 8, background: "var(--da-amber-tint)", borderLeft: "3px solid var(--da-amber-mid)", fontSize: 11.5, color: "var(--da-orange-deep)", lineHeight: 1.5 } },
                     h("strong", { style: { fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.05em" } }, "Rationale: "),
                     g.rationale
                   ) : null,
                   // Measurement row
                   h("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 } },
                     h("div", null,
-                      h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Criterion"),
+                      h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Criterion"),
                       h("input", {
                         type: "text", value: g.measurementCriterion,
                         onChange: function (e) { updateIepGoalField(gi, "measurementCriterion", e.target.value); },
-                        style: { width: "100%", padding: "5px 8px", border: "1px solid #cbd5e1", borderRadius: 6, fontFamily: "inherit", fontSize: 12, boxSizing: "border-box" }
+                        style: { width: "100%", padding: "5px 8px", border: "1px solid var(--da-border-2)", borderRadius: 6, fontFamily: "inherit", fontSize: 12, boxSizing: "border-box" }
                       })
                     ),
                     h("div", null,
-                      h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Evaluation method"),
+                      h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Evaluation method"),
                       h("input", {
                         type: "text", value: g.evaluationMethod,
                         onChange: function (e) { updateIepGoalField(gi, "evaluationMethod", e.target.value); },
-                        style: { width: "100%", padding: "5px 8px", border: "1px solid #cbd5e1", borderRadius: 6, fontFamily: "inherit", fontSize: 12, boxSizing: "border-box" }
+                        style: { width: "100%", padding: "5px 8px", border: "1px solid var(--da-border-2)", borderRadius: 6, fontFamily: "inherit", fontSize: 12, boxSizing: "border-box" }
                       })
                     )
                   ),
                   // Short-term objectives — edit-in-place
-                  h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Short-term objectives"),
+                  h("label", { style: { display: "block", fontSize: 10.5, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 } }, "Short-term objectives"),
                   h("div", { style: { display: "flex", flexDirection: "column", gap: 4 } },
                     (g.shortTermObjectives || []).map(function (sto, stoIdx) {
                       return h("div", { key: "da-iep-sto-" + g.id + "-" + stoIdx, style: { display: "flex", gap: 6, alignItems: "flex-start" } },
-                        h("div", { style: { fontSize: 11, color: "#92400e", fontWeight: 800, paddingTop: 6, minWidth: 16 } }, (stoIdx + 1) + "."),
+                        h("div", { style: { fontSize: 11, color: "var(--da-amber-text-2)", fontWeight: 800, paddingTop: 6, minWidth: 16 } }, (stoIdx + 1) + "."),
                         h("textarea", {
                           value: sto,
                           onChange: function (e) { updateIepShortTermObjective(gi, stoIdx, e.target.value); },
                           rows: 2,
-                          style: { flex: 1, padding: "5px 8px", border: "1px solid #e2e8f0", borderRadius: 6, fontFamily: "inherit", fontSize: 12, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box" }
+                          style: { flex: 1, padding: "5px 8px", border: "1px solid var(--da-border)", borderRadius: 6, fontFamily: "inherit", fontSize: 12, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box" }
                         })
                       );
                     })
                   ),
                   // Validation warnings (if any)
-                  g._warnings && g._warnings.length > 0 ? h("div", { style: { marginTop: 6, padding: 6, background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 6, fontSize: 10.5, color: "#7f1d1d" } },
+                  g._warnings && g._warnings.length > 0 ? h("div", { style: { marginTop: 6, padding: 6, background: "var(--da-red-tint)", border: "1px solid var(--da-red-border)", borderRadius: 6, fontSize: 10.5, color: "var(--da-red-deep)" } },
                     h("strong", null, "⚠ "), g._warnings.join("; ")
                   ) : null
                 );
               })
             ) : null,
             // Footer: copy-all-as-one-block
-            iepGoals.length > 1 ? h("div", { style: { marginTop: 10, paddingTop: 10, borderTop: "1px solid #f3d28a", display: "flex", justifyContent: "flex-end", gap: 6 } },
+            iepGoals.length > 1 ? h("div", { style: { marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--da-amber-border-2)", display: "flex", justifyContent: "flex-end", gap: 6 } },
               h("button", {
                 onClick: function () {
                   var all = iepGoals.map(function (g, i) { return "── Goal " + (i + 1) + " ──\n" + formatGoalForClipboard(g); }).join("\n\n");
                   copyTextToClipboard(all);
                 },
                 "aria-label": "Copy all goals as one text block",
-                style: { padding: "6px 12px", borderRadius: 6, border: "1px solid #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+                style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
               }, "📋 Copy all goals")
             ) : null
           );
@@ -13206,42 +13959,42 @@
               finalizeSession();
               addToast("Session saved.");
             },
-            style: { padding: "10px 18px", borderRadius: 10, border: "none", background: "#16a34a", color: "#ffffff", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "10px 18px", borderRadius: 10, border: "none", background: "var(--da-btn-green)", color: "var(--da-on-accent)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "✓ Save session"),
           // Phase K — IEP goal generator entry
           !iepPanelOpen ? h("button", {
             onClick: function () { setIepPanelOpen(true); },
             "aria-label": "Open the IEP goal generator panel",
             title: "Draft SMART-format annual goals + short-term objectives from this DA session",
-            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid #92400e", background: "#fdfaf3", color: "#92400e", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-amber-text-2)", background: "var(--da-amber-tint-3)", color: "var(--da-amber-text-2)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "🎯 Draft IEP goals") : null,
           // Phase Q — UDL accommodations entry
           !accomPanelOpen ? h("button", {
             onClick: function () { setAccomPanelOpen(true); },
             "aria-label": "Open the UDL accommodations panel",
             title: "Draft UDL-aligned classroom accommodations from this DA session",
-            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid #15803d", background: "#f0fdf4", color: "#15803d", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-green-mid)", background: "var(--da-green-tint)", color: "var(--da-green-text-2)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "🛠 Accommodations") : null,
           // Phase S — Family-facing summary entry
           !familyPanelOpen ? h("button", {
             onClick: function () { setFamilyPanelOpen(true); },
             "aria-label": "Open the family-facing summary panel",
             title: "Draft a plain-language summary to share with the family before an IEP meeting",
-            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid #9d174d", background: "#fdf2f8", color: "#9d174d", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-rose-text)", background: "var(--da-rose-tint)", color: "var(--da-rose-text)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "👨‍👩‍👧 Family letter") : null,
           // Phase T — Teacher handoff entry
           !teacherPanelOpen ? h("button", {
             onClick: function () { setTeacherPanelOpen(true); },
             "aria-label": "Open the teacher / case-manager handoff panel",
             title: "Draft a one-page handoff for the implementing teacher",
-            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid #075985", background: "#ecfeff", color: "#075985", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-sky-deep)", background: "var(--da-sky-tint-2)", color: "var(--da-sky-deep)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "🧑‍🏫 Teacher handoff") : null,
           // Phase X — Monitoring plan entry
           !monitoringPanelOpen ? h("button", {
             onClick: function () { setMonitoringPanelOpen(true); },
             "aria-label": "Open the progress monitoring plan panel",
             title: "Draft a CBM-anchored progress monitoring plan with decision rules",
-            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid #3730a3", background: "#eef2ff", color: "#3730a3", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-indigo-text)", background: "var(--da-indigo-tint)", color: "var(--da-indigo-text)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "📈 Monitoring plan") : null,
           // Generate-all convenience button (only if at least one not yet generated)
           (!iepGoals.length || !accommodations.length || !familySummary || !teacherHandoff || !progressMonitoring) ? h("button", {
@@ -13264,7 +14017,7 @@
             },
             "aria-label": "Generate all five output panels in parallel",
             title: "Run IEP goals + accommodations + family letter + teacher handoff + monitoring plan in parallel",
-            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid #6d28d9", background: "#faf5ff", color: "#6d28d9", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-violet-mid-2)", background: "var(--da-violet-tint)", color: "var(--da-violet-mid-2)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "✨ Generate all outputs") : null,
           // Phase E — Print packet
           h("button", {
@@ -13274,7 +14027,7 @@
             },
             "aria-label": "Print clinical observation report",
             title: "Generates a self-contained black-and-white PDF/print of the session for paste-in to a clinical report.",
-            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid #475569", background: "#ffffff", color: "#0f172a", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-ink-3)", background: "var(--da-surface)", color: "var(--da-ink)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "🖨 Print packet"),
           // Phase D — Export to Report Writer
           h("button", {
@@ -13320,13 +14073,17 @@
             },
             "aria-label": "Send DA findings to Report Writer",
             title: "Stashes DA findings on window.__alloDAExport. Open Report Writer next to ingest them as fact chunks + a pre-drafted section.",
-            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid #1e3a8a", background: "#eff6ff", color: "#1e3a8a", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "📝 Send to Report Writer"),
           h("button", {
             onClick: function () {
-              if (window.confirm("Discard without saving?")) discardSession();
+              daAskConfirm({
+                message: "Discard this session without saving it?",
+                confirmLabel: "Discard without saving",
+                onConfirm: discardSession
+              });
             },
-            style: { padding: "10px 16px", borderRadius: 10, border: "1px solid #cbd5e1", background: "#ffffff", color: "#475569", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
+            style: { padding: "10px 16px", borderRadius: 10, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
           }, "Discard without saving")
         ),
         // Phase E — Hidden-onscreen print packet. Made visible only by
@@ -13375,7 +14132,7 @@
   }
 
   window.AlloModules.DynamicAssessment._meta = {
-    version: "1.0.0-phaseBB",
+    version: "1.1.0-uplift", // WCAG/theming/ZPD uplift 2026-07-12 (themed shell, dialog semantics, learning-zone snapshot)
     storageKey: STORAGE_KEY,
     domains: ["math", "reading", "working-memory", "language"],
     itemCounts: {
@@ -13387,6 +14144,11 @@
     scoreForLevel: scoreForLevel,
     computeModifiabilityIndex: computeModifiabilityIndex,
     modifiabilityTier: modifiabilityTier,
+    // Learning-zone (ZPD) snapshot — pure fn; summary card + fact chunks use it.
+    computeZpdProfile: computeZpdProfile,
+    // Undo + robustness helpers (pure fns; UI wires them).
+    rollbackLastItemResult: rollbackLastItemResult,
+    computeMiSensitivity: computeMiSensitivity,
     // Psychometrics layer exposed for characterization tests (tests/dynamic_assessment.test.js).
     // Read-only pure fns; zero behavior change.
     transferTier: transferTier,

@@ -93,13 +93,15 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
 </ul>
 <p>Each rung can be revealed to yourself first and read aloud to the student. In <strong>clinician-led</strong> mode you escalate manually and record the level reached — full clinical control. In <strong>AI-mediated</strong> mode, the model plays examiner: it reads the student's response and decides the <em>next</em> scaffold level, but it always serves the <strong>pre-authored ladder text</strong> (its role is the decision, never content — no improvised hints). It escalates by exactly one level, never skips, and falls back to a built-in deterministic rule if a call fails (flagged when it does). Note that the leaky-rung correction below applies to the clinician-led path.</p>
 <p>Throughout mediation you capture a <strong>free-text examiner observation</strong> (local-only, never synced), <strong>quick-tap observation tags</strong> (ten of them: self-corrected, needed wait time, used self-talk, off-task, frustration, asked clarifying question, changed strategy, perseverated, appeared to guess, fluent+automatic), and a <strong>leaky-rung flag</strong> when a scaffold accidentally gave the answer away.</p>
+<p>The ladder card also carries a collapsed <strong>"Mediation quality reminders (MLE)"</strong> drawer — wait time (5–10 seconds before escalating), intentionality &amp; reciprocity, meaning, and transcendence, drawn from Feuerstein's Mediated Learning Experience criteria. They are reminders that support mediation quality, not a scored fidelity measure. A <strong>session-arc stepper</strong> (pretest → mediation → posttest → transfer → results) keeps you oriented in the test-teach-retest cycle throughout.</p>
 <p><strong>Posttest (unprompted).</strong> Re-test the same items alone. Compare directly to pretest — this is where modifiability shows up.</p>
 <p><strong>Transfer (optional).</strong> If any item has a transfer twin, the student attempts <strong>novel items, same construct</strong>, with no scaffolds. This is the test of whether learning <em>generalized</em> rather than was merely memorized.</p>
 <p>Answer matching is forgiving for numbers (matches "7" inside "I think 7 apples" but not "17") and uses whole-word containment for text. You can always override with <strong>Mark correct / Mark wrong / Skip</strong> (or <strong>Auto-check + record</strong>).</p>
+<p><strong>Mis-clicks are recoverable.</strong> An <strong>↩ Undo item</strong> button re-presents the most recently recorded item with its response, observations, and tags restored — so a slip on "Mark correct" during a live session no longer means discarding everything. It works across phase boundaries, and the results screen has a matching <strong>↩ Reopen last item</strong> button that steps back into the session. (For AI-mediated items, the mediation attempts restart fresh on the re-presented item.)</p>
 <h3>5. Score</h3>
 <p>Each item scores <strong>5 − (prompt level reached)</strong>: solved alone = 5, after L1 = 4, L2 = 3, L3 = 2, L4 = 1, still wrong after L4 = 0. If you flagged a rung as <strong>leaky</strong>, a correct response is conservatively credited one level <em>higher</em> — that rung isn't valid evidence of competence. (L4 leaks carry no extra penalty; direct teach states the answer by design. The leaky-rung correction applies to the clinician-led path.)</p>
 <h3>6. Interpret</h3>
-<p>The summary screen leads with the <strong>Modifiability Index</strong>, then layers in transfer, score breakdown, per-item detail, scaffold usage, observation patterns, and — when enabled — the access-condition lens. (Detail below.)</p>
+<p>The summary screen leads with the <strong>Modifiability Index</strong>, then layers in transfer, score breakdown, a <strong>per-item movement table</strong> (each item's arc across pretest → mediation → posttest → transfer, labeled gained / held / not yet / lost), scaffold usage, observation patterns, and — when enabled — the access-condition lens. (Detail below.)</p>
 <h3>7. Generate Outputs</h3>
 <p>From the outputs dashboard you can generate a narrative, teacher handoff, family letter, IEP goals, accommodations, and a monitoring plan, then print or export. (Detail below.)</p>
 <hr>
@@ -133,7 +135,8 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
   <li><strong>0–0.3</strong> — <em>Limited modifiability under these mediation conditions.</em></li>
   <li><strong>&lt; 0</strong> — <em>Posttest below pretest baseline</em> (regression — usually reflects fatigue, anxiety, or motivation rather than ability; re-test on a different day).</li>
 </ul>
-<p><strong>The MI is descriptive, not normed.</strong> With fewer than five items per phase (the default is three), it carries substantial measurement error — read it as a <strong>broad direction</strong> (clear gain / little change / regression), not a precise number. It is a <em>within-student</em> metric: never report it as a standard score, percentile, or classification, and never compare it across students. If you compare against your own saved sessions, the tool will tell you that is a local reference only — not an external or standardized norm — and unstable below ~10 sessions, exploratory below ~30. Across a single student's own sessions the trajectory is descriptive only (and construct-relative — compare points <em>within</em> the same domain), never a growth norm.</p>
+<p><strong>The tier cut-points (0.30 / 0.60) are interpretation conventions of this tool</strong> — chosen to structure clinical reasoning, not derived from normative or validation data. Treat the tiers as a reading frame; the underlying pattern (clear gain / partial gain / little change / regression) is the finding.</p>
+<p><strong>The MI is descriptive, not normed.</strong> With fewer than five items per phase (the default is three), it carries substantial measurement error — read it as a <strong>broad direction</strong> (clear gain / little change / regression), not a precise number. The summary quantifies this with a <strong>sensitivity line</strong>: the range the index would span if a single item's scaffold level had been judged one step differently — treat differences smaller than that range as noise. It is a <em>within-student</em> metric: never report it as a standard score, percentile, or classification, and never compare it across students. If you compare against your own saved sessions, the tool will tell you that is a local reference only — not an external or standardized norm — and unstable below ~10 sessions, exploratory below ~30. Across a single student's own sessions the trajectory is descriptive only (and construct-relative — compare points <em>within</em> the same domain), never a growth norm.</p>
 <h3>Transfer Tier (generalization vs. memorization)</h3>
 <p>When the transfer phase runs, the tool compares novel-item performance to the posttest:</p>
 <ul>
@@ -143,6 +146,14 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
   <li><strong>Minimal transfer</strong> — performance on novel items collapsed back to baseline; interpret the posttest gain as <strong>un-generalized</strong> learning, not construct mastery.</li>
 </ul>
 <p>Recommended report phrasing: <em>"Transfer-probe performance suggests [strong/partial/weak/minimal] generalization to novel surface features."</em></p>
+<h3>Learning-Zone Snapshot (ZPD)</h3>
+<p>The summary also places each administered item into the Vygotskian band the session's own data supports:</p>
+<ul>
+  <li><strong>Independent</strong> — solved unprompted at pretest. Already secure; maintain, don't reteach.</li>
+  <li><strong>Teachable band (ZPD)</strong> — failed alone but solved with L1–L3 scaffolds. This is where to pitch instruction, using the scaffold types that worked.</li>
+  <li><strong>Needs direct teaching</strong> — required L4 (direct teach) or was never solved. Not yet reachable through prompting alone; reteach foundations first.</li>
+</ul>
+<p>A rung you flagged as leaky counts one level higher here (the same conservative correction the score applies), so a leaked L3 success lands in "needs direct teaching" rather than inflating the teachable band. Like everything else on the summary, this is <strong>descriptive of this session's items only — not a normed placement.</strong></p>
 <h3>Access-Condition Lens (hypothesis only)</h3>
 <p>When a language background is on file, the summary shows a purple <strong>"Access-condition lens · exploratory"</strong> card. It combines two signal types of different epistemic strength:</p>
 <ul>
@@ -181,6 +192,9 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
   <li><strong>Progress-monitoring plan</strong> — CBM-anchored with NCII/RTI decision rules, explicitly noting that DA is <em>not</em> the primary monitoring tool.</li>
 </ul>
 <p><strong>Export and backup:</strong> a self-contained black-and-white <strong>print packet</strong> (with the full clinical caveat in its footer), per-session and full-history <strong>JSON</strong> backup/restore (non-destructive — your local sessions always win), <strong>CSV</strong> exports for research/instrument development, and a <strong>Send to Report Writer</strong> hand-off that carries fact chunks, a pre-drafted section, and all generated outputs.</p>
+<hr>
+<h2>Accessibility and Theming</h2>
+<p>The Studio renders as a proper dialog (labeled, focus-trapped, Escape closes it from the start screen, and focus returns to the button that opened it). Every focusable control shows a high-contrast focus ring, tables carry proper header semantics, progress bars and charts expose text alternatives, and status changes are announced to screen readers. Destructive actions (discard, delete) confirm through a themed, keyboard-managed dialog rather than the browser's native popup, and Windows High Contrast Mode keeps card structure and focus visible via system colors. The interface follows the app's <strong>light / dark / high-contrast</strong> theme automatically — including all charts — while <strong>printed packets, family letters, and teacher handoffs always print dark-on-white</strong> regardless of the on-screen theme. Reduced-motion preferences suppress all animation.</p>
 <hr>
 <h2>Practical Tips for a Good Session</h2>
 <ul>
