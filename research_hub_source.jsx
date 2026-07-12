@@ -1386,6 +1386,36 @@
     var addToast = props.addToast || function () {};
     var isTeacherMode = props.isTeacherMode === true;
     var gradeLevel = props.gradeLevel;
+    var dialogRef = useRef(null);
+    var closeButtonRef = useRef(null);
+    var closeHandlerRef = useRef(onClose);
+    closeHandlerRef.current = onClose;
+
+    useEffect(function () {
+      if (!isOpen) return undefined;
+      var dialog = dialogRef.current;
+      if (!dialog) return undefined;
+      var previousFocus = document.activeElement;
+      var getFocusable = function () { return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')); };
+      (closeButtonRef.current || getFocusable()[0] || dialog).focus();
+      var onKeyDown = function (event) {
+        if (event.key === 'Escape') {
+          if (typeof closeHandlerRef.current === 'function') { event.preventDefault(); closeHandlerRef.current(); }
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        var focusable = getFocusable();
+        if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+        var first = focusable[0], last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      };
+      dialog.addEventListener('keydown', onKeyDown);
+      return function () {
+        dialog.removeEventListener('keydown', onKeyDown);
+        if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
+      };
+    }, [isOpen]);
 
     var _journal = useState(loadJournal);
     var journal = _journal[0]; var setJournal = _journal[1];
@@ -1474,9 +1504,7 @@
 
     return (
       <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={t('research_hub.modal_aria') || 'Investigation and Research Hub'}
+        role="presentation"
         data-help-key="research_hub"
         style={{
           position: 'fixed', inset: 0, zIndex: 60,
@@ -1488,6 +1516,12 @@
         onClick={function (e) { if (e.target === e.currentTarget && typeof onClose === 'function') onClose(); }}
       >
         <div
+          ref={dialogRef}
+          tabIndex={-1}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="research-hub-dialog-title"
+          aria-describedby="research-hub-dialog-description"
           onClick={function (e) { e.stopPropagation(); }}
           style={{
             background: '#ffffff', borderRadius: '20px',
@@ -1509,10 +1543,10 @@
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span aria-hidden="true" style={{ fontSize: '28px' }}>{'\u{1F50D}'}</span>
               <div>
-                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>
+                <h2 id="research-hub-dialog-title" style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>
                   {t('research_hub.modal_title') || 'Investigation & Research Hub'}
                 </h2>
-                <p style={{ margin: '2px 0 0', fontSize: '11px', opacity: 0.85 }}>
+                <p id="research-hub-dialog-description" style={{ margin: '2px 0 0', fontSize: '11px', opacity: 0.85 }}>
                   {studentCodename
                     ? (t('research_hub.modal_subtitle_with_codename') || 'Inquiry journal for ') + studentCodename
                     : (t('research_hub.modal_subtitle') || 'Loop, model, source, and argue your way through a question worth asking.')}
@@ -1542,6 +1576,7 @@
                 </button>
               )}
               <button
+                ref={closeButtonRef}
                 type="button"
                 onClick={function () { if (typeof onClose === 'function') onClose(); }}
                 aria-label={t('common.close') || 'Close'}
@@ -1561,6 +1596,9 @@
             display: 'flex', flexDirection: 'column', gap: '14px',
             overflowY: 'auto', flex: 1,
           }}>
+            <div role="status" aria-live="polite" aria-atomic="true" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}>
+              {educatorViewOn ? (t('research_hub.educator_view_on') || 'Educator view') : activeLane ? activeLane.label : (t('research_hub.lane_selector_title') || 'Choose an investigation lane')}
+            </div>
             {/* Inquiry-framing input — shared across all three lanes */}
             <div style={{
               padding: '12px 14px', borderRadius: '12px',
@@ -1574,12 +1612,13 @@
                 <span aria-hidden="true">{'\u{2728} '}</span>
                 {t('research_hub.question_label') || 'What are you investigating?'}
               </label>
-              <p style={{ margin: 0, fontSize: '11px', color: '#64748b', lineHeight: 1.5 }}>
+              <p id="research-hub-question-help" style={{ margin: 0, fontSize: '11px', color: '#64748b', lineHeight: 1.5 }}>
                 {t('research_hub.question_help') ||
                   'A few words in your own voice. You can change this any time as your question evolves — loops are first-class here.'}
               </p>
               <textarea
                 id="research-hub-question-title"
+                aria-describedby="research-hub-question-help"
                 data-help-key="research_hub_question"
                 value={journal.questionTitle}
                 onChange={function (e) { setQuestionTitle(e.target.value); }}
