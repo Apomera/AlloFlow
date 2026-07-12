@@ -4,7 +4,7 @@ exports[`Lumen — present mode + presentation export > present-mode overlay is 
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -162,11 +162,9 @@ exports[`Lumen — present mode + presentation export > present-mode overlay is 
 <p class="mt-3 text-[10px] text-slate-700">Phase 1 — L1 default fires zero AI; dial up for gated, marked AI. Exports are FERPA-gated: both the brief and the CSV are finding-only unless you opt in to identifiable data, and formal exports require sign-off on any AI reading. docs/lumen_design.md.</p>
 <div id="lumen-present-overlay" role="dialog" aria-modal="true" aria-label="Lumen present mode" style="position:fixed;inset:0;z-index:50;background:linear-gradient(180deg,#ffffff 0%,#fffdf7 100%);overflow:auto;padding:28px 24px">
 <style>@keyframes lumenReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}.lumen-reveal{animation:lumenReveal .55s cubic-bezier(.22,1,.36,1) both}@media (prefers-reduced-motion:reduce){.lumen-reveal{animation:none}}</style>
-<div tabindex="0" aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0">
-</div>
 <div class="flex items-center gap-2 flex-wrap" style="max-width:960px;margin:0 auto 18px">
 <span class="text-xl" aria-hidden="true">💡</span>
-<span class="font-extrabold text-lg tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-lg tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-xs text-slate-500 italic">present mode</span>
 <div class="ml-auto flex items-center gap-2 flex-wrap">
 <button id="lumen-present-first" autofocus="" class="px-3 py-1.5 text-sm rounded-lg text-white font-semibold" style="background:linear-gradient(90deg,#d97706,#ea580c);box-shadow:0 1px 2px rgba(234,88,12,0.3)">⤓ Export presentation (HTML)</button>
@@ -270,8 +268,6 @@ exports[`Lumen — present mode + presentation export > present-mode overlay is 
 <p class="mt-3 text-sm text-slate-600">Trend chart. Derived (math): Measure rose ~2.68 units per step (95% interval +2.12 to +3.23; n=10). A human-set phase line at week 5.5 divides baseline from tier2.</p>
 <p class="mt-4 text-[11px] text-slate-500">Present mode · max epistemic level L1. The uncertainty band and provenance marks are the live chart; “Export presentation” embeds this exact chart (FERPA-gated). The calm analysis view is still underneath — press Esc or Exit to return.</p>
 </div>
-<div tabindex="0" aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0">
-</div>
 </div>
 </div>"
 `;
@@ -280,7 +276,7 @@ exports[`Lumen — render golden master (SSR, §15) > Family face — re-worded,
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -463,7 +459,7 @@ exports[`Lumen — render golden master (SSR, §15) > L1 chart (no AI, working f
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -626,7 +622,7 @@ exports[`Lumen — render golden master (SSR, §15) > L3 ceiling + ranked hypoth
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -837,7 +833,7 @@ exports[`Lumen — render golden master (SSR, §15) > a verified benchmark rende
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -1009,7 +1005,7 @@ exports[`Lumen — render golden master (SSR, §15) > bar chart pathway — rect
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -1168,7 +1164,7 @@ exports[`Lumen — render golden master (SSR, §15) > box pathway — per-phase 
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -1300,7 +1296,7 @@ exports[`Lumen — render golden master (SSR, §15) > data table shown — the s
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -1570,7 +1566,7 @@ exports[`Lumen — render golden master (SSR, §15) > dot/strip pathway — poin
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -1719,7 +1715,7 @@ exports[`Lumen — render golden master (SSR, §15) > empty state — no observa
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -1793,7 +1789,7 @@ exports[`Lumen — render golden master (SSR, §15) > grouped-bar pathway — ba
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -2080,7 +2076,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram + benchmark rend
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -2222,7 +2218,7 @@ exports[`Lumen — render golden master (SSR, §15) > histogram pathway — valu
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -2355,7 +2351,7 @@ exports[`Lumen — render golden master (SSR, §15) > multi-series pathway — a
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -2529,7 +2525,7 @@ exports[`Lumen — render golden master (SSR, §15) > n<3 refusal — too few po
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -2595,7 +2591,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter pathway — L0 pai
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -2719,7 +2715,7 @@ exports[`Lumen — render golden master (SSR, §15) > scatter with too few pairs
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -2797,7 +2793,7 @@ exports[`Lumen — render golden master (SSR, §15) > slope pathway — per-phas
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -2952,7 +2948,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > synthetic p
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>
@@ -3117,7 +3113,7 @@ exports[`Lumen — render invariants (no snapshot, just contracts) > the import-
 "<div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800">
 <div class="flex items-center gap-2 flex-wrap pb-2 mb-1" style="border-bottom:1px solid #f1f5f9">
 <span class="text-lg leading-none" aria-hidden="true">💡</span>
-<span class="font-extrabold text-base tracking-tight" style="background:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
+<span class="font-extrabold text-base tracking-tight" style="background-image:linear-gradient(90deg,#b45309,#ea580c);-webkit-background-clip:text;background-clip:text;color:transparent">Lumen</span>
 <span class="text-[11px] text-slate-500 italic">honest data, made to share</span>
 <span class="text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto" style="background:#fffbeb;border:1px solid #fde68a">Measure · units</span>
 </div>

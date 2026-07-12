@@ -382,15 +382,17 @@ describe('Lumen — present mode + presentation export', () => {
     expect(html).toMatch(/Derived \(math\)/);                    // the provenance pill in the slide
   });
 
-  it('present mode is keyboard-operable: focus lands inside (autofocus), a trigger to return to, and a Tab trap', () => {
+  it('present mode is keyboard-operable: focus lands inside (autofocus), a trigger to return to, and trap pivots', () => {
     const html = renderState({ observations: REYNA, presentMode: true });
     // focus moves INTO the overlay on open
     expect(html).toMatch(/<button[^>]*id="lumen-present-first"[^>]*autofocus/i);
-    // the first/last controls the focus trap pivots on
+    // the first/last controls the keydown Tab trap pivots on (the wrap itself is an
+    // event handler — Tab on last -> first, Shift+Tab on first -> last — not SSR-visible)
     expect(html).toMatch(/id="lumen-present-first"/);
     expect(html).toMatch(/id="lumen-present-last"/);
-    // two hidden focusable sentinels wrap Tab / Shift+Tab inside the dialog
-    expect((html.match(/tabindex="0"[^>]*aria-hidden="true"|aria-hidden="true"[^>]*tabindex="0"/gi) || []).length).toBe(2);
+    // the OLD aria-hidden focusable sentinel pattern is BANNED (WCAG 4.1.2 / axe
+    // aria-hidden-focus): no element may combine aria-hidden with a tabindex.
+    expect((html.match(/tabindex="0"[^>]*aria-hidden="true"|aria-hidden="true"[^>]*tabindex="0"/gi) || []).length).toBe(0);
   });
 
   it('the ▶ Present trigger carries the id that focus returns to on Exit/Esc', () => {

@@ -2509,7 +2509,9 @@
 
           kids.push(h('div', { key: 'hdr', className: 'flex items-center gap-2 flex-wrap pb-2 mb-1', style: { borderBottom: '1px solid #f1f5f9' } },
             h('span', { className: 'text-lg leading-none', 'aria-hidden': 'true' }, '💡'),
-            h('span', { className: 'font-extrabold text-base tracking-tight', style: { background: 'linear-gradient(90deg,#b45309,#ea580c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' } }, __alloT('stem.lumen.lumen', 'Lumen')),
+            // backgroundImage (longhand), NOT the background shorthand: shorthand + background-clip
+            // in one style attribute crashes jsdom 29's CSS parser (breaks the axe audit harness).
+            h('span', { className: 'font-extrabold text-base tracking-tight', style: { backgroundImage: 'linear-gradient(90deg,#b45309,#ea580c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' } }, __alloT('stem.lumen.lumen', 'Lumen')),
             h('span', { className: 'text-[11px] text-slate-500 italic' }, __alloT('stem.lumen.honest_data_made_to_share', 'honest data, made to share')),
             h('span', { className: 'text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto', style: { background: '#fffbeb', border: '1px solid #fde68a' } }, comp.variable + (comp.unit ? ' · ' + comp.unit : ''))
           ));
@@ -3544,23 +3546,32 @@
             var goFullscreen = function () {
               try { var el = document.getElementById('lumen-present-overlay'); if (window.__alloStemFS) window.__alloStemFS(el); } catch (eF) { }
             };
-            // A focusable sentinel — onFocus bounces to the opposite end so Tab/Shift+Tab
-            // WRAP inside the overlay (a focus trap without useEffect/useRef, which this
-            // ctx-render model doesn't expose). Visually hidden, aria-hidden.
-            var trapSentinel = function (key, toId) {
-              return h('div', { key: key, tabIndex: 0, 'aria-hidden': 'true', onFocus: function () { focusId(toId); }, style: { position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', opacity: 0 } });
-            };
+            // The Tab trap lives in the dialog's own keydown (no useEffect/useRef needed):
+            // Tab on the LAST control wraps to the first, Shift+Tab on the FIRST wraps to
+            // the last. This replaced the earlier aria-hidden focusable sentinel divs —
+            // an aria-hidden element that can take focus is itself a WCAG 4.1.2 failure
+            // (axe aria-hidden-focus), and a screen-reader user's focus could land on it.
             kids.push(h('div', {
               key: 'present', id: 'lumen-present-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': __alloT('stem.lumen.lumen_present_mode', 'Lumen present mode'),
-              onKeyDown: function (ev) { if (ev.key === 'Escape') { ev.stopPropagation(); closePresent(); } }, // Esc closes; stopPropagation so the host STEM Lab modal does not also close
+              onKeyDown: function (ev) {
+                if (ev.key === 'Escape') { ev.stopPropagation(); closePresent(); return; } // Esc closes; stopPropagation so the host STEM Lab modal does not also close
+                if (ev.key === 'Tab') {
+                  try {
+                    var first = document.getElementById('lumen-present-first');
+                    var last = document.getElementById('lumen-present-last');
+                    if (!first || !last) return;
+                    if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+                    else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+                  } catch (eT) { }
+                }
+              },
               style: { position: 'fixed', inset: 0, zIndex: 50, background: 'linear-gradient(180deg,#ffffff 0%,#fffdf7 100%)', overflow: 'auto', padding: '28px 24px' }
             },
               // CSS, not copy — must NEVER go through __alloT (a translated pack would corrupt the keyframes).
               h('style', { key: 'pkf' }, '@keyframes lumenReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}.lumen-reveal{animation:lumenReveal .55s cubic-bezier(.22,1,.36,1) both}@media (prefers-reduced-motion:reduce){.lumen-reveal{animation:none}}'),
-              trapSentinel('psA', 'lumen-present-last'), // Shift+Tab from the first control wraps to the last
               h('div', { key: 'pbar', className: 'flex items-center gap-2 flex-wrap', style: { maxWidth: '960px', margin: '0 auto 18px' } },
                 h('span', { className: 'text-xl', 'aria-hidden': 'true' }, '💡'),
-                h('span', { className: 'font-extrabold text-lg tracking-tight', style: { background: 'linear-gradient(90deg,#b45309,#ea580c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' } }, __alloT('stem.lumen.lumen_2', 'Lumen')),
+                h('span', { className: 'font-extrabold text-lg tracking-tight', style: { backgroundImage: 'linear-gradient(90deg,#b45309,#ea580c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' } }, __alloT('stem.lumen.lumen_2', 'Lumen')),
                 h('span', { className: 'text-xs text-slate-500 italic' }, __alloT('stem.lumen.present_mode', 'present mode')),
                 h('div', { className: 'ml-auto flex items-center gap-2 flex-wrap' },
                   presentBtn('⤓ Export presentation (HTML)', exportPresentation, true, { id: 'lumen-present-first', autoFocus: true }),
@@ -3577,8 +3588,7 @@
                   : h('p', { key: 'pnochart', className: 'mt-3 text-sm text-slate-500' }, __alloT('stem.lumen.add_at_least_3_observations_to_show_a_', 'Add at least 3 observations to show a chart.'))),
                 h('p', { key: 'psummary', className: 'mt-3 text-sm text-slate-600' }, chartSummaryText(obs, activeClaim, sourceRefs, chartType)),
                 h('p', { key: 'pfoot', className: 'mt-4 text-[11px] text-slate-500' }, 'Present mode · max epistemic level ' + presentMax + '. The uncertainty band and provenance marks are the live chart; “Export presentation” embeds this exact chart (FERPA-gated). The calm analysis view is still underneath — press Esc or Exit to return.')
-              ),
-              trapSentinel('psZ', 'lumen-present-first') // Tab from the last control wraps to the first
+              )
             ));
           }
 
