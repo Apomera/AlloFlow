@@ -16652,7 +16652,7 @@
       "rhythm": "Rité",
       "volume_steadiness": "Bopikami ya makasi ya mongongo",
       "formant_vowel_space_lab": "Laboratware ya esika ya vowelle na formant",
-      "visualizes_your_vowel_sounds_on_an_ipa": "Emonisaka mangungu ya ba vowelle na yo na kaɛ ya ba vowelle ya IPA na kosalela botali ya formant (F1/F2). Loba vowelle mpe talá ntɔnga oyo ezali kotambola mpo na komonisa esika vowelle na yo ekweaka. Modе ya nzela emonisaka mbongwana ya diphtongue!",
+      "visualizes_your_vowel_sounds_on_an_ipa": "Emonisaka mangungu ya ba vowelle na yo na kaɛ ya ba vowelle ya IPA na kosalela botali ya formant (F1/F2). Loba vowelle mpe talá ntɔnga oyo ezali kotambola mpo na komonisa esika vowelle na yo ekweaka. Mode ya nzela emonisaka mbongwana ya diphtongue!",
       "vowel_map_language": "Monɔkɔ ya karte ya vowelle",
       "clear_vowel_trail": "Longola nzela ya vowelle",
       "clear_trail": "Longola nzela",
