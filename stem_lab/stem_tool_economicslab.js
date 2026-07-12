@@ -834,13 +834,44 @@ var d = labToolData || {};
 
               if (sdTax > 0) {
 
-                ctx.fillStyle = 'rgba(168,85,247,0.15)';
+                // Real tax geometry (linear curves make this exact): trades fall to
+                // Qt where the curves are $tax apart; buyers pay Pd(Qt), sellers
+                // keep Ps(Qt); the triangle from Qt to Q* is the deadweight loss.
+                // (The old drawing was a decorative rectangle centered on E.)
 
-                ctx.fillRect(eqPx - 20, eqPy - sdTax / 100 * gh / 2, 40, sdTax / 100 * gh);
+                var txQ = Math.max(0, eqQ - sdTax / 1.6);
 
-                ctx.font = 'bold 19px Inter, system-ui'; ctx.fillStyle = '#c084fc';
+                var txPd = 90 + sdDemandShift * 5 - 0.8 * txQ;
 
-                ctx.fillText('Tax wedge: $' + sdTax, eqPx + 28, eqPy);
+                var txPs = 10 + 0.8 * txQ + sdSupplyShift * 5;
+
+                var txX = gx + Math.min(100, txQ) / 100 * gw;
+
+                var txPy = function (p) { return gy + (100 - Math.max(0, Math.min(100, p))) / 100 * gh; };
+
+                if (eqInRange && txQ > 0) {
+
+                  ctx.fillStyle = 'rgba(168,85,247,0.25)';
+
+                  ctx.beginPath(); ctx.moveTo(txX, txPy(txPd)); ctx.lineTo(txX, txPy(txPs)); ctx.lineTo(eqPx, eqPy); ctx.closePath(); ctx.fill();
+
+                  ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 4;
+
+                  ctx.beginPath(); ctx.moveTo(txX, txPy(txPd)); ctx.lineTo(txX, txPy(txPs)); ctx.stroke();
+
+                  ctx.fillStyle = '#c084fc'; ctx.font = 'bold 19px Inter, system-ui';
+
+                  ctx.fillText('Buyers pay $' + txPd.toFixed(0), Math.max(gx + 8, txX - 220), txPy(txPd) - 10);
+
+                  ctx.fillText('Sellers get $' + txPs.toFixed(0), Math.max(gx + 8, txX - 220), txPy(txPs) + 26);
+
+                  if (eqQ - txQ > 8) ctx.fillText('DWL', (txX + eqPx) / 2 - 22, (txPy(txPd) + txPy(txPs)) / 2 + 7);
+
+                  ctx.font = '18px Inter, system-ui';
+
+                  ctx.fillText('Tax $' + sdTax + ': trades fall ' + eqQ.toFixed(0) + ' → ' + txQ.toFixed(0), txX + 14, gy + 46);
+
+                }
 
               }
 
@@ -1311,6 +1342,33 @@ var d = labToolData || {};
 
                 ctx.stroke(); ctx.setLineDash([]);
 
+                // Plot unemployment line (entries created before this feature
+                // existed lack the field \u2014 skip the line rather than plot NaN)
+
+                var unVals = macroHistory.map(function (h) { return h.unemployment; });
+
+                if (unVals.every(function (v) { return typeof v === 'number'; })) {
+
+                  var unMin = Math.min.apply(null, unVals) - 1;
+
+                  var unRange = (Math.max.apply(null, unVals) + 1) - unMin || 1;
+
+                  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2; ctx.setLineDash([2, 4]); ctx.beginPath();
+
+                  unVals.forEach(function (v, vi) {
+
+                    var x = mhX + (vi / Math.max(1, unVals.length - 1)) * mhW;
+
+                    var y = mhY + mhH - ((v - unMin) / unRange) * mhH;
+
+                    vi === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+
+                  });
+
+                  ctx.stroke(); ctx.setLineDash([]);
+
+                }
+
                 // Legend
 
                 ctx.font = '18px Inter, system-ui';
@@ -1318,6 +1376,8 @@ var d = labToolData || {};
                 ctx.fillStyle = '#22c55e'; ctx.fillText('\u2014 GDP Growth', mhX + 12, mhY + 26);
 
                 ctx.fillStyle = '#ef4444'; ctx.fillText('--- Inflation', mhX + 200, mhY + 26);
+
+                ctx.fillStyle = '#fbbf24'; ctx.fillText('\u00b7\u00b7\u00b7 Unemployment', mhX + 360, mhY + 26);
 
                 ctx.fillStyle = '#94a3b8';
 
@@ -1501,6 +1561,10 @@ var d = labToolData || {};
                 var sumQd2 = Math.max(0, Math.min(100, (90 + sdDemandShift * 5 - sdPriceFloor) / 0.8));
                 var sumQs2 = Math.max(0, Math.min(100, (sdPriceFloor - 10 - sdSupplyShift * 5) / 0.8));
                 sdSummary += ' ' + t('stem.economicslab.canvas_summary_surplus', 'Binding price floor: surplus of about') + ' ' + Math.max(0, sumQs2 - sumQd2).toFixed(0) + ' ' + t('stem.economicslab.units', 'units') + '.';
+              }
+              if (sdTax > 0) {
+                var sumQt = Math.max(0, eqQ - sdTax / 1.6);
+                sdSummary += ' ' + t('stem.economicslab.canvas_summary_tax', 'Per-unit tax of') + ' $' + sdTax + ' ' + t('stem.economicslab.canvas_summary_tax_2', 'cuts trades to about') + ' ' + sumQt.toFixed(0) + ' ' + t('stem.economicslab.units', 'units') + ' (' + t('stem.economicslab.deadweight_loss', 'deadweight loss') + ').';
               }
               return sdSummary;
             }
@@ -1823,7 +1887,19 @@ var d = labToolData || {};
 
                 React.createElement('h4', { className: 'text-sm font-bold text-violet-800' }, '\uD83D\uDCD6 Economics Glossary (' + (d.econGlossary || []).length + ' concepts learned)'),
 
-                React.createElement('button', { onClick: function () { upd('showGlossary', false); }, className: 'text-violet-400 hover:text-violet-600 text-xs' }, '\u2715')
+                React.createElement('div', { className: 'flex items-center gap-2' },
+
+                  (d.econGlossary || []).length > 0 && React.createElement('button', {
+                    onClick: function () {
+                      var glossaryText = (d.econGlossary || []).map(function (g) { return g.concept + ' \u2014 ' + g.explanation; }).join('\n');
+                      try { navigator.clipboard.writeText(glossaryText); if (addToast) addToast(t('stem.economicslab.glossary_copied', 'Glossary copied \u2014 paste it into your notes'), 'success'); } catch (e) { if (addToast) addToast('Copy failed', 'error'); }
+                    },
+                    className: 'text-[11px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200 font-bold'
+                  }, t('stem.economicslab.copy_glossary', '\uD83D\uDCCB Copy')),
+
+                  React.createElement('button', { onClick: function () { upd('showGlossary', false); }, className: 'text-violet-400 hover:text-violet-600 text-xs', 'aria-label': t('stem.economicslab.close_glossary', 'Close glossary') }, '\u2715')
+
+                )
 
               ),
 
@@ -1965,9 +2041,9 @@ var d = labToolData || {};
 
                           upd('quizLoading', false);
 
-                        } catch (err) { upd('quizLoading', false); if (addToast) addToast('Quiz generation failed', 'error'); }
+                        } catch (err) { upd('quizLoading', false); if (addToast) addToast(t('stem.economicslab.quiz_failed_offline_hint', 'Quiz generation failed — try the Challenge scenarios in the reference shelf (they work offline)'), 'error'); }
 
-                      }).catch(function () { upd('quizLoading', false); });
+                      }).catch(function () { upd('quizLoading', false); if (addToast) addToast(t('stem.economicslab.quiz_failed_offline_hint', 'Quiz generation failed — try the Challenge scenarios in the reference shelf (they work offline)'), 'error'); });
 
                     },
 
@@ -3137,7 +3213,15 @@ var d = labToolData || {};
 
                         var eff = choice.effect || {};
 
-                        upd('pfDebt', Math.max(0, (d.pfDebt || 0) + (eff.debt || 0)));
+                        // Debt accrues 10% APR each simulated year — carrying a
+                        // balance has to visibly cost something, or "pay it off"
+                        // choices never look better than spending.
+
+                        var newDebt = Math.max(0, (d.pfDebt || 0) + (eff.debt || 0));
+
+                        var debtInterest = Math.round(newDebt * 0.10);
+
+                        upd('pfDebt', newDebt + debtInterest);
 
                         upd('pfSalary', Math.max(0, (d.pfSalary || 35000) + (eff.salary || 0)));
 
@@ -3193,7 +3277,7 @@ var d = labToolData || {};
 
                         var h = (d.pfHistory || []).slice(-29);
 
-                        h.push({ age: d.pfAge || 22, cash: finalCash, debt: Math.max(0, (d.pfDebt || 0) + (eff.debt || 0)), event: d.lifeEvent.title, choice: choice.label });
+                        h.push({ age: d.pfAge || 22, cash: finalCash, debt: newDebt + debtInterest, event: d.lifeEvent.title, choice: choice.label });
 
                         upd('pfHistory', h);
 
@@ -3283,10 +3367,18 @@ var d = labToolData || {};
 
               ),
 
-              React.createElement('div', { className: 'text-xs text-slate-600 text-center mb-2' }, (d.pfCareer ? '\uD83D\uDCBC ' + d.pfCareer + ' | ' : '') + 'Salary: $' + (d.pfSalary || 35000).toLocaleString() + '/yr | Net Worth: $' + pfNetWorth.toLocaleString() + ((d.pfInvested || 0) > 0 ? ' | \uD83D\uDCC8 Invested: $' + (d.pfInvested || 0).toLocaleString() : '') + ((d.pfEquity || 0) > 0 ? ' | \uD83C\uDFE0 Equity: $' + (d.pfEquity || 0).toLocaleString() : '') + (d.pfInsurance ? ' | \uD83D\uDEE1\uFE0F Insured' : ' | \u26A0\uFE0F No Insurance')),
+              React.createElement('div', { className: 'text-xs text-slate-600 text-center mb-2' }, (d.pfCareer ? '\uD83D\uDCBC ' + d.pfCareer + ' | ' : '') + 'Salary: $' + (d.pfSalary || 35000).toLocaleString() + '/yr | Net Worth: $' + pfNetWorth.toLocaleString() + ((d.pfInvested || 0) > 0 ? ' | \uD83D\uDCC8 Invested: $' + (d.pfInvested || 0).toLocaleString() : '') + ((d.pfEquity || 0) > 0 ? ' | \uD83C\uDFE0 Equity: $' + (d.pfEquity || 0).toLocaleString() : '') + (d.pfInsurance ? ' | \uD83D\uDEE1\uFE0F Insured' : ' | \u26A0\uFE0F No Insurance') + ((d.pfDebt || 0) > 0 ? ' | \uD83D\uDCB3 Debt +10%/yr APR' : '')),
 
               (d.pfCash || 2000) < 0 && React.createElement('div', { className: 'text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-center mb-2', role: 'alert' },
                 t('stem.economicslab.cash_flow_warning', '\u26A0\uFE0F Your cash is negative \u2014 you are spending more than you earn. Try cheaper housing, a lower investment %, or paying down debt before it compounds.')),
+
+              (function () {
+                var pfMonthlyExp = pfRent + pfFood + pfTransport + pfEntertain;
+                var runway = Math.max(0, (d.pfCash || 2000)) / Math.max(1, pfMonthlyExp);
+                var runwayCls = runway >= 6 ? 'text-green-700 bg-green-50 border-green-200' : runway >= 3 ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-red-700 bg-red-50 border-red-200';
+                return React.createElement('div', { className: 'text-[11px] text-center rounded-lg border px-3 py-1.5 mb-2 ' + runwayCls },
+                  t('stem.economicslab.emergency_fund', '\uD83D\uDEDF Emergency fund: ') + runway.toFixed(1) + ' ' + t('stem.economicslab.months_of_expenses', 'months of expenses in cash') + ' \u2014 ' + t('stem.economicslab.emergency_fund_target', 'advisors suggest keeping 3\u20136 months'));
+              })(),
 
               // Next Year / Generate Event button
 
@@ -3545,6 +3637,15 @@ var d = labToolData || {};
                         });
 
                         upd('smCompanies', companies);
+
+                        // Day-0 prices, kept forever so the buy-and-hold index
+                        // benchmark survives the history arrays' 30-entry cap.
+
+                        var basePrices = {};
+
+                        companies.forEach(function (c) { basePrices[c.ticker] = c.price; });
+
+                        upd('smBaseline', basePrices);
 
                         upd('smCash', 10000);
 
@@ -3897,51 +3998,92 @@ var d = labToolData || {};
 
                     // Portfolio Analytics
 
-                    smDay > 0 && React.createElement('div', { className: 'mt-3 bg-slate-50 rounded-xl p-3 border border-slate-400' },
+                    smDay > 0 && (function () {
 
-                      React.createElement('h4', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.economicslab.portfolio_analytics', '\uD83D\uDCC8 Portfolio Analytics')),
+                      // Buy-and-hold benchmark: equal-weight index of every ticker
+                      // from its day-0 price. "Did your trading beat just holding?"
+                      // is the core index-fund lesson this sim can teach.
 
-                      React.createElement('div', { className: 'grid grid-cols-3 gap-2 text-center' },
+                      var idxRatios = smCompanies.map(function (c) {
+                        var base = (d.smBaseline || {})[c.ticker] || (c.history && c.history[0]) || c.price;
+                        return base > 0 ? c.price / base : 1;
+                      });
 
-                        React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
+                      var idxReturn = idxRatios.length ? (idxRatios.reduce(function (s, r) { return s + r; }, 0) / idxRatios.length - 1) * 100 : 0;
 
-                          React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.total_p_l', 'Total P&L')),
+                      var myReturn = (smTotalVal / 10000 - 1) * 100;
 
-                          React.createElement('div', { className: 'text-sm font-bold ' + (smTotalVal - 10000 >= 0 ? 'text-green-600' : 'text-red-500') },
+                      var stockVal = smCompanies.reduce(function (s, c) { return s + (smPortfolio[c.ticker] || 0) * c.price; }, 0);
 
-                            (smTotalVal - 10000 >= 0 ? '+' : '') + '$' + (smTotalVal - 10000).toFixed(0))
+                      var topShare = 0;
+
+                      smCompanies.forEach(function (c) { var v = (smPortfolio[c.ticker] || 0) * c.price; if (stockVal > 0 && v / stockVal > topShare) topShare = v / stockVal; });
+
+                      return React.createElement('div', { className: 'mt-3 bg-slate-50 rounded-xl p-3 border border-slate-400' },
+
+                        React.createElement('h4', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.economicslab.portfolio_analytics', '\uD83D\uDCC8 Portfolio Analytics')),
+
+                        React.createElement('div', { className: 'grid grid-cols-4 gap-2 text-center' },
+
+                          React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
+
+                            React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.total_p_l', 'Total P&L')),
+
+                            React.createElement('div', { className: 'text-sm font-bold ' + (smTotalVal - 10000 >= 0 ? 'text-green-600' : 'text-red-500') },
+
+                              (smTotalVal - 10000 >= 0 ? '+' : '') + '$' + (smTotalVal - 10000).toFixed(0))
+
+                          ),
+
+                          React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
+
+                            React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.return', 'Return %')),
+
+                            React.createElement('div', { className: 'text-sm font-bold ' + (smTotalVal >= 10000 ? 'text-green-600' : 'text-red-500') },
+
+                              (smTotalVal >= 10000 ? '+' : '') + myReturn.toFixed(1) + '%')
+
+                          ),
+
+                          React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
+
+                            React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.index_hold', 'Index (hold)')),
+
+                            React.createElement('div', { className: 'text-sm font-bold ' + (idxReturn >= 0 ? 'text-green-600' : 'text-red-500') },
+
+                              (idxReturn >= 0 ? '+' : '') + idxReturn.toFixed(1) + '%')
+
+                          ),
+
+                          React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
+
+                            React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.holdings', 'Holdings')),
+
+                            React.createElement('div', { className: 'text-sm font-bold text-slate-700' },
+
+                              Object.keys(smPortfolio).filter(function (t) { return smPortfolio[t] > 0; }).length + ' stocks')
+
+                          )
 
                         ),
 
-                        React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
+                        myReturn < idxReturn - 0.5 && React.createElement('div', { className: 'mt-2 text-[11px] text-indigo-700 bg-indigo-50 rounded-lg p-2 border border-indigo-100' },
 
-                          React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.return', 'Return %')),
+                          t('stem.economicslab.index_lesson', '\uD83D\uDCDA The buy-and-hold index is beating your trading. Most active traders underperform simply holding everything \u2014 this is why index funds are the default advice.')),
 
-                          React.createElement('div', { className: 'text-sm font-bold ' + (smTotalVal >= 10000 ? 'text-green-600' : 'text-red-500') },
+                        topShare > 0.7 && stockVal > 0 && React.createElement('div', { className: 'mt-2 text-[11px] text-amber-700 bg-amber-50 rounded-lg p-2 border border-amber-100' },
 
-                            (smTotalVal >= 10000 ? '+' : '') + ((smTotalVal / 10000 - 1) * 100).toFixed(1) + '%')
+                          t('stem.economicslab.concentration_warning', '\u26A0\uFE0F Over 70% of your stock value is in one company. Diversification cushions single-company shocks \u2014 spread your bets.'))
 
-                        ),
+                      );
 
-                        React.createElement('div', { className: 'bg-white rounded-lg p-2 border border-slate-100' },
-
-                          React.createElement('div', { className: 'text-[11px] text-slate-600' }, t('stem.economicslab.holdings', 'Holdings')),
-
-                          React.createElement('div', { className: 'text-sm font-bold text-slate-700' },
-
-                            Object.keys(smPortfolio).filter(function (t) { return smPortfolio[t] > 0; }).length + ' stocks')
-
-                        )
-
-                      )
-
-                    ),
+                    })(),
 
                     // Reset Market button
 
                     React.createElement('button', {
 
-                      onClick: function () { upd('smCompanies', null); upd('smPortfolio', {}); upd('smCash', 10000); upd('smDay', 0); upd('smInput', ''); upd('smNewsEvent', null); if (addToast) addToast('\u267B Market reset! Create a new one.', 'info'); },
+                      onClick: function () { upd('smCompanies', null); upd('smPortfolio', {}); upd('smCash', 10000); upd('smDay', 0); upd('smInput', ''); upd('smNewsEvent', null); upd('smBaseline', null); if (addToast) addToast('\u267B Market reset! Create a new one.', 'info'); },
 
                       className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-400'
 
@@ -4090,7 +4232,11 @@ var d = labToolData || {};
 
                       }),
 
-                      React.createElement('div', { className: 'text-[11px] text-amber-600 mt-0.5' }, 'Suggested: $' + (d.enBusiness.suggestedPrice || 10))
+                      React.createElement('div', { className: 'text-[11px] text-amber-600 mt-0.5' }, 'Suggested: $' + (d.enBusiness.suggestedPrice || 10)),
+
+                      (d.enBizPrice || d.enBusiness.suggestedPrice || 10) < (d.enBusiness.unitCost || 0) && React.createElement('div', { className: 'text-[11px] text-red-700 font-bold mt-1', role: 'alert' }, t('stem.economicslab.below_cost_warning', '⚠️ Price is below unit cost — you lose money on EVERY sale.')),
+
+                      (d.enBizPrice || 0) > (d.enBusiness.suggestedPrice || 10) * 2 && React.createElement('div', { className: 'text-[11px] text-amber-700 mt-1' }, t('stem.economicslab.high_price_hint', '📚 Price is far above suggested — expect demand to fall (price elasticity).'))
 
                     ),
 
@@ -4312,6 +4458,14 @@ var d = labToolData || {};
               var mTax = d.macroTax || 0;
               var mNeutral = 3;
               var mRealRate = mRate - macroInflation;
+              // Predict-then-check: pick a goal BEFORE advancing the year; the
+              // year report grades the outcome against it.
+              var mGoal = d.macroGoal || null;
+              var MACRO_GOALS = [
+                { id: 'cool_inflation', label: t('stem.economicslab.goal_cool_inflation', '❄️ Cool inflation') },
+                { id: 'boost_growth', label: t('stem.economicslab.goal_boost_growth', '📈 Boost growth') },
+                { id: 'cut_unemployment', label: t('stem.economicslab.goal_cut_unemployment', '💼 Cut unemployment') }
+              ];
               var MACRO_SHOCKS = [
                 { name: t('stem.economicslab.shock_oil', 'Oil price shock'), icon: '\u26FD', gdp: -1.2, inf: 2.0, unemp: 0.6, trade: -0.5, lesson: t('stem.economicslab.shock_oil_lesson', 'Supply shocks raise prices AND cut output at the same time \u2014 stagflation pressure, like the 1973 OPEC embargo.') },
                 { name: t('stem.economicslab.shock_tech', 'Tech productivity boom'), icon: '\uD83D\uDCBB', gdp: 1.5, inf: -0.5, unemp: -0.4, trade: 0.3, lesson: t('stem.economicslab.shock_tech_lesson', 'Productivity growth is the rare free lunch: more output per worker lifts GDP without stoking inflation.') },
@@ -4336,6 +4490,9 @@ var d = labToolData || {};
                 if (mRate - mNeutral > 0.5) lines.push(t('stem.economicslab.report_rate_high', '\uD83C\uDFE6 Interest rates above the ~3% neutral rate made borrowing expensive \u2014 investment and hiring slowed (monetary brake).'));
                 if (mRate - mNeutral < -0.5) lines.push(t('stem.economicslab.report_rate_low', '\uD83C\uDFE6 Interest rates below neutral made borrowing cheap \u2014 credit-fueled demand rose (monetary gas pedal).'));
                 lines.push(t('stem.economicslab.report_okun', '\uD83D\uDCCA Okun\'s law: growth of ') + gdpNew.toFixed(1) + t('stem.economicslab.report_okun_2', '% vs the ~2% trend moved unemployment to ') + unempNew.toFixed(1) + '%.');
+                if (mGoal === 'cool_inflation') lines.push((infNew < macroInflation ? '\uD83C\uDFAF ' : '\u26A0\uFE0F ') + t('stem.economicslab.goal_check_inflation', 'Goal check \u2014 inflation: ') + macroInflation.toFixed(1) + '% \u2192 ' + infNew.toFixed(1) + '%' + (infNew < macroInflation ? ' \u2713' : ' ' + t('stem.economicslab.goal_missed_inflation', '(moved the wrong way \u2014 which lever raises the cost of borrowing?)')));
+                if (mGoal === 'boost_growth') lines.push((gdpNew > macroGDP ? '\uD83C\uDFAF ' : '\u26A0\uFE0F ') + t('stem.economicslab.goal_check_growth', 'Goal check \u2014 GDP growth: ') + macroGDP.toFixed(1) + '% \u2192 ' + gdpNew.toFixed(1) + '%' + (gdpNew > macroGDP ? ' \u2713' : ' ' + t('stem.economicslab.goal_missed_growth', '(what adds demand \u2014 spending, tax cuts, or cheaper credit?)')));
+                if (mGoal === 'cut_unemployment') lines.push((unempNew < macroUnemployment ? '\uD83C\uDFAF ' : '\u26A0\uFE0F ') + t('stem.economicslab.goal_check_unemployment', 'Goal check \u2014 unemployment: ') + macroUnemployment.toFixed(1) + '% \u2192 ' + unempNew.toFixed(1) + '%' + (unempNew < macroUnemployment ? ' \u2713' : ' ' + t('stem.economicslab.goal_missed_unemployment', "(Okun's law: unemployment falls when growth beats the ~2% trend)")));
                 var hist = (d.macroHistory || []).slice(-29);
                 hist.push({ year: macroYear, gdp: gdpNew, inflation: infNew, unemployment: unempNew, interest: mRate });
                 upd('macroGDP', gdpNew); upd('macroInflation', infNew);
@@ -4351,6 +4508,17 @@ var d = labToolData || {};
                 if (announceToSR) announceToSR('Year ' + macroYear + ' simulated. GDP growth ' + gdpNew.toFixed(1) + ' percent, inflation ' + infNew.toFixed(1) + ' percent, unemployment ' + unempNew.toFixed(1) + ' percent.' + (shock ? ' Shock: ' + shock.name + '.' : ''));
               };
               return React.createElement('div', { className: 'mt-4', 'data-economicslab-macro-controls': 'true' },
+                React.createElement('div', { className: 'flex items-center gap-2 mb-3 flex-wrap' },
+                  React.createElement('span', { className: 'text-[11px] font-bold text-slate-600' }, t('stem.economicslab.policy_goal_label', '🎯 Policy goal (pick one, predict, then advance):')),
+                  MACRO_GOALS.map(function (g) {
+                    var isOn = mGoal === g.id;
+                    return React.createElement('button', {
+                      key: g.id, type: 'button', 'aria-pressed': isOn ? 'true' : 'false',
+                      onClick: function () { upd('macroGoal', isOn ? null : g.id); },
+                      className: 'text-[11px] px-2 py-1 rounded-full border font-bold ' + (isOn ? 'bg-red-600 text-white border-red-600' : 'bg-white text-slate-600 border-slate-300 hover:border-red-400')
+                    }, g.label);
+                  })
+                ),
                 React.createElement('div', { className: 'grid grid-cols-2 gap-4 mb-3' },
                   React.createElement('div', { className: 'space-y-2 bg-blue-50 rounded-xl p-4 border border-blue-200' },
                     React.createElement('h4', { className: 'text-sm font-bold text-blue-700' }, t('stem.economicslab.central_bank', '\uD83C\uDFE6 Central Bank (Monetary Policy)')),
