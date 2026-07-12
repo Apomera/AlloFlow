@@ -4254,19 +4254,16 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
   const [studentFilter, setStudentFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('students');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-  // WCAG 2.1.2 + 2.4.3: Escape closes the Clear Confirm modal + restores focus.
-  // Proper top-of-component useEffect — previously in module.js only, wedged inside
-  // an st.tools.map() callback (React Hook Rules violation). Fixed April 2026.
-  useEffect(function() {
-    function _alloEscHandler(e) {
-      if (e.key === 'Escape' && showClearConfirm) {
-        setShowClearConfirm(false);
-        if (typeof alloRestoreFocus === 'function') alloRestoreFocus();
-      }
-    }
-    document.addEventListener('keydown', _alloEscHandler);
-    return function() { document.removeEventListener('keydown', _alloEscHandler); };
+  const clearConfirmDialogRef = useRef(null);
+  const clearConfirmTriggerRef = useRef(null);
+  useEffect(() => {
+    if (!showClearConfirm) return;
+    clearConfirmDialogRef.current?.querySelector('[data-safe-default="true"]')?.focus();
   }, [showClearConfirm]);
+  const closeClearConfirm = () => {
+    setShowClearConfirm(false);
+    window.setTimeout(() => clearConfirmTriggerRef.current?.focus(), 0);
+  };
   const toggleGraded = (id) => {
       setGradedIds(prev => {
           const next = new Set(prev);
@@ -4538,13 +4535,14 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       return Math.round(totalPct / quizzes.length);
   };
   const studentAvg = selectedStudent ? getStudentAvgScore(selectedStudent) : 0;
-  const handleClearAll = () => {
+  const handleClearAll = (event) => {
+      clearConfirmTriggerRef.current = event?.currentTarget || document.activeElement;
       setShowClearConfirm(true);
   };
   const confirmClearAll = () => {
       setDashboardData([]);
       setGradedIds(new Set());
-      setShowClearConfirm(false);
+      closeClearConfirm();
       if (addToast) addToast(t('dashboard.toasts.dashboard_cleared'), "info");
   };
   const handleExportResearchPDF = async () => {
@@ -5353,7 +5351,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                     onChange={handleBatchUpload} data-help-key="dashboard_add_file_btn_input" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                                  />
                              </div>
-                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors" onClick={handleClearAll} role="button" tabIndex="0" aria-label={t('dashboard.stats.clear_dashboard')} onKeyDown={(e) => e.key === 'Enter' && handleClearAll()}>
+                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors" onClick={handleClearAll} role="button" tabIndex="0" aria-label={t('dashboard.stats.clear_dashboard')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleClearAll(e))}>
                                  <div className="bg-red-100 p-3 rounded-full text-red-600"><Trash2 size={24}/></div>
                                  <div>
                                      <div className="text-sm font-bold text-red-700">{t('dashboard.stats.clear_dashboard')}</div>
@@ -5819,25 +5817,35 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
          )}
       </div>
       {showClearConfirm && (
-          <div role="button" tabIndex={0} className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center animate-in fade-in duration-200" onClick={() => setShowClearConfirm(false)}>
-              <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" aria-labelledby="teacher-clear-confirm-title" onClick={(e) => e.stopPropagation()}>
+          <div role="presentation" className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center animate-in fade-in duration-200" onMouseDown={(event) => { if (event.target === event.currentTarget) closeClearConfirm(); }}>
+              <div
+                  ref={clearConfirmDialogRef}
+                  className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 animate-in zoom-in-95 duration-200"
+                  role="alertdialog"
+                  aria-modal="true"
+                  aria-labelledby="teacher-clear-confirm-title"
+                  aria-describedby="teacher-clear-confirm-description"
+                  onKeyDown={event => {
+                      if (event.key === 'Escape') { event.preventDefault(); closeClearConfirm(); return; }
+                      if (event.key !== 'Tab') return;
+                      const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                      if (!focusable.length) { event.preventDefault(); return; }
+                      const first = focusable[0];
+                      const last = focusable[focusable.length - 1];
+                      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+                  }}
+              >
                   <div className="flex items-center gap-3 mb-4">
-                      <div className="bg-red-100 p-3 rounded-full"><Trash2 size={24} className="text-red-600"/></div>
+                      <div className="bg-red-100 p-3 rounded-full" aria-hidden="true"><Trash2 size={24} className="text-red-600"/></div>
                       <h3 id="teacher-clear-confirm-title" className="text-lg font-bold text-slate-800">{t('dashboard.clear_all')}</h3>
                   </div>
-                  <p className="text-slate-600 mb-6">{t('dashboard.clear_confirm')}</p>
+                  <p id="teacher-clear-confirm-description" className="text-slate-600 mb-6">{t('dashboard.clear_confirm')}</p>
                   <div className="flex gap-3">
-                      <button
-                          onClick={() => setShowClearConfirm(false)}
-                          className="flex-1 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
-                      >
+                      <button type="button" data-safe-default="true" onClick={closeClearConfirm} className="flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
                           {t('common.cancel')}
                       </button>
-                      <button
-                          onClick={confirmClearAll}
-                          className="flex-1 py-2.5 px-4 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 transition-colors"
-                          autoFocus
-                      >
+                      <button type="button" onClick={confirmClearAll} className="flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-white bg-red-700 hover:bg-red-800 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                           {t('common.confirm')}
                       </button>
                   </div>

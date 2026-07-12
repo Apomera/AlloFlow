@@ -83,6 +83,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Made the Escape Room teacher End game confirmation a named/described alert dialog; moved initial focus to the safe Cancel action, contained Tab, supported Escape cancellation, restored focus to the End game trigger, hid its decorative icon, and maintained 44 CSS-pixel action targets (WCAG 1.1.1, 2.1.1, 2.4.3, 2.4.7, 2.5.8, 3.3.4, 4.1.2).
 
+- Corrected the teacher dashboard Clear all confirmation: removed button semantics and keyboard focus from the backdrop, changed the destructive prompt to a named/described alert dialog, focused the safe Cancel action instead of deletion, contained Tab, supported Escape and backdrop cancellation, restored focus to either Clear all trigger, added Space activation to the legacy card trigger, hid the decorative trash icon, and maintained 44 CSS-pixel actions (WCAG 1.1.1, 2.1.1, 2.4.3, 2.4.7, 2.5.8, 3.3.4, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
