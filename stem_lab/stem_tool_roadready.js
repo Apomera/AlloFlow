@@ -8487,7 +8487,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (!peds.length) return;
           for (var pyi = 0; pyi < peds.length; pyi++) {
             var py = peds[pyi];
-            if (!py.crossing) { py._yieldArmed = false; continue; }
+            // Clear BOTH flags when the crossing ends: _yieldLogged used to be
+            // set once per pedestrian forever, so a ped's second crossing was
+            // never scored (no +4 for yielding, no -20 for blowing through).
+            // Each distinct crossing is now an independent graded event, same
+            // as the bus stop-arm cycle reset above.
+            if (!py.crossing) { py._yieldArmed = false; py._yieldLogged = null; continue; }
             var dx = py.x - car.x;
             var dy = py.y - car.y;
             var dist = Math.hypot(dx, dy);
@@ -20168,7 +20173,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             style: {
               background: 'linear-gradient(135deg, #0c4a6e, #1e1b4b, #4c1d95)',
               backgroundSize: '200% 200%',
-              animation: 'rrHeroPan 20s ease infinite, rrTourFade 0.5s ease-out',
+              // In-app reduced-motion toggle gates the pan (the module-level CSS
+              // only covers the OS prefers-reduced-motion media query)
+              animation: reducedMotionRef.current ? 'none' : 'rrHeroPan 20s ease infinite, rrTourFade 0.5s ease-out',
               borderRadius: '20px',
               padding: '40px 28px',
               textAlign: 'center',
@@ -20176,7 +20183,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               boxShadow: '0 12px 40px rgba(76,29,149,0.4)'
             }
           },
-            h('div', { style: { fontSize: '80px', animation: 'rrTourIcon 2.5s ease-in-out infinite', display: 'inline-block', marginBottom: '14px' } }, cur.icon),
+            h('div', { style: { fontSize: '80px', animation: reducedMotionRef.current ? 'none' : 'rrTourIcon 2.5s ease-in-out infinite', display: 'inline-block', marginBottom: '14px' } }, cur.icon),
             h('h2', { style: { fontSize: '26px', fontWeight: 900, marginBottom: '10px' } }, cur.title),
             h('div', { style: { fontSize: '14px', color: '#e0e7ff', lineHeight: '1.6', marginBottom: '24px', padding: '0 10px' } }, cur.body),
             // Progress dots
@@ -20230,7 +20237,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               overflow: 'hidden',
               background: 'linear-gradient(120deg, #0c4a6e, #1e1b4b, #4c1d95, #0c4a6e)',
               backgroundSize: '300% 300%',
-              animation: 'rrHeroPan 20s ease infinite',
+              animation: reducedMotionRef.current ? 'none' : 'rrHeroPan 20s ease infinite',
               border: '1px solid rgba(168,139,250,0.4)',
               boxShadow: '0 8px 32px rgba(76, 29, 149, 0.3)'
             }
@@ -20246,13 +20253,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   bottom: '-10px',
                   fontSize: '20px',
                   pointerEvents: 'none',
-                  animation: 'rrHeroFloat ' + (8 + (ei % 3) * 2) + 's linear ' + delay + 's infinite',
+                  animation: reducedMotionRef.current ? 'none' : ('rrHeroFloat ' + (8 + (ei % 3) * 2) + 's linear ' + delay + 's infinite'),
                   opacity: 0
                 }
               }, em);
             }),
             h('div', { style: { position: 'relative', zIndex: 2 } },
-              h('div', { style: { fontSize: '56px', animation: 'rrHeroPulse 3s ease-in-out infinite', display: 'inline-block' } }, '🚗'),
+              h('div', { style: { fontSize: '56px', animation: reducedMotionRef.current ? 'none' : 'rrHeroPulse 3s ease-in-out infinite', display: 'inline-block' } }, '🚗'),
               h('h2', { style: { fontSize: '26px', fontWeight: 900, marginBottom: '4px', background: 'linear-gradient(90deg, #fbbf24, #f472b6, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } }, 'RoadReady'),
               h('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))', fontWeight: 600 } }, __alloT('stem.roadready.driver_s_ed_automotive_science_maine_e', "Driver's Ed & Automotive Science — Maine edition")),
               h('div', { style: { fontSize: '11px', color: '#a5b4fc', marginTop: '4px' } }, __alloT('stem.roadready.learn_the_physics_pass_the_test_drive_', "Learn the physics. Pass the test. Drive safer."))
@@ -21277,7 +21284,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.75)', zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'rr-fade-in 0.3s ease-out', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }
           },
             h('div', { style: { background: 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(2,6,23,0.95))', borderRadius: '18px', padding: '36px 44px', border: '2px solid #22d3ee', boxShadow: '0 20px 60px rgba(34,211,238,0.3)', textAlign: 'center', maxWidth: '420px' } },
-              h('div', { style: { fontSize: '64px', marginBottom: '12px', animation: 'rr-pulse-soft 2s ease-in-out infinite' }, 'aria-hidden': 'true' }, '⏸'),
+              h('div', { style: { fontSize: '64px', marginBottom: '12px', animation: reducedMotionRef.current ? 'none' : 'rr-pulse-soft 2s ease-in-out infinite' }, 'aria-hidden': 'true' }, '⏸'),
               h('h2', { style: { fontSize: '28px', fontWeight: 900, color: '#22d3ee', margin: '0 0 8px 0', letterSpacing: '0.12em' } }, 'PAUSED'),
               h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '22px' } }, __alloT('stem.roadready.take_a_breath_check_your_mirrors_plan_', 'Take a breath. Check your mirrors. Plan your next move.')),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', alignItems: 'center' } },
@@ -21303,7 +21310,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Read the React-state mirror, NOT the ref — a ref update alone won't
           // cause a re-render and the prompt would hang on screen forever.
           !beltFastened ? h('div', {
-            style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '14px 22px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(127,29,29,0.95), rgba(185,28,28,0.95))', border: '2px solid #fca5a5', color: '#fff', zIndex: 28, textAlign: 'center', maxWidth: '440px', boxShadow: '0 6px 24px rgba(239,68,68,0.5)', animation: 'rr-pulse-soft 1.5s ease-in-out infinite' }
+            style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '14px 22px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(127,29,29,0.95), rgba(185,28,28,0.95))', border: '2px solid #fca5a5', color: '#fff', zIndex: 28, textAlign: 'center', maxWidth: '440px', boxShadow: '0 6px 24px rgba(239,68,68,0.5)', animation: reducedMotionRef.current ? 'none' : 'rr-pulse-soft 1.5s ease-in-out infinite' }
           },
             h('div', { style: { fontSize: '36px', marginBottom: '4px' } }, '🔔'),
             h('div', { style: { fontSize: '15px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.fasten_your_seatbelt', 'Fasten Your Seatbelt')),
@@ -26757,7 +26764,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     updMulti({ rtPhase: 'waiting', rtTrials: newTrials, rtWaitUntil: Date.now() + 1500 + Math.random() * 2500, rtTargetColor: Object.keys(colors)[Math.floor(Math.random() * 4)] });
                   }
                 },
-                style: { width: '160px', height: '160px', borderRadius: '50%', border: 'none', background: colors[rtTargetColor] || '#22d3ee', cursor: 'pointer', boxShadow: '0 0 40px ' + (colors[rtTargetColor] || '#22d3ee'), animation: 'rrHeroPulse 0.8s ease-in-out infinite' }
+                style: { width: '160px', height: '160px', borderRadius: '50%', border: 'none', background: colors[rtTargetColor] || '#22d3ee', cursor: 'pointer', boxShadow: '0 0 40px ' + (colors[rtTargetColor] || '#22d3ee'), animation: reducedMotionRef.current ? 'none' : 'rrHeroPulse 0.8s ease-in-out infinite' }
               }, h('div', { style: { fontSize: '16px', fontWeight: 900, color: '#fff' } }, 'TAP!')) :
               null
             ),
@@ -27372,8 +27379,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_50', '← Menu')),
           // Hero
-          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #4c1d95, #0c4a6e)', backgroundSize: '200% 200%', animation: 'rrHeroPan 15s ease infinite', borderRadius: '16px', padding: '24px', textAlign: 'center', marginBottom: '20px', border: '1px solid #fbbf24' } },
-            h('div', { style: { fontSize: '64px', animation: 'rrHeroPulse 3s ease-in-out infinite' } }, '🏆'),
+          h('div', { style: { background: 'linear-gradient(135deg, #78350f, #4c1d95, #0c4a6e)', backgroundSize: '200% 200%', animation: reducedMotionRef.current ? 'none' : 'rrHeroPan 15s ease infinite', borderRadius: '16px', padding: '24px', textAlign: 'center', marginBottom: '20px', border: '1px solid #fbbf24' } },
+            h('div', { style: { fontSize: '64px', animation: reducedMotionRef.current ? 'none' : 'rrHeroPulse 3s ease-in-out infinite' } }, '🏆'),
             h('h2', { style: { fontSize: '26px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.achievement_gallery_2', 'Achievement Gallery')),
             h('div', { style: { fontSize: '14px', color: '#fde68a' } }, earnedCount + ' of ' + ACHIEVEMENTS.length + ' unlocked · ' + pctEarned + '% complete'),
             // Progress ring
@@ -29813,6 +29820,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }
     }
   });
+
+  // ── Test-only exports ─────────────────────────────────────────────────
+  // Exposes the module's pure functions + data tables to the vitest suites
+  // (tests/roadready_logic.test.js). INERT IN PRODUCTION: the block only
+  // runs when a test harness pre-sets window.__RR_TEST_EXPORTS__ BEFORE this
+  // script loads — the app never sets it. Same philosophy as the existing
+  // window.__testHooks live-sim hook, but for module-scope logic.
+  if (typeof window !== 'undefined' && window.__RR_TEST_EXPORTS__) {
+    window.__RR_TEST_EXPORTS__.roadReady = {
+      // constants
+      MPH_TO_MS: MPH_TO_MS, MS_TO_MPH: MS_TO_MPH, FT_PER_M: FT_PER_M,
+      METERS_PER_MILE: METERS_PER_MILE, AIR_DENSITY: AIR_DENSITY,
+      MAP_SIZE: MAP_SIZE, CHUNK_SIZE: CHUNK_SIZE,
+      MAX_ROAD_WIDTH: MAX_ROAD_WIDTH, CLEARANCE_BUFFER: CLEARANCE_BUFFER,
+      SPLINE_MAX_HEADING: SPLINE_MAX_HEADING,
+      BIOME_SPEED_LIMIT_MPH: BIOME_SPEED_LIMIT_MPH,
+      RR_MIN_AI_CENTER_GAP: RR_MIN_AI_CENTER_GAP,
+      RR_MIN_TRAFFIC_SPAWN_GAP: RR_MIN_TRAFFIC_SPAWN_GAP,
+      // data tables
+      VEHICLES: VEHICLES, MAINE_RULES: MAINE_RULES, UNIVERSAL_RULES: UNIVERSAL_RULES,
+      SIGN_CATEGORIES: SIGN_CATEGORIES, PERMIT_BANK: PERMIT_BANK,
+      PERMIT_CATEGORIES: PERMIT_CATEGORIES, LESSONS: LESSONS, SCENARIOS: SCENARIOS,
+      DAILY_QUOTES: DAILY_QUOTES, ACHIEVEMENTS: ACHIEVEMENTS, CHALLENGES: CHALLENGES,
+      MAINE_TOWNS: MAINE_TOWNS, TRIPS: TRIPS, PARKING_SCENARIOS: PARKING_SCENARIOS,
+      BIOMES: BIOMES, BIOME_PROGRESSION: BIOME_PROGRESSION, LANDMARK_TYPES: LANDMARK_TYPES,
+      // physics
+      normalizeWeather: normalizeWeather, frictionCoef: frictionCoef,
+      rollingCoef: rollingCoef, dragForce: dragForce, rollingForce: rollingForce,
+      resistiveForce: resistiveForce, stoppingDistance: stoppingDistance,
+      idleGph: idleGph, instantMPG: instantMPG, cruiseMPG: cruiseMPG,
+      safeFollowingFeet: safeFollowingFeet,
+      // permit test machinery
+      shuffleAnswers: shuffleAnswers, shuffleArray: shuffleArray,
+      buildRandomTest: buildRandomTest, buildCategoryTest: buildCategoryTest,
+      buildWeakTest: buildWeakTest,
+      // world generation
+      seededRandom: seededRandom, createRoadSpline: createRoadSpline,
+      generateChunk: generateChunk, createInfiniteWorld: createInfiniteWorld,
+      buildMap: buildMap, pickLandmarkForBiome: pickLandmarkForBiome,
+      getBiomeSpeedLimitMph: getBiomeSpeedLimitMph, townForChunk: townForChunk,
+      scenarioRoadCenterX: scenarioRoadCenterX,
+      // spawns + signals + events
+      hasTrafficGap: hasTrafficGap, spawnTraffic: spawnTraffic,
+      spawnPedestrians: spawnPedestrians, spawnCyclists: spawnCyclists,
+      spawnMotorcycles: spawnMotorcycles, spawnSignals: spawnSignals,
+      updateSignals: updateSignals, maybeSpawnEmergency: maybeSpawnEmergency,
+      maybeSpawnWildlife: maybeSpawnWildlife,
+      // coaching / grading / misc
+      pushDriveEvent: pushDriveEvent, coachTipFor: coachTipFor,
+      rrGradeLetter: rrGradeLetter, localDayKey: localDayKey,
+      rectsOverlap: rectsOverlap, obstacleAabb: obstacleAabb
+    };
+  }
 
 })();
 } // end duplicate guard
