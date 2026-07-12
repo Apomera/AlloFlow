@@ -286,7 +286,26 @@
   function _rZero(a) { return a[0] === 0; }
   function _scanElementSymbols(formula) { var out = [], m, re = /[A-Z][a-z]?/g; while ((m = re.exec(formula)) !== null) out.push(m[0]); return out; }
 
-  // parseSpecies('2H2O') -> { coef, formula, elems, mass, ok, unknown[] }
+  function _validateFormulaSyntax(formula) {
+    if (!formula) return 'Formula is empty';
+    var tokens = formula.match(/[A-Z][a-z]?|\d+|[().\u00b7]/g) || [];
+    if (tokens.join('') !== formula) return 'Formula contains unsupported characters or misplaced lowercase letters';
+    var depth = 0;
+    for (var i = 0; i < tokens.length; i++) {
+      if (tokens[i] === '(') depth++;
+      else if (tokens[i] === ')') {
+        depth--;
+        if (depth < 0) return 'Formula has a closing parenthesis without a matching opening parenthesis';
+      } else if (/^\d+$/.test(tokens[i]) && parseInt(tokens[i], 10) < 1) {
+        return 'Subscripts and hydrate multipliers must be positive whole numbers';
+      }
+    }
+    if (depth !== 0) return 'Formula has unmatched parentheses';
+    if (!/[A-Z]/.test(formula)) return 'Formula needs at least one element symbol';
+    return '';
+  }
+
+  // parseSpecies('2H2O') -> { coef, formula, elems, mass, ok, unknown[], syntaxError }
   function parseSpecies(token) {
     token = String(token == null ? '' : token).trim();
     var coef = 1;
@@ -295,25 +314,45 @@
     if (cm) { coef = parseInt(cm[1], 10); formula = token.slice(cm[0].length); }
     formula = formula.trim().replace(/\((?:s|l|g|aq)\)/gi, ''); // drop state labels (s),(l),(g),(aq)
     var unknown = [];
+    var syntaxError = coef < 1 ? 'Coefficients must be positive whole numbers' : _validateFormulaSyntax(formula);
     var syms = _scanElementSymbols(formula);
     for (var i = 0; i < syms.length; i++) { if (!ELEMENTS[syms[i]] && unknown.indexOf(syms[i]) < 0) unknown.push(syms[i]); }
     var pf = parseFormula(formula);
-    return { coef: coef, formula: formula, elems: pf.elems, mass: pf.mass, ok: formula.length > 0 && unknown.length === 0, unknown: unknown };
+    return {
+      coef: coef,
+      formula: formula,
+      elems: pf.elems,
+      mass: pf.mass,
+      ok: formula.length > 0 && unknown.length === 0 && !syntaxError,
+      unknown: unknown,
+      syntaxError: syntaxError
+    };
   }
 
   // parseEquation('H2 + O2 -> H2O') -> { ok, reactants[], products[], elements[], error? }
   function parseEquation(str) {
     if (!str || typeof str !== 'string') return { ok: false, error: 'Type an equation, e.g. H2 + O2 -> H2O' };
     var norm = str.replace(/\u2192|\u27f6|\u21d2|=>|->/g, '=').replace(/\s+/g, ' ').trim();
+    // This matrix conserves atoms but does not include electrical charge.
+    // Refuse ionic notation instead of silently treating ions as neutral.
+    if (/(?:\^?\d*[+-])(?=\s*(?:\+|=|$))/.test(norm)) {
+      return { ok: false, error: 'Ionic charge notation is not supported in this balancer. Use a neutral molecular equation; charge must be conserved separately in ionic equations.' };
+    }
     var sides = norm.split('=');
     if (sides.length !== 2) return { ok: false, error: 'Use exactly one arrow (→ or ->) between reactants and products' };
     function parseSide(s) { return s.split('+').map(function (t) { return t.trim(); }).filter(Boolean).map(parseSpecies); }
     var reactants = parseSide(sides[0]), products = parseSide(sides[1]);
     if (!reactants.length || !products.length) return { ok: false, error: 'Both sides need at least one compound' };
     var all = reactants.concat(products), unknown = [];
-    for (var i = 0; i < all.length; i++) { for (var u = 0; u < all[i].unknown.length; u++) { if (unknown.indexOf(all[i].unknown[u]) < 0) unknown.push(all[i].unknown[u]); } }
-    if (unknown.length) return { ok: false, error: 'Unsupported element(s): ' + unknown.join(', ') + ' — this tool knows 26 common elements' };
-    var elements = [];
+    for (var i = 0; i < all.length; i++) {
+      if (all[i].syntaxError) {
+        return { ok: false, error: 'Invalid formula ' + (all[i].formula || '(empty)') + ': ' + all[i].syntaxError };
+      }
+      for (var u = 0; u < all[i].unknown.length; u++) {
+        if (unknown.indexOf(all[i].unknown[u]) < 0) unknown.push(all[i].unknown[u]);
+      }
+    }
+    if (unknown.length) return { ok: false, error: 'Unsupported element(s): ' + unknown.join(', ') + ' - this tool knows 26 common elements' };    var elements = [];
     for (var j = 0; j < all.length; j++) { var ek = Object.keys(all[j].elems); for (var k = 0; k < ek.length; k++) if (elements.indexOf(ek[k]) < 0) elements.push(ek[k]); }
     return { ok: true, reactants: reactants, products: products, elements: elements };
   }
@@ -19054,7 +19093,7 @@
                   h('h4', { className: 'font-bold text-slate-800 text-sm' }, __alloT('stem.chembalance.autobalance_title', 'Balance any equation')),
                   h('span', { className: 'ml-auto text-[10px] font-bold uppercase tracking-wide text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full' }, __alloT('stem.chembalance.calc_badge', 'Calculated · not AI'))
                 ),
-                h('p', { className: 'text-xs text-slate-500 mb-2' }, __alloT('stem.chembalance.autobalance_hint', 'Type your own reactants and products. Solved exactly by atom-conservation math — the AI tutor is never the authority on coefficients.')),
+                h('p', { className: 'text-xs text-slate-500 mb-2' }, __alloT('stem.chembalance.autobalance_hint', 'Type a neutral molecular equation. Solved exactly by atom-conservation math - the AI tutor is never the authority on coefficients. Ionic equations require separate charge conservation and are not supported here.')),
                 h('div', { className: 'flex gap-2' },
                   h('input', { type: 'text', value: d._balanceInput || '', onChange: function(e) { upd('_balanceInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') runAutoBalance(); }, placeholder: 'H2 + O2 -> H2O', 'aria-label': __alloT('stem.chembalance.equation_to_balance', 'Equation to balance'), className: 'flex-1 px-3 py-2 text-sm font-mono border border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none' }),
                   h('button', { onClick: runAutoBalance, className: 'px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors text-sm whitespace-nowrap' }, __alloT('stem.chembalance.balance_it', 'Balance'))
@@ -19064,7 +19103,7 @@
                   h('div', { dir: 'auto', className: 'text-base font-mono font-bold text-slate-800 break-words' }, _balRes.balancedString),
                   _balRes.alreadyBalanced && h('div', { className: 'text-xs text-slate-500 mt-1' }, __alloT('stem.chembalance.already_balanced_note', 'You typed it already balanced — nice.'))
                 ),
-                _balRes && !_balRes.ok && h('div', { className: 'mt-3 bg-rose-50 rounded-lg p-3 border border-rose-200 text-sm text-rose-700' }, '⚠ ' + _balRes.error)
+                _balRes && !_balRes.ok && h('div', { role: 'alert', 'aria-live': 'assertive', className: 'mt-3 bg-rose-50 rounded-lg p-3 border border-rose-200 text-sm text-rose-700' }, '⚠ ' + _balRes.error)
               ),
               showHints && h('div', { className: 'mt-3 bg-blue-50 rounded-lg p-3 border border-blue-200 text-left' },
                 h('p', { className: 'text-xs font-bold text-blue-700 mb-1' }, '\uD83D\uDCA1 ' + preset.hint),

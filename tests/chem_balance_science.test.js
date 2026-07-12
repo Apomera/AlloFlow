@@ -90,10 +90,46 @@ describe('chemBalance — general equation balancer (deterministic)', () => {
   it('rejects input with no arrow', () => {
     expect(chem().balanceEquation('H2 + O2').ok).toBe(false);
   });
+  it('rejects malformed formulas instead of silently dropping characters', () => {
+    const punctuation = chem().balanceEquation('H2O! -> H2 + O2');
+    expect(punctuation.ok).toBe(false);
+    expect(punctuation.error).toMatch(/Invalid formula|unsupported characters/i);
+
+    const parentheses = chem().balanceEquation('Ca(OH2 + HCl -> CaCl2 + H2O');
+    expect(parentheses.ok).toBe(false);
+    expect(parentheses.error).toMatch(/unmatched parentheses/i);
+
+    const lowercase = chem().balanceEquation('Nacl -> Na + Cl2');
+    expect(lowercase.ok).toBe(false);
+    expect(lowercase.error).toMatch(/misplaced lowercase/i);
+  });
+
+  it('rejects zero subscripts and zero leading coefficients', () => {
+    expect(chem().balanceEquation('H0 + O2 -> H2O').error).toMatch(/positive whole numbers/i);
+    expect(chem().balanceEquation('0H2 + O2 -> H2O').error).toMatch(/positive whole numbers/i);
+  });
+
+  it('refuses ionic notation rather than ignoring electrical charge', () => {
+    const r = chem().balanceEquation('Na+ + Cl- -> NaCl');
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/Ionic charge notation is not supported/i);
+    expect(r.error).toMatch(/charge must be conserved separately/i);
+  });
+
+  it('shows validation errors in the calculated, non-AI UI surface', () => {
+    const r = chem().balanceEquation('H2O! -> H2 + O2');
+    const html = renderTool('chemBalance', {
+      chemBalance: { _everPicked: true, subtool: 'balance', _balanceInput: 'H2O! -> H2 + O2', _balanceResult: r }
+    });
+    expect(html).toContain('Invalid formula');
+    expect(html).toContain('unsupported characters');
+    expect(html).toContain('role="alert"');
+    expect(html).toContain('Ionic equations require separate charge conservation');
+  });
   it('renders the balanced result in a "Calculated · not AI" panel (UI surface)', () => {
     const r = chem().balanceEquation('H2 + O2 -> H2O');
     const html = renderTool('chemBalance', {
-      chemBalance: { subtool: 'balance', _balanceInput: 'H2 + O2 -> H2O', _balanceResult: r }
+      chemBalance: { _everPicked: true, subtool: 'balance', _balanceInput: 'H2 + O2 -> H2O', _balanceResult: r }
     });
     expect(html).toContain('2H2 + O2 → 2H2O'); // the computed equation is shown
     expect(html).toContain('not AI');           // distinctness badge — measured, not model judgment
