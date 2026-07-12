@@ -5,6 +5,12 @@
 > When intentionally enabling live sessions, follow [DEPLOY_YOUR_OWN.md](../DEPLOY_YOUR_OWN.md)
 > and deploy the versioned rules plus TTL configuration with
 > `firebase deploy -c firebase.live-sessions.json --only firestore:rules,firestore:indexes`.
+> (`firebase.live-sessions.json` exists at the repo root as of 2026-07-12 — it points the CLI at
+> `firestore.rules` + `firestore.indexes.json`, whose fieldOverrides declare the `expiresAt` TTL
+> policies for `session_assets`, signaling `peers`, and `_alloflowRateLimits`. The app already
+> writes `expiresAt` on those docs (24h live / 30d assignments); until the TTL policy is deployed
+> to an owned project, expired docs simply linger and are ignored/overwritten — verify the policy
+> shows "Active" under Firestore → TTL in the console after deploying.)
 > App Check monitoring/enforcement and emulator coverage are release requirements. The historical
 > checklist below remains only as behavioral context.
 >

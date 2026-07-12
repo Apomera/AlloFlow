@@ -7552,7 +7552,23 @@
       className: "text-lg font-bold text-amber-600"
     }, selectedStudent.stats.wsBestStreak, "\uD83D\uDD25"), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-600"
-    }, t('class_analytics.best_streak'))), selectedStudent.data.wordSoundsState.phonemeMastery && Object.keys(selectedStudent.data.wordSoundsState.phonemeMastery).length > 0 && /*#__PURE__*/React.createElement("div", {
+    }, t('class_analytics.best_streak'))), (function () {
+      // AAC integrity tile: items answered with the picture-symbol overlay on
+      // carry aacAssisted:true (set by the Word Sounds module). Picture-
+      // supported responding measures ACCESS, not unassisted phonological
+      // skill — surface the split so nobody pools the two silently.
+      var _wsHist = (selectedStudent.data.wordSoundsState && selectedStudent.data.wordSoundsState.history) || [];
+      var _aacCount = _wsHist.filter(function (h) { return h && h.aacAssisted; }).length;
+      if (!_aacCount) return null;
+      return /*#__PURE__*/React.createElement("div", {
+        className: "bg-white rounded-lg p-2 text-center border border-emerald-100",
+        title: t('class_analytics.aac_assisted_hint') || "Items answered with the picture-symbol overlay on. These measure supported access, not unassisted phonological skill; compare with unassisted items rather than pooling."
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "text-lg font-bold text-sky-600"
+      }, _aacCount, "/", _wsHist.length), /*#__PURE__*/React.createElement("div", {
+        className: "text-xs text-slate-600"
+      }, t('class_analytics.aac_assisted') || "AAC-assisted"));
+    })(), selectedStudent.data.wordSoundsState.phonemeMastery && Object.keys(selectedStudent.data.wordSoundsState.phonemeMastery).length > 0 && /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-lg p-2 text-center border border-emerald-100"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-lg font-bold text-purple-600"

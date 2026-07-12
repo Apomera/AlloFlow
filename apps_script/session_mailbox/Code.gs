@@ -577,6 +577,45 @@ function pathStarts(key, root) {
   return key === root || key.indexOf(root + '.') === 0;
 }
 
+function validWsMetricNumber(value, max) {
+  return typeof value === 'number' && isFinite(value) && value >= 0 && value <= (max || 100000);
+}
+// Word Sounds live-progress / probe-result roster leaves (mirror of the shell
+// validator in AlloFlowANTI.txt — keep both in sync): structured numbers + an
+// activity id from a fixed code-defined set. Every string field is
+// pattern-checked, so no free text can travel on these fields.
+function validWsProgressValue(value) {
+  if (value === null) return true;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var allowed = { kind: 1, activity: 1, correct: 1, total: 1, goal: 1, done: 1, at: 1 };
+  var keys = Object.keys(value);
+  for (var i = 0; i < keys.length; i++) { if (!allowed[keys[i]]) return false; }
+  if (value.kind != null && value.kind !== 'practice' && value.kind !== 'probe') return false;
+  if (value.activity != null && !(typeof value.activity === 'string' && /^[a-z_]{1,32}$/.test(value.activity))) return false;
+  if (value.done != null && typeof value.done !== 'boolean') return false;
+  if (value.correct != null && !validWsMetricNumber(value.correct)) return false;
+  if (value.total != null && !validWsMetricNumber(value.total)) return false;
+  if (value.goal != null && !validWsMetricNumber(value.goal)) return false;
+  if (value.at != null && !validWsMetricNumber(value.at, 999999999999999)) return false;
+  return true;
+}
+function validWsProbeResultValue(value) {
+  if (value === null) return true;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var allowed = { activity: 1, correct: 1, total: 1, accuracy: 1, itemsPerMin: 1, elapsed: 1, grade: 1, form: 1, at: 1 };
+  var keys = Object.keys(value);
+  for (var i = 0; i < keys.length; i++) { if (!allowed[keys[i]]) return false; }
+  if (value.activity != null && !(typeof value.activity === 'string' && /^[a-z_]{1,32}$/.test(value.activity))) return false;
+  if (value.grade != null && !(typeof value.grade === 'string' && /^[A-Za-z0-9 -]{1,16}$/.test(value.grade))) return false;
+  if (value.form != null && !(typeof value.form === 'string' && /^[A-Za-z0-9-]{1,8}$/.test(value.form))) return false;
+  if (value.correct != null && !validWsMetricNumber(value.correct)) return false;
+  if (value.total != null && !validWsMetricNumber(value.total)) return false;
+  if (value.accuracy != null && !validWsMetricNumber(value.accuracy)) return false;
+  if (value.itemsPerMin != null && !validWsMetricNumber(value.itemsPerMin)) return false;
+  if (value.elapsed != null && !validWsMetricNumber(value.elapsed)) return false;
+  if (value.at != null && !validWsMetricNumber(value.at, 999999999999999)) return false;
+  return true;
+}
 function validParticipantRosterField(field, value, uid) {
   if (value && typeof value === 'object' && value.__op === 'deleteField') return field !== 'uid';
   if (field === 'uid') return value === uid;
@@ -587,6 +626,8 @@ function validParticipantRosterField(field, value, uid) {
   if (field === 'signal') return value === null || value === 'stuck' || value === 'slow' || value === 'repeat' || value === 'ready';
   if (field === 'signalAt' || field === 'viewingAt') return value === null || (typeof value === 'number' && isFinite(value) && value >= 0);
   if (field === 'viewingResourceId') return value === null || (typeof value === 'string' && value.length <= 100);
+  if (field === 'wsProgress') return validWsProgressValue(value);
+  if (field === 'wsProbeResult') return validWsProbeResultValue(value);
   return false;
 }
 function participantCanPatchSession(updates, uid) {
@@ -594,7 +635,8 @@ function participantCanPatchSession(updates, uid) {
   var rosterRoot = 'roster.' + uid;
   var rosterFields = {
     uid: 1, name: 1, joinedAt: 1, status: 1, xp: 1,
-    signal: 1, signalAt: 1, viewingResourceId: 1, viewingAt: 1
+    signal: 1, signalAt: 1, viewingResourceId: 1, viewingAt: 1,
+    wsProgress: 1, wsProbeResult: 1
   };
   var roots = [
     'quizState.allResponses.' + uid,
