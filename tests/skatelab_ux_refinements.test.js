@@ -114,6 +114,75 @@ describe('Skate Lab UX refinement', () => {
 
     expect(source).toContain('function _dialogKeyDown(e, closeDialog)');
     expect(source).toContain("if (e.key !== 'Tab') return;");
-    expect(source.match(/_dialogKeyDown\(e,/g)).toHaveLength(7);
+    expect(source.match(/_dialogKeyDown\(e,/g)).toHaveLength(8);
+  });
+
+  it('exposes required prediction errors programmatically', () => {
+    const invalid = renderTool('skatelab', state({ predictMode: true, predictionInput: '-1' }));
+    const valid = renderTool('skatelab', state({ predictMode: true, predictionInput: '2.5' }));
+
+    expect(invalid).toContain('required=""');
+    expect(invalid).toContain('aria-required="true"');
+    expect(invalid).toContain('aria-invalid="true"');
+    expect(invalid).toContain('id="sk-predict-error"');
+    expect(invalid).toContain('role="alert"');
+    expect(valid).not.toContain('id="sk-predict-error"');
+  });
+
+  it('provides a programmatic title and description for the inquiry trajectory', () => {
+    const html = renderTool('skatelab', state());
+
+    expect(html).toContain('aria-labelledby="sk-inquiry-trajectory-title sk-inquiry-trajectory-desc"');
+    expect(html).toContain('<title id="sk-inquiry-trajectory-title">Projectile trajectory</title>');
+    expect(html).toContain('<desc id="sk-inquiry-trajectory-desc">');
+  });
+
+  it('applies roving tab stops to every rendered custom radio', () => {
+    const html = renderTool('skatelab', state());
+    const radios = html.match(/role="radio"/g) || [];
+    const radioTabStops = html.match(/role="radio"[^>]*tabindex="(?:0|-1)"/g) || [];
+
+    expect(radios.length).toBeGreaterThan(0);
+    expect(radioTabStops).toHaveLength(radios.length);
+  });
+
+  it('manages initial dialog focus and restores focus to the opener', () => {
+    const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
+
+    expect(source).toContain('dialogReturnFocusRef.current = document.activeElement');
+    expect(source).toContain(`document.querySelector('.skatelab-shell [role="dialog"]')`);
+    expect(source).toContain("if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus()");
+    expect(source).not.toContain("outline: 'none'");
+  });
+
+  it('uses an accessible custom confirmation dialog instead of native confirm', () => {
+    const html = renderTool('skatelab', state({
+      confirmAction: {
+        type: 'deleteScenario',
+        id: 'custom-1',
+        title: 'Delete custom scenario?',
+        message: 'This cannot be undone.',
+        confirmLabel: 'Delete scenario',
+      },
+    }));
+    const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
+
+    expect(html).toContain('role="dialog"');
+    expect(html).toContain('aria-labelledby="sk-confirm-title"');
+    expect(html).toContain('aria-describedby="sk-confirm-description"');
+    expect(html).toContain('autofocus=""');
+    expect(source).not.toMatch(/\b(?:window\.)?confirm\s*\(/);
+  });
+
+  it('associates explicit labels with the remaining text fields', () => {
+    const saveDialog = renderTool('skatelab', state({ saveModalDraft: { label: '' } }));
+    const inquiry = renderTool('skatelab', state({
+      spinIQ: { understood: true, explanation: '', speed: 6, angle: 45, mass: 70, rotSpeed: 360, log: [] },
+    }));
+
+    expect(saveDialog).toContain('for="sk-save-scenario-name"');
+    expect(saveDialog).toContain('id="sk-save-scenario-name"');
+    expect(inquiry).toContain('for="sk-inquiry-explanation"');
+    expect(inquiry).toContain('id="sk-inquiry-explanation"');
   });
 });

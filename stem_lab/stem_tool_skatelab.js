@@ -1825,6 +1825,7 @@ window.StemLab = window.StemLab || {
             // Confirm-reset state — false normally, true while the
             // student/teacher is being asked to confirm a reset.
             resetConfirmOpen: false,
+            confirmAction: null,
             // Show-formula toggle — when true, a panel beneath the
             // canvas renders the live physics equation with current
             // values plugged in. Default true so first-time students
@@ -1886,6 +1887,41 @@ window.StemLab = window.StemLab || {
       var scenarioIntroState = React.useState(null);
       var scenarioIntro = scenarioIntroState[0];
       var setScenarioIntro = scenarioIntroState[1];
+      var dialogReturnFocusRef = React.useRef(null);
+      var dialogWasOpenRef = React.useRef(false);
+      var anyDialogOpen = !!(
+        scenarioIntro ||
+        (d.tour && d.tour.open) ||
+        (d.session && (d.session.startPromptOpen || d.session.summaryOpen)) ||
+        d.saveModalDraft ||
+        d.confirmAction ||
+        d.resetConfirmOpen
+      );
+
+      React.useEffect(function() {
+        var timer = null;
+        if (anyDialogOpen && !dialogWasOpenRef.current) {
+          dialogReturnFocusRef.current = document.activeElement;
+          timer = setTimeout(function() {
+            var dialog = document.querySelector('.skatelab-shell [role="dialog"]');
+            if (!dialog || dialog.contains(document.activeElement)) return;
+            var target = dialog.querySelector('[autofocus], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])');
+            if (target) target.focus();
+            else {
+              dialog.setAttribute('tabindex', '-1');
+              dialog.focus();
+            }
+          }, 0);
+        } else if (!anyDialogOpen && dialogWasOpenRef.current) {
+          var opener = dialogReturnFocusRef.current;
+          timer = setTimeout(function() {
+            if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus();
+          }, 0);
+          dialogReturnFocusRef.current = null;
+        }
+        dialogWasOpenRef.current = anyDialogOpen;
+        return function() { if (timer) clearTimeout(timer); };
+      }, [anyDialogOpen]);
 
       // ── Mute mirror ─────────────────────────────────────────────
       // The module-level toggleMute() updates localStorage, but the
@@ -3194,6 +3230,16 @@ window.StemLab = window.StemLab || {
         }, 0);
       }
 
+      function _completeConfirmAction() {
+        var action = d.confirmAction;
+        if (!action) return;
+        upd('confirmAction', null);
+        setTimeout(function() {
+          if (action.type === 'deleteScenario') deleteCustomScenario(action.id);
+          else if (action.type === 'deleteTrick') deleteCustomTrick(action.id);
+          else if (action.type === 'endSession') endSession({ manual: true });
+        }, 0);
+      }
       var modeOrder = ['halfpipe', 'gap'];
       var modeBtn = function(id, label, emoji) {
         var sel = d.mode === id;
@@ -3472,9 +3518,13 @@ window.StemLab = window.StemLab || {
                 }, sc.icon + ' ' + sc.label),
                 h('button', {
                   onClick: function() {
-                    if (window.confirm('Remove "' + sc.label + '" from custom scenarios?')) {
-                      deleteCustomScenario(sc.id);
-                    }
+                    upd('confirmAction', {
+                      type: 'deleteScenario',
+                      id: sc.id,
+                      title: 'Delete custom scenario?',
+                      message: 'Remove "' + sc.label + '" from your saved scenarios? This cannot be undone.',
+                      confirmLabel: 'Delete scenario'
+                    });
                   },
                   'aria-label': 'Delete custom scenario: ' + sc.label,
                   'data-sk-focusable': 'true',
@@ -4024,7 +4074,12 @@ window.StemLab = window.StemLab || {
             }, __alloT('stem.skatelab.save_current_setup_as_a_scenario', '💾 Save current setup as a scenario')),
             h('p', { style: { margin: '0 0 12px', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
               'Capture the current ' + d.mode + ' configuration so it shows in the scenario row alongside the famous tricks. Pick a short, memorable name.'),
+            h('label', {
+              htmlFor: 'sk-save-scenario-name',
+              style: { display: 'block', marginBottom: 5, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, fontWeight: 800 }
+            }, 'Scenario name'),
             h('input', {
+              id: 'sk-save-scenario-name',
               type: 'text',
               autoFocus: true,
               maxLength: 40,
@@ -4040,7 +4095,7 @@ window.StemLab = window.StemLab || {
               style: {
                 width: '100%', padding: '8px 12px', fontSize: 13,
                 background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #fef3c7)',
-                border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 8, outline: 'none',
+                border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 8,
                 marginBottom: 14, boxSizing: 'border-box'
               }
             }),
@@ -4066,6 +4121,62 @@ window.StemLab = window.StemLab || {
                   cursor: !d.saveModalDraft.label.trim() ? 'not-allowed' : 'pointer', minHeight: 32
                 }
               }, __alloT('stem.skatelab.save', '💾 Save'))
+            )
+          )
+        ),
+        // Accessible confirmation dialog for destructive or consequential actions.
+        d.confirmAction && h('div', {
+          role: 'dialog',
+          'aria-modal': 'true',
+          'aria-labelledby': 'sk-confirm-title',
+          'aria-describedby': 'sk-confirm-description',
+          onKeyDown: function(e) { _dialogKeyDown(e, function() { upd('confirmAction', null); }); },
+          onClick: function(e) { if (e.target === e.currentTarget) upd('confirmAction', null); },
+          style: {
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(15,23,42,0.82)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+          }
+        },
+          h('div', {
+            style: {
+              background: 'var(--allo-stem-panel, #1e293b)',
+              border: '2px solid #dc2626',
+              borderRadius: 14, padding: 20, maxWidth: 420, width: '100%',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.55)'
+            },
+            onClick: function(e) { e.stopPropagation(); }
+          },
+            h('h3', {
+              id: 'sk-confirm-title',
+              style: { margin: '0 0 8px', color: '#fecaca', fontSize: 17, fontWeight: 900 }
+            }, d.confirmAction.title),
+            h('p', {
+              id: 'sk-confirm-description',
+              style: { margin: '0 0 16px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 }
+            }, d.confirmAction.message),
+            h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' } },
+              h('button', {
+                onClick: function() { upd('confirmAction', null); },
+                autoFocus: true,
+                'data-sk-focusable': 'true',
+                style: {
+                  padding: '9px 15px', minHeight: 40, borderRadius: 8,
+                  border: '1px solid var(--allo-stem-border, #64748b)',
+                  background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)',
+                  fontSize: 12, fontWeight: 800, cursor: 'pointer'
+                }
+              }, 'Cancel'),
+              h('button', {
+                onClick: _completeConfirmAction,
+                'data-sk-focusable': 'true',
+                style: {
+                  padding: '9px 15px', minHeight: 40, borderRadius: 8,
+                  border: '1px solid #991b1b',
+                  background: '#b91c1c', color: '#fff',
+                  fontSize: 12, fontWeight: 900, cursor: 'pointer'
+                }
+              }, d.confirmAction.confirmLabel)
             )
           )
         ),
@@ -4233,9 +4344,12 @@ window.StemLab = window.StemLab || {
             if (sess.active) {
               return h('button', {
                 onClick: function() {
-                  if (confirm('End session early? Your ' + (sess.attempts || []).length + '/' + sess.target + ' attempts will be saved.')) {
-                    endSession({ manual: true });
-                  }
+                  upd('confirmAction', {
+                    type: 'endSession',
+                    title: 'End session early?',
+                    message: 'Your ' + (sess.attempts || []).length + ' of ' + sess.target + ' attempts will still be saved.',
+                    confirmLabel: 'End and save'
+                  });
                 },
                 'aria-label': 'Session in progress: ' + (sess.attempts || []).length + ' of ' + sess.target + '. Click to end early.',
                 'data-sk-focusable': 'true',
@@ -4480,7 +4594,13 @@ window.StemLab = window.StemLab || {
                   h('button', {
                     onClick: function() {
                       if (d.running) return;
-                      if (confirm('Delete custom trick "' + tk.label + '"?')) deleteCustomTrick(tk.id);
+                      upd('confirmAction', {
+                        type: 'deleteTrick',
+                        id: tk.id,
+                        title: 'Delete custom trick?',
+                        message: 'Remove "' + tk.label + '" from Trick Lab? Its mastery history will also be removed.',
+                        confirmLabel: 'Delete trick'
+                      });
                     },
                     disabled: d.running,
                     'aria-label': 'Delete custom trick ' + tk.label,
@@ -4729,9 +4849,17 @@ window.StemLab = window.StemLab || {
                       var sel = (d.trickLabDraft && d.trickLabDraft.axis) === opt.id;
                       return h('button', {
                         key: 'axis-' + opt.id,
+                        id: 'sk-axis-' + opt.id,
                         onClick: function() { upd('trickLabDraft', Object.assign({}, d.trickLabDraft, { axis: opt.id })); },
+                        onKeyDown: function(e) {
+                          _radioKeyDown(e, ['board', 'body', 'combo'], (d.trickLabDraft && d.trickLabDraft.axis) || 'board', function(nextId) {
+                            upd('trickLabDraft', Object.assign({}, d.trickLabDraft, { axis: nextId }));
+                          }, 'sk-axis-');
+                        },
+                        disabled: !!d.running,
                         role: 'radio',
                         'aria-checked': sel,
+                        tabIndex: sel ? 0 : -1,
                         'data-sk-focusable': 'true',
                         title: opt.desc,
                         style: {
@@ -4918,11 +5046,14 @@ window.StemLab = window.StemLab || {
                   id: 'sk-predict-input',
                   type: 'number', step: '0.1', min: '0',
                   inputMode: 'decimal',
+                  required: true,
+                  'aria-required': 'true',
+                  'aria-invalid': trimmed !== '' && !predValid ? 'true' : undefined,
                   value: d.predictionInput || '',
                   onChange: function(e) { upd('predictionInput', e.target.value); },
                   disabled: d.running,
                   'data-sk-focusable': 'true',
-                  'aria-describedby': 'sk-predict-hint',
+                  'aria-describedby': trimmed !== '' && !predValid ? 'sk-predict-hint sk-predict-error' : 'sk-predict-hint',
                   placeholder: '0.0',
                   style: {
                     width: 90, padding: '6px 8px', fontSize: 13, fontWeight: 700,
@@ -4931,7 +5062,12 @@ window.StemLab = window.StemLab || {
                     borderRadius: 6
                   }
                 }),
-                h('span', { id: 'sk-predict-hint', style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', flex: 1, minWidth: 180 } }, hint)
+                h('span', { id: 'sk-predict-hint', style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', flex: 1, minWidth: 180 } }, hint),
+                trimmed !== '' && !predValid && h('span', {
+                  id: 'sk-predict-error',
+                  role: 'alert',
+                  style: { width: '100%', color: '#fca5a5', fontSize: 11, fontWeight: 700 }
+                }, 'Enter a prediction of zero or greater.')
               ),
               ps.count > 0 && h('div', { style: { fontSize: 10, color: '#c4b5fd', display: 'flex', flexWrap: 'wrap', gap: 12, paddingTop: 8, borderTop: '1px solid rgba(168,85,247,0.25)' } },
                 h('span', null, '📊 ', h('b', null, ps.count), ' prediction' + (ps.count === 1 ? '' : 's')),
@@ -5124,9 +5260,18 @@ window.StemLab = window.StemLab || {
                 var sel = (d.coachPersona || 'analyst') === p.id;
                 return h('button', {
                   key: 'cp-' + p.id,
+                  id: 'sk-coach-' + p.id,
                   onClick: function() { upd('coachPersona', p.id); skAnnounce('Coach voice: ' + p.label); },
+                  onKeyDown: function(e) {
+                    _radioKeyDown(e, COACH_PERSONAS.map(function(item) { return item.id; }), d.coachPersona || 'analyst', function(nextId) {
+                      upd('coachPersona', nextId);
+                      skAnnounce('Coach voice: ' + getPersona(nextId).label);
+                    }, 'sk-coach-');
+                  },
+                  disabled: !!d.running,
                   role: 'radio',
                   'aria-checked': sel,
+                  tabIndex: sel ? 0 : -1,
                   'data-sk-focusable': 'true',
                   title: p.label + ' — ' + p.prepend.split('.')[0],
                   style: {
@@ -5273,12 +5418,21 @@ window.StemLab = window.StemLab || {
                     var sel = sk.color === cid;
                     return h('button', {
                       key: 'sk-c-' + cid,
+                      id: 'sk-color-' + cid,
                       onClick: function() {
                         upd({ skater: Object.assign({}, sk, { color: cid }) });
                         skAnnounce('Body color: ' + c.label);
                       },
+                      onKeyDown: function(e) {
+                        _radioKeyDown(e, Object.keys(SKATER_COLORS), sk.color || 'amber', function(nextId) {
+                          upd({ skater: Object.assign({}, sk, { color: nextId }) });
+                          skAnnounce('Body color: ' + getSkaterColor(nextId).label);
+                        }, 'sk-color-');
+                      },
+                      disabled: !!d.running,
                       role: 'radio',
                       'aria-checked': sel,
+                      tabIndex: sel ? 0 : -1,
                       'aria-label': c.label + ' body color',
                       'data-sk-focusable': 'true',
                       title: c.label,
@@ -5287,8 +5441,7 @@ window.StemLab = window.StemLab || {
                         background: c.body,
                         border: '3px solid ' + (sel ? c.accent : 'transparent'),
                         cursor: 'pointer',
-                        boxShadow: sel ? '0 0 0 2px rgba(255,255,255,0.18)' : 'none',
-                        outline: 'none'
+                        boxShadow: sel ? '0 0 0 2px rgba(255,255,255,0.18)' : 'none'
                       }
                     });
                   })
@@ -5511,7 +5664,9 @@ window.StemLab = window.StemLab || {
                 );
               })
             ),
-            h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+            h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', role: 'img', 'aria-labelledby': 'sk-inquiry-trajectory-title sk-inquiry-trajectory-desc', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+              h('title', { id: 'sk-inquiry-trajectory-title' }, 'Projectile trajectory'),
+              h('desc', { id: 'sk-inquiry-trajectory-desc' }, 'Predicted arc with apex ' + apex.toFixed(2) + ' meters, range ' + range.toFixed(2) + ' meters, and hang time ' + hangTime.toFixed(2) + ' seconds.'),
               h('line', { x1: 20, y1: 130, x2: 310, y2: 130, stroke: '#1e293b' }),
               h('line', { x1: 20, y1: 18, x2: 20, y2: 130, stroke: '#1e293b' }),
               h('polyline', { points: svgPts, fill: 'none', stroke: sm.color, strokeWidth: 2 }),
@@ -5562,7 +5717,10 @@ window.StemLab = window.StemLab || {
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
               h('span', null, __alloT('stem.skatelab.i_can_explain_why_this_v_m_combination', 'I can explain why this v/θ/m combination lands at this max-rotation state.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.skatelab.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            iq.understood && h('div', null,
+              h('label', { htmlFor: 'sk-inquiry-explanation', style: { display: 'block', fontSize: 11, fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Your explanation'),
+              h('textarea', { id: 'sk-inquiry-explanation', 'aria-label': 'Explain your air and spin prediction', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.skatelab.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } })
+            ),
             h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.skatelab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Treats takeoff as point projectile; real airs add drag, board-spin coupling, and rotation-rate-changes mid-air (tucking ↑ rate).'))
           );
           })()
