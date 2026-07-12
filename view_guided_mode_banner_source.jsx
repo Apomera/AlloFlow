@@ -802,16 +802,16 @@ function GuidedModeBanner({
         })()}
       </div>
       {showFullLesson && (
-        <div role="dialog" aria-modal="true" aria-label={t('guided.full_lesson_title') || 'The full worked lesson'} onClick={() => setShowFullLesson(false)} style={{ position: 'fixed', inset: 0, zIndex: 100000, background: 'rgba(2,6,23,0.82)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div ref={_modalRef} tabIndex={-1} onClick={(e) => e.stopPropagation()} style={{ background: 'linear-gradient(150deg, #0f172a, #1e1b4b)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '20px', width: '100%', maxWidth: '760px', maxHeight: '88vh', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 70px rgba(0,0,0,0.55)', outline: 'none' }}>
+        <div role="presentation" onClick={() => setShowFullLesson(false)} style={{ position: 'fixed', inset: 0, zIndex: 100000, background: 'rgba(2,6,23,0.82)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div ref={_modalRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="guided-full-lesson-title" onClick={(e) => e.stopPropagation()} style={{ background: 'linear-gradient(150deg, #0f172a, #1e1b4b)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '20px', width: '100%', maxWidth: '760px', maxHeight: '88vh', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 70px rgba(0,0,0,0.55)', outline: 'none' }}>
             <div style={{ flexShrink: 0, padding: '18px 22px', borderBottom: '1px solid rgba(99,102,241,0.22)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
               <div>
-                <div style={{ fontSize: '16px', fontWeight: 800, color: 'white' }}>📖 {t('guided.full_lesson_title') || 'The full worked lesson'}</div>
+                <h2 id="guided-full-lesson-title" style={{ fontSize: '16px', fontWeight: 800, color: 'white', margin: 0 }}><span aria-hidden="true">📖</span> {t('guided.full_lesson_title') || 'The full worked lesson'}</h2>
                 <div style={{ fontSize: '11px', color: '#c7d2fe', marginTop: '3px', lineHeight: '1.5' }}>{t('guided.full_lesson_sub') || 'One consistent example — a photosynthesis passage — carried through every Guided step, end to end.'}</div>
               </div>
               <button onClick={() => setShowFullLesson(false)} aria-label={t('common.close') || 'Close'} style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.08)', color: 'white', fontSize: '16px', cursor: 'pointer', lineHeight: 1 }}>✕</button>
             </div>
-            <div tabIndex={0} aria-label={t('guided.full_lesson_scroll') || 'Worked lesson steps'} style={{ overflowY: 'auto', padding: '16px 22px' }}>
+            <div tabIndex={0} role="region" aria-label={t('guided.full_lesson_scroll') || 'Worked lesson steps'} style={{ overflowY: 'auto', padding: '16px 22px' }}>
               {(GUIDED_STEPS || []).map((s, i) => {
                 const d = (typeof GUIDED_DETAIL !== 'undefined' && GUIDED_DETAIL[s.id]) || null;
                 if (!d || !d.example) return null;

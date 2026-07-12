@@ -60,6 +60,7 @@ This report evaluates the current local desktop command center and the bundled A
 - Added a named, focus-contained Brand Settings dialog with Escape dismissal and focus return; stacked its three regions for narrow-width reflow; explicitly named editable color, logo, header, and footer fields; exposed invalid color values and live validation; and enlarged profile actions to 24 CSS pixels (WCAG 1.3.1, 1.4.10, 2.1.1, 2.4.3, 2.4.7, 2.5.8, 3.3.1, 3.3.2, 4.1.2).
 - Replaced focusable Adventure ledger and inventory backdrops with presentation-only layers; named both dialogs; added stable initial focus, Tab containment, Escape dismissal, focus return, and visible close-button focus indicators; and hid fallback inventory emoji from assistive technology (WCAG 1.1.1, 2.1.1, 2.4.3, 2.4.7, 4.1.2).
 - Connected Quick Start Escape dismissal to its existing focus trap; added polite step announcements and programmatic four-step progress; corrected misleading Back and Finish accessible names; and enlarged Skip, help-dismiss, language-remove, and interest-remove targets to at least 24 CSS pixels (WCAG 1.3.1, 2.1.1, 2.4.3, 2.4.7, 2.5.8, 4.1.2).
+- Moved Guided Mode full-lesson dialog semantics from the clickable backdrop to the focus-managed panel, connected its accessible name to a real heading, hid the decorative book emoji, and identified the keyboard-scrollable lesson content as a named region while retaining focus containment, Escape dismissal, and focus return (WCAG 1.1.1, 1.3.1, 2.1.1, 2.4.3, 4.1.2).
 
 ## Resolved finding
 
