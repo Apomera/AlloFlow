@@ -1059,7 +1059,7 @@ Return ONLY valid JSON:
         "aria-label": `${colorName} drawing color`,
         tabIndex: 0,
         title: colorName,
-        style: { width: 16, height: 16, borderRadius: "50%", background: c, border: drawingColor === c ? "2px solid #1e293b" : "2px solid transparent", cursor: "pointer", transition: "transform 0.15s", transform: drawingColor === c ? "scale(1.2)" : "scale(1)" }
+        style: { width: 24, height: 24, borderRadius: "50%", background: c, border: drawingColor === c ? "2px solid #1e293b" : "2px solid transparent", cursor: "pointer", transition: "transform 0.15s", transform: drawingColor === c ? "scale(1.2)" : "scale(1)" }
       }
     );
   })), /* @__PURE__ */ React.createElement("button", { onClick: () => {
@@ -1154,13 +1154,13 @@ Return ONLY valid JSON:
       ), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", bottom: 6, left: 6, display: "flex", gap: 2, background: "rgba(15,23,42,0.65)", color: "white", borderRadius: 12, padding: "2px 4px", alignItems: "center", fontSize: 10, fontWeight: 600, zIndex: 5 } }, paused ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: (e) => {
         e.stopPropagation();
         stepFrame(panelIdx, panel, -1);
-      }, "aria-label": t("common.previous_frame") || "Previous frame", title: t("common.previous_frame") || "Previous frame", style: { background: "none", border: "none", color: "white", cursor: "pointer", padding: "2px 6px", fontSize: 12 } }, "\u25C0"), /* @__PURE__ */ React.createElement("span", { "aria-live": "polite" }, frameIdx + 1, "/", panel.frames.length), /* @__PURE__ */ React.createElement("button", { onClick: (e) => {
+      }, "aria-label": t("common.previous_frame") || "Previous frame", title: t("common.previous_frame") || "Previous frame", style: { background: "none", border: "none", color: "white", cursor: "pointer", minWidth: 24, minHeight: 24, padding: "2px 6px", fontSize: 12 } }, "\u25C0"), /* @__PURE__ */ React.createElement("span", { "aria-live": "polite" }, frameIdx + 1, "/", panel.frames.length), /* @__PURE__ */ React.createElement("button", { onClick: (e) => {
         e.stopPropagation();
         stepFrame(panelIdx, panel, 1);
-      }, "aria-label": t("common.next_frame") || "Next frame", title: t("common.next_frame") || "Next frame", style: { background: "none", border: "none", color: "white", cursor: "pointer", padding: "2px 6px", fontSize: 12 } }, "\u25B6")) : /* @__PURE__ */ React.createElement("button", { onClick: (e) => {
+      }, "aria-label": t("common.next_frame") || "Next frame", title: t("common.next_frame") || "Next frame", style: { background: "none", border: "none", color: "white", cursor: "pointer", minWidth: 24, minHeight: 24, padding: "2px 6px", fontSize: 12 } }, "\u25B6")) : /* @__PURE__ */ React.createElement("button", { onClick: (e) => {
         e.stopPropagation();
         togglePlayPause(panelIdx, panel);
-      }, "aria-label": t("common.pause_animation") || "Pause animation", title: t("common.pause_animation") || "Pause animation", style: { background: "none", border: "none", color: "white", cursor: "pointer", padding: "2px 8px", fontSize: 12 } }, "\u23F8 ", panel.frames.length, "f")));
+      }, "aria-label": t("common.pause_animation") || "Pause animation", title: t("common.pause_animation") || "Pause animation", style: { background: "none", border: "none", color: "white", cursor: "pointer", minHeight: 24, padding: "2px 8px", fontSize: 12 } }, "\u23F8 ", panel.frames.length, "f")));
     }
     return /* @__PURE__ */ React.createElement("img", { src: overrideUrl || panel.imageUrl, alt: panel.caption || `Panel ${panelIdx + 1}`, loading: "lazy", style: { width: "100%", display: "block", maxHeight: "320px", objectFit: "contain", background: "#f8fafc" } });
   })() : /* @__PURE__ */ React.createElement("div", { style: { height: 120, display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f5f9", color: "#475569" } }, /* @__PURE__ */ React.createElement("div", { className: "animate-spin", style: { width: 24, height: 24, border: "3px solid #cbd5e1", borderTopColor: "#6366f1", borderRadius: "50%" } })), !labelsHidden && (!isStudentChallenge || isFillBlank) && renderLeaderLines(panel, panelIdx), renderDrawingSVG(panelIdx), isStudentChallenge && renderStudentLeaderLines(panelIdx), panel.labels && panel.labels.map((label, labelIdx) => {
@@ -1539,16 +1539,16 @@ Return ONLY valid JSON:
         onClick: () => onDeleteFrame(panelIdx, fIdx),
         "aria-label": t("common.frame_delete_aria") || `Delete frame ${fIdx + 1}`,
         title: t("common.frame_delete_title") || "Delete this frame",
-        style: { position: "absolute", top: -4, right: -4, width: 16, height: 16, borderRadius: "50%", background: "#ef4444", color: "white", border: "none", fontSize: 10, lineHeight: 1, cursor: "pointer", padding: 0 }
+        style: { position: "absolute", top: -8, right: -8, width: 24, height: 24, borderRadius: "50%", background: "#ef4444", color: "white", border: "none", fontSize: 12, lineHeight: 1, cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }
       },
       "\u2715"
-    ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 1, marginTop: 2, justifyContent: "center" } }, onReorderFrame && fIdx > 0 && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 2, marginTop: 2, justifyContent: "center" } }, onReorderFrame && fIdx > 0 && /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => onReorderFrame(panelIdx, fIdx, fIdx - 1),
         "aria-label": t("common.frame_move_left_aria") || `Move frame ${fIdx + 1} earlier`,
         title: t("common.frame_move_left_title") || "Move earlier",
-        style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 9, lineHeight: 1, padding: "1px 4px", borderRadius: 3 }
+        style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 11, lineHeight: 1, minWidth: 24, minHeight: 24, padding: "2px 4px", borderRadius: 3 }
       },
       "\u25C0"
     ), onDuplicateFrame && /* @__PURE__ */ React.createElement(
@@ -1557,7 +1557,7 @@ Return ONLY valid JSON:
         onClick: () => onDuplicateFrame(panelIdx, fIdx),
         "aria-label": t("common.frame_duplicate_aria") || `Duplicate frame ${fIdx + 1}`,
         title: t("common.frame_duplicate_title") || "Duplicate this frame",
-        style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 9, lineHeight: 1, padding: "1px 4px", borderRadius: 3 }
+        style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 11, lineHeight: 1, minWidth: 24, minHeight: 24, padding: "2px 4px", borderRadius: 3 }
       },
       "+"
     ), onReorderFrame && fIdx < panel.frames.length - 1 && /* @__PURE__ */ React.createElement(
@@ -1566,7 +1566,7 @@ Return ONLY valid JSON:
         onClick: () => onReorderFrame(panelIdx, fIdx, fIdx + 1),
         "aria-label": t("common.frame_move_right_aria") || `Move frame ${fIdx + 1} later`,
         title: t("common.frame_move_right_title") || "Move later",
-        style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 9, lineHeight: 1, padding: "1px 4px", borderRadius: 3 }
+        style: { background: "#e2e8f0", color: "#475569", border: "none", cursor: "pointer", fontSize: 11, lineHeight: 1, minWidth: 24, minHeight: 24, padding: "2px 4px", borderRadius: 3 }
       },
       "\u25B6"
     )));

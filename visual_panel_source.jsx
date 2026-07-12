@@ -1000,7 +1000,7 @@ Return ONLY valid JSON:
                         return (
                         <div key={c} onClick={() => setDrawingColor(c)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setDrawingColor(c)}
                             role="radio" aria-checked={drawingColor === c} aria-label={`${colorName} drawing color`} tabIndex={0}
-                            title={colorName} style={{ width: 16, height: 16, borderRadius: '50%', background: c, border: drawingColor === c ? '2px solid #1e293b' : '2px solid transparent', cursor: 'pointer', transition: 'transform 0.15s', transform: drawingColor === c ? 'scale(1.2)' : 'scale(1)' }} />
+                            title={colorName} style={{ width: 24, height: 24, borderRadius: '50%', background: c, border: drawingColor === c ? '2px solid #1e293b' : '2px solid transparent', cursor: 'pointer', transition: 'transform 0.15s', transform: drawingColor === c ? 'scale(1.2)' : 'scale(1)' }} />
                     ); })}
                 </div>
                 <button onClick={() => { setDrawings({}); }} title={t('common.clear_drawings')} aria-label={t('common.clear_all_drawings')} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #fecaca', background: '#fff1f2', color: '#ef4444', cursor: 'pointer', fontSize: '12px', fontWeight: 600, marginLeft: 'auto' }}>🗑️ Clear</button>
@@ -1153,12 +1153,12 @@ Return ONLY valid JSON:
                                                 <div style={{ position: 'absolute', bottom: 6, left: 6, display: 'flex', gap: 2, background: 'rgba(15,23,42,0.65)', color: 'white', borderRadius: 12, padding: '2px 4px', alignItems: 'center', fontSize: 10, fontWeight: 600, zIndex: 5 }}>
                                                     {paused ? (
                                                         <>
-                                                            <button onClick={(e) => { e.stopPropagation(); stepFrame(panelIdx, panel, -1); }} aria-label={t('common.previous_frame') || 'Previous frame'} title={t('common.previous_frame') || 'Previous frame'} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '2px 6px', fontSize: 12 }}>◀</button>
+                                                            <button onClick={(e) => { e.stopPropagation(); stepFrame(panelIdx, panel, -1); }} aria-label={t('common.previous_frame') || 'Previous frame'} title={t('common.previous_frame') || 'Previous frame'} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', minWidth: 24, minHeight: 24, padding: '2px 6px', fontSize: 12 }}>◀</button>
                                                             <span aria-live="polite">{frameIdx + 1}/{panel.frames.length}</span>
-                                                            <button onClick={(e) => { e.stopPropagation(); stepFrame(panelIdx, panel, +1); }} aria-label={t('common.next_frame') || 'Next frame'} title={t('common.next_frame') || 'Next frame'} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '2px 6px', fontSize: 12 }}>▶</button>
+                                                            <button onClick={(e) => { e.stopPropagation(); stepFrame(panelIdx, panel, +1); }} aria-label={t('common.next_frame') || 'Next frame'} title={t('common.next_frame') || 'Next frame'} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', minWidth: 24, minHeight: 24, padding: '2px 6px', fontSize: 12 }}>▶</button>
                                                         </>
                                                     ) : (
-                                                        <button onClick={(e) => { e.stopPropagation(); togglePlayPause(panelIdx, panel); }} aria-label={t('common.pause_animation') || 'Pause animation'} title={t('common.pause_animation') || 'Pause animation'} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '2px 8px', fontSize: 12 }}>⏸ {panel.frames.length}f</button>
+                                                        <button onClick={(e) => { e.stopPropagation(); togglePlayPause(panelIdx, panel); }} aria-label={t('common.pause_animation') || 'Pause animation'} title={t('common.pause_animation') || 'Pause animation'} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', minHeight: 24, padding: '2px 8px', fontSize: 12 }}>⏸ {panel.frames.length}f</button>
                                                     )}
                                                 </div>
                                             </>
@@ -1511,7 +1511,7 @@ Return ONLY valid JSON:
                                                         onClick={() => onDeleteFrame(panelIdx, fIdx)}
                                                         aria-label={t('common.frame_delete_aria') || `Delete frame ${fIdx + 1}`}
                                                         title={t('common.frame_delete_title') || 'Delete this frame'}
-                                                        style={{ position: 'absolute', top: -4, right: -4, width: 16, height: 16, borderRadius: '50%', background: '#ef4444', color: 'white', border: 'none', fontSize: 10, lineHeight: 1, cursor: 'pointer', padding: 0 }}
+                                                        style={{ position: 'absolute', top: -8, right: -8, width: 24, height: 24, borderRadius: '50%', background: '#ef4444', color: 'white', border: 'none', fontSize: 12, lineHeight: 1, cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                                                     >✕</button>
                                                 )}
                                                 {/* Reorder + duplicate row beneath each thumbnail. ← → swap with
@@ -1519,13 +1519,13 @@ Return ONLY valid JSON:
                                                     for holding a key moment longer without per-frame timing). The
                                                     anchor (frame 1) can't be reordered left into nothing, and we
                                                     don't reorder past the last frame. */}
-                                                <div style={{ display: 'flex', gap: 1, marginTop: 2, justifyContent: 'center' }}>
+                                                <div style={{ display: 'flex', gap: 2, marginTop: 2, justifyContent: 'center' }}>
                                                     {onReorderFrame && fIdx > 0 && (
                                                         <button
                                                             onClick={() => onReorderFrame(panelIdx, fIdx, fIdx - 1)}
                                                             aria-label={t('common.frame_move_left_aria') || `Move frame ${fIdx + 1} earlier`}
                                                             title={t('common.frame_move_left_title') || 'Move earlier'}
-                                                            style={{ background: '#e2e8f0', color: '#475569', border: 'none', cursor: 'pointer', fontSize: 9, lineHeight: 1, padding: '1px 4px', borderRadius: 3 }}
+                                                            style={{ background: '#e2e8f0', color: '#475569', border: 'none', cursor: 'pointer', fontSize: 11, lineHeight: 1, minWidth: 24, minHeight: 24, padding: '2px 4px', borderRadius: 3 }}
                                                         >◀</button>
                                                     )}
                                                     {onDuplicateFrame && (
@@ -1533,7 +1533,7 @@ Return ONLY valid JSON:
                                                             onClick={() => onDuplicateFrame(panelIdx, fIdx)}
                                                             aria-label={t('common.frame_duplicate_aria') || `Duplicate frame ${fIdx + 1}`}
                                                             title={t('common.frame_duplicate_title') || 'Duplicate this frame'}
-                                                            style={{ background: '#e2e8f0', color: '#475569', border: 'none', cursor: 'pointer', fontSize: 9, lineHeight: 1, padding: '1px 4px', borderRadius: 3 }}
+                                                            style={{ background: '#e2e8f0', color: '#475569', border: 'none', cursor: 'pointer', fontSize: 11, lineHeight: 1, minWidth: 24, minHeight: 24, padding: '2px 4px', borderRadius: 3 }}
                                                         >+</button>
                                                     )}
                                                     {onReorderFrame && fIdx < panel.frames.length - 1 && (
@@ -1541,7 +1541,7 @@ Return ONLY valid JSON:
                                                             onClick={() => onReorderFrame(panelIdx, fIdx, fIdx + 1)}
                                                             aria-label={t('common.frame_move_right_aria') || `Move frame ${fIdx + 1} later`}
                                                             title={t('common.frame_move_right_title') || 'Move later'}
-                                                            style={{ background: '#e2e8f0', color: '#475569', border: 'none', cursor: 'pointer', fontSize: 9, lineHeight: 1, padding: '1px 4px', borderRadius: 3 }}
+                                                            style={{ background: '#e2e8f0', color: '#475569', border: 'none', cursor: 'pointer', fontSize: 11, lineHeight: 1, minWidth: 24, minHeight: 24, padding: '2px 4px', borderRadius: 3 }}
                                                         >▶</button>
                                                     )}
                                                 </div>

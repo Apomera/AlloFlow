@@ -39,6 +39,7 @@ This report evaluates the current local desktop command center and the bundled A
 - Added bounded arrow-key positioning, Shift-modified larger steps, instructions, and live movement announcements to the draggable AlloBot control (WCAG 2.5.7).
 - Added bounded arrow-key positioning, Shift-modified larger steps, accessible instructions, and live movement announcements to draggable stickers, text notes, and voice notes (WCAG 2.5.7).
 - Added bounded arrow-key positioning, Shift-modified larger steps, shared instructions, and live movement announcements to visual labels and leader-line anchors (WCAG 2.5.7).
+- Enlarged visual-panel drawing colors, animation playback, frame deletion, duplication, and reordering controls to at least 24 by 24 CSS pixels (WCAG 2.5.8).
 
 ## Resolved finding
 
