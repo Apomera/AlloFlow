@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-07-12T14:15:04.553Z",
+  "generated": "2026-07-12T14:19:10.673Z",
   "count": 63,
   "total_keys_expected": 9307,
   "available": [
@@ -14,8 +14,8 @@
     {
       "slug": "amharic",
       "display": "Amharic",
-      "keys": 18631,
-      "bytes": 1972494,
+      "keys": 18796,
+      "bytes": 2003619,
       "updated": "2026-07-12"
     },
     {
@@ -224,8 +224,8 @@
     {
       "slug": "kirundi",
       "display": "Kirundi",
-      "keys": 18631,
-      "bytes": 1672517,
+      "keys": 18796,
+      "bytes": 1701851,
       "updated": "2026-07-12"
     },
     {
@@ -252,8 +252,8 @@
     {
       "slug": "lingala",
       "display": "Lingala",
-      "keys": 18543,
-      "bytes": 1432157,
+      "keys": 18708,
+      "bytes": 1461138,
       "updated": "2026-07-12"
     },
     {
