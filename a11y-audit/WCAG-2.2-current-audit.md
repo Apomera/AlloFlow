@@ -95,6 +95,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Replaced Research Hub inquiry reset's native browser confirmation with a named/described alert dialog; separated reset request from execution, focused the safe Cancel action, contained Tab, supported Escape cancellation, restored focus to Reset or the Hub Close fallback, preserved the learner's developmental level, and provided 44 CSS-pixel actions (WCAG 2.1.1, 2.4.3, 2.4.7, 2.5.8, 3.3.4, 4.1.2).
 
+- Replaced Memory Match's in-progress mode-switch browser confirmation with a named/described alert dialog; retained the current controlled selection until consent, focused the safe Cancel action, contained Tab, supported Escape cancellation, returned focus to the mode selector, and provided 44 CSS-pixel actions before restarting and clearing round progress (WCAG 2.1.1, 2.4.3, 2.4.7, 2.5.8, 3.2.2, 3.3.4, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

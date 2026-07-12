@@ -27,29 +27,6 @@
   var useMemo = React.useMemo;
   var useContext = React.useContext;
 
-  // ── Sort-game scoring economics (2026-07-09) ──
-  // Awards are once-per-item and hint-assisted recoveries earn reduced
-  // credit, so guess-cycling cannot farm XP: before this, a wrong drop cost
-  // -5 but flashed the correct zone, making blind-guess-then-follow-the-hint
-  // net +15 per item (and keyboard moves could re-award +20 indefinitely).
-  // Wrong placements still show the corrective hint (that is pedagogy, not a
-  // bug) and still cost points; they just stop being profitable.
-  var makeSortScoreTracker = function() {
-    var missed = new Set();
-    var awarded = new Set();
-    return {
-      correct: function(id) {
-        if (awarded.has(id)) return 0;
-        awarded.add(id);
-        return missed.has(id) ? 5 : 20;
-      },
-      incorrect: function(id) {
-        missed.add(id);
-        return -5;
-      },
-    };
-  };
-
   // ── App dependencies from window ──
   var LanguageContext = window.AlloLanguageContext || React.createContext({ t: function(k) { return k; } });
   var fisherYatesShuffle = window.fisherYatesShuffle;
@@ -213,8 +190,11 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
   const [announcement, setAnnouncement] = useState("");
   const [mismatchIndices, setMismatchIndices] = useState([]);
   const [scoreDelta, setScoreDelta] = useState(null);
+  const [pendingMode, setPendingMode] = useState(null);
   const cardRefs = useRef([]);
   const gridRef = useRef(null);
+  const modeSelectRef = useRef(null);
+  const modeDialogRef = useRef(null);
   const scoreDeltaTimerRef = useRef(null);
   const flashScoreDelta = (delta) => {
     if (scoreDeltaTimerRef.current) clearTimeout(scoreDeltaTimerRef.current);
@@ -224,6 +204,27 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
   useEffect(() => () => {
     if (scoreDeltaTimerRef.current) clearTimeout(scoreDeltaTimerRef.current);
   }, []);
+  useEffect(() => {
+    if (!pendingMode) return;
+    modeDialogRef.current?.querySelector('[data-safe-default="true"]')?.focus();
+  }, [pendingMode]);
+  const closeModeDialog = () => {
+    setPendingMode(null);
+    window.setTimeout(() => modeSelectRef.current?.focus(), 0);
+  };
+  const confirmModeChange = () => {
+    const nextMode = pendingMode;
+    setPendingMode(null);
+    if (nextMode) setGameMode(nextMode);
+    window.setTimeout(() => modeSelectRef.current?.focus(), 0);
+  };
+  const requestModeChange = (event) => {
+    const nextMode = event.target.value;
+    if (nextMode === gameMode) return;
+    const inProgress = moves > 0 && !isWon;
+    if (inProgress) setPendingMode(nextMode);
+    else setGameMode(nextMode);
+  };
   useEffect(() => {
     initializeGame();
   }, [data, gameMode]);
@@ -389,16 +390,10 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
   return /* @__PURE__ */ React.createElement("div", { className: `p-6 transition-all duration-300 ${isFullscreen ? "fixed inset-0 z-[100] overflow-y-auto h-screen w-screen rounded-none bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900" : "rounded-xl border-2 border-indigo-200 shadow-inner mb-6 relative bg-slate-100"}` }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: `flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 ${isFullscreen ? "sticky top-0 z-30 bg-slate-900/70 backdrop-blur-md py-3 px-2 -mx-2 rounded-xl border border-white/10" : ""}` }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: `font-bold text-lg flex items-center gap-2 ${isFullscreen ? "text-white" : "text-indigo-900"}` }, /* @__PURE__ */ React.createElement(Brain, { size: 20 }), " ", t("memory.title")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 mt-1.5" }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? "bg-white/10 text-slate-100 border-white/20" : "bg-slate-100 text-slate-700 border-slate-200"}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: isFullscreen ? "text-slate-300" : "text-slate-600" }), " ", t("memory.moves"), ": ", moves), /* @__PURE__ */ React.createElement("span", { className: `relative inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full transition-all ${scoreDelta !== null ? scoreDelta > 0 ? "ring-2 ring-emerald-400 scale-105" : "ring-2 ring-red-400 scale-105" : ""} ${isFullscreen ? "bg-indigo-500/20 text-indigo-100 border-indigo-400/40" : "bg-indigo-100 text-indigo-700 border-indigo-200"}` }, /* @__PURE__ */ React.createElement(Trophy, { size: 10, className: "text-yellow-500" }), " ", t("memory.score"), ": ", score, scoreDelta !== null && /* @__PURE__ */ React.createElement("span", { className: `absolute -top-5 right-0 text-[11px] font-black pointer-events-none ${scoreDelta > 0 ? "text-emerald-500" : "text-red-500"} ${!useReducedMotion() ? "animate-in fade-in slide-in-from-bottom-1 duration-300" : ""}` }, scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta)), /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? "bg-emerald-500/20 text-emerald-100 border-emerald-400/40" : "bg-emerald-100 text-emerald-700 border-emerald-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 10, className: "text-emerald-500" }), " ", t("memory.pairs"), ": ", matchedPairs.size, "/", totalPairs))), /* @__PURE__ */ React.createElement("div", { className: `flex flex-wrap items-center gap-1 p-1 rounded-full shadow-sm ${isFullscreen ? "bg-white/10 border border-white/20 backdrop-blur-md" : "bg-white border border-slate-400"}` }, /* @__PURE__ */ React.createElement(
     "select",
     {
+      ref: modeSelectRef,
       "aria-label": t("common.selection"),
       value: gameMode,
-      onChange: (e) => {
-        const next = e.target.value;
-        const inProgress = moves > 0 && !isWon;
-        if (inProgress && !window.confirm(t("memory.mode_switch_confirm") || "Changing the mode will restart this round. Continue?")) {
-          return;
-        }
-        setGameMode(next);
-      },
+      onChange: requestModeChange,
       className: `text-xs font-bold rounded-full px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer ${isFullscreen ? "bg-white/10 text-white border-0 [&>option]:text-slate-800" : "bg-transparent text-indigo-700 border-0"}`,
       "data-help-key": "memory_mode_select"
     },
@@ -512,7 +507,42 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
         ) : /* @__PURE__ */ React.createElement("div", { className: "w-full h-full flex justify-center overflow-y-auto custom-scrollbar px-1" }, /* @__PURE__ */ React.createElement("p", { className: `font-bold w-full my-auto leading-tight ${isMismatch ? "text-red-900" : isMatched ? "text-green-900" : "text-slate-800"} ${card.isTerm ? "text-xs sm:text-sm" : "text-[11px] sm:text-[11px] font-normal text-slate-600 leading-snug"}` }, card.content)), isMatched && /* @__PURE__ */ React.createElement(MatchVisuals, null)))
       );
     })
-  ));
+  ), pendingMode && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[120] bg-black/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      ref: modeDialogRef,
+      role: "alertdialog",
+      "aria-modal": "true",
+      "aria-labelledby": "memory-mode-dialog-title",
+      "aria-describedby": "memory-mode-dialog-description",
+      onKeyDown: (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closeModeDialog();
+          return;
+        }
+        if (event.key !== "Tab") return;
+        const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+        if (!focusable.length) {
+          event.preventDefault();
+          return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      },
+      className: "w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+    },
+    /* @__PURE__ */ React.createElement("h3", { id: "memory-mode-dialog-title", className: "text-lg font-black text-slate-900" }, t("memory.mode_switch_title") || "Restart with a different mode?"),
+    /* @__PURE__ */ React.createElement("p", { id: "memory-mode-dialog-description", className: "mt-3 text-sm text-slate-700" }, t("memory.mode_switch_confirm") || "Changing the mode will restart this round. Your current moves and matched pairs will be cleared."),
+    /* @__PURE__ */ React.createElement("div", { className: "mt-6 flex flex-wrap justify-end gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-safe-default": "true", onClick: closeModeDialog, className: "min-h-11 rounded-lg border border-slate-400 px-4 py-2 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, t("common.cancel") || "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: confirmModeChange, className: "min-h-11 rounded-lg bg-red-700 px-4 py-2 font-bold text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" }, t("memory.restart") || "Restart round"))
+  )));
 });
 const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
   const { t } = useContext(LanguageContext);
@@ -1794,8 +1824,6 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
 const BOTH_TRANSLATIONS = { English: "Both", Spanish: "Ambos", French: "Les deux", Arabic: "\u0643\u0644\u0627\u0647\u0645\u0627", Chinese: "\u4E24\u8005", Japanese: "\u4E21\u65B9", Korean: "\uB458 \uB2E4", Portuguese: "Ambos", German: "Beide", Italian: "Entrambi", Russian: "\u041E\u0431\u0430", Hindi: "\u0926\u094B\u0928\u094B\u0902", Turkish: "Her ikisi", Vietnamese: "C\u1EA3 hai", Thai: "\u0E17\u0E31\u0E49\u0E07\u0E2A\u0E2D\u0E07", Hebrew: "\u05E9\u05E0\u05D9\u05D4\u05DD", Swahili: "Zote mbili", Dutch: "Beide", Polish: "Oba", Ukrainian: "\u041E\u0431\u0438\u0434\u0432\u0430" };
 const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, titles = { setA: { text: "Set A" }, setB: { text: "Set B" } }, primaryLanguage = "English" }) => {
   const { t } = useContext(LanguageContext);
-  const scoreTrackerRef = useRef(null);
-  if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
   const [score, setScore] = useState(0);
   const [isWon, setIsWon] = useState(false);
@@ -1870,14 +1898,13 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
       if (playSound) playSound("click");
     } else {
       if (item.correctZone === targetZone) {
-        const delta = scoreTrackerRef.current.correct(item.id);
         setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, currentZone: targetZone } : i));
-        if (delta > 0) setScore((s) => s + delta);
-        if (playSound) playSound(delta > 0 ? "correct" : "click");
+        setScore((s) => s + 20);
+        if (playSound) playSound("correct");
         setAnnouncement(t("concept_map.venn.move_correct", { item: itemName, zone: getTitle(targetZone) }));
       } else {
         setAttempts((a) => a + 1);
-        setScore((s) => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
+        setScore((s) => Math.max(0, s - 5));
         if (playSound) playSound("incorrect");
         showZoneHint(item.correctZone);
         setAnnouncement(t("concept_map.venn.move_incorrect", { item: itemName }));
@@ -1903,14 +1930,13 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
     setActiveDropZone(null);
     if (!draggedItem) return;
     if (draggedItem.correctZone === targetZone) {
-      const delta = scoreTrackerRef.current.correct(draggedItem.id);
-      if (playSound) playSound(delta > 0 ? "correct" : "click");
+      if (playSound) playSound("correct");
       setItems((prev) => prev.map((i) => i.id === draggedItem.id ? { ...i, currentZone: targetZone } : i));
-      if (delta > 0) setScore((s) => s + delta);
+      setScore((s) => s + 20);
     } else {
       if (playSound) playSound("incorrect");
       setAttempts((a) => a + 1);
-      setScore((s) => Math.max(0, s + scoreTrackerRef.current.incorrect(draggedItem.id)));
+      setScore((s) => Math.max(0, s - 5));
       showZoneHint(draggedItem.correctZone);
     }
     setDraggedItem(null);
@@ -2127,8 +2153,6 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
 });
 const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
   const { t } = useContext(LanguageContext);
-  const scoreTrackerRef = useRef(null);
-  if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
   const [score, setScore] = useState(0);
   const [isWon, setIsWon] = useState(false);
@@ -2224,14 +2248,13 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       if (playSound) playSound("click");
     } else {
       if (item.correctZone === targetZone) {
-        const delta = scoreTrackerRef.current.correct(item.id);
         setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, currentZone: targetZone } : i));
-        if (delta > 0) setScore((s) => s + delta);
-        if (playSound) playSound(delta > 0 ? "correct" : "click");
+        setScore((s) => s + 20);
+        if (playSound) playSound("correct");
         setAnnouncement(`Correct! "${item.text}" is a ${targetZone === "causes" ? "Cause" : "Effect"}.`);
       } else {
         setAttempts((a) => a + 1);
-        setScore((s) => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
+        setScore((s) => Math.max(0, s - 5));
         if (playSound) playSound("incorrect");
         showZoneHint(item.correctZone);
         setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === "causes" ? "Causes" : "Effects"}.`);
@@ -2257,14 +2280,13 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     setActiveDropZone(null);
     if (!draggedItem) return;
     if (draggedItem.correctZone === targetZone) {
-      const delta = scoreTrackerRef.current.correct(draggedItem.id);
-      if (playSound) playSound(delta > 0 ? "correct" : "click");
+      if (playSound) playSound("correct");
       setItems((prev) => prev.map((i) => i.id === draggedItem.id ? { ...i, currentZone: targetZone } : i));
-      if (delta > 0) setScore((s) => s + delta);
+      setScore((s) => s + 20);
     } else {
       if (playSound) playSound("incorrect");
       setAttempts((a) => a + 1);
-      setScore((s) => Math.max(0, s + scoreTrackerRef.current.incorrect(draggedItem.id)));
+      setScore((s) => Math.max(0, s - 5));
       showZoneHint(draggedItem.correctZone);
     }
     setDraggedItem(null);
@@ -2456,8 +2478,6 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
 });
 const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
   const { t } = useContext(LanguageContext);
-  const scoreTrackerRef = useRef(null);
-  if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
   const [score, setScore] = useState(0);
   const [isWon, setIsWon] = useState(false);
@@ -2539,14 +2559,13 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
       return;
     }
     if (item.correctZone === targetZone) {
-      const delta = scoreTrackerRef.current.correct(item.id);
       setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, currentZone: targetZone } : i));
-      if (delta > 0) setScore((s) => s + delta);
-      if (playSound) playSound(delta > 0 ? "correct" : "click");
+      setScore((s) => s + 20);
+      if (playSound) playSound("correct");
       setAnnouncement(`Correct! "${item.text}" belongs in ${targetZone === "left" ? leftTitle : rightTitle}.`);
     } else {
       setAttempts((a) => a + 1);
-      setScore((s) => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
+      setScore((s) => Math.max(0, s - 5));
       if (playSound) playSound("incorrect");
       showZoneHint(item.correctZone);
       setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === "left" ? leftTitle : rightTitle}.`);
@@ -2729,8 +2748,6 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
 });
 const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "", gameKey = "multiBucket" }) => {
   const { t } = useContext(LanguageContext);
-  const scoreTrackerRef = useRef(null);
-  if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
   const [score, setScore] = useState(0);
   const [isWon, setIsWon] = useState(false);
@@ -2805,14 +2822,13 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
     const bucket = buckets.find((b) => b.id === targetBucketId);
     const bucketLabel = bucket ? bucket.title : targetBucketId;
     if (item.correctBucketId === targetBucketId) {
-      const delta = scoreTrackerRef.current.correct(item.id);
       setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, currentBucketId: targetBucketId } : i));
-      if (delta > 0) setScore((s) => s + delta);
-      if (playSound) playSound(delta > 0 ? "correct" : "click");
+      setScore((s) => s + 20);
+      if (playSound) playSound("correct");
       setAnnouncement(`Correct! "${item.text}" belongs in ${bucketLabel}.`);
     } else {
       setAttempts((a) => a + 1);
-      setScore((s) => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
+      setScore((s) => Math.max(0, s - 5));
       if (playSound) playSound("incorrect");
       showZoneHint(item.correctBucketId);
       setAnnouncement(`Incorrect. "${item.text}" does not belong in ${bucketLabel}.`);
@@ -4812,8 +4828,6 @@ const _MultiZoneColorMap = {
 };
 const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "", gameKey, gameLabel, zoneConfig, layoutMode = "columns", captionText = "" }) => {
   const { t } = useContext(LanguageContext);
-  const scoreTrackerRef = useRef(null);
-  if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
   const [score, setScore] = useState(0);
   const [isWon, setIsWon] = useState(false);
@@ -4878,14 +4892,13 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
     }
     const zoneLabel = (zoneConfig.find((z) => z.id === targetZone) || {}).label || targetZone;
     if (item.correctZone === targetZone) {
-      const delta = scoreTrackerRef.current.correct(item.id);
       setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, currentZone: targetZone } : i));
-      if (delta > 0) setScore((s) => s + delta);
-      if (playSound) playSound(delta > 0 ? "correct" : "click");
+      setScore((s) => s + 20);
+      if (playSound) playSound("correct");
       setAnnouncement(`Correct. "${item.text}" belongs in ${zoneLabel}.`);
     } else {
       setAttempts((a) => a + 1);
-      setScore((s) => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
+      setScore((s) => Math.max(0, s - 5));
       if (playSound) playSound("incorrect");
       setAnnouncement(`Not quite. "${item.text}" does not belong in ${zoneLabel}. Try another zone.`);
     }

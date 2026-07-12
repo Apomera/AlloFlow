@@ -160,8 +160,11 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
   const [announcement, setAnnouncement] = useState('');
   const [mismatchIndices, setMismatchIndices] = useState([]);
   const [scoreDelta, setScoreDelta] = useState(null);
+  const [pendingMode, setPendingMode] = useState(null);
   const cardRefs = useRef([]);
   const gridRef = useRef(null);
+  const modeSelectRef = useRef(null);
+  const modeDialogRef = useRef(null);
   const scoreDeltaTimerRef = useRef(null);
   const flashScoreDelta = (delta) => {
     if (scoreDeltaTimerRef.current) clearTimeout(scoreDeltaTimerRef.current);
@@ -169,6 +172,27 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
     scoreDeltaTimerRef.current = setTimeout(() => setScoreDelta(null), 900);
   };
   useEffect(() => () => { if (scoreDeltaTimerRef.current) clearTimeout(scoreDeltaTimerRef.current); }, []);
+  useEffect(() => {
+    if (!pendingMode) return;
+    modeDialogRef.current?.querySelector('[data-safe-default="true"]')?.focus();
+  }, [pendingMode]);
+  const closeModeDialog = () => {
+    setPendingMode(null);
+    window.setTimeout(() => modeSelectRef.current?.focus(), 0);
+  };
+  const confirmModeChange = () => {
+    const nextMode = pendingMode;
+    setPendingMode(null);
+    if (nextMode) setGameMode(nextMode);
+    window.setTimeout(() => modeSelectRef.current?.focus(), 0);
+  };
+  const requestModeChange = (event) => {
+    const nextMode = event.target.value;
+    if (nextMode === gameMode) return;
+    const inProgress = moves > 0 && !isWon;
+    if (inProgress) setPendingMode(nextMode);
+    else setGameMode(nextMode);
+  };
   useEffect(() => {
     initializeGame();
   }, [data, gameMode]);
@@ -350,16 +374,9 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
           </div>
         </div>
         <div className={`flex flex-wrap items-center gap-1 p-1 rounded-full shadow-sm ${isFullscreen ? 'bg-white/10 border border-white/20 backdrop-blur-md' : 'bg-white border border-slate-400'}`}>
-          <select aria-label={t('common.selection')}
+          <select ref={modeSelectRef} aria-label={t('common.selection')}
             value={gameMode}
-            onChange={(e) => {
-                const next = e.target.value;
-                const inProgress = moves > 0 && !isWon;
-                if (inProgress && !window.confirm(t('memory.mode_switch_confirm') || 'Changing the mode will restart this round. Continue?')) {
-                    return;
-                }
-                setGameMode(next);
-            }}
+            onChange={requestModeChange}
             className={`text-xs font-bold rounded-full px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer ${isFullscreen ? 'bg-white/10 text-white border-0 [&>option]:text-slate-800' : 'bg-transparent text-indigo-700 border-0'}`}
             data-help-key="memory_mode_select"
           >
@@ -519,6 +536,35 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
               </div>
             );
           })}
+        </div>
+      )}
+      {pendingMode && (
+        <div role="presentation" className="fixed inset-0 z-[120] bg-black/70 flex items-center justify-center p-4">
+          <div
+            ref={modeDialogRef}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="memory-mode-dialog-title"
+            aria-describedby="memory-mode-dialog-description"
+            onKeyDown={event => {
+              if (event.key === 'Escape') { event.preventDefault(); closeModeDialog(); return; }
+              if (event.key !== 'Tab') return;
+              const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+              if (!focusable.length) { event.preventDefault(); return; }
+              const first = focusable[0];
+              const last = focusable[focusable.length - 1];
+              if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+              else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+            }}
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+          >
+            <h3 id="memory-mode-dialog-title" className="text-lg font-black text-slate-900">{t('memory.mode_switch_title') || 'Restart with a different mode?'}</h3>
+            <p id="memory-mode-dialog-description" className="mt-3 text-sm text-slate-700">{t('memory.mode_switch_confirm') || 'Changing the mode will restart this round. Your current moves and matched pairs will be cleared.'}</p>
+            <div className="mt-6 flex flex-wrap justify-end gap-3">
+              <button type="button" data-safe-default="true" onClick={closeModeDialog} className="min-h-11 rounded-lg border border-slate-400 px-4 py-2 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('common.cancel') || 'Cancel'}</button>
+              <button type="button" onClick={confirmModeChange} className="min-h-11 rounded-lg bg-red-700 px-4 py-2 font-bold text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">{t('memory.restart') || 'Restart round'}</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
