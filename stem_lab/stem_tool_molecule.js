@@ -596,14 +596,15 @@ window.StemLab = window.StemLab || {
               return 0x94a3b8;
             };
 
+            var teachingModel = getMoleculeTeachingModel(d.formula);
+            var modelCoordinates = teachingModel && teachingModel.coordinates;
             var positions = atoms.map(function(a, idx) {
-              var pz = 0;
-              if (a.el === 'H') {
-                pz = Math.sin(idx * 2.0) * 1.2;
-              } else if (a.el === 'O' && atoms.length > 3) {
-                pz = Math.cos(idx * 2.0) * 0.6;
+              if (modelCoordinates && modelCoordinates.length === atoms.length && modelCoordinates[idx]) {
+                return new THREE.Vector3(modelCoordinates[idx][0], modelCoordinates[idx][1], modelCoordinates[idx][2]);
               }
-              return new THREE.Vector3((a.x - avgX) * scale, -(a.y - avgY) * scale, pz);
+              // User-arranged and complex presets remain planar; depth should never be
+              // invented from element type because that implies unsupported geometry.
+              return new THREE.Vector3((a.x - avgX) * scale, -(a.y - avgY) * scale, Number(a.z) || 0);
             });
 
             var createTextSprite = function(text) {
@@ -1394,6 +1395,102 @@ window.StemLab = window.StemLab || {
             { name: __alloT('stem.molecule.cuso_copper_sulfate', 'CuSO₄ (Copper Sulfate)'), atoms: [{ el: 'Cu', x: 100, y: 150, color: '#fb923c' }, { el: 'S', x: 200, y: 140, color: '#facc15' }, { el: 'O', x: 160, y: 80, color: '#ef4444' }, { el: 'O', x: 260, y: 90, color: '#ef4444' }, { el: 'O', x: 260, y: 200, color: '#ef4444' }, { el: 'O', x: 140, y: 200, color: '#ef4444' }], bonds: [[0,5],[1,2],[1,3],[1,4],[1,5]], formula: 'CuSO₄' },
 
           ];
+          const moleculeTeachingModels = {
+            H2O: {
+              shape: 'Bent', angle: '104.5°', domains: '4 electron domains; 2 lone pairs on O',
+              polarity: 'Polar', dipoles: 'O-H bond dipoles reinforce instead of cancelling.',
+              modelNote: 'Gas-phase molecular geometry',
+              coordinates: [[0, 0.8, 0], [-2.2, -0.9, 0], [2.2, -0.9, 0]]
+            },
+            CO2: {
+              shape: 'Linear', angle: '180°', domains: '2 electron domains; 0 lone pairs on C',
+              polarity: 'Nonpolar molecule', dipoles: 'Two polar C=O bond dipoles are equal and opposite, so they cancel.',
+              modelNote: 'Gas-phase molecular geometry',
+              coordinates: [[0, 0, 0], [-3.2, 0, 0], [3.2, 0, 0]]
+            },
+            CH4: {
+              shape: 'Tetrahedral', angle: '109.5°', domains: '4 electron domains; 0 lone pairs on C',
+              polarity: 'Nonpolar molecule', dipoles: 'The four C-H bond dipoles cancel through tetrahedral symmetry.',
+              modelNote: 'Gas-phase molecular geometry',
+              coordinates: [[0, 0, 0], [1.8, 1.8, 1.8], [-1.8, -1.8, 1.8], [-1.8, 1.8, -1.8], [1.8, -1.8, -1.8]]
+            },
+            NH3: {
+              shape: 'Trigonal pyramidal', angle: 'about 107°', domains: '4 electron domains; 1 lone pair on N',
+              polarity: 'Polar', dipoles: 'The N-H bond dipoles do not cancel; their net direction is toward N.',
+              modelNote: 'Gas-phase molecular geometry',
+              coordinates: [[0, 0.8, 0], [2.2, -1.1, 0], [-1.1, -1.1, 1.9], [-1.1, -1.1, -1.9]]
+            },
+            O2: {
+              shape: 'Linear diatomic', angle: 'Not applicable', domains: 'Two identical O atoms',
+              polarity: 'Nonpolar', dipoles: 'Identical atoms share electrons equally, so there is no permanent bond dipole.',
+              modelNote: 'Gas-phase molecular geometry',
+              coordinates: [[-1.8, 0, 0], [1.8, 0, 0]]
+            },
+            N2: {
+              shape: 'Linear diatomic', angle: 'Not applicable', domains: 'Two identical N atoms',
+              polarity: 'Nonpolar', dipoles: 'Identical atoms share electrons equally, so there is no permanent bond dipole.',
+              modelNote: 'Gas-phase molecular geometry',
+              coordinates: [[-1.8, 0, 0], [1.8, 0, 0]]
+            },
+            HCl: {
+              shape: 'Linear diatomic', angle: 'Not applicable', domains: 'One H-Cl bond',
+              polarity: 'Polar', dipoles: 'Electron density is drawn toward Cl, producing a permanent bond dipole.',
+              modelNote: 'Gas-phase molecular geometry',
+              coordinates: [[-1.8, 0, 0], [1.8, 0, 0]]
+            },
+            O3: {
+              shape: 'Bent', angle: 'about 117°', domains: '3 electron domains; 1 lone pair on central O',
+              polarity: 'Polar', dipoles: 'Its bent shape prevents the O-O bond contributions from cancelling.',
+              modelNote: 'Resonance makes the two O-O bonds equivalent overall',
+              coordinates: [[-2.3, -0.7, 0], [0, 0.8, 0], [2.3, -0.7, 0]]
+            },
+            NO2: {
+              shape: 'Bent', angle: 'about 134°', domains: 'Odd-electron molecule; VSEPR is approximate',
+              polarity: 'Polar', dipoles: 'Its bent geometry leaves a net molecular dipole.',
+              modelNote: 'Gas-phase radical; one electron is unpaired',
+              coordinates: [[0, 0.8, 0], [-2.5, -0.8, 0], [2.5, -0.8, 0]]
+            },
+            SO2: {
+              shape: 'Bent', angle: 'about 119°', domains: '3 electron domains; 1 lone pair on S',
+              polarity: 'Polar', dipoles: 'Its bent geometry prevents the S-O bond dipoles from cancelling.',
+              modelNote: 'Gas-phase molecular geometry',
+              coordinates: [[0, 0.8, 0], [-2.4, -0.7, 0], [2.4, -0.7, 0]]
+            },
+            NaCl: {
+              shape: 'Ion pair shown', angle: 'Not applicable', domains: 'Na+ and Cl- ions',
+              polarity: 'Ionic compound', dipoles: 'Bulk table salt is a repeating 3D ionic lattice, not separate NaCl molecules.',
+              modelNote: 'Formula-unit representation',
+              coordinates: [[-2, 0, 0], [2, 0, 0]]
+            },
+            KCl: {
+              shape: 'Ion pair shown', angle: 'Not applicable', domains: 'K+ and Cl- ions',
+              polarity: 'Ionic compound', dipoles: 'Bulk potassium chloride is a repeating 3D ionic lattice, not separate KCl molecules.',
+              modelNote: 'Formula-unit representation',
+              coordinates: [[-2, 0, 0], [2, 0, 0]]
+            },
+            MgO: {
+              shape: 'Ion pair shown', angle: 'Not applicable', domains: 'Mg2+ and O2- ions',
+              polarity: 'Ionic compound', dipoles: 'Bulk magnesium oxide is a repeating 3D ionic lattice, not separate MgO molecules.',
+              modelNote: 'Formula-unit representation',
+              coordinates: [[-2, 0, 0], [2, 0, 0]]
+            }
+          };
+
+          const normalizeMoleculeFormula = function(formula) {
+            var subscripts = { '₀':'0', '₁':'1', '₂':'2', '₃':'3', '₄':'4', '₅':'5', '₆':'6', '₇':'7', '₈':'8', '₉':'9' };
+            return String(formula || '').replace(/[₀-₉]/g, function(char) { return subscripts[char]; });
+          };
+
+          const getMoleculeTeachingModel = function(formula) {
+            return moleculeTeachingModels[normalizeMoleculeFormula(formula)] || null;
+          };
+
+          if (typeof window !== 'undefined') {
+            window.__alloMoleculeGeometryPure = {
+              normalizeFormula: normalizeMoleculeFormula,
+              getTeachingModel: getMoleculeTeachingModel
+            };
+          }
 
 
 
@@ -1573,15 +1670,47 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   ),
 
               React.createElement("div", { className: "mt-2 text-center" },
-
                 React.createElement("span", { className: "text-sm font-bold text-slate-600" }, "Formula: "),
-
                 React.createElement("span", { className: "text-lg font-bold text-slate-800 tracking-tight" }, d.formula || '-'),
+                d.formula && d.atoms && React.createElement("span", { className: "ml-2 text-xs text-slate-600" },
+                  calcMolarMass((() => { const c = {}; (d.atoms || []).forEach(a => { c[a.el] = (c[a.el] || 0) + 1; }); return c; })()) + " g/mol"
+                )
+              ),
 
-              d.formula && d.atoms && React.createElement("span", { className: "ml-2 text-xs text-slate-600" },
-                calcMolarMass((() => { const c = {}; (d.atoms || []).forEach(a => { c[a.el] = (c[a.el] || 0) + 1; }); return c; })()) + " g/mol"
-              )
-              )
+              (() => {
+                const teaching = getMoleculeTeachingModel(d.formula);
+                return teaching && React.createElement("section", {
+                  className: "mt-3 border border-cyan-200 bg-cyan-50/70 p-3 text-left",
+                  style: { borderRadius: 8 },
+                  "aria-labelledby": "molecule-shape-polarity-title"
+                },
+                  React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                    React.createElement("h4", { id: "molecule-shape-polarity-title", className: "text-sm font-black text-slate-800" }, "Shape & Polarity Lens"),
+                    React.createElement("span", { className: "px-2 py-1 text-[11px] font-bold bg-white border border-cyan-200 text-cyan-800", style: { borderRadius: 6 } }, teaching.modelNote)
+                  ),
+                  React.createElement("dl", { className: "mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2" },
+                    React.createElement("div", { className: "bg-white border border-slate-200 p-2", style: { borderRadius: 6 } },
+                      React.createElement("dt", { className: "text-[11px] font-bold uppercase text-slate-500" }, "Molecular shape"),
+                      React.createElement("dd", { className: "mt-1 text-sm font-black text-slate-800" }, teaching.shape),
+                      React.createElement("dd", { className: "text-xs text-slate-600" }, "Bond angle: " + teaching.angle)
+                    ),
+                    React.createElement("div", { className: "bg-white border border-slate-200 p-2", style: { borderRadius: 6 } },
+                      React.createElement("dt", { className: "text-[11px] font-bold uppercase text-slate-500" }, "Electron geometry evidence"),
+                      React.createElement("dd", { className: "mt-1 text-xs font-semibold text-slate-700" }, teaching.domains)
+                    ),
+                    React.createElement("div", { className: "bg-white border border-slate-200 p-2", style: { borderRadius: 6 } },
+                      React.createElement("dt", { className: "text-[11px] font-bold uppercase text-slate-500" }, "Whole-particle polarity"),
+                      React.createElement("dd", { className: "mt-1 text-sm font-black text-slate-800" }, teaching.polarity)
+                    )
+                  ),
+                  React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-slate-700" },
+                    React.createElement("strong", null, "Why: "), teaching.dipoles
+                  ),
+                  React.createElement("p", { className: "mt-2 text-[11px] leading-relaxed text-slate-600" },
+                    "Ball-and-stick models show connectivity and approximate geometry. Atom sizes and bond lengths are not on one common scale, and electron density is continuous."
+                  )
+                );
+              })()
 
             ),
 
