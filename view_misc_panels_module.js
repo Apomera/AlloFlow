@@ -743,7 +743,57 @@ function GroupSessionModal(props) {
     updateDoc,
     warnLog
   } = props;
+  const groupDialogRef = React.useRef(null);
+  const groupCloseRef = React.useRef(null);
+  const containGroupFocus = (event) => {
+    if (!event || !groupDialogRef.current) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      handleSetShowGroupModalToFalse();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = Array.from(groupDialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => !el.hidden && el.getAttribute("aria-hidden") !== "true");
+    if (!focusable.length) {
+      event.preventDefault();
+      groupDialogRef.current.focus();
+      return;
+    }
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+  React.useEffect(() => {
+    if (!(showGroupModal && activeSessionCode && sessionData)) return void 0;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => groupCloseRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === "function") previouslyFocused.focus();
+    };
+  }, [showGroupModal, activeSessionCode, !!sessionData]);
   if (!(showGroupModal && activeSessionCode && sessionData)) return null;
+  const moveResourceBy = async (resId, delta) => {
+    const resources = [...sessionData.resources || []];
+    const currentIndex = resources.findIndex((r) => r.id === resId);
+    const targetIndex = currentIndex + delta;
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= resources.length) return;
+    const [item] = resources.splice(currentIndex, 1);
+    resources.splice(targetIndex, 0, item);
+    try {
+      const sessionRef = doc(db, "artifacts", appId, "public", "data", "sessions", activeSessionCode);
+      await updateDoc(sessionRef, { resources });
+      addToast((item.title || "Resource") + (delta < 0 ? " moved earlier" : " moved later"), "success");
+    } catch (err) {
+      warnLog("Failed to reorder resource:", err);
+      addToast(t("common.error") || "Could not reorder resource", "error");
+    }
+  };
   const handleDragStart = (e, resId) => {
     setDraggedResourceId(resId);
     e.dataTransfer.effectAllowed = "move";
@@ -845,7 +895,7 @@ function GroupSessionModal(props) {
     simplified: "\u2728",
     default: "\u{1F4C4}"
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in fade-in duration-200", onClick: handleSetShowGroupModalToFalse, "data-help-key": "group_modal_container" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative animate-in zoom-in-95 duration-200 flex flex-col overflow-hidden", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-label": t("groups.modal_title") }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-indigo-50 flex-shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-600 p-3 rounded-xl shadow-md" }, /* @__PURE__ */ React.createElement(Users, { size: 28, className: "text-white" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black text-slate-800" }, t("groups.modal_title")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, t("groups.modal_subtitle")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none", onClick: handleSetShowGroupModalToFalse, "data-help-key": "group_modal_container" }, /* @__PURE__ */ React.createElement("div", { ref: groupDialogRef, tabIndex: -1, onKeyDown: containGroupFocus, className: "bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative animate-in zoom-in-95 duration-200 motion-reduce:animate-none flex flex-col overflow-hidden", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-labelledby": "group-session-title", "aria-describedby": "group-session-description" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-indigo-50 flex-shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-600 p-3 rounded-xl shadow-md" }, /* @__PURE__ */ React.createElement(Users, { size: 28, className: "text-white" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "group-session-title", className: "text-2xl font-black text-slate-800" }, t("groups.modal_title")), /* @__PURE__ */ React.createElement("p", { id: "group-session-description", className: "text-sm text-slate-600" }, t("groups.modal_subtitle")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.groups_new_group_placeholder"),
@@ -868,7 +918,7 @@ function GroupSessionModal(props) {
     /* @__PURE__ */ React.createElement(Plus, { size: 18 }),
     " ",
     t("groups.add_button")
-  )), /* @__PURE__ */ React.createElement("button", { onClick: handleSetShowGroupModalToFalse, className: "p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-white/80 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 p-5 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "lg:col-span-2 flex flex-col min-h-0", "data-help-key": "group_resource_library" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement(FileText, { size: 16, className: "text-indigo-600" }), /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-indigo-600 uppercase tracking-wider" }, t("groups.resource_library")), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 ml-2" }, "(", sessionData.resources?.length || 0, " items)"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-purple-700 ml-auto italic flex items-center gap-1" }, /* @__PURE__ */ React.createElement(GripVertical, { size: 12 }), " ", t("groups.drag_to_reorder") || "Drag to reorder")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-gradient-to-br from-indigo-50/80 to-purple-50/80 rounded-xl p-4 border border-indigo-100 overflow-y-auto custom-scrollbar" }, sessionData.resources && sessionData.resources.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3", style: { gridAutoRows: "min-content" } }, sessionData.resources.map((res, index) => {
+  )), /* @__PURE__ */ React.createElement("button", { ref: groupCloseRef, type: "button", onClick: handleSetShowGroupModalToFalse, className: "p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-white/80 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 p-5 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "lg:col-span-2 flex flex-col min-h-0", "data-help-key": "group_resource_library" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement(FileText, { size: 16, className: "text-indigo-600" }), /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-indigo-600 uppercase tracking-wider" }, t("groups.resource_library")), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 ml-2" }, "(", sessionData.resources?.length || 0, " items)"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-purple-700 ml-auto italic flex items-center gap-1" }, /* @__PURE__ */ React.createElement(GripVertical, { size: 12 }), " ", t("groups.drag_to_reorder") || "Drag or use Move earlier/later")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-gradient-to-br from-indigo-50/80 to-purple-50/80 rounded-xl p-4 border border-indigo-100 overflow-y-auto custom-scrollbar" }, sessionData.resources && sessionData.resources.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3", style: { gridAutoRows: "min-content" } }, sessionData.resources.map((res, index) => {
     const assignedGroup = sessionData.groups && Object.entries(sessionData.groups).find(([_, g]) => g && g.resourceId === res.id);
     const icon = typeIcons[res.type] || typeIcons.default;
     const description = getResourceDescription(res);
@@ -900,7 +950,8 @@ function GroupSessionModal(props) {
       /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl" }, icon), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-semibold text-slate-700 truncate" }, res.title || "Untitled"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 capitalize" }, res.type?.replace("-", " ")))),
       description && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-purple-500 bg-purple-50 px-2 py-1 rounded-md mb-1", style: { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" } }, description),
       (language || dateStr) && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1 mb-1" }, language && (Array.isArray(language) ? language.slice(0, 5).map((lang, li) => /* @__PURE__ */ React.createElement("span", { key: li, className: "inline-flex items-center gap-0.5 text-[11px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium" }, /* @__PURE__ */ React.createElement(Globe, { size: 8 }), " ", lang)) : /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-0.5 text-[11px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium" }, /* @__PURE__ */ React.createElement(Globe, { size: 8 }), " ", language)), dateStr && /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-0.5 text-[11px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded" }, /* @__PURE__ */ React.createElement(Clock, { size: 8 }), " ", dateStr)),
-      assignedGroup && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] font-bold text-green-800 bg-green-100 px-2 py-1 rounded-md flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Users, { size: 10 }), " ", assignedGroup[1].name)
+      assignedGroup && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] font-bold text-green-800 bg-green-100 px-2 py-1 rounded-md flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Users, { size: 10 }), " ", assignedGroup[1].name),
+      /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": `Reorder ${res.title || "Untitled"}`, className: "mt-2 grid grid-cols-2 gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveResourceBy(res.id, -1), disabled: index === 0, className: "rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40", "aria-label": `Move ${res.title || "resource"} earlier` }, "\xE2\u2020\x90 Earlier"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveResourceBy(res.id, 1), disabled: index === sessionData.resources.length - 1, className: "rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40", "aria-label": `Move ${res.title || "resource"} later` }, "Later \xE2\u2020\u2019"))
     );
   })) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center h-full text-slate-600 italic" }, t("groups.no_resources") || "No resources in this session"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-5 min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Layers, { size: 14 }), " ", t("groups.active_groups")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-1", "data-help-key": "group_active_list" }, sessionData.groups && activeSessionGroups.map(([gid, group]) => /* @__PURE__ */ React.createElement("div", { key: gid, className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-3" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, group.name), /* @__PURE__ */ React.createElement("button", { onClick: () => handleDeleteGroup(gid), className: "text-red-600 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors", "aria-label": t("common.delete") }, /* @__PURE__ */ React.createElement(X, { size: 16 }))), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1 block flex items-center gap-2" }, t("groups.assign_resource_label"), isPushingResource[gid] === "pushing" && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-[10px] text-purple-600 font-bold normal-case" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 11, className: "animate-spin" }), " ", t("groups.pushing") || "Pushing\u2026"), isPushingResource[gid] === "success" && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-[10px] text-emerald-600 font-bold normal-case" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 11 }), " ", t("groups.pushed") || "Sent")), /* @__PURE__ */ React.createElement(
     "select",

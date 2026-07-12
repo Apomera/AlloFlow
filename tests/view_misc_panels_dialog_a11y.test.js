@@ -6,7 +6,7 @@ const source = readFileSync(resolve(process.cwd(), 'view_misc_panels_source.jsx'
 const built = readFileSync(resolve(process.cwd(), 'view_misc_panels_module.js'), 'utf8');
 const deployed = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/view_misc_panels_module.js'), 'utf8');
 
-describe('PDF Diff Viewer accessibility', () => {
+describe('Misc Panels dialog accessibility', () => {
   it('keeps generated and deployed artifacts synchronized', () => {
     expect(deployed).toBe(built);
     expect(built).toContain('requestDiffConfirmation');
@@ -33,4 +33,18 @@ describe('PDF Diff Viewer accessibility', () => {
     expect(source).toContain("cancelLabel: 'Keep current view'");
     expect(source).toContain("cancelLabel: 'Keep rejections'");
   });
-});
+
+  it('focus-manages the Group Session dialog', () => {
+    expect(source).toContain('ref={groupDialogRef} tabIndex={-1} onKeyDown={containGroupFocus}');
+    expect(source).toContain('aria-labelledby="group-session-title" aria-describedby="group-session-description"');
+    expect(source).toContain('groupCloseRef.current?.focus()');
+    expect(source).toContain("if (event.key === 'Escape') { event.preventDefault(); handleSetShowGroupModalToFalse();");
+  });
+
+  it('provides button alternatives for drag-based resource reordering', () => {
+    expect(source).toContain('const moveResourceBy = async (resId, delta)');
+    expect(source).toContain('onClick={() => moveResourceBy(res.id, -1)}');
+    expect(source).toContain('onClick={() => moveResourceBy(res.id, 1)}');
+    expect(source).toContain("aria-label={`Move ${res.title || 'resource'} earlier`}");
+    expect(source).toContain("aria-label={`Move ${res.title || 'resource'} later`}");
+  });});

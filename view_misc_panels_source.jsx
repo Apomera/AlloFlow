@@ -699,7 +699,44 @@ function GroupSessionModal(props) {
     setDragOverResourceId, setDraggedResourceId, setNewGroupName, showGroupModal,
     t, updateDoc, warnLog
   } = props;
+  const groupDialogRef = React.useRef(null);
+  const groupCloseRef = React.useRef(null);
+  const containGroupFocus = (event) => {
+    if (!event || !groupDialogRef.current) return;
+    if (event.key === 'Escape') { event.preventDefault(); handleSetShowGroupModalToFalse(); return; }
+    if (event.key !== 'Tab') return;
+    const focusable = Array.from(groupDialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(el => !el.hidden && el.getAttribute('aria-hidden') !== 'true');
+    if (!focusable.length) { event.preventDefault(); groupDialogRef.current.focus(); return; }
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  };
+  React.useEffect(() => {
+    if (!(showGroupModal && activeSessionCode && sessionData)) return undefined;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => groupCloseRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+    };
+  }, [showGroupModal, activeSessionCode, !!sessionData]);
   if (!(showGroupModal && activeSessionCode && sessionData)) return null;
+        const moveResourceBy = async (resId, delta) => {
+            const resources = [...(sessionData.resources || [])];
+            const currentIndex = resources.findIndex(r => r.id === resId);
+            const targetIndex = currentIndex + delta;
+            if (currentIndex < 0 || targetIndex < 0 || targetIndex >= resources.length) return;
+            const [item] = resources.splice(currentIndex, 1);
+            resources.splice(targetIndex, 0, item);
+            try {
+                const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+                await updateDoc(sessionRef, { resources });
+                addToast((item.title || 'Resource') + (delta < 0 ? ' moved earlier' : ' moved later'), 'success');
+            } catch (err) {
+                warnLog('Failed to reorder resource:', err);
+                addToast(t('common.error') || 'Could not reorder resource', 'error');
+            }
+        };
         const handleDragStart = (e, resId) => {
             setDraggedResourceId(resId);
             e.dataTransfer.effectAllowed = 'move';
@@ -788,16 +825,16 @@ function GroupSessionModal(props) {
             'lesson-plan': '📚', adventure: '🎮', simplified: '✨', default: '📄',
         };
         return (
-        <div className="fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowGroupModalToFalse} data-help-key="group_modal_container">
-            <div className="bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative animate-in zoom-in-95 duration-200 flex flex-col overflow-hidden" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('groups.modal_title')}>
+        <div role="presentation" className="fixed inset-0 bg-black/90 z-[160] flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none" onClick={handleSetShowGroupModalToFalse} data-help-key="group_modal_container">
+            <div ref={groupDialogRef} tabIndex={-1} onKeyDown={containGroupFocus} className="bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative animate-in zoom-in-95 duration-200 motion-reduce:animate-none flex flex-col overflow-hidden" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="group-session-title" aria-describedby="group-session-description">
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-indigo-50 flex-shrink-0">
                     <div className="flex items-center gap-4">
                         <div className="bg-purple-600 p-3 rounded-xl shadow-md">
                             <Users size={28} className="text-white" />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-black text-slate-800">{t('groups.modal_title')}</h2>
-                            <p className="text-sm text-slate-600">{t('groups.modal_subtitle')}</p>
+                            <h2 id="group-session-title" className="text-2xl font-black text-slate-800">{t('groups.modal_title')}</h2>
+                            <p id="group-session-description" className="text-sm text-slate-600">{t('groups.modal_subtitle')}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -819,7 +856,7 @@ function GroupSessionModal(props) {
                             <Plus size={18} /> {t('groups.add_button')}
                         </button>
                     </div>
-                    <button onClick={handleSetShowGroupModalToFalse} className="p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-white/80 transition-colors" aria-label={t('common.close')}>
+                    <button ref={groupCloseRef} type="button" onClick={handleSetShowGroupModalToFalse} className="p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-white/80 transition-colors" aria-label={t('common.close')}>
                         <X size={24}/>
                     </button>
                 </div>
@@ -830,7 +867,7 @@ function GroupSessionModal(props) {
                             <h3 className="text-sm font-bold text-indigo-600 uppercase tracking-wider">{t('groups.resource_library')}</h3>
                             <span className="text-xs text-slate-600 ml-2">({sessionData.resources?.length || 0} items)</span>
                             <span className="text-[11px] text-purple-700 ml-auto italic flex items-center gap-1">
-                                <GripVertical size={12} /> {t('groups.drag_to_reorder') || 'Drag to reorder'}
+                                <GripVertical size={12} /> {t('groups.drag_to_reorder') || 'Drag or use Move earlier/later'}
                             </span>
                         </div>
                         <div className="flex-1 bg-gradient-to-br from-indigo-50/80 to-purple-50/80 rounded-xl p-4 border border-indigo-100 overflow-y-auto custom-scrollbar">
@@ -908,6 +945,10 @@ function GroupSessionModal(props) {
                                                         <Users size={10} /> {assignedGroup[1].name}
                                                     </div>
                                                 )}
+                                                <div role="group" aria-label={`Reorder ${res.title || 'Untitled'}`} className="mt-2 grid grid-cols-2 gap-1">
+                                                    <button type="button" onClick={() => moveResourceBy(res.id, -1)} disabled={index === 0} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={`Move ${res.title || 'resource'} earlier`}>â† Earlier</button>
+                                                    <button type="button" onClick={() => moveResourceBy(res.id, 1)} disabled={index === sessionData.resources.length - 1} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={`Move ${res.title || 'resource'} later`}>Later â†’</button>
+                                                </div>
                                             </div>
                                         );
                                     })}
