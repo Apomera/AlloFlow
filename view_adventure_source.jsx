@@ -1,4 +1,32 @@
 
+function useAdventureDialogFocus(isOpen, dialogRef, onClose) {
+  var closeHandlerRef = React.useRef(onClose);
+  closeHandlerRef.current = onClose;
+  React.useEffect(function () {
+    if (!isOpen) return undefined;
+    var dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    var previousFocus = document.activeElement;
+    var getFocusable = function () { return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')); };
+    (getFocusable()[0] || dialog).focus();
+    var onKeyDown = function (event) {
+      if (event.key === 'Escape') { event.preventDefault(); closeHandlerRef.current(); return; }
+      if (event.key !== 'Tab') return;
+      var focusable = getFocusable();
+      if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return function () {
+      dialog.removeEventListener('keydown', onKeyDown);
+      if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+    };
+  }, [isOpen, dialogRef]);
+}
+
 function AdventureView(props) {
   // State (object-bundle)
   var adventureState = props.adventureState;
@@ -117,6 +145,10 @@ function AdventureView(props) {
   var ClimaxProgressBar = props.ClimaxProgressBar;
   var ConfettiExplosion = props.ConfettiExplosion;
   var InventoryGrid = props.InventoryGrid;
+  var ledgerDialogRef = React.useRef(null);
+  var inventoryDialogRef = React.useRef(null);
+  useAdventureDialogFocus(showLedger, ledgerDialogRef, handleSetShowLedgerToFalse);
+  useAdventureDialogFocus(!!selectedInventoryItem, inventoryDialogRef, handleSetSelectedInventoryItemToNull);
   return (
                   <ErrorBoundary
                       title={t('adventure.error.title')}
@@ -142,14 +174,14 @@ function AdventureView(props) {
                       </ErrorBoundary>
                       )}
                       {showLedger && (
-                        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={handleSetShowLedgerToFalse}>
-                            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
-                                <button onClick={handleSetShowLedgerToFalse} className="absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors" aria-label={t('common.close')}><X size={16}/></button>
+                        <div role="presentation" className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={handleSetShowLedgerToFalse}>
+                            <div ref={ledgerDialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="adventure-ledger-title" onClick={e => e.stopPropagation()}>
+                                <button onClick={handleSetShowLedgerToFalse} className="absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label={t('common.close')}><X size={16}/></button>
                                 <div className="flex flex-col items-center text-center mb-4">
                                     <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 mb-2">
                                         <BookOpen size={24} />
                                     </div>
-                                    <h3 className="text-xl font-black text-indigo-900">{t('adventure.ledger_title')}</h3>
+                                    <h3 id="adventure-ledger-title" className="text-xl font-black text-indigo-900">{t('adventure.ledger_title')}</h3>
                                     <p className="text-xs text-slate-600">{t('adventure.ledger_subtitle')}</p>
                                 </div>
                                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-400 text-sm text-slate-700 leading-relaxed max-h-[60vh] overflow-y-auto custom-scrollbar whitespace-pre-line font-serif">
@@ -1378,19 +1410,19 @@ function AdventureView(props) {
                         )}
                     </div>
                     {selectedInventoryItem && (
-                        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={handleSetSelectedInventoryItemToNull}>
-                            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
-                                <button onClick={handleSetSelectedInventoryItemToNull} className="absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors" aria-label={t('common.close')}><X size={16}/></button>
+                        <div role="presentation" className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={handleSetSelectedInventoryItemToNull}>
+                            <div ref={inventoryDialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="adventure-inventory-item-title" onClick={e => e.stopPropagation()}>
+                                <button onClick={handleSetSelectedInventoryItemToNull} className="absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label={t('common.close')}><X size={16}/></button>
                                 <div className="flex flex-col items-center text-center">
                                     <div className="w-24 h-24 bg-indigo-50 rounded-xl border-2 border-indigo-100 flex items-center justify-center mb-4 shadow-inner relative overflow-hidden group">
                                         {selectedInventoryItem.image ? (
                                             <img loading="lazy" src={selectedInventoryItem.image} alt={selectedInventoryItem.name} className="w-full h-full object-contain pixelated" style={STYLE_IMAGE_PIXELATED} />
                                         ) : (
-                                            <span className="text-4xl">{selectedInventoryItem.icon || "📦"}</span>
+                                            <span className="text-4xl" aria-hidden="true">{selectedInventoryItem.icon || "📦"}</span>
                                         )}
                                         <div className="absolute inset-0 bg-indigo-500/10 blur-xl rounded-full"></div>
                                     </div>
-                                    <h3 className="text-xl font-black text-indigo-900 mb-1">{selectedInventoryItem.name}</h3>
+                                    <h3 id="adventure-inventory-item-title" className="text-xl font-black text-indigo-900 mb-1">{selectedInventoryItem.name}</h3>
                                     <span className="text-[11px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full mb-3 border border-indigo-200">
                                         {t(`adventure.effects.${selectedInventoryItem.effectType}`) || selectedInventoryItem.effectType || "Consumable"}
                                     </span>

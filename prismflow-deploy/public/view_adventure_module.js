@@ -66,7 +66,49 @@
   var X = _lazyIcon('X');
   var Zap = _lazyIcon('Zap');
 
-  function AdventureView(props) {
+  function useAdventureDialogFocus(isOpen, dialogRef, onClose) {
+  var closeHandlerRef = React.useRef(onClose);
+  closeHandlerRef.current = onClose;
+  React.useEffect(function () {
+    if (!isOpen) return undefined;
+    var dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    var previousFocus = document.activeElement;
+    var getFocusable = function () {
+      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    };
+    (getFocusable()[0] || dialog).focus();
+    var onKeyDown = function (event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeHandlerRef.current();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      var focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return function () {
+      dialog.removeEventListener('keydown', onKeyDown);
+      if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+    };
+  }, [isOpen, dialogRef]);
+}
+function AdventureView(props) {
   // State (object-bundle)
   var adventureState = props.adventureState;
   // State reads
@@ -184,6 +226,10 @@
   var ClimaxProgressBar = props.ClimaxProgressBar;
   var ConfettiExplosion = props.ConfettiExplosion;
   var InventoryGrid = props.InventoryGrid;
+  var ledgerDialogRef = React.useRef(null);
+  var inventoryDialogRef = React.useRef(null);
+  useAdventureDialogFocus(showLedger, ledgerDialogRef, handleSetShowLedgerToFalse);
+  useAdventureDialogFocus(!!selectedInventoryItem, inventoryDialogRef, handleSetSelectedInventoryItemToNull);
   return /*#__PURE__*/React.createElement(ErrorBoundary, {
     title: t('adventure.error.title'),
     fallbackMessage: t('adventure.error.fallback'),
@@ -206,21 +252,20 @@
     onClose: handleCloseShop,
     onPurchase: handleShopPurchase
   })), showLedger && /*#__PURE__*/React.createElement("div", {
-    role: "button",
-    tabIndex: 0,
-    onKeyDown: e => {
-      if (e.key === 'Escape') e.currentTarget.click();
-    },
+    role: "presentation",
     className: "fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200",
     onClick: handleSetShowLedgerToFalse
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95",
+    ref: ledgerDialogRef,
+    tabIndex: -1,
+    className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 focus:outline-none",
     role: "dialog",
     "aria-modal": "true",
+    "aria-labelledby": "adventure-ledger-title",
     onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("button", {
     onClick: handleSetShowLedgerToFalse,
-    className: "absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors",
+    className: "absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 16
@@ -231,6 +276,7 @@
   }, /*#__PURE__*/React.createElement(BookOpen, {
     size: 24
   })), /*#__PURE__*/React.createElement("h3", {
+    id: "adventure-ledger-title",
     className: "text-xl font-black text-indigo-900"
   }, t('adventure.ledger_title')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600"
@@ -1358,21 +1404,20 @@
   }), t('adventure.start_sequel')))) : /*#__PURE__*/React.createElement("div", {
     className: "text-center text-xs text-slate-600 italic"
   }, adventureState.isGameOver ? t('adventure.status.reset_prompt') : t('adventure.status.waiting')))), selectedInventoryItem && /*#__PURE__*/React.createElement("div", {
-    role: "button",
-    tabIndex: 0,
-    onKeyDown: e => {
-      if (e.key === 'Escape') e.currentTarget.click();
-    },
+    role: "presentation",
     className: "fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200",
     onClick: handleSetSelectedInventoryItemToNull
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95",
+    ref: inventoryDialogRef,
+    tabIndex: -1,
+    className: "bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 focus:outline-none",
     role: "dialog",
     "aria-modal": "true",
+    "aria-labelledby": "adventure-inventory-item-title",
     onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("button", {
     onClick: handleSetSelectedInventoryItemToNull,
-    className: "absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors",
+    className: "absolute top-3 right-3 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 16
@@ -1387,10 +1432,12 @@
     className: "w-full h-full object-contain pixelated",
     style: STYLE_IMAGE_PIXELATED
   }) : /*#__PURE__*/React.createElement("span", {
-    className: "text-4xl"
+    className: "text-4xl",
+    "aria-hidden": "true"
   }, selectedInventoryItem.icon || "📦"), /*#__PURE__*/React.createElement("div", {
     className: "absolute inset-0 bg-indigo-500/10 blur-xl rounded-full"
   })), /*#__PURE__*/React.createElement("h3", {
+    id: "adventure-inventory-item-title",
     className: "text-xl font-black text-indigo-900 mb-1"
   }, selectedInventoryItem.name), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full mb-3 border border-indigo-200"
