@@ -331,9 +331,9 @@ window.StemLab = window.StemLab || {
       presets: { pumps: 2, trickId: 'kickflip', vehicle: 'skate', gravity: 1.62 },
       teach: "What if you tried a kickflip on the Moon? Gravity = 1.62 m/s² (about 1/6 of Earth's). Even with just 2 pumps, hang time skyrockets. The board still rotates at the same rate — so on the Moon you'd land 6× rotations.",
       questions: [
-        "Hang time = 2·sqrt(2h/g). If h is the same, what does dividing g by 6 do to hang time?",
+        "For the same takeoff speed, h = v²/(2g) and total air time = 2v/g. Why does reducing g by about 6 make both the height and air time about 6 times larger?",
         "On the Moon with 2 pumps, do you have enough air for a 720? A 1080?",
-        "Why does PE = mgh stay the same on the Moon if h doesn't change? What about KE?"
+        "If height were held fixed, how would lower lunar g change PE = mgh? In this simulation speed is held fixed instead, so why does the rider rise higher while peak PE still equals the surviving launch energy?"
       ]
     },
     {
@@ -476,7 +476,11 @@ window.StemLab = window.StemLab || {
     // ≈ 0.95, standard concrete ≈ 0.85, rough/dusty ≈ 0.72.
     var surface = getSurface(opts.surfaceId || 'standard');
     var efficiency = surface.efficiency;
-    var hAir = (efficiency * v * v) / (2 * g);  // height above lip, m
+    var totalMass = RIDER_KG + vehicle.mass;
+    var energyInputJ = 0.5 * totalMass * v * v;
+    var mechanicalJ = efficiency * energyInputJ;
+    var thermalJ = energyInputJ - mechanicalJ;
+    var hAir = mechanicalJ / (totalMass * g);   // height above lip, m
     var airTime = 2 * Math.sqrt(2 * hAir / g);  // up + down, s
     // Spin rate from the trick the student chose, scaled by vehicle
     // moment of inertia. BMX rotates slower because I = mr² is bigger.
@@ -495,6 +499,7 @@ window.StemLab = window.StemLab || {
       v0: v0, vTakeoff: v, hAir: hAir, airTime: airTime,
       trick: trick, rotationCompleted: rotationCompleted, effMinAir: effMinAir,
       vehicle: vehicle, gravity: g, surface: surface,
+      energyInputJ: energyInputJ, mechanicalJ: mechanicalJ, thermalJ: thermalJ,
       landed: landed, score: score, pumps: pumps
     };
   }
@@ -559,18 +564,20 @@ window.StemLab = window.StemLab || {
   // when an animation is in flight (state.anim).
   // ──────────────────────────────────────────────────────────────────
   // ── Energy budget bar helper ─────────────────────────────────
-  // Renders a horizontal KE / PE bar with numeric breakdown.
+  // Renders a horizontal KE / PE / thermal bar with numeric breakdown.
   // Called from drawHalfpipe + drawGapJump during the air/flight
   // phase (when state.energyTotal > 0). Skipped if showEnergyBar
   // is false. Joules are rounded to whole numbers since the
   // intuitive grain is "this many joules of motion vs height," not
   // sub-joule precision.
-  function drawEnergyBar(ctx, x, y, w, h, KE, PE, total) {
+  function drawEnergyBar(ctx, x, y, w, h, KE, PE, thermal, total) {
     if (!total || total <= 0) return;
     var keFrac = Math.max(0, Math.min(1, KE / total));
     var peFrac = Math.max(0, Math.min(1, PE / total));
+    var thermalFrac = Math.max(0, Math.min(1, thermal / total));
     var keW = w * keFrac;
     var peW = w * peFrac;
+    var thermalW = w * thermalFrac;
     // Background track
     ctx.fillStyle = 'rgba(15,23,42,0.85)';
     ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
@@ -591,19 +598,27 @@ window.StemLab = window.StemLab || {
       peGrad.addColorStop(0, '#93c5fd');
       peGrad.addColorStop(1, '#3b82f6');
       ctx.fillStyle = peGrad;
-      ctx.fillRect(x + w - peW, y, peW, h);
+      ctx.fillRect(x + keW, y, peW, h);
+    }
+    // Thermal energy is transferred to the wheels, ramp, and air.
+    if (thermalW > 0) {
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(x + keW + peW, y, thermalW, h);
     }
     // Numeric breakdown under the bar
-    ctx.font = 'bold 10px monospace';
+    ctx.font = 'bold 9px monospace';
     ctx.textAlign = 'left';
     ctx.fillStyle = '#fca5a5';
-    ctx.fillText('⚡ KE ' + Math.round(KE) + 'J', x, y + h + 12);
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#93c5fd';
-    ctx.fillText('📈 PE ' + Math.round(PE) + 'J', x + w, y + h + 12);
+    ctx.fillText('KE ' + Math.round(KE) + 'J', x, y + h + 12);
     ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(254,243,199,0.75)';
-    ctx.fillText(Math.round(total) + 'J total', x + w / 2, y + h + 12);
+    ctx.fillStyle = '#93c5fd';
+    ctx.fillText('PE ' + Math.round(PE) + 'J', x + w / 2, y + h + 12);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#fde047';
+    ctx.fillText('HEAT ' + Math.round(thermal) + 'J', x + w, y + h + 12);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(254,243,199,0.88)';
+    ctx.fillText('INPUT ' + Math.round(total) + 'J', x + w / 2, y - 4);
   }
 
   function drawHalfpipe(canvas, state) {
@@ -876,7 +891,7 @@ window.StemLab = window.StemLab || {
     if (state.showEnergyBar !== false && state.energyTotal > 0) {
       var ebW = 220, ebH = 14;
       var ebX = W - ebW - 10, ebY = 14;
-      drawEnergyBar(ctx, ebX, ebY, ebW, ebH, state.energyKE || 0, state.energyPE || 0, state.energyTotal);
+      drawEnergyBar(ctx, ebX, ebY, ebW, ebH, state.energyKE || 0, state.energyPE || 0, state.energyThermal || 0, state.energyTotal);
     }
   }
 
@@ -1229,7 +1244,7 @@ window.StemLab = window.StemLab || {
     if (state.showEnergyBar !== false && state.energyTotal > 0) {
       var ebW2 = 220, ebH2 = 14;
       var ebX2 = (W - ebW2) / 2, ebY2 = H - 30;
-      drawEnergyBar(ctx, ebX2, ebY2, ebW2, ebH2, state.energyKE || 0, state.energyPE || 0, state.energyTotal);
+      drawEnergyBar(ctx, ebX2, ebY2, ebW2, ebH2, state.energyKE || 0, state.energyPE || 0, state.energyThermal || 0, state.energyTotal);
     }
   }
 
@@ -1254,12 +1269,14 @@ window.StemLab = window.StemLab || {
     var leftLipX = midX - lipHalfW;
     var rightLipX = midX + lipHalfW;
     var pxPerM = (floorY - lipY) / 4.0;  // fixed scale
-    // Energy budget pre-compute — total mechanical energy at the
-    // lip (after pumps) is the cap for KE+PE during the air phase.
-    // E_total = ½ m v_takeoff². Used by drawHalfpipe to render the
+    // Energy ledger pre-compute — launch input energy splits into
+    // useful mechanical energy (KE+PE) and thermal energy from losses.
+    // E_input = ½ m v_takeoff². Used by drawHalfpipe to render the
     // segmented bar.
     var totalMass = (sim.vehicle && sim.vehicle.mass ? sim.vehicle.mass : 4.0) + RIDER_KG;
-    var energyTotal = 0.5 * totalMass * sim.vTakeoff * sim.vTakeoff;
+    var energyTotal = sim.energyInputJ;
+    var energyMechanical = sim.mechanicalJ;
+    var energyThermal = sim.thermalJ;
     var energyG = sim.gravity || G;
     var showEnergy = !opts || opts.showEnergyBar !== false;
     var skaterStyle = (opts && opts.skater) || { color: 'amber', helmet: false, pads: false };
@@ -1387,10 +1404,11 @@ window.StemLab = window.StemLab || {
         state.label = sim.trick.emoji + ' ' + sim.trick.label;
         state.speedMph = sim.vTakeoff * MPS2MPH;
         state.airHeightFt = h * M2FT;
-        // Energy budget during air phase: PE = m·g·h, KE = E_total − PE.
+        // During air: PE = m·g·h and KE = E_mechanical − PE; heat remains constant.
         var pe = totalMass * energyG * h;
-        state.energyKE = Math.max(0, energyTotal - pe);
+        state.energyKE = Math.max(0, energyMechanical - pe);
         state.energyPE = pe;
+        state.energyThermal = energyThermal;
         state.energyTotal = energyTotal;
         // Trail capture during airtime
         if (Math.floor(t / dt) % 2 === 0) {
@@ -1547,6 +1565,7 @@ window.StemLab = window.StemLab || {
         var peG = totalMassG * energyGravity * Math.max(0, y);
         state.energyKE = Math.max(0, energyTotalG - peG);
         state.energyPE = peG;
+        state.energyThermal = 0;
         state.energyTotal = energyTotalG;
         // Trail: capture every 2 frames during flight, fade older points
         if (Math.floor(t / dt) % 2 === 0) {
@@ -1590,6 +1609,12 @@ window.StemLab = window.StemLab || {
   // ──────────────────────────────────────────────────────────────────
   // PLUGIN REGISTRATION
   // ──────────────────────────────────────────────────────────────────
+  window.__alloSkatePhysicsPure = {
+    simHalfpipe: simHalfpipe,
+    simGapJump: simGapJump,
+    getSurface: getSurface,
+    constants: { gravity: G, metersToFeet: M2FT, mpsToMph: MPS2MPH, riderKg: RIDER_KG }
+  };
   window.StemLab.registerTool('skatelab', {
     icon: '🛹',
     label: 'SkateLab',
@@ -2533,7 +2558,7 @@ window.StemLab = window.StemLab || {
         if (r.clearance < 0) {
           // Came up short. Two clean fixes: more speed (highest
           // leverage, since R = v² · sin(2θ) / g — quadratic in v)
-          // OR set angle to 30° if it's far off (peak range angle).
+          // OR set angle to 45° if it is far off (the same-height maximum-range angle).
           if (d.speedMph < 28) {
             var nextSpeed = Math.min(28, (d.speedMph || 0) + 5);
             return {
@@ -2542,11 +2567,11 @@ window.StemLab = window.StemLab || {
               fixBumps: { speedMph: nextSpeed }
             };
           }
-          if (Math.abs(d.angleDeg - 30) > 5) {
+          if (Math.abs(d.angleDeg - 45) > 5) {
             return {
-              message: __alloT('stem.skatelab.at_max_speed_and_still_short_range_pea', 'At max speed and still short. Range peaks at 45° on flat ground but ~30° works best when you need to land at the same height. Try 30°.'),
-              fixLabel: 'Set angle to 30°',
-              fixBumps: { angleDeg: 30 }
+              message: __alloT('stem.skatelab.at_max_speed_and_still_short_range_pea', 'At max speed and still short. For launch and landing at the same height with no drag, range peaks at 45°. Try 45°.'),
+              fixLabel: 'Set angle to 45°',
+              fixBumps: { angleDeg: 45 }
             };
           }
           // Last resort — shrink the gap.
@@ -4185,7 +4210,11 @@ window.StemLab = window.StemLab || {
           var vTakeoff = v0 + d.pumps * vehicle.pumpEfficiency;          // m/s
           var surface = getSurface(d.surfaceId);
           var g = d.gravity || 9.81;
-          var hAir = (surface.efficiency * vTakeoff * vTakeoff) / (2 * g);
+          var totalMass = RIDER_KG + vehicle.mass;
+          var inputEnergy = 0.5 * totalMass * vTakeoff * vTakeoff;
+          var mechanicalEnergy = surface.efficiency * inputEnergy;
+          var thermalEnergy = inputEnergy - mechanicalEnergy;
+          var hAir = mechanicalEnergy / (totalMass * g);
           var airTime = 2 * Math.sqrt(2 * hAir / g);
           var trick = getTrick(d.trickId);
           var spinRate = trick.rotation > 0 ? (trick.rotation / Math.max(0.36, trick.minAir * 0.95)) * vehicle.rotationScale : 0;
@@ -4225,16 +4254,19 @@ window.StemLab = window.StemLab || {
           },
             h('div', { style: { fontSize: 10, fontWeight: 800, color: '#7dd3fc', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 } }, '📐 Live equation' + (d.mode === 'halfpipe' ? ' — Energy chain' : ' — Projectile motion')),
             d.mode === 'halfpipe' ? [
-              Eq('1. KE at lip',
+              Eq('1. Takeoff speed',
                 'v = v₀ + (pumps × pump-eff) = 4.0 + (' + d.pumps + ' × ' + vehicle.pumpEfficiency.toFixed(2) + ')',
                 vTakeoff.toFixed(2), 'm/s'),
-              Eq('2. Air height',
-                'h = η · v² / (2g) = ' + surface.efficiency.toFixed(2) + ' · ' + vTakeoff.toFixed(2) + '² / (2 · ' + g.toFixed(2) + ')',
+              Eq('2. Energy ledger',
+                'input = ½mv²; mechanical = η·input; thermal = (1−η)·input',
+                Math.round(mechanicalEnergy) + ' J mechanical + ' + Math.round(thermalEnergy), 'J thermal = ' + Math.round(inputEnergy) + ' J input'),
+              Eq('3. Air height',
+                'h = E_mechanical / (mg) = ' + mechanicalEnergy.toFixed(0) + ' / (' + totalMass.toFixed(0) + ' · ' + g.toFixed(2) + ')',
                 hAir.toFixed(3), 'm  (' + (hAir * M2FT).toFixed(2) + ' ft)'),
-              Eq('3. Hang time',
+              Eq('4. Hang time',
                 't = 2·√(2h/g) = 2·√(2·' + hAir.toFixed(3) + '/' + g.toFixed(2) + ')',
                 airTime.toFixed(3), 's'),
-              Eq('4. Rotation budget',
+              Eq('5. Rotation budget',
                 't · spin-rate = ' + airTime.toFixed(3) + ' · ' + spinRate.toFixed(0) + '°/s',
                 (airTime * spinRate).toFixed(0), '° (need ' + trick.rotation + '°)')
             ] : [
