@@ -4,7 +4,7 @@
 // IIFE-load time. Fixed the original QuickStart Fetch bug class
 // (April 26 2026, feedback_iife_lazy_lookup.md) where eager snapshotting
 // captured the fallback before UtilsPure had loaded.
-// Keep these in sync with quickstart_module.js until a build script exists.
+// _build_quickstart_module.js compiles this source and synchronizes both runtime copies.
 var fetchAndCleanUrl = function() {
   var u = window.AlloModules && window.AlloModules.UtilsPure;
   var fn = (u && u.fetchAndCleanUrl) || (window.__alloUtils && window.__alloUtils.fetchAndCleanUrl);
@@ -20,7 +20,7 @@ var isGoogleRedirect = function() {
 // (allo-reading-library-index@1). Deliberately dependency-free (plain
 // createElement, own fetch chain) so the wizard works even when the
 // ReadingLibrary module has not loaded. Kept byte-identical in
-// quickstart_source.jsx and quickstart_module.js (hand-synced pair).
+// quickstart_source.jsx and generated into quickstart_module.js.
 var STORYBOOK_BASES = [
   'https://alloflow-cdn.pages.dev/reading_library/',
   'https://raw.githubusercontent.com/Apomera/AlloFlow/main/reading_library/',
@@ -248,7 +248,11 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
   // as missing — same convention as the Reading Library module).
   const wt = (k, fb) => { try { const r = t(k); return (r && r !== k) ? r : fb; } catch (_) { return fb; } };
   const wizardRef = useRef(null);
-  useFocusTrap(wizardRef, isOpen);
+  const handleClose = useCallback(() => {
+    setIsHelpMode(false);
+    onClose();
+  }, [setIsHelpMode, onClose]);
+  useFocusTrap(wizardRef, isOpen, handleClose);
   const [localData, setLocalData] = useState({
       topic: '',
       grade: '3rd Grade',
@@ -525,6 +529,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
         role="dialog"
         aria-modal="true"
         aria-labelledby="quickstart-wizard-title"
+        aria-describedby="quickstart-step-status"
         className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
     >
       <div className={`bg-white w-full ${localData.sourceMode === 'storybook' && step === 3 ? 'max-w-4xl' : 'max-w-xl'} rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 border border-slate-400 max-h-[90vh]`}>
@@ -533,9 +538,10 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                   <h2 id="quickstart-wizard-title" className="text-xl font-black text-slate-800 flex items-center gap-2">
                     <Sparkles className="text-yellow-500 fill-current" size={20} /> {t('wizard.title')}
                   </h2>
-                  <div className="flex gap-1 mt-2">
+                  <p id="quickstart-step-status" role="status" aria-live="polite" aria-atomic="true" className="text-xs font-bold text-slate-600 mt-1">{wt('wizard.step_status', 'Step')} {step} {wt('wizard.step_of', 'of')} 4</p>
+                  <div className="flex gap-1 mt-2" role="progressbar" aria-label={wt('wizard.progress', 'Quick Start progress')} aria-valuemin={1} aria-valuemax={4} aria-valuenow={step} aria-valuetext={`Step ${step} of 4`}>
                       {[1, 2, 3, 4].map(s => (
-                          <div key={s} className={`h-1.5 w-5 rounded-full transition-colors ${step >= s ? 'bg-indigo-600' : 'bg-slate-200'}`}></div>
+                          <div key={s} aria-hidden="true" className={`h-1.5 w-5 rounded-full transition-colors ${step >= s ? 'bg-indigo-600' : 'bg-slate-200'}`}></div>
                       ))}
                   </div>
               </div>
@@ -544,11 +550,11 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                       aria-label={t('common.skip')}
                     data-help-ignore="true"
                     onClick={handleSkip}
-                    className="text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors uppercase tracking-wider"
+                    className="inline-flex min-h-6 items-center px-1 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors uppercase tracking-wider"
                   >
                     {t('common.skip')}
                   </button>
-                  <button data-help-ignore="true" onClick={() => { setIsHelpMode(false); onClose(); }} className="p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close_wizard')}><X size={24}/></button>
+                  <button data-help-ignore="true" onClick={handleClose} className="p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close_wizard')}><X size={24}/></button>
               </div>
           </div>
           {isHelpMode && wizardStepHelp[step] && (
@@ -560,7 +566,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                   <p className="text-xs text-indigo-700 mt-1 leading-relaxed">{wizardStepHelp[step].text}</p>
                   <p className="text-xs text-indigo-500 mt-2 italic">💡 Click any element below for a detailed explanation</p>
                 </div>
-                <button onClick={() => setIsHelpMode(false)} className="text-indigo-400 hover:text-indigo-600 shrink-0 p-1"><X size={14}/></button>
+                <button onClick={() => setIsHelpMode(false)} className="text-indigo-400 hover:text-indigo-600 shrink-0 min-w-6 min-h-6 inline-flex items-center justify-center"><X size={14}/></button>
               </div>
             </div>
           )}
@@ -1331,7 +1337,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                   aria-label={t('common.close')}
                                                   data-help-key="wizard_lang_remove_btn"
                                                   onClick={() => removeWizLanguage(lang)}
-                                                  className="hover:text-indigo-900 ms-1"
+                                                  className="hover:text-indigo-900 ms-1 min-w-6 min-h-6 inline-flex items-center justify-center"
                                               >
                                                   <X size={12} />
                                               </button>
@@ -1370,7 +1376,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                   aria-label={t('common.close')}
                                                   data-help-key="wizard_interest_remove_btn"
                                                   onClick={() => removeWizInterest(interest)}
-                                                  className="hover:text-pink-900 ms-1"
+                                                  className="hover:text-pink-900 ms-1 min-w-6 min-h-6 inline-flex items-center justify-center"
                                               >
                                                   <X size={12} />
                                               </button>
@@ -1383,7 +1389,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                           </div>
                           <div className="flex justify-between pt-4 mt-4 border-t border-slate-100">
                               <button
-                                  aria-label={t('common.check')}
+                                  aria-label={t('common.back')}
                                 data-help-key="wizard_prev_btn"
                                 onClick={() => setStep(s => s - 1)}
                                 className="text-slate-600 hover:text-slate-600 font-bold text-sm px-4 py-2 flex items-center gap-2"
@@ -1391,7 +1397,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                 <ArrowDown className="rotate-90" size={16}/> {t('common.back')}
                               </button>
                               <button
-                                  aria-label={t('common.check')}
+                                  aria-label={t('common.finish')}
                                 data-help-key="wizard_complete_btn"
                                 onClick={() => onComplete(localData)}
                                 className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all active:scale-95 flex items-center gap-2"
@@ -1407,7 +1413,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
               <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
                   {step > 1 ? (
                       <button
-                          aria-label={t('common.continue')}
+                          aria-label={t('common.back')}
                         onClick={() => setStep(s => s - 1)}
                         className="text-slate-600 hover:text-slate-600 font-bold text-sm px-4 py-2 flex items-center gap-2 transition-colors"
                       >
