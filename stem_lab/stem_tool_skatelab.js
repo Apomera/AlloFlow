@@ -95,6 +95,14 @@ window.StemLab = window.StemLab || {
     } catch (e) {}
   }
 
+  function skPrefersReducedMotion() {
+    try {
+      return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    } catch (e) {
+      return false;
+    }
+  }
+
   // ── Module mute mirror (honor the math-fluency mute too) ──
   function isMuted() {
     try { return localStorage.getItem('skatelab_muted') === '1'; } catch (e) { return false; }
@@ -1302,6 +1310,26 @@ window.StemLab = window.StemLab || {
     var spawnedTakeoffHp = false;
     var spawnedLandingHp = false;
     var lastPumpFired = -1;
+    if (skPrefersReducedMotion()) {
+      drawHalfpipe(canvas, {
+        skX: rightLipX + 6,
+        skY: lipY + (sim.landed ? 8 : 26),
+        skRot: sim.landed ? 0 : 80,
+        speedMph: 0,
+        airHeightFt: 0,
+        label: sim.landed ? 'Landed: ' + sim.trick.label : 'Bail: ' + sim.trick.label,
+        ghost: ghost,
+        showEnergyBar: false,
+        skater: skaterStyle
+      });
+      skAnnounce(
+        'Reduced motion result. ' +
+        (sim.landed ? 'Landed ' : 'Bailed ') + sim.trick.label + '. ' +
+        'Air height ' + (sim.hAir * M2FT).toFixed(1) + ' feet. Air time ' + sim.airTime.toFixed(2) + ' seconds.'
+      );
+      var reducedTimerHp = setTimeout(function() { if (doneCb) doneCb(); }, 0);
+      return function cancelReducedHalfpipe() { clearTimeout(reducedTimerHp); };
+    }
     function emitParticlesHp(px, py, count, kind) {
       for (var pi = 0; pi < count; pi++) {
         var ang = Math.random() * Math.PI * 2;
@@ -1499,6 +1527,28 @@ window.StemLab = window.StemLab || {
     var particles = [];
     var spawnedTakeoffDust = false;
     var spawnedLandingDust = false;
+    if (skPrefersReducedMotion()) {
+      drawGapJump(canvas, {
+        skX: rampX + sim.rangeM * pxPerM,
+        skY: rampTopY + (sim.landed ? 14 : 50),
+        skRot: sim.landed ? 0 : 65,
+        speedMph: sim.v_mph,
+        angleDeg: sim.thetaDeg,
+        gapFt: sim.gapFt,
+        label: sim.landed ? 'Cleared' : (sim.clearance < 0 ? 'Short' : 'Overshot'),
+        wind: sim.wind,
+        ghost: ghost,
+        showEnergyBar: false,
+        skater: skaterStyleG
+      });
+      skAnnounce(
+        'Reduced motion result. ' +
+        (sim.landed ? 'Cleared the gap. ' : (sim.clearance < 0 ? 'Came up short. ' : 'Overshot the landing. ')) +
+        'Range ' + sim.rangeFt.toFixed(1) + ' feet. Peak height ' + sim.peakHFt.toFixed(1) + ' feet.'
+      );
+      var reducedTimerGap = setTimeout(function() { if (doneCb) doneCb(); }, 0);
+      return function cancelReducedGap() { clearTimeout(reducedTimerGap); };
+    }
     function emitParticles(px, py, count, kind) {
       for (var pi = 0; pi < count; pi++) {
         var ang = Math.random() * Math.PI * 2;
@@ -1938,11 +1988,11 @@ window.StemLab = window.StemLab || {
         if (!nextMuted) skTone(440, 0.08, 'sine', 0.06); // sound-on chime
       }
 
-      // 'M' keyboard shortcut. Skip when typing in inputs/textareas
-      // so it doesn't hijack the prediction or scenario-name fields.
+      // Modifier shortcut avoids a single-character-key conflict (WCAG 2.1.4).
+      // Skip while typing so Alt+M remains available to browser/assistive workflows.
       React.useEffect(function() {
         var onKey = function(e) {
-          if (e.key !== 'm' && e.key !== 'M') return;
+          if (!e.altKey || e.ctrlKey || e.metaKey || (e.key !== 'm' && e.key !== 'M')) return;
           var t = e.target;
           if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
           toggleMuteUI();
@@ -4267,7 +4317,8 @@ window.StemLab = window.StemLab || {
             'aria-pressed': muted,
             'aria-label': muted ? 'Sound off. Press to unmute.' : 'Sound on. Press to mute.',
             'data-sk-focusable': 'true',
-            title: __alloT('stem.skatelab.mute_unmute_m_key', 'Mute / unmute (M key)'),
+            title: __alloT('stem.skatelab.mute_unmute_m_key', 'Mute / unmute (Alt+M)'),
+            'aria-keyshortcuts': 'Alt+M',
             style: {
               padding: '4px 10px', fontSize: 10, fontWeight: 700,
               background: muted ? 'rgba(251,191,36,0.20)' : 'rgba(254,243,199,0.14)',

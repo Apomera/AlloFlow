@@ -185,4 +185,24 @@ describe('Skate Lab UX refinement', () => {
     expect(inquiry).toContain('for="sk-inquiry-explanation"');
     expect(inquiry).toContain('id="sk-inquiry-explanation"');
   });
+
+  it('uses a modifier shortcut instead of a conflicting single-character shortcut', () => {
+    const html = renderTool('skatelab', state());
+    const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
+
+    expect(html).toContain('aria-keyshortcuts="Alt+M"');
+    expect(html).toContain('Mute / unmute (Alt+M)');
+    expect(source).toContain('if (!e.altKey || e.ctrlKey || e.metaKey');
+    expect(source).not.toContain("if (e.key !== 'm' && e.key !== 'M') return;");
+  });
+
+  it('provides static, text-equivalent outcomes when reduced motion is requested', () => {
+    const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
+
+    expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
+    expect(source.match(/if \(skPrefersReducedMotion\(\)\)/g)).toHaveLength(2);
+    expect(source).toContain('Reduced motion result.');
+    expect(source).toContain('cancelReducedHalfpipe');
+    expect(source).toContain('cancelReducedGap');
+  });
 });
