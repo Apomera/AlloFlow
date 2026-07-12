@@ -412,6 +412,8 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
   const { t } = useContext(LanguageContext);
   const [passwordInput, setPasswordInput] = useState('');
   const [error, setError] = useState(false);
+  const gateRef = useRef(null);
+  useFocusTrap(gateRef, isOpen, onClose);
   if (!isOpen) return null;
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -434,7 +436,7 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
     }
   };
   return (
-    <div className="fixed inset-0 z-[1000] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" data-help-key="teacher_gate_modal">
+    <div ref={gateRef} role="dialog" aria-modal="true" aria-labelledby="teacher-gate-title" aria-describedby="teacher-gate-helper" className="fixed inset-0 z-[1000] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" data-help-key="teacher_gate_modal">
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center border-4 border-indigo-100 relative transform transition-all animate-in zoom-in-95">
         <button
             onClick={onClose}
@@ -446,8 +448,8 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-red-200 shadow-sm">
             <Lock size={32} className="text-red-600" />
         </div>
-        <h2 className="text-2xl font-black text-slate-800 mb-2">{t('modals.teacher_gate.title')}</h2>
-        <p className="text-slate-600 mb-6 text-sm font-medium">{t('modals.teacher_gate.helper')}</p>
+        <h2 id="teacher-gate-title" className="text-2xl font-black text-slate-800 mb-2">{t('modals.teacher_gate.title')}</h2>
+        <p id="teacher-gate-helper" className="text-slate-600 mb-6 text-sm font-medium">{t('modals.teacher_gate.helper')}</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
                 <input
@@ -461,11 +463,13 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
                     placeholder={t('modals.teacher_gate.access_code_placeholder')}
                     className={`w-full text-center text-lg p-3 border-2 rounded-xl outline-none focus:ring-4 transition-all placeholder:text-slate-600 ${error ? 'border-red-400 bg-red-50 focus:ring-red-200 text-red-900' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 text-indigo-900'}`}
                     autoFocus
+                    aria-invalid={error}
+                    aria-describedby={error ? 'teacher-gate-error' : undefined}
                     aria-label={t('modals.teacher_gate.access_code_placeholder')}
                     data-help-key="teacher_gate_input"
                 />
-                {String(error) && (
-                    <p className="text-xs font-bold text-red-500 mt-2 animate-pulse flex items-center justify-center gap-1">
+                {error && (
+                    <p id="teacher-gate-error" role="alert" className="text-xs font-bold text-red-700 mt-2 flex items-center justify-center gap-1">
                         <XCircle size={12} /> {t('modals.teacher_gate.error_incorrect')}
                     </p>
                 )}
@@ -563,7 +567,6 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
             <span className="font-bold text-slate-700 group-hover:text-indigo-700">{t('roles.teacher')}</span>
         </button>
         <button
-            aria-label={t('common.like')}
             onClick={() => handleRoleClick('parent')}
             className="flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
             data-help-key="role_parent"
@@ -587,7 +590,6 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
       <div className="border-t border-slate-100 pt-4">
           <p className="text-[11px] text-slate-600 uppercase tracking-widest font-bold mb-2">{t('roles.mic_setup')}</p>
           <button
-              aria-label={t('common.confirm')}
             onClick={handleMicCheck}
             disabled={micStatus === 'granted' || micStatus === 'requesting'}
             className={`flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs font-bold transition-all ${
@@ -601,10 +603,12 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired }) => {
                micStatus === 'denied' ? <XCircle size={14} /> :
                micStatus === 'requesting' ? <RefreshCw size={14} className="animate-spin"/> :
                <Mic size={14} />}
-              {micStatus === 'granted' ? t('roles.mic_ready') :
-               micStatus === 'denied' ? t('roles.mic_denied') :
-               micStatus === 'requesting' ? t('roles.mic_requesting') :
-               t('roles.mic_enable')}
+              <span role="status" aria-live="polite" aria-atomic="true">
+                {micStatus === 'granted' ? t('roles.mic_ready') :
+                 micStatus === 'denied' ? t('roles.mic_denied') :
+                 micStatus === 'requesting' ? t('roles.mic_requesting') :
+                 t('roles.mic_enable')}
+              </span>
           </button>
           {micStatus === 'idle' && (
               <p className="text-[11px] text-slate-600 mt-2">
@@ -623,7 +627,7 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
   const [selectedAdj, setSelectedAdj] = useState('');
   const [selectedAnimal, setSelectedAnimal] = useState('');
   const entryRef = useRef(null);
-  useFocusTrap(entryRef, isOpen);
+  useFocusTrap(entryRef, isOpen, onClose);
   const adjectives = t('codenames.adjectives', { returnObjects: true }) || [];
   const animals = t('codenames.animals', { returnObjects: true }) || [];
   const randomizeName = useCallback(() => {
@@ -651,6 +655,8 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
         ref={entryRef}
         role="dialog"
         aria-modal="true"
+        aria-labelledby="student-entry-title"
+        aria-describedby="student-entry-description"
         className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
     >
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 relative">
@@ -661,8 +667,8 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
         >
             <X size={20} />
         </button>
-        <h2 className="text-2xl font-black text-slate-800 mb-2">{t('wizard.step_codename') || 'Pick Your Codename!'}</h2>
-        <p className="text-slate-600 mb-6 font-medium">{t('modals.student_entry_sub')}</p>
+        <h2 id="student-entry-title" className="text-2xl font-black text-slate-800 mb-2">{t('wizard.step_codename') || 'Pick Your Codename!'}</h2>
+        <p id="student-entry-description" className="text-slate-600 mb-6 font-medium">{t('modals.student_entry_sub')}</p>
         <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 mb-6">
             <div className="flex gap-2 mb-4">
                 <select
@@ -689,7 +695,7 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
                 </select>
             </div>
             <div className="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-indigo-100">
-                <div className="text-xl font-black text-indigo-600 tracking-tight truncate mr-2">
+                <div className="text-xl font-black text-indigo-600 tracking-tight truncate mr-2" role="status" aria-live="polite" aria-atomic="true">
                     {selectedAdj} {selectedAnimal}
                 </div>
                 <button
@@ -708,7 +714,6 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
         </p>
         <div className="flex flex-col gap-3">
             <button
-                aria-label={t('common.generate')}
                 onClick={() => handleConfirm('new')}
                 disabled={!selectedAdj || !selectedAnimal}
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -717,7 +722,6 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
                 <Sparkles size={18} className="text-yellow-400 fill-current" /> {t('entry.start')}
             </button>
             <button
-                aria-label={t('common.upload')}
                 onClick={() => handleConfirm('load')}
                 disabled={!selectedAdj || !selectedAnimal}
                 className="w-full bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600 font-bold py-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -726,7 +730,7 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
                 <Upload size={16} /> {t('entry.load')}
             </button>
         </div>
-        <button onClick={onClose} className="mt-4 text-sm text-slate-600 hover:text-slate-900 underline focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('common.cancel')}</button>
+        <button onClick={onClose} className="mt-4 min-h-6 inline-flex items-center text-sm text-slate-600 hover:text-slate-900 underline focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('common.cancel')}</button>
       </div>
     </div>
   );
@@ -735,13 +739,15 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
 const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
   const { t } = useContext(LanguageContext);
   const welcomeRef = useRef(null);
-  useFocusTrap(welcomeRef, isOpen);
+  useFocusTrap(welcomeRef, isOpen, onClose);
   if (!isOpen) return null;
   return (
     <div
         ref={welcomeRef}
         role="dialog"
         aria-modal="true"
+        aria-labelledby="student-welcome-title"
+        aria-describedby="student-welcome-description"
         className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
     >
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-teal-100 transform transition-all animate-in zoom-in-95 duration-300 relative">
@@ -757,11 +763,10 @@ const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
              <FolderOpen size={48} className="text-teal-600" />
           </div>
         </div>
-        <h2 className="text-2xl font-black text-slate-800 mb-2">{t('modals.student_welcome')}</h2>
-        <p className="text-slate-600 mb-8 font-medium">{t('welcome.prompt')}</p>
+        <h2 id="student-welcome-title" className="text-2xl font-black text-slate-800 mb-2">{t('modals.student_welcome')}</h2>
+        <p id="student-welcome-description" className="text-slate-600 mb-8 font-medium">{t('welcome.prompt')}</p>
         <div className="space-y-3">
             <button
-                aria-label={t('common.upload')}
                 onClick={() => {
                     onUpload();
                     onClose();
@@ -772,7 +777,6 @@ const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
                 <Upload size={20} /> {t('welcome.load')}
             </button>
             <button
-                aria-label={t('common.close')}
                 onClick={onClose}
                 className="w-full p-3 rounded-xl text-slate-600 font-bold hover:bg-slate-100 transition-colors active:scale-95"
                 data-help-key="welcome_skip_btn"
