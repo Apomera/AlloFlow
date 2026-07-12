@@ -11,6 +11,50 @@
   var React = window.React;
   if (!React) { console.error('[OnboardingCoach] React not found on window'); return; }
 
+function useCoachDialogFocus(isOpen, dialogRef, onClose, initialFocusRef, fallbackReturnRef) {
+  var closeRef = React.useRef(onClose);
+  closeRef.current = onClose;
+  React.useEffect(function() {
+    if (!isOpen) return void 0;
+    var dialog = dialogRef.current;
+    if (!dialog) return void 0;
+    var previousFocus = document.activeElement;
+    var getFocusable = function() {
+      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    };
+    var initial = initialFocusRef && initialFocusRef.current;
+    (initial || getFocusable()[0] || dialog).focus();
+    var onKeyDown = function(event) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeRef.current();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      var focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    dialog.addEventListener("keydown", onKeyDown);
+    return function() {
+      dialog.removeEventListener("keydown", onKeyDown);
+      var target = previousFocus && document.contains(previousFocus) ? previousFocus : fallbackReturnRef && fallbackReturnRef.current;
+      if (target && typeof target.focus === "function") target.focus();
+    };
+  }, [isOpen, dialogRef, initialFocusRef, fallbackReturnRef]);
+}
 function OnboardingCoach(props) {
   var t = typeof props.t === "function" ? props.t : function(k) {
     return k;
@@ -88,6 +132,10 @@ function OnboardingCoach(props) {
   var scrubTimerRef = React.useRef(null);
   var chatPaneRef = React.useRef(null);
   var inputRef = React.useRef(null);
+  var launcherRef = React.useRef(null);
+  var panelRef = React.useRef(null);
+  var consentRef = React.useRef(null);
+  var consentDeclineRef = React.useRef(null);
   var refreshCoachState = function() {
     var ao = window.AlloOnboarding;
     if (!ao) return;
@@ -233,6 +281,10 @@ function OnboardingCoach(props) {
     setShowConsent(false);
     setPendingSend(null);
   };
+  useCoachDialogFocus(isOpen, panelRef, function() {
+    setIsOpen(false);
+  }, null, launcherRef);
+  useCoachDialogFocus(showConsent, consentRef, handleConsentDecline, consentDeclineRef, panelRef);
   var handleCancel = function() {
     if (abortRef.current) {
       try {
@@ -373,6 +425,7 @@ function OnboardingCoach(props) {
   return /* @__PURE__ */ React.createElement(React.Fragment, null, !isOpen && /* @__PURE__ */ React.createElement(
     "button",
     {
+      ref: launcherRef,
       type: "button",
       onClick: function() {
         setIsOpen(true);
@@ -413,9 +466,9 @@ function OnboardingCoach(props) {
   ), isOpen && /* @__PURE__ */ React.createElement(
     "div",
     {
-      role: "dialog",
-      "aria-modal": "true",
-      "aria-label": t("onboarding.panel_aria") || "AlloBot onboarding help",
+      role: "presentation",
+      "aria-hidden": showConsent ? "true" : void 0,
+      inert: showConsent ? "" : void 0,
       "data-help-key": "onboarding_panel",
       style: {
         position: "fixed",
@@ -430,15 +483,17 @@ function OnboardingCoach(props) {
       },
       onClick: function(e) {
         if (e.target === e.currentTarget) setIsOpen(false);
-      },
-      onKeyDown: function(e) {
-        if (e.key === "Escape") setIsOpen(false);
-      },
-      tabIndex: -1
+      }
     },
     /* @__PURE__ */ React.createElement(
       "div",
       {
+        ref: panelRef,
+        tabIndex: -1,
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-labelledby": "onboarding-panel-title",
+        "aria-describedby": "onboarding-panel-description",
         onClick: function(e) {
           e.stopPropagation();
         },
@@ -460,7 +515,7 @@ function OnboardingCoach(props) {
         alignItems: "center",
         justifyContent: "space-between",
         borderRadius: "20px 20px 0 0"
-      } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "12px" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "32px" }, "aria-hidden": "true" }, "\u{1F916}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { style: { margin: 0, fontSize: "18px", fontWeight: 800 } }, t("onboarding.panel_title") || "Hi! I\u2019m AlloBot."), /* @__PURE__ */ React.createElement("p", { style: { margin: "2px 0 0", fontSize: "12px", opacity: 0.9 } }, t("onboarding.panel_subtitle") || "Pick the option that best fits how you\u2019ll use AlloFlow today."))), /* @__PURE__ */ React.createElement(
+      } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "12px" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "32px" }, "aria-hidden": "true" }, "\u{1F916}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "onboarding-panel-title", style: { margin: 0, fontSize: "18px", fontWeight: 800 } }, t("onboarding.panel_title") || "Hi! I\u2019m AlloBot."), /* @__PURE__ */ React.createElement("p", { id: "onboarding-panel-description", style: { margin: "2px 0 0", fontSize: "12px", opacity: 0.9 } }, t("onboarding.panel_subtitle") || "Pick the option that best fits how you\u2019ll use AlloFlow today."))), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -908,7 +963,10 @@ function OnboardingCoach(props) {
               marginTop: "8px",
               background: "transparent",
               border: "none",
-              padding: 0,
+              padding: "2px 0",
+              minHeight: "24px",
+              display: "inline-flex",
+              alignItems: "center",
               color: "#94a3b8",
               fontSize: "11px",
               cursor: "pointer",
@@ -928,9 +986,7 @@ function OnboardingCoach(props) {
   ), showConsent && /* @__PURE__ */ React.createElement(
     "div",
     {
-      role: "dialog",
-      "aria-modal": "true",
-      "aria-label": t("onboarding.coach_consent_title") || "A heads-up about AlloBot",
+      role: "presentation",
       style: {
         position: "fixed",
         inset: 0,
@@ -946,6 +1002,12 @@ function OnboardingCoach(props) {
     /* @__PURE__ */ React.createElement(
       "div",
       {
+        ref: consentRef,
+        tabIndex: -1,
+        role: "alertdialog",
+        "aria-modal": "true",
+        "aria-labelledby": "onboarding-consent-title",
+        "aria-describedby": "onboarding-consent-description",
         style: {
           background: "#fff",
           borderRadius: "20px",
@@ -955,11 +1017,12 @@ function OnboardingCoach(props) {
           boxShadow: "0 30px 70px rgba(0,0,0,0.4)"
         }
       },
-      /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "36px" } }, "\u{1F6E1}\uFE0F"), /* @__PURE__ */ React.createElement("h2", { style: { margin: 0, fontSize: "17px", fontWeight: 800, color: "#0f172a" } }, t("onboarding.coach_consent_title") || "A heads-up about AlloBot")),
-      /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 14px", fontSize: "13px", color: "#334155", lineHeight: 1.55 } }, t("onboarding.coach_consent_body") || "AlloBot is powered by Google Gemini. When you ask a question, the text you type is sent over the internet to Google's servers and may be logged there. AlloFlow blocks student data from your screen automatically, but it cannot read your mind \u2014 please do not type student names, ID numbers, test scores, addresses, or birthdays into the chat. Ask about strategies and tools in general terms."),
+      /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "36px" } }, "\u{1F6E1}\uFE0F"), /* @__PURE__ */ React.createElement("h2", { id: "onboarding-consent-title", style: { margin: 0, fontSize: "17px", fontWeight: 800, color: "#0f172a" } }, t("onboarding.coach_consent_title") || "A heads-up about AlloBot")),
+      /* @__PURE__ */ React.createElement("p", { id: "onboarding-consent-description", style: { margin: "0 0 14px", fontSize: "13px", color: "#334155", lineHeight: 1.55 } }, t("onboarding.coach_consent_body") || "AlloBot is powered by Google Gemini. When you ask a question, the text you type is sent over the internet to Google's servers and may be logged there. AlloFlow blocks student data from your screen automatically, but it cannot read your mind \u2014 please do not type student names, ID numbers, test scores, addresses, or birthdays into the chat. Ask about strategies and tools in general terms."),
       /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "10px", justifyContent: "flex-end", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement(
         "button",
         {
+          ref: consentDeclineRef,
           type: "button",
           onClick: handleConsentDecline,
           style: {
