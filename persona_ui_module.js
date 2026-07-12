@@ -1,6 +1,6 @@
 (function() {
 'use strict';
-  // WCAG 2.1 AA: Accessibility CSS
+  // WCAG 2.2 AA: Accessibility CSS
   if (!document.getElementById("persona-ui-module-a11y")) { var _s = document.createElement("style"); _s.id = "persona-ui-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }
 if (window.AlloModules && window.AlloModules.PersonaUIModule) { console.log('[CDN] PersonaUIModule already loaded, skipping'); return; }
 // persona_ui_source.jsx — InteractiveBlueprintCard, HarmonyMeter, CharacterColumn
@@ -20,6 +20,8 @@ var _lazyIcon = function (name) {
   };
 };
 var CheckCircle2 = _lazyIcon('CheckCircle2');
+var ChevronDown = _lazyIcon('ChevronDown');
+var ChevronUp = _lazyIcon('ChevronUp');
 var GripVertical = _lazyIcon('GripVertical');
 var Lock = _lazyIcon('Lock');
 var Pencil = _lazyIcon('Pencil');
@@ -137,7 +139,7 @@ const GoldenThreadPanel = ({
         concept: c
       }) || 'Remove concept ' + c,
       className: "ml-1 text-amber-600 hover:text-red-500 font-bold leading-none"
-    }, "\xD7"));
+    }, "×"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -169,7 +171,7 @@ const GoldenThreadPanel = ({
         term: term
       }) || 'Remove term ' + term,
       className: "ml-1 text-indigo-600 hover:text-red-500 font-bold leading-none"
-    }, "\xD7"));
+    }, "×"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -200,6 +202,7 @@ const InteractiveBlueprintCard = React.memo(({
   } = useContext(LanguageContext);
   const [items, setItems] = useState([]);
   const [draggedItemIndex, setDraggedItemIndex] = useState(null);
+  const [reorderStatus, setReorderStatus] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const getReadableToolLabel = id => String(id || '').split('-').map(part => part ? part.charAt(0).toUpperCase() + part.slice(1) : '').join(' ');
   const getPlanItems = cfg => {
@@ -253,6 +256,17 @@ const InteractiveBlueprintCard = React.memo(({
   };
   const handleDragEnd = () => {
     setDraggedItemIndex(null);
+  };
+  const handleMoveItem = (index, delta) => {
+    const nextIndex = index + delta;
+    if (nextIndex < 0 || nextIndex >= items.length) return;
+    const newItems = [...items];
+    const [movedItem] = newItems.splice(index, 1);
+    newItems.splice(nextIndex, 0, movedItem);
+    syncChanges(newItems);
+    setReorderStatus(t('blueprint.moved_position', {
+      position: nextIndex + 1
+    }) || `Moved plan step to position ${nextIndex + 1}.`);
   };
   const handleTypeChange = (index, newType) => {
     const newItems = [...items];
@@ -370,7 +384,7 @@ const InteractiveBlueprintCard = React.memo(({
     className: "font-bold text-indigo-900 text-sm"
   }, t('blueprint.header'), " ", isEditing ? `(${t('common.edit')})` : ""), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600"
-  }, isEditing ? t('blueprint.drag_instruction') : t('blueprint.review_instruction')))), /*#__PURE__*/React.createElement("button", {
+  }, isEditing ? t('blueprint.drag_instruction') + ' ' + (t('blueprint.keyboard_reorder_instruction') || 'Use Move up and Move down to reorder without dragging.') : t('blueprint.review_instruction')))), /*#__PURE__*/React.createElement("button", {
     "data-help-key": "blueprint_edit_toggle_btn",
     "aria-label": t('common.check'),
     onClick: () => setIsEditing(prev => !prev),
@@ -383,7 +397,12 @@ const InteractiveBlueprintCard = React.memo(({
     config: config,
     isEditing: isEditing,
     onUpdate: onUpdate
-  }), isEditing ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "sr-only"
+  }, reorderStatus), isEditing ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     "data-help-key": "blueprint_resource_list",
     className: "space-y-2 mb-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-1"
   }, items.map((item, idx) => /*#__PURE__*/React.createElement("div", {
@@ -392,12 +411,40 @@ const InteractiveBlueprintCard = React.memo(({
     onDragStart: e => handleDragStart(e, idx),
     onDragOver: e => handleDragOver(e, idx),
     onDragEnd: handleDragEnd,
+    role: "group",
+    "aria-label": t('blueprint.step_position_aria', {
+      position: idx + 1,
+      total: items.length
+    }) || `Plan step ${idx + 1} of ${items.length}`,
     className: `group flex items-start gap-2 p-3 rounded-lg border-2 transition-all ${draggedItemIndex === idx ? 'opacity-50 border-dashed border-indigo-300 bg-indigo-50' : 'bg-slate-50 border-slate-200 hover:border-indigo-200'}`
   }, /*#__PURE__*/React.createElement("div", {
-    className: "mt-2 text-slate-600 cursor-grab active:cursor-grabbing hover:text-indigo-500"
+    className: "mt-1 flex flex-col items-center gap-1 text-slate-600 cursor-grab active:cursor-grabbing hover:text-indigo-500"
   }, /*#__PURE__*/React.createElement(GripVertical, {
-    size: 16
-  })), /*#__PURE__*/React.createElement("div", {
+    size: 16,
+    "aria-hidden": "true"
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => handleMoveItem(idx, -1),
+    disabled: idx === 0,
+    className: "w-7 h-7 inline-flex items-center justify-center rounded border border-slate-400 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed",
+    "aria-label": t('blueprint.move_up_aria', {
+      position: idx + 1
+    }) || `Move plan step ${idx + 1} up`
+  }, /*#__PURE__*/React.createElement(ChevronUp, {
+    size: 16,
+    "aria-hidden": "true"
+  })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => handleMoveItem(idx, 1),
+    disabled: idx === items.length - 1,
+    className: "w-7 h-7 inline-flex items-center justify-center rounded border border-slate-400 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed",
+    "aria-label": t('blueprint.move_down_aria', {
+      position: idx + 1
+    }) || `Move plan step ${idx + 1} down`
+  }, /*#__PURE__*/React.createElement(ChevronUp, {
+    size: 16,
+    "aria-hidden": "true"
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "flex-grow grid grid-cols-1 sm:grid-cols-3 gap-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "col-span-1"
