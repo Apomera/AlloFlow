@@ -1432,6 +1432,7 @@ window.StemLab = window.StemLab || {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var callGemini = ctx.callGemini;
+      var setStemLabTool = ctx.setStemLabTool; // host nav setter — used by the Back button (was undeclared → render crash)
 
       // ── State init ──
       // Seed defaults, but DO NOT early-return a Loading screen: this render calls
