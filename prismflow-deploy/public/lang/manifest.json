@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-07-12T14:09:03.737Z",
+  "generated": "2026-07-12T14:15:04.553Z",
   "count": 63,
   "total_keys_expected": 9307,
   "available": [
@@ -140,8 +140,8 @@
     {
       "slug": "hausa",
       "display": "Hausa",
-      "keys": 18637,
-      "bytes": 1673711,
+      "keys": 18802,
+      "bytes": 1702628,
       "updated": "2026-07-12"
     },
     {
@@ -168,8 +168,8 @@
     {
       "slug": "igbo",
       "display": "Igbo",
-      "keys": 18637,
-      "bytes": 1782421,
+      "keys": 18802,
+      "bytes": 1811974,
       "updated": "2026-07-12"
     },
     {
@@ -217,8 +217,8 @@
     {
       "slug": "kinyarwanda",
       "display": "Kinyarwanda",
-      "keys": 18631,
-      "bytes": 1759571,
+      "keys": 18796,
+      "bytes": 1788897,
       "updated": "2026-07-12"
     },
     {
@@ -441,8 +441,8 @@
     {
       "slug": "yoruba",
       "display": "Yoruba",
-      "keys": 18637,
-      "bytes": 1604582,
+      "keys": 18802,
+      "bytes": 1634756,
       "updated": "2026-07-12"
     }
   ]
