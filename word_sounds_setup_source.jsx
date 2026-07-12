@@ -1836,7 +1836,7 @@
                             {showVoicePack ? <PhonemeVoicePackEditor onClose={() => setShowVoicePack(false)} t={t} /> : null}
                             <div className="space-y-3">
                                 <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{t('word_sounds.sources', 'Active Sources')}</label>
-                                <div role="button" tabIndex={0} className={`p-3 rounded-xl border-2 transition-all cursor-pointer ${includeGlossary ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`} data-help-key="ws_gen_src_glossary" onClick={() => setIncludeGlossary(prev => !prev)}>
+                                <div role="button" tabIndex={0} aria-pressed={includeGlossary} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIncludeGlossary(prev => !prev); } }} className={`p-3 rounded-xl border-2 transition-all cursor-pointer ${includeGlossary ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`} data-help-key="ws_gen_src_glossary" onClick={() => setIncludeGlossary(prev => !prev)}>
                                     <div className="flex items-center gap-3">
                                         <div className={`w-5 h-5 rounded border flex items-center justify-center ${includeGlossary ? 'bg-violet-600 border-violet-600' : 'border-slate-300'}`}>
                                             {includeGlossary && <Check size={14} className="text-white" />}
@@ -1846,7 +1846,7 @@
                                     </div>
                                 </div>
                                 <div className={`p-3 rounded-xl border-2 transition-all ${includeFamily ? 'bg-pink-50 border-pink-500' : 'bg-white border-slate-200'}`}>
-                                    <div role="button" tabIndex={0} className="flex items-center gap-3 cursor-pointer" data-help-key="ws_gen_src_family" onClick={() => setIncludeFamily(prev => !prev)}>
+                                    <div role="button" tabIndex={0} aria-pressed={includeFamily} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIncludeFamily(prev => !prev); } }} className="flex items-center gap-3 cursor-pointer" data-help-key="ws_gen_src_family" onClick={() => setIncludeFamily(prev => !prev)}>
                                         <div className={`w-5 h-5 rounded border flex items-center justify-center ${includeFamily ? 'bg-pink-600 border-pink-600' : 'border-slate-300'}`}>
                                             {includeFamily && <Check size={14} className="text-white" />}
                                         </div>
@@ -1873,7 +1873,7 @@
                                     </>)}
                                 </div>
                                 <div className={`p-3 rounded-xl border-2 transition-all ${includeCustom ? 'bg-emerald-50 border-emerald-500' : 'bg-white border-slate-200'}`}>
-                                    <div role="button" tabIndex={0} className="flex items-center gap-3 cursor-pointer" data-help-key="ws_gen_src_custom" onClick={() => setIncludeCustom(prev => !prev)}>
+                                    <div role="button" tabIndex={0} aria-pressed={includeCustom} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIncludeCustom(prev => !prev); } }} className="flex items-center gap-3 cursor-pointer" data-help-key="ws_gen_src_custom" onClick={() => setIncludeCustom(prev => !prev)}>
                                         <div className={`w-5 h-5 rounded border flex items-center justify-center ${includeCustom ? 'bg-emerald-600 border-emerald-600' : 'border-slate-300'}`}>
                                             {includeCustom && <Check size={14} className="text-white" />}
                                         </div>
@@ -1923,7 +1923,7 @@
                                     </>)}
                                 </div>
                                 <div className={`p-3 rounded-xl border-2 transition-all ${includeSightWords ? 'bg-amber-50 border-amber-500' : 'bg-white border-slate-200'}`}>
-                                    <div role="button" tabIndex={0} className="flex items-center gap-3 cursor-pointer" onClick={() => setIncludeSightWords(prev => !prev)}>
+                                    <div role="button" tabIndex={0} aria-pressed={includeSightWords} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIncludeSightWords(prev => !prev); } }} className="flex items-center gap-3 cursor-pointer" onClick={() => setIncludeSightWords(prev => !prev)}>
                                         <div className={`w-5 h-5 rounded border flex items-center justify-center ${includeSightWords ? 'bg-amber-600 border-amber-600' : 'border-slate-300'}`}>
                                             {includeSightWords && <Check size={14} className="text-white" />}
                                         </div>
@@ -1944,7 +1944,7 @@
                                     )}
                                 </div>
                                 <div className={`p-3 rounded-xl border-2 transition-all ${includeAI ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`}>
-                                    <div role="button" tabIndex={0} className="flex items-center gap-3 cursor-pointer" onClick={() => setIncludeAI(prev => !prev)}>
+                                    <div role="button" tabIndex={0} aria-pressed={includeAI} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIncludeAI(prev => !prev); } }} className="flex items-center gap-3 cursor-pointer" onClick={() => setIncludeAI(prev => !prev)}>
                                         <div className={`w-5 h-5 rounded border flex items-center justify-center ${includeAI ? 'bg-violet-600 border-violet-600' : 'border-slate-300'}`}>
                                             {includeAI && <Check size={14} className="text-white" />}
                                         </div>
@@ -1971,7 +1971,7 @@
                             </div>
                             <div className="space-y-3 pt-4 mt-4 border-t border-slate-200">
                                 <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">📋 Lesson Plan (Advanced)</label><div className={`p-4 rounded-xl border-2 transition-all ${sessionType === 'assessment' ? 'opacity-50 pointer-events-none' : ''} ${includeLessonPlan ? 'bg-indigo-50 border-indigo-500' : 'bg-white border-slate-200'}`}>
-                                    <div role="button" tabIndex={0} aria-disabled={sessionType === 'assessment'} className="flex items-center justify-between cursor-pointer mb-3" onClick={() => { if (sessionType === 'assessment') return; setIncludeLessonPlan(prev => !prev); }}>
+                                    <div role="button" tabIndex={sessionType === 'assessment' ? -1 : 0} aria-disabled={sessionType === 'assessment'} aria-pressed={includeLessonPlan} onKeyDown={(e) => { if (sessionType !== 'assessment' && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setIncludeLessonPlan(prev => !prev); } }} className="flex items-center justify-between cursor-pointer mb-3" onClick={() => { if (sessionType === 'assessment') return; setIncludeLessonPlan(prev => !prev); }}>
                                         <div className="flex items-center gap-2">
                                             <div className={`w-5 h-5 rounded border flex items-center justify-center ${includeLessonPlan ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300'}`}>
                                                 {includeLessonPlan && <Check size={14} className="text-white" />}

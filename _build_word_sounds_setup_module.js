@@ -21,6 +21,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'word_sounds_setup_source.jsx');
 const OUTPUT = path.join(ROOT, 'word_sounds_setup_module.js');
+const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'word_sounds_setup_module.js');
 const TMP = path.join(ROOT, '_tmp_word_sounds_setup_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) {
@@ -78,7 +79,7 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
-  // WCAG 2.1 AA: Accessibility CSS
+  // WCAG 2.2 AA: Accessibility CSS
   if (!document.getElementById("word-sounds-setup-module-a11y")) { var _s = document.createElement("style"); _s.id = "word-sounds-setup-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
@@ -181,5 +182,6 @@ ${compiled}
 `;
 
 fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
+fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
 const lineCount = outputCode.split('\n').length;
 console.log(`✅ Built ${OUTPUT} (${lineCount} lines)`);
