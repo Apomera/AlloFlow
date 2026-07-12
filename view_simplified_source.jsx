@@ -1,4 +1,4 @@
-﻿// Inject Chunk Read mood keyframes once. Reduced-motion media query disables
+// Inject Chunk Read mood keyframes once. Reduced-motion media query disables
   // the animations globally so users with that preference see static styling.
   (function () {
     if (typeof document === 'undefined') return;
@@ -328,6 +328,9 @@
     var editAudioMediaRecorderRef = React.useRef(null);
     var editAudioMediaStreamRef = React.useRef(null);
     var editAudioChunksRef = React.useRef([]);
+    var immersiveDialogRef = React.useRef(null);
+    var phonicsDialogRef = React.useRef(null);
+    var phonicsCloseRef = React.useRef(null);
     var stopEditAudioPlayback = function () {
       editAudioPlayTokenRef.current += 1;
       try {
@@ -700,6 +703,48 @@
       }
       setEditAudioOpen(next);
     };
+    function containSimplifiedModalFocus(e, container, onEscape) {
+      if (!e || !container) return;
+      var nearestDialog = e.target && typeof e.target.closest === 'function' ? e.target.closest('[role="dialog"]') : null;
+      if (nearestDialog && nearestDialog !== container) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (typeof onEscape === 'function') onEscape(e);
+        return;
+      }
+      if (e.key !== 'Tab' || typeof container.querySelectorAll !== 'function') return;
+      var focusable = Array.prototype.slice.call(container.querySelectorAll('button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(function (el) {
+        return el && !el.hidden && el.getAttribute('aria-hidden') !== 'true';
+      });
+      if (!focusable.length) { e.preventDefault(); container.focus(); return; }
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+    React.useEffect(function () {
+      if (!isImmersiveReaderActive || !generatedContent?.immersiveData) return undefined;
+      var previouslyFocused = document.activeElement;
+      var timer = setTimeout(function () {
+        var closeButton = immersiveDialogRef.current && immersiveDialogRef.current.querySelector('button[aria-label]');
+        if (closeButton) closeButton.focus();
+        else if (immersiveDialogRef.current) immersiveDialogRef.current.focus();
+      }, 0);
+      return function () {
+        clearTimeout(timer);
+        if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+      };
+    }, [isImmersiveReaderActive]);
+    React.useEffect(function () {
+      if (!phonicsData) return undefined;
+      var previouslyFocused = document.activeElement;
+      var timer = setTimeout(function () { if (phonicsCloseRef.current) phonicsCloseRef.current.focus(); }, 0);
+      return function () {
+        clearTimeout(timer);
+        if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+      };
+    }, [!!phonicsData]);
+
     var renderEditAudioSentenceTools = function () {
       if (!isTeacherMode || !isEditingLeveledText) return null;
       var sentences = getReadAloudSentencesForText(generatedContent && generatedContent.data);
@@ -730,7 +775,7 @@
         return <div key={key} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3"><div className="flex items-start gap-2"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[11px] font-black text-orange-800" aria-hidden="true">{sentenceNumber}</span><div className="min-w-0 flex-1"><p dir="auto" className="text-sm font-medium leading-relaxed text-slate-800">{sentence}</p><div className="mt-1.5 flex items-center gap-1.5 flex-wrap" aria-label={`Sentence ${sentenceNumber} audio status: ${statusLabel}. Source: ${provenance.label}.`}><span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusClass}`}>{isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? <RefreshCw size={9} className="animate-spin" /> : isRecording ? <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" /> : isSaved ? <CheckCircle2 size={9} /> : <AlertCircle size={9} />}{statusLabel}</span><span className="text-[10px] font-semibold text-slate-500">{provenance.label}</span></div></div></div><div role="group" aria-label={`Audio actions for sentence ${sentenceNumber}`} className="mt-2.5 flex items-center gap-1.5 flex-wrap"><button type="button" onClick={function () { handlePlayEditAudioSentence(sentence, key, sentenceNumber); }} disabled={!isSaved || isLoading || controlsBlocked || anyRecordingWork || (!!editAudioLoadingKey && !isLoading)} aria-pressed={isPlayingSentence} aria-label={`${isPlayingSentence ? 'Pause' : 'Play'} audio for sentence ${sentenceNumber}`} title={!isSaved ? 'Generate or record audio first' : isPlayingSentence ? 'Pause sentence audio' : 'Play sentence audio'} className={`${actionClass} bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50`}>{isLoading ? <RefreshCw size={12} className="animate-spin" /> : isPlayingSentence ? <Pause size={12} /> : <Play size={12} />}<span>{isLoading ? 'Loading' : isPlayingSentence ? 'Pause' : 'Play'}</span></button><button type="button" onClick={function () { handleRegenerateReadAloudSentence(sentence, key, sentenceNumber); }} disabled={!!regenAudioKey || isSaving || isRemoving || anyRecordingWork || ttsPrepState.busy} aria-label={`${isSaved ? 'Regenerate' : 'Generate'} audio for sentence ${sentenceNumber}`} className={`${actionClass} bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50`}>{isGenerating ? <RefreshCw size={12} className="animate-spin" /> : <Volume2 size={12} />}<span>{isGenerating ? (isSaved ? 'Regenerating' : 'Generating') : isSaved ? 'Regenerate' : 'Generate'}</span></button><button type="button" onClick={function () { handleRecordEditAudioSentence(sentence, key, sentenceNumber); }} disabled={recordDisabled} aria-pressed={isRecording} aria-label={`${isRecording ? 'Stop recording' : 'Record teacher audio'} for sentence ${sentenceNumber}`} title={isRecording ? 'Stop and save this recording' : isSaved ? 'Record a teacher voice replacement' : 'Record teacher audio'} className={`${actionClass} ${isRecording ? 'bg-red-600 text-white border-red-700 hover:bg-red-700' : 'bg-white text-fuchsia-700 border-fuchsia-200 hover:bg-fuchsia-50'}`}>{isMicRequest || isRecordingSave ? <RefreshCw size={12} className="animate-spin" /> : isRecording ? <StopCircle size={12} /> : <Mic size={12} />}<span>{isMicRequest ? 'Opening mic' : isRecording ? 'Stop' : isRecordingSave ? 'Saving' : 'Record'}</span></button>{isSaved && <button type="button" onClick={function () { handleRemoveReadAloudSentence(sentence, key, sentenceNumber); }} disabled={!!removeAudioKey || isSaving || !!regenAudioKey || anyRecordingWork || ttsPrepState.busy} aria-label={`Remove saved audio for sentence ${sentenceNumber}`} className={`${actionClass} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}>{isRemoving ? <RefreshCw size={12} className="animate-spin" /> : <Trash2 size={12} />}<span>{isRemoving ? 'Removing' : 'Remove'}</span></button>}</div></div>;
       })}</div></div>}</div>;
     };
-    return <div className="space-y-6">{isImmersiveReaderActive && generatedContent?.immersiveData && <div className="fixed inset-0 z-[200] overflow-y-auto animate-in fade-in zoom-in-95 duration-300 flex flex-col font-sans" style={{
+    return <div className="space-y-6">{isImmersiveReaderActive && generatedContent?.immersiveData && <div ref={immersiveDialogRef} role="dialog" aria-modal="true" aria-label={t('immersive.title') || 'Immersive Reader'} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, immersiveDialogRef.current, handleCloseImmersiveReader)} className="fixed inset-0 z-[200] overflow-y-auto animate-in fade-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none flex flex-col font-sans" style={{
         backgroundColor: immersiveSettings.bgColor || '#fdfbf7'
       }} onMouseMove={e => setImmersiveRulerY(e.clientY)}><ImmersiveToolbar settings={immersiveSettings} setSettings={setImmersiveSettings} onClose={handleCloseImmersiveReader} onGeneratePOS={handleGeneratePOSData} isGeneratingPOS={isAnalyzingPos} posReady={!!generatedContent?.posEnriched} onGenerateSyllables={handleGeneratePOSData} isGeneratingSyllables={isAnalyzingPos} syllablesReady={!!generatedContent?.posEnriched} playbackRate={playbackRate} setPlaybackRate={setPlaybackRate} lineHeight={lineHeight} setLineHeight={setLineHeight} letterSpacing={letterSpacing} setLetterSpacing={setLetterSpacing} isFocusReaderActive={isFocusReaderActive} onToggleFocusReader={() => setIsFocusReaderActive(!isFocusReaderActive)} isChunkReaderActive={isChunkReaderActive} onToggleChunkReader={() => {
           setIsChunkReaderActive(!isChunkReaderActive);
@@ -869,7 +914,7 @@
                     }
                   }} /></span>;
               });
-            })()}</div></div></div>}{interactionMode === 'cloze' && isClozeComplete && <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center"><ConfettiExplosion /><div className="mt-40 bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border-4 border-white shadow-xl animate-in zoom-in duration-500 flex items-center gap-2"><Trophy size={24} className="text-yellow-500 fill-current" /> Activity Complete!</div></div>}{!isZenMode && <div className="bg-green-50 p-4 rounded-lg border border-green-100 mb-6"><p className="text-sm text-green-800"><strong>{t('simplified.udl_goal').split(':')[0]}:</strong> {t('simplified.udl_goal').split(':')[1]}</p></div>}<div className={`bg-orange-50 border-l-4 border-orange-400 shadow-sm rounded-r-lg relative ${isZenMode ? 'p-4' : 'p-8'}`}>{!isZenMode && <div className="flex justify-center items-center mb-2 flex-wrap gap-2">{(() => {
+            })()}</div></div></div>}{interactionMode === 'cloze' && isClozeComplete && <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center" role="status" aria-live="polite" aria-atomic="true"><ConfettiExplosion /><div className="mt-40 bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border-4 border-white shadow-xl animate-in zoom-in duration-500 motion-reduce:animate-none motion-reduce:transition-none flex items-center gap-2"><Trophy size={24} className="text-yellow-500 fill-current" aria-hidden="true" /> Activity Complete!</div></div>}{!isZenMode && <div className="bg-green-50 p-4 rounded-lg border border-green-100 mb-6"><p className="text-sm text-green-800"><strong>{t('simplified.udl_goal').split(':')[0]}:</strong> {t('simplified.udl_goal').split(':')[1]}</p></div>}<div className={`bg-orange-50 border-l-4 border-orange-400 shadow-sm rounded-r-lg relative ${isZenMode ? 'p-4' : 'p-8'}`}>{!isZenMode && <div className="flex justify-center items-center mb-2 flex-wrap gap-2">{(() => {
             const displayGrade = generatedContent?.config?.grade || gradeLevel;
             const displayLang = generatedContent?.config?.language || leveledTextLanguage;
             const displayInterests = generatedContent?.config?.interests || studentInterests;
@@ -935,18 +980,16 @@
           left: Math.min(window.innerWidth - 280, definitionData.x - 20) + 'px'
         }}><div className="flex justify-between items-start mb-2"><h5 className="font-bold text-indigo-900 text-lg capitalize">{definitionData.word}</h5><button onClick={closeDefinition} className="text-slate-600 hover:text-slate-600" aria-label={t('common.close')}><X size={14} /></button></div>{definitionData.text ? renderReadingLevelExplanation(definitionData, t, renderFormattedText) : <div className="flex items-center gap-2 text-xs text-indigo-500"><RefreshCw size={12} className="animate-spin" /> {t('glossary.popups.finding')}</div>}{definitionData.dictionary && renderDictionaryPanel(definitionData.dictionary, t)}{definitionData.text && <div className="mt-3 pt-3 border-t border-slate-100">{definitionData.imageUrl ? <img src={definitionData.imageUrl} alt={definitionData.word} className="w-full h-32 object-contain rounded-lg bg-slate-50 border border-slate-400" /> : definitionData.imageLoading ? <div className="flex items-center justify-center gap-2 text-xs text-indigo-500 h-20 bg-slate-50 rounded-lg border border-slate-400 border-dashed"><RefreshCw size={12} className="animate-spin" /> {t('common.loading') || 'Loading picture...'}</div> : definitionData.imageError ? <div className="text-xs text-slate-500 italic text-center py-2">{t('glossary.popups.image_error') || 'Could not load picture.'}</div> : <button onClick={() => handleFetchWordImage(definitionData.word)} className="w-full flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg px-3 py-2 transition-colors" aria-label={t('glossary.popups.show_picture') || 'Show picture for this word'}><ImageIcon size={12} /> {t('glossary.popups.show_picture') || 'Show picture'}</button>}</div>}<div className="absolute -top-2 left-6 w-4 h-4 bg-white border-t border-l border-indigo-200 transform rotate-45" /></div>}{definitionData && <div role="button" tabIndex={0} onKeyDown={e => {
           if (e.key === 'Escape') e.currentTarget.click();
-        }} className={`fixed inset-0 ${_popupBackdropZ}`} onClick={closeDefinition} />}{phonicsData && <div role="dialog" aria-modal="true" aria-labelledby="phonics-popup-title" className={`fixed ${_popupZ} bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in zoom-in-95 duration-200`} style={{
+        }} className={`fixed inset-0 ${_popupBackdropZ}`} onClick={closeDefinition} />}{phonicsData && <div ref={phonicsDialogRef} role="dialog" aria-modal="true" aria-labelledby="phonics-popup-title" tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, phonicsDialogRef.current, closePhonics)} className={`fixed ${_popupZ} bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`} style={{
           top: Math.min(window.innerHeight - 300, phonicsData.y + 10) + 'px',
           left: Math.min(window.innerWidth - 300, phonicsData.x - 20) + 'px'
-        }}><div className="flex justify-between items-start mb-3"><h5 id="phonics-popup-title" className="font-black text-emerald-900 text-2xl capitalize tracking-tight">{phonicsData.word}</h5><button onClick={closePhonics} className="text-slate-600 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-1" aria-label={t('common.close')}><X size={14} /></button></div>{phonicsData.isLoading ? <div className="flex flex-col items-center justify-center py-6 gap-2 text-emerald-600"><RefreshCw size={24} className="animate-spin" /><span className="text-xs font-bold uppercase tracking-wider">{t('glossary.popups.analyzing')}</span></div> : phonicsData.data ? <div className="space-y-4"><div className="flex items-center justify-between bg-emerald-50 p-3 rounded-lg border border-emerald-100"><div><div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">{t('glossary.phonetic_spelling')}</div><div className="text-lg font-serif italic text-slate-700">/{phonicsData.data.phoneticSpelling}/</div></div><button aria-label={t('common.volume')} onClick={() => {
+        }}><div className="flex justify-between items-start mb-3"><h5 id="phonics-popup-title" className="font-black text-emerald-900 text-2xl capitalize tracking-tight">{phonicsData.word}</h5><button ref={phonicsCloseRef} type="button" onClick={closePhonics} className="text-slate-600 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-1" aria-label={t('common.close')}><X size={14} /></button></div>{phonicsData.isLoading ? <div className="flex flex-col items-center justify-center py-6 gap-2 text-emerald-600"><RefreshCw size={24} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /><span className="text-xs font-bold uppercase tracking-wider">{t('glossary.popups.analyzing')}</span></div> : phonicsData.data ? <div className="space-y-4"><div className="flex items-center justify-between bg-emerald-50 p-3 rounded-lg border border-emerald-100"><div><div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">{t('glossary.phonetic_spelling')}</div><div className="text-lg font-serif italic text-slate-700">/{phonicsData.data.phoneticSpelling}/</div></div><button aria-label={t('common.volume')} onClick={() => {
                 if (phonicsData.audioUrl) {
                   const audio = new Audio(phonicsData.audioUrl);
                   audio.playbackRate = voiceSpeed || 1;
                   audio.play().catch(() => {});
                 }
-              }} className="bg-emerald-700 hover:bg-emerald-800 text-white p-2 rounded-full shadow-md transition-transform hover:scale-110 active:scale-95" title={t('glossary.popups.replay')}><Volume2 size={20} className="fill-current" /></button></div>{renderPhonicsDictRow(phonicsData, t)}<div className="grid grid-cols-2 gap-2"><div className="bg-slate-50 p-2 rounded border border-slate-100"><div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('glossary.popups.ipa')}</div><div className="font-mono text-sm text-slate-600">{phonicsData.data.ipa}</div></div><div className="bg-slate-50 p-2 rounded border border-slate-100"><div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('glossary.popups.syllables')}</div><div className="flex flex-wrap items-center gap-0.5">{phonicsData.data.syllables.map((syl, i) => <>{i > 0 && <span className="text-emerald-500 font-bold px-0.5" aria-hidden="true">•</span>}<span className="bg-white px-1.5 rounded border border-slate-400 text-sm font-bold text-slate-700 shadow-sm">{syl}</span></>)}</div></div></div></div> : <div className="text-center text-red-600 text-xs font-bold py-4">{t('glossary.popups.failed')}</div>}<div className="allo-popover-solid absolute -top-2 left-6 w-4 h-4 bg-white border-t-2 border-l-2 border-emerald-200 transform rotate-45" /></div>}{phonicsData && <div role="button" tabIndex={0} onKeyDown={e => {
-          if (e.key === 'Escape') e.currentTarget.click();
-        }} className={`fixed inset-0 ${_popupBackdropZ}`} onClick={closePhonics} />}{selectionMenu && <div className={`fixed ${_popupZ} flex flex-col gap-1 items-center animate-in fade-in slide-in-from-bottom-2 duration-200`} style={{
+              }} className="bg-emerald-700 hover:bg-emerald-800 text-white p-2 rounded-full shadow-md transition-transform hover:scale-110 active:scale-95" title={t('glossary.popups.replay')}><Volume2 size={20} className="fill-current" /></button></div>{renderPhonicsDictRow(phonicsData, t)}<div className="grid grid-cols-2 gap-2"><div className="bg-slate-50 p-2 rounded border border-slate-100"><div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('glossary.popups.ipa')}</div><div className="font-mono text-sm text-slate-600">{phonicsData.data.ipa}</div></div><div className="bg-slate-50 p-2 rounded border border-slate-100"><div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('glossary.popups.syllables')}</div><div className="flex flex-wrap items-center gap-0.5">{phonicsData.data.syllables.map((syl, i) => <>{i > 0 && <span className="text-emerald-500 font-bold px-0.5" aria-hidden="true">•</span>}<span className="bg-white px-1.5 rounded border border-slate-400 text-sm font-bold text-slate-700 shadow-sm">{syl}</span></>)}</div></div></div></div> : <div className="text-center text-red-600 text-xs font-bold py-4">{t('glossary.popups.failed')}</div>}<div className="allo-popover-solid absolute -top-2 left-6 w-4 h-4 bg-white border-t-2 border-l-2 border-emerald-200 transform rotate-45" /></div>}{phonicsData && <div aria-hidden="true" className={`fixed inset-0 ${_popupBackdropZ}`} onClick={closePhonics} />}{selectionMenu && <div className={`fixed ${_popupZ} flex flex-col gap-1 items-center animate-in fade-in slide-in-from-bottom-2 duration-200`} style={{
           top: selectionMenu.y - 50 + 'px',
           left: selectionMenu.x + 'px',
           transform: 'translateX(-50%)'

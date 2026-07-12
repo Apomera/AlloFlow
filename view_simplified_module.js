@@ -392,6 +392,9 @@ function SimplifiedView(props) {
   var editAudioMediaRecorderRef = React.useRef(null);
   var editAudioMediaStreamRef = React.useRef(null);
   var editAudioChunksRef = React.useRef([]);
+  var immersiveDialogRef = React.useRef(null);
+  var phonicsDialogRef = React.useRef(null);
+  var phonicsCloseRef = React.useRef(null);
   var stopEditAudioPlayback = function () {
     editAudioPlayTokenRef.current += 1;
     try {
@@ -862,6 +865,57 @@ function SimplifiedView(props) {
     }
     setEditAudioOpen(next);
   };
+  function containSimplifiedModalFocus(e, container, onEscape) {
+    if (!e || !container) return;
+    var nearestDialog = e.target && typeof e.target.closest === 'function' ? e.target.closest('[role="dialog"]') : null;
+    if (nearestDialog && nearestDialog !== container) return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      if (typeof onEscape === 'function') onEscape(e);
+      return;
+    }
+    if (e.key !== 'Tab' || typeof container.querySelectorAll !== 'function') return;
+    var focusable = Array.prototype.slice.call(container.querySelectorAll('button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(function (el) {
+      return el && !el.hidden && el.getAttribute('aria-hidden') !== 'true';
+    });
+    if (!focusable.length) {
+      e.preventDefault();
+      container.focus();
+      return;
+    }
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+  React.useEffect(function () {
+    if (!isImmersiveReaderActive || !generatedContent?.immersiveData) return undefined;
+    var previouslyFocused = document.activeElement;
+    var timer = setTimeout(function () {
+      var closeButton = immersiveDialogRef.current && immersiveDialogRef.current.querySelector('button[aria-label]');
+      if (closeButton) closeButton.focus();else if (immersiveDialogRef.current) immersiveDialogRef.current.focus();
+    }, 0);
+    return function () {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+    };
+  }, [isImmersiveReaderActive]);
+  React.useEffect(function () {
+    if (!phonicsData) return undefined;
+    var previouslyFocused = document.activeElement;
+    var timer = setTimeout(function () {
+      if (phonicsCloseRef.current) phonicsCloseRef.current.focus();
+    }, 0);
+    return function () {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+    };
+  }, [!!phonicsData]);
   var renderEditAudioSentenceTools = function () {
     if (!isTeacherMode || !isEditingLeveledText) return null;
     var sentences = getReadAloudSentencesForText(generatedContent && generatedContent.data);
@@ -1043,7 +1097,13 @@ function SimplifiedView(props) {
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, isImmersiveReaderActive && generatedContent?.immersiveData && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[200] overflow-y-auto animate-in fade-in zoom-in-95 duration-300 flex flex-col font-sans",
+    ref: immersiveDialogRef,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-label": t('immersive.title') || 'Immersive Reader',
+    tabIndex: -1,
+    onKeyDown: e => containSimplifiedModalFocus(e, immersiveDialogRef.current, handleCloseImmersiveReader),
+    className: "fixed inset-0 z-[200] overflow-y-auto animate-in fade-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none flex flex-col font-sans",
     style: {
       backgroundColor: immersiveSettings.bgColor || '#fdfbf7'
     },
@@ -1265,12 +1325,16 @@ function SimplifiedView(props) {
       }));
     });
   })()))), interactionMode === 'cloze' && isClozeComplete && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 pointer-events-none z-[100] flex items-center justify-center"
+    className: "fixed inset-0 pointer-events-none z-[100] flex items-center justify-center",
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true"
   }, /*#__PURE__*/React.createElement(ConfettiExplosion, null), /*#__PURE__*/React.createElement("div", {
-    className: "mt-40 bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border-4 border-white shadow-xl animate-in zoom-in duration-500 flex items-center gap-2"
+    className: "mt-40 bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border-4 border-white shadow-xl animate-in zoom-in duration-500 motion-reduce:animate-none motion-reduce:transition-none flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Trophy, {
     size: 24,
-    className: "text-yellow-500 fill-current"
+    className: "text-yellow-500 fill-current",
+    "aria-hidden": "true"
   }), " Activity Complete!")), !isZenMode && /*#__PURE__*/React.createElement("div", {
     className: "bg-green-50 p-4 rounded-lg border border-green-100 mb-6"
   }, /*#__PURE__*/React.createElement("p", {
@@ -1623,10 +1687,13 @@ function SimplifiedView(props) {
     className: `fixed inset-0 ${_popupBackdropZ}`,
     onClick: closeDefinition
   }), phonicsData && /*#__PURE__*/React.createElement("div", {
+    ref: phonicsDialogRef,
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "phonics-popup-title",
-    className: `fixed ${_popupZ} bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in zoom-in-95 duration-200`,
+    tabIndex: -1,
+    onKeyDown: e => containSimplifiedModalFocus(e, phonicsDialogRef.current, closePhonics),
+    className: `fixed ${_popupZ} bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none`,
     style: {
       top: Math.min(window.innerHeight - 300, phonicsData.y + 10) + 'px',
       left: Math.min(window.innerWidth - 300, phonicsData.x - 20) + 'px'
@@ -1637,6 +1704,8 @@ function SimplifiedView(props) {
     id: "phonics-popup-title",
     className: "font-black text-emerald-900 text-2xl capitalize tracking-tight"
   }, phonicsData.word), /*#__PURE__*/React.createElement("button", {
+    ref: phonicsCloseRef,
+    type: "button",
     onClick: closePhonics,
     className: "text-slate-600 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full p-1",
     "aria-label": t('common.close')
@@ -1646,7 +1715,8 @@ function SimplifiedView(props) {
     className: "flex flex-col items-center justify-center py-6 gap-2 text-emerald-600"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 24,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none",
+    "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold uppercase tracking-wider"
   }, t('glossary.popups.analyzing'))) : phonicsData.data ? /*#__PURE__*/React.createElement("div", {
@@ -1695,11 +1765,7 @@ function SimplifiedView(props) {
   }, t('glossary.popups.failed')), /*#__PURE__*/React.createElement("div", {
     className: "allo-popover-solid absolute -top-2 left-6 w-4 h-4 bg-white border-t-2 border-l-2 border-emerald-200 transform rotate-45"
   })), phonicsData && /*#__PURE__*/React.createElement("div", {
-    role: "button",
-    tabIndex: 0,
-    onKeyDown: e => {
-      if (e.key === 'Escape') e.currentTarget.click();
-    },
+    "aria-hidden": "true",
     className: `fixed inset-0 ${_popupBackdropZ}`,
     onClick: closePhonics
   }), selectionMenu && /*#__PURE__*/React.createElement("div", {
