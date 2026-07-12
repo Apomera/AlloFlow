@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-07-11T05:04:17.522Z",
+  "generatedAt": "2026-07-11T18:00:31.104Z",
   "source": {
-    "stemToolFileCount": 118,
-    "registeredToolCount": 121,
-    "monitoredMarkerCount": 63
+    "stemToolFileCount": 119,
+    "registeredToolCount": 122,
+    "monitoredMarkerCount": 72
   },
   "summary": {
     "loadErrorCount": 0,
-    "markerPassCount": 63,
+    "markerPassCount": 72,
     "markerFailCount": 0,
-    "monitoredIssueCount": 12,
+    "monitoredIssueCount": 15,
     "monitoredErrorCount": 0,
-    "monitoredWarningCount": 3,
-    "monitoredNoticeCount": 9,
-    "syncDriftCount": 0,
+    "monitoredWarningCount": 5,
+    "monitoredNoticeCount": 10,
+    "syncDriftCount": 1,
     "sourcePublicDriftCount": 0,
     "monitoredSyncDriftCount": 0
   },
@@ -338,14 +338,14 @@
       "marker": "data-fireecology-mission",
       "label": "Fire Ecology stewardship mission",
       "ok": true,
-      "htmlBytes": 25732,
+      "htmlBytes": 25723,
       "issues": [],
       "metrics": {
         "buttons": 29,
         "fields": 1,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 25732
+        "htmlBytes": 25723
       }
     },
     {
@@ -711,14 +711,14 @@
       "marker": "data-watercycle-focus",
       "label": "Water Cycle focus panel",
       "ok": true,
-      "htmlBytes": 18267,
+      "htmlBytes": 21817,
       "issues": [],
       "metrics": {
-        "buttons": 18,
-        "fields": 4,
+        "buttons": 30,
+        "fields": 6,
         "canvases": 1,
-        "headings": 6,
-        "htmlBytes": 18267
+        "headings": 7,
+        "htmlBytes": 21817
       }
     },
     {
@@ -727,7 +727,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17740,
+      "htmlBytes": 17749,
       "issues": [
         {
           "toolId": "playlab",
@@ -756,7 +756,7 @@
         "fields": 5,
         "canvases": 1,
         "headings": 7,
-        "htmlBytes": 17740
+        "htmlBytes": 17749
       }
     },
     {
@@ -789,6 +789,22 @@
         "canvases": 0,
         "headings": 2,
         "htmlBytes": 12465
+      }
+    },
+    {
+      "id": "geologyExplorer",
+      "file": "stem_tool_geologyexplorer.js",
+      "marker": "data-geology-command",
+      "label": "Geology field investigation command",
+      "ok": true,
+      "htmlBytes": 15087,
+      "issues": [],
+      "metrics": {
+        "buttons": 23,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 15087
       }
     },
     {
@@ -829,14 +845,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13314,
+      "htmlBytes": 13379,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13314
+        "htmlBytes": 13379
       }
     },
     {
@@ -905,14 +921,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 47691,
+      "htmlBytes": 47690,
       "issues": [],
       "metrics": {
         "buttons": 53,
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 47691
+        "htmlBytes": 47690
       }
     },
     {
@@ -1013,6 +1029,87 @@
       }
     },
     {
+      "id": "funcGrapher",
+      "file": "stem_tool_funcgrapher.js",
+      "marker": "data-funcgrapher-command",
+      "label": "Function Grapher exploration console",
+      "ok": true,
+      "htmlBytes": 24183,
+      "issues": [
+        {
+          "toolId": "funcGrapher",
+          "severity": "warning",
+          "code": "canvas-name",
+          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
+          "index": 0,
+          "selector": "div > div.max-w-5xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(12) > div.rounded-xl.overflow-hidden:nth-of-type(2) > canvas"
+        },
+        {
+          "toolId": "funcGrapher",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 0,
+          "selector": "div > div.max-w-5xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(12) > div.rounded-xl.overflow-hidden:nth-of-type(2) > canvas"
+        }
+      ],
+      "metrics": {
+        "buttons": 47,
+        "fields": 9,
+        "canvases": 1,
+        "headings": 3,
+        "htmlBytes": 24183
+      }
+    },
+    {
+      "id": "calculus",
+      "file": "stem_tool_calculus.js",
+      "marker": "data-calculus-command",
+      "label": "Calculus concept studio",
+      "ok": true,
+      "htmlBytes": 24191,
+      "issues": [],
+      "metrics": {
+        "buttons": 29,
+        "fields": 9,
+        "canvases": 0,
+        "headings": 2,
+        "htmlBytes": 24191
+      }
+    },
+    {
+      "id": "physics",
+      "file": "stem_tool_physics.js",
+      "marker": "data-physics-command",
+      "label": "Physics projectile mission",
+      "ok": true,
+      "htmlBytes": 20191,
+      "issues": [],
+      "metrics": {
+        "buttons": 36,
+        "fields": 10,
+        "canvases": 1,
+        "headings": 2,
+        "htmlBytes": 20191
+      }
+    },
+    {
+      "id": "unitConvert",
+      "file": "stem_tool_unitconvert.js",
+      "marker": "data-unitconvert-command",
+      "label": "Unit Converter measurement workbench",
+      "ok": true,
+      "htmlBytes": 13032,
+      "issues": [],
+      "metrics": {
+        "buttons": 21,
+        "fields": 3,
+        "canvases": 1,
+        "headings": 3,
+        "htmlBytes": 13032
+      }
+    },
+    {
       "id": "punnett",
       "file": "stem_tool_punnett.js",
       "marker": "data-punnett-cross-focus",
@@ -1093,6 +1190,83 @@
       }
     },
     {
+      "id": "coordinate",
+      "file": "stem_tool_coordgrid.js",
+      "marker": "data-coordinate-command",
+      "label": "Coordinate spatial reasoning studio",
+      "ok": true,
+      "htmlBytes": 13161,
+      "issues": [],
+      "metrics": {
+        "buttons": 14,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 1,
+        "htmlBytes": 13161
+      }
+    },
+    {
+      "id": "protractor",
+      "file": "stem_tool_angles.js",
+      "marker": "data-protractor-command",
+      "label": "Angle investigation studio",
+      "ok": true,
+      "htmlBytes": 31533,
+      "issues": [],
+      "metrics": {
+        "buttons": 69,
+        "fields": 5,
+        "canvases": 0,
+        "headings": 3,
+        "htmlBytes": 31533
+      }
+    },
+    {
+      "id": "volume",
+      "file": "stem_tool_volume.js",
+      "marker": "data-volume-command",
+      "label": "Volume design brief",
+      "ok": true,
+      "htmlBytes": 34685,
+      "issues": [
+        {
+          "toolId": "volume",
+          "severity": "notice",
+          "code": "horizontal-overflow-risk",
+          "message": "First screen includes fixed-width surfaces that need phone-width visual review.",
+          "count": 1,
+          "examples": [
+            {
+              "selector": "div > div.space-y-4.max-w-5xl > div.bg-gradient-to-b.from-slate-900:nth-of-type(4)"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "buttons": 26,
+        "fields": 11,
+        "canvases": 1,
+        "headings": 4,
+        "htmlBytes": 34685
+      }
+    },
+    {
+      "id": "base10",
+      "file": "stem_tool_manipulatives.js",
+      "marker": "data-manipulatives-command",
+      "label": "Math representation studio",
+      "ok": true,
+      "htmlBytes": 19623,
+      "issues": [],
+      "metrics": {
+        "buttons": 51,
+        "fields": 1,
+        "canvases": 0,
+        "headings": 2,
+        "htmlBytes": 19623
+      }
+    },
+    {
       "id": "numberline",
       "file": "stem_tool_numberline.js",
       "marker": "data-numberline-focus",
@@ -1162,14 +1336,14 @@
       "marker": "data-galaxy-canvas",
       "label": "Galaxy 3D canvas",
       "ok": true,
-      "htmlBytes": 36963,
+      "htmlBytes": 37208,
       "issues": [],
       "metrics": {
-        "buttons": 51,
+        "buttons": 52,
         "fields": 3,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 36963
+        "htmlBytes": 37208
       }
     },
     {
@@ -1194,23 +1368,51 @@
       "marker": "data-wave-canvas",
       "label": "Wave canvas",
       "ok": true,
-      "htmlBytes": 20770,
+      "htmlBytes": 20837,
       "issues": [],
       "metrics": {
         "buttons": 36,
         "fields": 8,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 20770
+        "htmlBytes": 20837
       }
     }
   ],
   "sync": {
-    "drift": [],
+    "drift": [
+      {
+        "file": "stem_tool_particlelab3d.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "A284849D1A8B",
+          "public": "A284849D1A8B",
+          "build": "FACF95D1AC25"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      }
+    ],
     "sourcePublicDrift": [],
     "monitoredDrift": []
   },
   "topFindings": [
+    {
+      "code": "canvas-focus",
+      "severity": "warning",
+      "count": 2,
+      "toolCount": 2,
+      "exampleTools": [
+        "bikeLab",
+        "funcGrapher"
+      ]
+    },
     {
       "code": "heading",
       "severity": "warning",
@@ -1222,19 +1424,19 @@
       ]
     },
     {
-      "code": "canvas-focus",
+      "code": "canvas-name",
       "severity": "warning",
       "count": 1,
       "toolCount": 1,
       "exampleTools": [
-        "bikeLab"
+        "funcGrapher"
       ]
     },
     {
       "code": "horizontal-overflow-risk",
       "severity": "notice",
-      "count": 9,
-      "toolCount": 9,
+      "count": 10,
+      "toolCount": 10,
       "exampleTools": [
         "opticsLab",
         "cellularLab",
@@ -1244,7 +1446,8 @@
         "playlab",
         "bikeLab",
         "echolocation",
-        "statsLab"
+        "statsLab",
+        "volume"
       ]
     }
   ]

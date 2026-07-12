@@ -67,6 +67,27 @@ describe('galaxy explorer mode/state smoke', () => {
     }
   });
 
+  it('black-hole mode renders its cinematic canvas and accessible controls', () => {
+    const html = renderTool('galaxy', { galaxy: { simMode: 'blackHole' } });
+    expect(html).toContain('data-black-hole-canvas');
+    expect(html).toContain('Relativistic controls');
+    expect(html).toContain('Tidal forces experiment');
+    expect(html).toContain('Drop object into black hole');
+    expect(html).toContain('black-hole-mass');
+    expect(html).toContain('black-hole-drop-readout');
+    expect(html).toContain('black-hole-signal-bar');
+    expect(html).toContain('Two views of time and light');
+    expect(html).toContain('black-hole-evidence-title');
+    expect(html).toContain('Strongly supported');
+    expect(html).toContain('Speculative ideas');
+    expect(html).toContain('Black-hole life cycle');
+    expect(html).toContain('Hawking evaporation');
+    expect(html).toContain('What you are seeing');
+    expect(html).toContain('black-hole-instructions');
+    expect(html).toContain('aria-describedby');
+    expect(html).toContain('aria-valuetext');
+    expect(html).not.toContain('NaN');
+  });
   it('metallicity inquiry mode still renders', () => {
     const html = renderTool('galaxy', { galaxy: { simMode: 'metalHunt' } });
     expect(html).toContain('Stellar metallicity discovery');

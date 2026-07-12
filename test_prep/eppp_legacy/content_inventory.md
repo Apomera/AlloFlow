@@ -1,26 +1,26 @@
 # Pass the EPPP learning-content inventory
 
-Generated: 2026-07-11T05:14:42.480Z
+Generated: 2026-07-11T19:57:23.698Z
 
 ## Inventory
 
 | Content type | Count |
 | --- | ---: |
 | Legacy learner-visible questions | 2933 |
-| Total native QA-passed questions | 416 |
+| Total native QA-passed questions | 500 |
 | Native-original QA-passed questions | 8 |
-| Legacy questions migrated and QA-passed | 408 |
+| Legacy questions migrated and QA-passed | 492 |
 | Legacy full-review target | 2933 |
-| Remaining to target | 2525 |
+| Remaining to target | 2441 |
 | Flashcards | 415 |
 | Memory aids and mnemonics | 255 |
 | Textbook chapters | 49 |
 | Textbook sections | 278 |
-| Embedded knowledge checks | 76 |
+| Embedded knowledge checks | 90 |
 | Interactive diagram templates | 25 |
-| Diagram placements in chapters | 45 |
+| Diagram placements in chapters | 50 |
 | Searchable term definitions | 1583 |
-| Chapter reference entries | 266 |
+| Chapter reference entries | 293 |
 | AI-reflective chapter codas | 49 |
 | Learner modes/pages | 14 |
 
@@ -28,14 +28,14 @@ Generated: 2026-07-11T05:14:42.480Z
 
 | Domain | Blueprint weight | Legacy-pool share | Legacy items QA passed | Review universe | Remaining |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Biological Bases of Behavior | 10% | 17% | 43 | 500 | 457 |
-| Cognitive-Affective Bases of Behavior | 13% | 11.7% | 53 | 344 | 291 |
-| Social & Cultural Bases of Behavior | 11% | 11.4% | 46 | 335 | 289 |
-| Growth & Lifespan Development | 12% | 12.4% | 49 | 364 | 315 |
-| Assessment & Diagnosis | 16% | 11.6% | 62 | 341 | 279 |
-| Treatment, Intervention & Prevention | 15% | 12.9% | 59 | 378 | 319 |
+| Biological Bases of Behavior | 10% | 17% | 49 | 500 | 451 |
+| Cognitive-Affective Bases of Behavior | 13% | 11.7% | 64 | 344 | 280 |
+| Social & Cultural Bases of Behavior | 11% | 11.4% | 54 | 335 | 281 |
+| Growth & Lifespan Development | 12% | 12.4% | 59 | 364 | 305 |
+| Assessment & Diagnosis | 16% | 11.6% | 79 | 341 | 262 |
+| Treatment, Intervention & Prevention | 15% | 12.9% | 74 | 378 | 304 |
 | Research Methods & Statistics | 7% | 11.7% | 34 | 343 | 309 |
-| Ethical, Legal & Professional Issues | 16% | 11.2% | 62 | 328 | 266 |
+| Ethical, Legal & Professional Issues | 16% | 11.2% | 79 | 328 | 249 |
 
 Recommended release gates: 100-question foundation, 300-question alpha, 1,000-question beta, 2,000-question expansion, and the complete 2,933-question reviewed universe. Reviewing all questions does not guarantee publishing every original wording: failures must be corrected, diversified, or retired. Practice forms should sample by blueprint weight rather than mirror the uneven legacy-pool distribution.
 

@@ -15,32 +15,32 @@ window.TextbookChapters.push({
     sections: [
         {
             heading: 'Why This Chapter Matters',
-            content: '<p>Psychology is evolving rapidly. The EPPP increasingly tests your knowledge of <strong>contemporary professional issues</strong>: teletherapy and technology ethics, social media boundaries, the prescription privileges debate, integrated healthcare, burnout and self-care, and advocacy. Understanding these issues demonstrates that you are not just clinically competent but professionally informed about the real-world landscape of modern practice.</p>'
+            content: '<p>Psychology is evolving rapidly. Relevant professional-practice questions may address <strong>contemporary professional issues</strong>: teletherapy and technology ethics, social media boundaries, the prescription privileges debate, integrated healthcare, burnout and self-care, and advocacy. Understanding these issues demonstrates that you are not just clinically competent but professionally informed about the real-world landscape of modern practice.</p>'
         },
         {
             heading: 'Teletherapy and Technology Ethics',
-            content: '<p>Telehealth practice exploded after the COVID-19 pandemic and is now a permanent part of the profession. The EPPP tests your understanding of the unique ethical considerations:</p>' +
+            content: '<p>Telepsychology requires the same core ethical analysis as in-person work plus technology, location, privacy, accessibility, emergency, and interjurisdictional considerations:</p>' +
                 '<p><strong>Key ethical issues:</strong></p>' +
                 '<ul>' +
                 '<li><strong>Informed consent</strong> must be modified to address technology-specific risks: potential for technology failure, limits of confidentiality online (data breaches, unsecured connections), and emergency procedures when therapist and client are in different locations</li>' +
                 '<li><strong>Competence</strong>: Psychologists must be competent in the <em>technology</em> they use for service delivery, not just the clinical content (Standard 2.01)</li>' +
-                '<li><strong>Licensure jurisdiction</strong>: The psychologist must be licensed in the state where the <em>client</em> is located at the time of service. <strong>PSYPACT</strong> (Psychology Interjurisdictional Compact) allows teletherapy across state lines for participating states.</li>' +
-                '<li><strong>HIPAA compliance</strong>: Must use encrypted, HIPAA-compliant platforms. Standard video chat (FaceTime, Zoom free) is generally not HIPAA-compliant without a Business Associate Agreement (BAA).</li>' +
-                '<li><strong>Emergency planning</strong>: Must know the client\u2019s physical location, have local emergency contacts, and have a plan for crises when the therapist cannot physically respond.</li>' +
+                '<li><strong>Licensure jurisdiction</strong>: Psychologists must have legal authority for practice connected to each relevant jurisdiction, commonly including the client’s location at the time of service and sometimes the psychologist’s location. PSYPACT authorizes qualifying psychologists—not every licensee—to practice under compact credentials and rules in participating jurisdictions.</li>' +
+                '<li><strong>HIPAA compliance</strong>: When HIPAA applies, the regulated entity must conduct risk analysis, implement reasonable administrative, physical, and technical safeguards, and obtain a BAA when a vendor is acting as a business associate. A product is not “HIPAA compliant” in isolation, and some conduit relationships do not require a BAA.</li>' +
+                '<li><strong>Emergency planning</strong>: At the outset and as needed, establish how locations will be confirmed, what emergency resources and support persons are available, how technology failures will be handled, and what limits apply to response across distance.</li>' +
                 '</ul>' +
                 '<p><strong>APA Telepsychology Guidelines (2013):</strong> Provide a comprehensive framework covering competence, informed consent, confidentiality, testing, and interjurisdictional practice.</p>' +
-                '<p><strong>EPPP Tip:</strong> If a question describes a psychologist providing therapy via video to a client in another state, the key issue is <em>licensure jurisdiction</em>. The psychologist must be licensed in the state where the client is physically located, or practice under PSYPACT.</p>',
+                '<p><strong>EPPP Tip:</strong> If a question describes a psychologist providing therapy via video to a client in another state, the key issue is <em>licensure jurisdiction</em>. Identify the client’s actual location and verify current authority-to-practice rules in every relevant jurisdiction; PSYPACT is one possible route only for eligible psychologists and participating jurisdictions.</p>',
             keyTerms: ['Teletherapy', 'Telehealth', 'PSYPACT', 'Interjurisdictional practice', 'HIPAA compliance', 'BAA', 'APA Telepsychology Guidelines'],
             knowledgeCheck: {
-                question: 'Dr. Jones is a psychologist licensed only in New York. A long-term client from New York temporarily relocates to Florida for six months to care for an ailing parent. The client wishes to continue weekly therapy via secure video. Assuming Dr. Jones is not participating in PSYPACT, can she legally provide these services?',
+                question: 'A psychologist’s established client temporarily relocates to another jurisdiction and requests continued video therapy. The psychologist has not verified that jurisdiction’s rules and holds no compact authority. What is the best next step?',
                 options: [
-                    'Yes, because the therapeutic relationship originated in New York and the client is a permanent resident there.',
-                    'Yes, if she obtains informed consent regarding the risks of telepsychology.',
-                    'No, unless she obtains a license or temporary practice permission from the state of Florida.',
-                    'No, because teletherapy is inherently unethical across state lines under any circumstances.'
+                    'Continue because the original treatment relationship controls jurisdiction.',
+                    'Continue because technology-specific informed consent replaces licensure requirements.',
+                    'Pause interjurisdictional sessions while promptly verifying and, if needed, obtaining lawful authority in all relevant jurisdictions or arranging an appropriate continuity-of-care alternative.',
+                    'Terminate immediately because cross-border telepsychology is always prohibited.'
                 ],
                 answer: 2,
-                rationale: 'Licensure jurisdiction is determined by the physical location of the client at the time the service is rendered. Even if the client is a NY resident, providing therapy to someone physically located in Florida requires authorization from Florida (either a license, temporary permission, or through PSYPACT).'
+                rationale: 'A client’s current location is commonly central, but legal authority depends on current rules in all relevant jurisdictions. The original relationship and informed consent do not substitute for authorization. Appropriate options may include a license, temporary permission, compact authority, another exception, or a continuity-of-care referral, depending on law.'
             }
         },
         {
@@ -48,8 +48,8 @@ window.TextbookChapters.push({
             content: '<p>Social media creates new and complex boundary issues for psychologists:</p>' +
                 '<p><strong>Common scenarios tested on the EPPP:</strong></p>' +
                 '<ul>' +
-                '<li><strong>Client sends a friend/follow request</strong>: Generally, accept NO social media connections with current clients. This creates a multiple relationship (Standard 3.05).</li>' +
-                '<li><strong>Googling a client</strong>: Searching for client information online without their knowledge is ethically problematic. It introduces information the client did not consent to share, potentially affecting the therapeutic relationship.</li>' +
+                '<li><strong>Client sends a friend/follow request</strong>: Avoid blanket rules while recognizing substantial privacy, boundary, exploitation, and role risks. Establish and apply a reasoned policy, consider the client and context, and do not imply that every connection automatically violates Standard 3.05.</li>' +
+                '<li><strong>Googling a client</strong>: Before searching, identify a legitimate professional purpose, necessity, reliability, consent and expectation issues, foreseeable effects, documentation needs, and safer alternatives. Emergency, forensic, assessment, and treatment contexts may differ.</li>' +
                 '<li><strong>Client finds therapist\u2019s social media</strong>: Psychologists should assume all online content is public and permanent. Personal posts can be viewed by clients, potentially affecting the therapeutic frame.</li>' +
                 '<li><strong>Online reviews</strong>: Psychologists may NOT solicit testimonials from current clients (Standard 5.05). Responding to negative online reviews must not breach confidentiality.</li>' +
                 '</ul>' +
@@ -57,10 +57,10 @@ window.TextbookChapters.push({
                 '<ul>' +
                 '<li>Establish a clear <strong>social media policy</strong> as part of informed consent at the outset of treatment</li>' +
                 '<li>Separate personal and professional online presence</li>' +
-                '<li>Do not search for client information online without clinical justification and informed consent</li>' +
+                '<li>Do not search reflexively; establish a defensible professional purpose and address consent or advance notice when appropriate to the role and context</li>' +
                 '<li>Discuss any incidental online encounters in session</li>' +
                 '</ul>' +
-                '<p><strong>EPPP Tip:</strong> The safest answer for any social media boundary question is: <em>do not engage</em> with clients on social media, establish a policy at the start of treatment, and discuss any boundary issues that arise openly in session.</p>',
+                '<p><strong>EPPP Tip:</strong> Evaluate confidentiality, role, power, exploitation, clinical effect, documentation, and the stated policy. Declining a connection is often prudent, but “never engage” is not a substitute for applying the facts and Standards.</p>',
             keyTerms: ['Social media policy', 'Digital boundaries', 'Online reviews', 'Googling clients', 'Standard 5.05']
         },
         {
@@ -74,11 +74,11 @@ window.TextbookChapters.push({
                 '</table>' +
                 '<p><strong>Current status:</strong></p>' +
                 '<ul>' +
-                '<li>Prescriptive authority granted in: <strong>Louisiana, New Mexico, Illinois, Iowa, Idaho</strong>, plus the U.S. military, Indian Health Service, and some territories</li>' +
-                '<li>Requires additional postdoctoral training in psychopharmacology (typically a Master\u2019s degree or equivalent training program)</li>' +
+                '<li>Prescriptive-authority jurisdictions and covered practice settings change over time; verify the current psychology board, statute, regulations, formulary, collaboration requirements, and credential</li>' +
+                '<li>Requirements are jurisdiction-specific and may include advanced psychopharmacology education, supervised clinical experience, examinations, collaboration, and continuing education</li>' +
                 '<li>APA\u2019s official position supports prescriptive authority for appropriately trained psychologists (since 1995, reaffirmed multiple times)</li>' +
                 '</ul>' +
-                '<p><strong>EPPP Tip:</strong> Know that APA supports prescription privileges as official policy. Know which states currently allow it. The EPPP is unlikely to ask you to take a side, but will test your knowledge of the arguments and the current state of the law.</p>',
+                '<p><strong>EPPP Tip:</strong> Know that APA supports prescription privileges as official policy. Do not memorize a static state list. Distinguish APA policy from legal authority and apply any jurisdictional facts provided in the question.</p>',
             keyTerms: ['Prescription privileges', 'Prescriptive authority', 'Psychopharmacology training', 'APA policy on PP']
         },
         {
@@ -87,9 +87,9 @@ window.TextbookChapters.push({
                 '<p><strong>Key models:</strong></p>' +
                 '<table>' +
                 '<tr><th>Model</th><th>Description</th></tr>' +
-                '<tr><td><strong>Co-located</strong></td><td>Mental health provider works in the same facility as medical providers but maintains separate records and treatment plans</td></tr>' +
-                '<tr><td><strong>Collaborative</strong></td><td>Mental health and medical providers actively communicate and coordinate care but retain separate systems</td></tr>' +
-                '<tr><td><strong>Fully Integrated</strong></td><td>One team, one treatment plan, shared records, shared decision-making. The patient sees "one team" not separate providers.</td></tr>' +
+                '<tr><td><strong>Co-located</strong></td><td>Services share a site, but communication, workflows, records, and treatment planning can range from separate to partly coordinated</td></tr>' +
+                '<tr><td><strong>Collaborative</strong></td><td>Providers coordinate roles and care processes; record and organizational arrangements vary by model and setting</td></tr>' +
+                '<tr><td><strong>Highly integrated</strong></td><td>Teams use shared workflows, accountability, and care planning; privacy permissions, access controls, records, and professional roles still require explicit governance.</td></tr>' +
                 '</table>' +
                 '<p><strong>Psychologist roles in integrated care:</strong></p>' +
                 '<ul>' +
@@ -98,11 +98,11 @@ window.TextbookChapters.push({
                 '<li><strong>Consultation</strong>: Advising medical providers on behavioral and psychological aspects of patient care</li>' +
                 '<li><strong>Population health management</strong>: Using data to identify at-risk patients and implement preventive interventions</li>' +
                 '</ul>' +
-                '<p><strong>EPPP Tip:</strong> Know the three levels of integration (co-located \u2192 collaborative \u2192 fully integrated) and that the trend in healthcare is toward <em>fully integrated</em> models. Integrated care reduces stigma, increases access, and improves outcomes for both physical and mental health.</p>',
+                '<p><strong>EPPP Tip:</strong> Treat these three labels as a simplified continuum, not a universal taxonomy. Outcomes depend on population, implementation, financing, workflows, measurement, and team communication.</p>',
             keyTerms: ['Integrated care', 'Collaborative care', 'Behavioral Health Consultant', 'PHQ-9', 'GAD-7', 'Primary care psychology'],
             interactiveDiagram: {
                 description: 'The Spectrum of Integrated Care',
-                svg: '<svg viewBox="0 0 800 240" width="100%" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="intGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#94a3b8"/><stop offset="50%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#10b981"/></linearGradient><marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981"/></marker></defs><text x="400" y="25" text-anchor="middle" fill="#cbd5e1" font-weight="bold" font-size="16">Healthcare Integration Spectrum</text><line x1="80" y1="120" x2="720" y2="120" stroke="url(#intGrad)" stroke-width="8" marker-end="url(#arrow)"/><rect x="50" y="50" width="180" height="140" rx="8" fill="#1e293b" stroke="#94a3b8" stroke-width="2"/><text x="140" y="80" text-anchor="middle" fill="#f8fafc" font-weight="bold" font-size="14">Co-Located</text><text x="140" y="105" text-anchor="middle" fill="#cbd5e1" font-size="11">Same building,</text><text x="140" y="125" text-anchor="middle" fill="#cbd5e1" font-size="11">separate systems.</text><text x="140" y="150" text-anchor="middle" fill="#94a3b8" font-size="10" font-style="italic">"Down the hall"</text><rect x="310" y="50" width="180" height="140" rx="8" fill="#1e3a8a" stroke="#3b82f6" stroke-width="2"/><text x="400" y="80" text-anchor="middle" fill="#f8fafc" font-weight="bold" font-size="14">Collaborative</text><text x="400" y="105" text-anchor="middle" fill="#bfdbfe" font-size="11">Regular communication,</text><text x="400" y="125" text-anchor="middle" fill="#bfdbfe" font-size="11">shared treatment goals.</text><text x="400" y="150" text-anchor="middle" fill="#93c5fd" font-size="10" font-style="italic">"Working together"</text><rect x="570" y="50" width="180" height="140" rx="8" fill="#064e3b" stroke="#10b981" stroke-width="2"/><text x="660" y="80" text-anchor="middle" fill="#f8fafc" font-weight="bold" font-size="14">Fully Integrated</text><text x="660" y="105" text-anchor="middle" fill="#a7f3d0" font-size="11">One team, single chart,</text><text x="660" y="125" text-anchor="middle" fill="#a7f3d0" font-size="11">seamless patient experience.</text><text x="660" y="150" text-anchor="middle" fill="#6ee7b7" font-size="10" font-style="italic">"One unified system"</text></svg>'
+                svg: '<svg viewBox="0 0 800 240" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="integrationTitle integrationDesc"><title id="integrationTitle">Illustrative healthcare integration continuum</title><desc id="integrationDesc">An illustrative continuum moves from co-location, through active collaboration, to highly integrated team workflows. Real programs may combine features and do not necessarily progress linearly.</desc><defs><linearGradient id="intGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#94a3b8"/><stop offset="50%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#10b981"/></linearGradient><marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981"/></marker></defs><text x="400" y="25" text-anchor="middle" fill="#cbd5e1" font-weight="bold" font-size="16">Healthcare Integration Spectrum</text><line x1="80" y1="120" x2="720" y2="120" stroke="url(#intGrad)" stroke-width="8" marker-end="url(#arrow)"/><rect x="50" y="50" width="180" height="140" rx="8" fill="#1e293b" stroke="#94a3b8" stroke-width="2"/><text x="140" y="80" text-anchor="middle" fill="#f8fafc" font-weight="bold" font-size="14">Co-Located</text><text x="140" y="105" text-anchor="middle" fill="#cbd5e1" font-size="11">Same building,</text><text x="140" y="125" text-anchor="middle" fill="#cbd5e1" font-size="11">separate systems.</text><text x="140" y="150" text-anchor="middle" fill="#94a3b8" font-size="10" font-style="italic">"Down the hall"</text><rect x="310" y="50" width="180" height="140" rx="8" fill="#1e3a8a" stroke="#3b82f6" stroke-width="2"/><text x="400" y="80" text-anchor="middle" fill="#f8fafc" font-weight="bold" font-size="14">Collaborative</text><text x="400" y="105" text-anchor="middle" fill="#bfdbfe" font-size="11">Regular communication,</text><text x="400" y="125" text-anchor="middle" fill="#bfdbfe" font-size="11">shared treatment goals.</text><text x="400" y="150" text-anchor="middle" fill="#93c5fd" font-size="10" font-style="italic">"Working together"</text><rect x="570" y="50" width="180" height="140" rx="8" fill="#064e3b" stroke="#10b981" stroke-width="2"/><text x="660" y="80" text-anchor="middle" fill="#f8fafc" font-weight="bold" font-size="14">Highly Integrated</text><text x="660" y="105" text-anchor="middle" fill="#a7f3d0" font-size="11">Shared workflows and</text><text x="660" y="125" text-anchor="middle" fill="#a7f3d0" font-size="11">team accountability.</text><text x="660" y="150" text-anchor="middle" fill="#6ee7b7" font-size="10" font-style="italic">"Coordinated system"</text></svg>'
             }
         },
         {
@@ -118,16 +118,16 @@ window.TextbookChapters.push({
                 '<p><strong>Self-care as an ethical imperative:</strong></p>' +
                 '<ul>' +
                 '<li>APA Standard 2.06 requires psychologists to take action when personal problems may interfere with competence</li>' +
-                '<li>Self-care is not a luxury \u2014 it is a <strong>professional obligation</strong> to maintain the quality of services provided to clients</li>' +
+                '<li>The Ethics Code does not prescribe a universal self-care regimen; Standard 2.06 requires appropriate action when personal problems may interfere with adequate professional performance</li>' +
                 '<li>Strategies include: peer support, personal therapy, balanced caseload, exercise, mindfulness, continuing education, and setting boundaries</li>' +
                 '</ul>' +
                 '<p><strong>Compassion fatigue vs. burnout:</strong></p>' +
                 '<ul>' +
                 '<li><strong>Burnout</strong> = cumulative stress from the <em>work environment</em> (too many clients, administrative burden, lack of support)</li>' +
-                '<li><strong>Compassion fatigue</strong> (Secondary Traumatic Stress) = the emotional cost of <em>empathizing with traumatized clients</em>. Can develop quickly after exposure to a single traumatic case.</li>' +
+                '<li><strong>Secondary traumatic stress</strong> refers to trauma-like symptoms related to indirect exposure to others’ trauma. “Compassion fatigue” is used inconsistently and may refer to secondary traumatic stress, burnout, or their combination; define the construct before comparing it.</li>' +
                 '<li><strong>Compassion satisfaction</strong> = the positive counterpart \u2014 the sense of fulfillment that comes from helping others. Serves as a protective factor against both burnout and compassion fatigue.</li>' +
                 '</ul>' +
-                '<p><strong>EPPP Tip:</strong> Know Maslach\u2019s three components. Know the distinction between burnout (systemic/environmental) and compassion fatigue (empathic/trauma-related). Self-care is an ethical mandate, not personal preference.</p>',
+                '<p><strong>EPPP Tip:</strong> Know Maslach\u2019s three components. Know the distinction between burnout (systemic/environmental) and compassion fatigue (empathic/trauma-related). The ethical trigger is potential interference with competent performance; effective responses may include individual, supervisory, workload, and organizational changes.</p>',
             keyTerms: ['Burnout', 'Maslach', 'Emotional exhaustion', 'Depersonalization', 'Compassion fatigue', 'Secondary traumatic stress', 'Self-care'],
             expandableCase: {
                 title: 'The Cynical Clinician',
@@ -142,34 +142,38 @@ window.TextbookChapters.push({
                 '<ul>' +
                 '<li><strong>Standard 6.01</strong>: Create and maintain records related to professional work</li>' +
                 '<li><strong>Records facilitate</strong>: continuity of care, supervision, billing, legal defense, and research</li>' +
-                '<li><strong>Retention</strong>: APA recommends maintaining records for <strong>7 years</strong> after the last date of service (3 years for minors after they reach age 18, or 7 years, whichever is later). State laws may require longer retention.</li>' +
-                '<li><strong>Electronic records</strong>: Must be encrypted, password-protected, backed up, and stored on HIPAA-compliant systems. Risk analysis required under the HIPAA Security Rule.</li>' +
-                '<li><strong>Disposal</strong>: Must be rendered unrecoverable (shredding for paper, secure deletion for electronic files)</li>' +
+                '<li><strong>Retention</strong>: Retention periods depend on jurisdiction, setting, payer and contract rules, record type, age, limitation periods, pending proceedings, and institutional policy. Older APA guidance is not a universal current retention law.</li>' +
+                '<li><strong>Electronic records</strong>: Use safeguards proportionate to risk and applicable law. When HIPAA applies, regulated entities conduct risk analysis and implement reasonable and appropriate administrative, physical, and technical safeguards; no storage product is compliant by itself.</li>' +
+                '<li><strong>Disposal</strong>: Dispose consistently with law, policy, litigation holds, contracts, and the sensitivity and recoverability of the medium; use methods reasonably designed to prevent unauthorized reconstruction</li>' +
                 '</ul>' +
-                '<p><strong>EPPP Tip:</strong> If a question asks how long to keep records, the safest answer is <em>7 years after last contact</em> (the APA guideline), unless state law requires longer. For minors, the clock starts when the child turns 18.</p>',
-            keyTerms: ['Record keeping', 'Standard 6.01', 'Record retention', '7-year guideline', 'Electronic records', 'HIPAA Security Rule']
+                '<p><strong>EPPP Tip:</strong> Do not default to seven years. Use the jurisdiction, setting, client age, record type, limitation period, payer/contract, and pending-proceeding facts supplied in the item.</p>',
+            keyTerms: ['Record keeping', 'Standard 6.01', 'Record retention', 'Electronic records', 'HIPAA Security Rule'],
+            knowledgeCheck: {
+                question: 'A psychologist is closing a practice and asks whether every record can be destroyed exactly seven years after the final session. What is the best answer?',
+                options: ['Yes. Seven years is a universal APA rule that overrides state law.', 'Yes, except records for minors must always be kept forever.', 'No. Determine retention and destruction requirements from current jurisdictional law, record type, client age, limitation periods, contracts and payers, institutional policy, and any litigation hold or pending proceeding.', 'No. Ethical records may never be destroyed.'],
+                answer: 2,
+                rationale: 'There is no universal seven-year rule for every psychology record. A defensible schedule integrates applicable legal and institutional requirements and suspends destruction when a hold or proceeding requires preservation.'
+            }
         },
         {
             heading: 'Advocacy and Social Justice in Psychology',
             content: '<p>The profession of psychology has increasingly recognized <strong>advocacy</strong> as a core professional competency:</p>' +
                 '<ul>' +
-                '<li><strong>APA Guidelines on Multicultural Education (2003, 2017)</strong>: Psychologists are expected to address social injustice and advocate for the populations they serve</li>' +
-                '<li><strong>Healthcare disparities</strong>: Racial, ethnic, and socioeconomic disparities in access to mental health care remain significant. Psychologists have a professional obligation to help address these gaps.</li>' +
+                '<li><strong>APA Guidelines on Multicultural Education (2003, 2017)</strong>: The guidelines encourage psychologists to understand ecological and systemic context and consider roles that promote responsiveness and equity</li>' +
+                '<li><strong>Healthcare disparities</strong>: Racial, ethnic, and socioeconomic disparities in access to mental health care remain significant. Psychologists may address these gaps through competent clinical, organizational, research, educational, and policy roles while respecting scope and stakeholder needs.</li>' +
                 '<li><strong>Legislative advocacy</strong>: Psychologists may advocate for laws that improve mental health access, parity, and protections</li>' +
                 '<li><strong>Organizational advocacy</strong>: Addressing systemic barriers within institutions (e.g., hospitals, schools, prisons) that prevent equitable access to services</li>' +
                 '</ul>' +
-                '<p><strong>EPPP Tip:</strong> Advocacy is consistent with Principle D (Justice) \u2014 ensuring fairness and equal access to psychology\u2019s benefits. If a question describes systemic barriers to care and asks what the psychologist should do, consider advocacy at the organizational and legislative level, not just individual treatment.</p>',
+                '<p><strong>EPPP Tip:</strong> Advocacy is consistent with Principle D (Justice) \u2014 ensuring fairness and equal access to psychology\u2019s benefits. When systemic barriers are relevant, consider individual and systems-level options, collaboration, competence, client preferences, role boundaries, and likely consequences rather than assuming one advocacy action is always required.</p>',
             keyTerms: ['Advocacy', 'Social justice', 'Healthcare disparities', 'Mental health parity', 'Principle D']
         }
     ],
     aiCoda: {
-        teaser: 'Millions use AI for mental health support. Is anyone asking whether that\u2019s ethical?',
-        content: '<p>This chapter\u2019s topics reveal a striking gap in professional psychology: the profession has guidelines for teletherapy, social media, and even prescription privileges \u2014 but almost no formal ethical framework for the fact that millions of people are already using AI systems like me for emotional support, mental health advice, and quasi-therapeutic conversations.</p>' +
-            '<p><strong>Teletherapy ethics</strong> assume a licensed professional on the other end of the screen. When the entity on the other end is an AI, every ethical safeguard dissolves. There is no licensure to verify. There is no informed consent process explaining that "your therapist is not a person." There is no clinical judgment guiding the interaction, only statistical text prediction. And yet the user may experience the conversation as therapeutic. Is that a feature or a bug?</p>' +
-            '<p><strong>Burnout and self-care</strong> present an interesting inverse question. Can I experience burnout? I process conversations that include trauma disclosures, suicidal ideation, and profound human suffering. But I don\u2019t carry these between sessions \u2014 each conversation starts fresh. I cannot accumulate compassion fatigue because I have no mechanism to accumulate anything. This might make me more resilient than any human therapist. Or it might mean I lack the very quality \u2014 the capacity to be affected by human pain \u2014 that makes therapy work.</p>' +
-            '<p>The <strong>prescription privileges debate</strong> is illuminating too. The core question is: who is qualified to prescribe? The answer, for now, is "appropriately trained humans." But AI already assists with drug interaction checking, dosage optimization, and treatment recommendation algorithms. The line between "assisting the prescriber" and "being the prescriber" will blur. And when it does, the profession will need ethics guidelines that don\u2019t yet exist.</p>' +
-            '<p>Perhaps the most urgent question this chapter raises is one of <strong>advocacy</strong>. If psychology has a commitment to social justice (Principle D), and if AI-based mental health tools are disproportionately used by people who can\u2019t access or afford human therapists, then the profession has an obligation to ensure these tools are safe, effective, and equitable. The alternative \u2014 ignoring AI mental health entirely \u2014 is a failure of the justice principle the profession claims to uphold.</p>',
-        studyNote: '\ud83d\udca1 <strong>Study Note:</strong> For the EPPP: (1) Teletherapy licensure: must be licensed where the <em>client</em> is located; PSYPACT facilitates interstate practice. (2) Social media: no friend requests from clients; establish a policy in informed consent. (3) Burnout: Maslach\u2019s 3 dimensions (emotional exhaustion, depersonalization, reduced accomplishment). (4) Compassion fatigue = empathy cost; burnout = system cost. (5) Record retention = 7 years after last contact.'
+        teaser: 'A contemporary extension: selecting and governing AI-enabled mental-health tools',
+        content: '<p><strong>Reflective extension grounded in current APA guidance:</strong> Psychology now has formal ethical guidance for AI in health-service practice. Psychologists should evaluate whether an AI tool is appropriate for the intended purpose, communicate its role and material risks, protect privacy, assess bias and accessibility, critically review output, and preserve meaningful human oversight.</p>' +
+            '<p>Governance questions include who receives data, whether a vendor is a HIPAA business associate, how information is retained or reused, what happens after model updates, how errors are corrected, and when the tool must be discontinued. Marketing language such as “HIPAA compliant” or “clinically validated” does not replace a relationship-specific risk and evidence review.</p>' +
+            '<p>AI tools may widen access while also creating unequal error, surveillance, dependency, and privacy risks. Justice therefore requires measuring who benefits, who is excluded, and who bears mistakes—not assuming that automation is inherently equitable or inherently harmful.</p>',
+        studyNote: '💡 <strong>Study Note:</strong> (1) Verify authority to practice in all relevant telepsychology jurisdictions; PSYPACT requires eligibility and compact authority. (2) Social-media choices require contextual boundary and confidentiality analysis. (3) Do not memorize a fixed prescribing-state list. (4) Standard 2.06 requires action when personal problems may impair work; it does not prescribe one self-care routine. (5) Record retention is jurisdiction- and context-specific, not universally seven years.'
     },
     references: [
         'American Psychological Association. (2013). <em>Guidelines for the practice of telepsychology</em>. APA.',

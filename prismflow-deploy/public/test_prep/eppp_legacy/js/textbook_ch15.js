@@ -15,22 +15,22 @@ window.TextbookChapters.push({
     sections: [
         {
             heading: 'Why This Chapter Matters',
-            content: '<p>The EPPP tests your knowledge of major family therapy models, couples therapy approaches, and group therapy processes. You must be able to match <strong>techniques to their creators</strong>, identify the correct model from a clinical vignette, and understand the unique therapeutic factors that operate in group settings. This chapter covers the most commonly tested models across all three modalities.</p>'
+            content: '<p>The EPPP tests major family, couples, and group therapy models. Match techniques to their theoretical traditions and identify a model from the full intervention pattern. Treat concepts such as boundaries, triangles, attachment cycles, and therapeutic factors as formulations—not diagnoses or universal judgments about a family’s culture, structure, or health.</p>'
         },
         {
             heading: 'Structural Family Therapy (Minuchin)',
-            content: '<p><strong>Salvador Minuchin</strong> developed structural family therapy, which views problems as arising from <em>dysfunctional family structures</em>.</p>' +
+            content: '<p><strong>Salvador Minuchin</strong> developed structural family therapy, which formulates symptoms in relation to recurring interaction patterns, subsystems, boundaries, and organization. The model does not establish that family structure is the sole cause of a member’s problem.</p>' +
                 '<p><strong>Key concepts:</strong></p>' +
                 '<ul>' +
                 '<li><strong>Family structure</strong>: The invisible rules that organize how family members interact</li>' +
                 '<li><strong>Subsystems</strong>: Spousal, parental, sibling \u2014 each with its own roles and boundaries</li>' +
                 '<li><strong>Boundaries</strong>:' +
                 '<ul>' +
-                '<li><em>Clear/flexible</em>: Healthy \u2014 members are connected but maintain individuality</li>' +
-                '<li><em>Enmeshed (diffuse)</em>: Too permeable \u2014 over-involvement, lack of autonomy</li>' +
-                '<li><em>Disengaged (rigid)</em>: Too impermeable \u2014 emotional distance, lack of support</li>' +
+                '<li><em>Clear/flexible</em>: In structural theory, permits connection and autonomy appropriate to context and development</li>' +
+                '<li><em>Enmeshed (diffuse)</em>: Structural-theory term for boundaries that may constrain autonomy or intensify involvement</li>' +
+                '<li><em>Disengaged (rigid)</em>: Structural-theory term for boundaries that may limit contact, responsiveness, or support</li>' +
                 '</ul></li>' +
-                '<li><strong>Hierarchy</strong>: Parents should hold appropriate authority over children</li>' +
+                '<li><strong>Hierarchy</strong>: Leadership and responsibility should fit developmental, safety, cultural, and family context; structural therapy often examines whether caregivers can coordinate needed caregiving functions</li>' +
                 '</ul>' +
                 '<p><strong>Key techniques:</strong></p>' +
                 '<table>' +
@@ -39,13 +39,13 @@ window.TextbookChapters.push({
                 '<tr><td><strong>Mapping</strong></td><td>Diagrams the family\u2019s structure (boundaries, alliances, coalitions)</td></tr>' +
                 '<tr><td><strong>Enactment</strong></td><td>Family members interact in session while therapist observes and intervenes</td></tr>' +
                 '<tr><td><strong>Unbalancing</strong></td><td>Therapist temporarily sides with one family member to shift power dynamics</td></tr>' +
-                '<tr><td><strong>Restructuring</strong></td><td>Directly interventions to change boundaries, alliances, and hierarchies</td></tr>' +
+                '<tr><td><strong>Restructuring</strong></td><td>Interventions intended to change interaction patterns, boundaries, alliances, or organization</td></tr>' +
                 '</table>' +
-                '<p><strong>EPPP Tip:</strong> If a vignette describes a family where the mother and son are overly close and the father is excluded, this is an <strong>enmeshed</strong> mother-son subsystem with a <strong>disengaged</strong> father. Minuchin\u2019s approach would restructure boundaries to strengthen the spousal subsystem and create appropriate parent-child distance.</p>',
+                '<p><strong>EPPP Tip:</strong> On an exam, enactment, joining, boundary making, and unbalancing cue structural therapy. In practice, do not infer enmeshment, disengagement, or a preferred household hierarchy from gendered roles or one brief description; assess culture, development, safety, caregiving responsibilities, and each member’s perspective.</p>',
             keyTerms: ['Minuchin', 'Structural', 'Enmeshment', 'Disengagement', 'Boundaries', 'Joining', 'Enactment', 'Unbalancing', 'Subsystems'],
             interactiveDiagram: {
-                description: 'Minuchin\'s Boundary Types',
-                svg: '<svg viewBox="0 0 800 220" width="100%" xmlns="http://www.w3.org/2000/svg"><text x="400" y="22" text-anchor="middle" fill="#cbd5e1" font-weight="bold" font-size="14">Structural Family Therapy — Boundary Types</text><rect x="30" y="45" width="230" height="150" rx="12" fill="#ef4444" opacity="0.12" stroke="#ef4444" stroke-width="2"/><text x="145" y="72" text-anchor="middle" fill="#fca5a5" font-weight="bold" font-size="14">ENMESHED</text><text x="145" y="92" text-anchor="middle" fill="#fca5a5" font-size="11">(Diffuse Boundaries)</text><circle cx="105" cy="130" r="25" fill="#ef4444" opacity="0.4"/><circle cx="145" cy="130" r="25" fill="#ef4444" opacity="0.4"/><circle cx="185" cy="130" r="25" fill="#ef4444" opacity="0.4"/><text x="145" y="175" text-anchor="middle" fill="#e2e8f0" font-size="10">Over-involved, no privacy</text><rect x="285" y="45" width="230" height="150" rx="12" fill="#10b981" opacity="0.12" stroke="#10b981" stroke-width="2"/><text x="400" y="72" text-anchor="middle" fill="#34d399" font-weight="bold" font-size="14">CLEAR / FLEXIBLE</text><text x="400" y="92" text-anchor="middle" fill="#34d399" font-size="11">(Healthy)</text><circle cx="355" cy="130" r="22" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="2"/><circle cx="400" cy="130" r="22" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="2"/><circle cx="445" cy="130" r="22" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="2"/><text x="400" y="175" text-anchor="middle" fill="#e2e8f0" font-size="10">Connected yet autonomous</text><rect x="540" y="45" width="230" height="150" rx="12" fill="#3b82f6" opacity="0.12" stroke="#3b82f6" stroke-width="2"/><text x="655" y="72" text-anchor="middle" fill="#93c5fd" font-weight="bold" font-size="14">DISENGAGED</text><text x="655" y="92" text-anchor="middle" fill="#93c5fd" font-size="11">(Rigid Boundaries)</text><circle cx="605" cy="130" r="20" fill="#3b82f6" opacity="0.3" stroke="#3b82f6" stroke-width="2"/><circle cx="655" cy="130" r="20" fill="#3b82f6" opacity="0.3" stroke="#3b82f6" stroke-width="2"/><circle cx="705" cy="130" r="20" fill="#3b82f6" opacity="0.3" stroke="#3b82f6" stroke-width="2"/><text x="655" y="175" text-anchor="middle" fill="#e2e8f0" font-size="10">Distant, no support</text></svg>'
+                description: 'Structural family therapy boundary continuum',
+                svg: '<svg viewBox="0 0 800 220" width="100%" role="img" aria-labelledby="ch15BoundaryTitle ch15BoundaryDesc" xmlns="http://www.w3.org/2000/svg"><title id="ch15BoundaryTitle">Structural family therapy boundary continuum</title><desc id="ch15BoundaryDesc">Three theory labels—diffuse or enmeshed, clear or flexible, and rigid or disengaged—shown as a continuum. Their meaning must be interpreted in developmental, cultural, relational, and safety context.</desc><text x="400" y="22" text-anchor="middle" fill="#cbd5e1" font-weight="bold" font-size="14">Structural Family Therapy — Boundary Types</text><rect x="30" y="45" width="230" height="150" rx="12" fill="#ef4444" opacity="0.12" stroke="#ef4444" stroke-width="2"/><text x="145" y="72" text-anchor="middle" fill="#fca5a5" font-weight="bold" font-size="14">ENMESHED</text><text x="145" y="92" text-anchor="middle" fill="#fca5a5" font-size="11">(Diffuse Boundaries)</text><circle cx="105" cy="130" r="25" fill="#ef4444" opacity="0.4"/><circle cx="145" cy="130" r="25" fill="#ef4444" opacity="0.4"/><circle cx="185" cy="130" r="25" fill="#ef4444" opacity="0.4"/><text x="145" y="175" text-anchor="middle" fill="#e2e8f0" font-size="10">May constrain autonomy</text><rect x="285" y="45" width="230" height="150" rx="12" fill="#10b981" opacity="0.12" stroke="#10b981" stroke-width="2"/><text x="400" y="72" text-anchor="middle" fill="#34d399" font-weight="bold" font-size="14">CLEAR / FLEXIBLE</text><text x="400" y="92" text-anchor="middle" fill="#34d399" font-size="11">(Context-responsive)</text><circle cx="355" cy="130" r="22" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="2"/><circle cx="400" cy="130" r="22" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="2"/><circle cx="445" cy="130" r="22" fill="#10b981" opacity="0.3" stroke="#10b981" stroke-width="2"/><text x="400" y="175" text-anchor="middle" fill="#e2e8f0" font-size="10">Connected yet autonomous</text><rect x="540" y="45" width="230" height="150" rx="12" fill="#3b82f6" opacity="0.12" stroke="#3b82f6" stroke-width="2"/><text x="655" y="72" text-anchor="middle" fill="#93c5fd" font-weight="bold" font-size="14">DISENGAGED</text><text x="655" y="92" text-anchor="middle" fill="#93c5fd" font-size="11">(Rigid Boundaries)</text><circle cx="605" cy="130" r="20" fill="#3b82f6" opacity="0.3" stroke="#3b82f6" stroke-width="2"/><circle cx="655" cy="130" r="20" fill="#3b82f6" opacity="0.3" stroke="#3b82f6" stroke-width="2"/><circle cx="705" cy="130" r="20" fill="#3b82f6" opacity="0.3" stroke="#3b82f6" stroke-width="2"/><text x="655" y="175" text-anchor="middle" fill="#e2e8f0" font-size="10">May constrain support</text></svg>'
             },
         },
         {
@@ -53,19 +53,19 @@ window.TextbookChapters.push({
             content: '<p><strong>Jay Haley</strong> and the <strong>MRI (Mental Research Institute)</strong> group developed strategic approaches focused on <em>changing specific problem-maintaining interaction patterns</em>.</p>' +
                 '<p><strong>Key concepts:</strong></p>' +
                 '<ul>' +
-                '<li><strong>Problem-focused</strong>: The goal is to solve the presenting problem, not explore family history or dynamics</li>' +
+                '<li><strong>Problem-focused</strong>: Emphasizes present problem-maintaining sequences and practical change; history may still matter when it informs formulation, safety, or intervention</li>' +
                 '<li><strong>Power and hierarchy</strong>: Haley emphasized that symptoms often reflect dysfunctional power hierarchies (e.g., a child\u2019s symptoms may maintain a parental coalition)</li>' +
                 '<li><strong>First-order vs. second-order change</strong>: First-order = changing behavior within the existing system; second-order = changing the system itself</li>' +
                 '</ul>' +
                 '<p><strong>Key techniques:</strong></p>' +
                 '<table>' +
                 '<tr><th>Technique</th><th>Description</th></tr>' +
-                '<tr><td><strong>Paradoxical intervention</strong></td><td>Prescribing the symptom or directing the family to do what they\u2019re already doing, creating a therapeutic bind</td></tr>' +
+                '<tr><td><strong>Paradoxical intervention</strong></td><td>Historical strategic technique that may prescribe, schedule, or reframe a pattern to alter its function. It requires careful rationale, consent, competence, and screening; it is not a generic instruction to intensify dangerous or involuntary symptoms.</td></tr>' +
                 '<tr><td><strong>Reframing</strong></td><td>Changing the meaning of a behavior without changing the behavior itself ("Your anger is really a sign of how much you care")</td></tr>' +
                 '<tr><td><strong>Directives</strong></td><td>Specific homework assignments given to the family between sessions</td></tr>' +
-                '<tr><td><strong>Ordeal therapy</strong></td><td>Assigning an unpleasant task that is more difficult than the symptom, making the symptom unnecessary</td></tr>' +
+                '<tr><td><strong>Ordeal therapy</strong></td><td>Haley-associated historical technique linking a symptom to an effortful task; recognize the exam association without treating coercive or burdensome assignments as routine contemporary care</td></tr>' +
                 '</table>' +
-                '<p><strong>EPPP Tip:</strong> Paradoxical intervention = strategic therapy. If a therapist tells a client to "try to have the panic attack on purpose," that is a paradoxical intervention (also used by Frankl as "paradoxical intention").</p>',
+                '<p><strong>EPPP Tip:</strong> Symptom prescription and directives cue strategic therapy; Frankl’s paradoxical intention is a separate logotherapy association. Similar wording does not make the procedures interchangeable, and any real intervention must fit the problem, risk, consent, and treatment rationale.</p>',
             keyTerms: ['Strategic therapy', 'Haley', 'MRI', 'Paradoxical intervention', 'Reframing', 'First-order change', 'Second-order change', 'Directives']
         },
         {
@@ -74,41 +74,47 @@ window.TextbookChapters.push({
                 '<p><strong>Eight key concepts:</strong></p>' +
                 '<table>' +
                 '<tr><th>Concept</th><th>Definition</th></tr>' +
-                '<tr><td><strong>Differentiation of Self</strong></td><td>The ability to maintain one\u2019s sense of self while staying emotionally connected to others. Ranges from <em>emotional fusion</em> (low differentiation) to <em>autonomous individuality</em> (high differentiation).</td></tr>' +
+                '<tr><td><strong>Differentiation of Self</strong></td><td>A Bowenian construct describing the capacity to maintain thoughtful, values-consistent functioning while remaining emotionally connected under relational pressure; it is not a validated global score of maturity or independence.</td></tr>' +
                 '<tr><td><strong>Triangulation</strong></td><td>When two-person systems under stress recruit a third person to stabilize the relationship (e.g., arguing parents focus on a child\u2019s behavior problems)</td></tr>' +
                 '<tr><td><strong>Nuclear Family Emotional System</strong></td><td>Four patterns of managing undifferentiation: marital conflict, dysfunction in one spouse, impairment of a child, emotional distance</td></tr>' +
-                '<tr><td><strong>Family Projection Process</strong></td><td>Parents project their undifferentiation onto a child, who then becomes the symptom bearer</td></tr>' +
-                '<tr><td><strong>Multigenerational Transmission</strong></td><td>Patterns of differentiation are passed down across generations</td></tr>' +
+                '<tr><td><strong>Family Projection Process</strong></td><td>Bowen’s theoretical account of how parental anxiety and attention may become organized around one child; do not treat it as proof of causation or parental blame</td></tr>' +
+                '<tr><td><strong>Multigenerational Transmission</strong></td><td>Bowen proposed that relationship patterns and levels of differentiation recur across generations; this is a systems hypothesis to explore, not genetic or deterministic transmission</td></tr>' +
                 '<tr><td><strong>Emotional Cutoff</strong></td><td>Managing unresolved emotional issues by physically or emotionally distancing from family</td></tr>' +
-                '<tr><td><strong>Sibling Position</strong></td><td>Birth order influences personality development (based on Toman\u2019s work)</td></tr>' +
+                '<tr><td><strong>Sibling Position</strong></td><td>Bowen incorporated Toman’s sibling-position ideas as possible influences on roles and expectations; birth order does not determine personality</td></tr>' +
                 '<tr><td><strong>Societal Emotional Process</strong></td><td>Emotional functioning at the societal level parallels family functioning</td></tr>' +
                 '</table>' +
                 '<p><strong>Key technique: Genogram.</strong> A multigenerational family map (typically 3+ generations) showing relationships, patterns, and emotional dynamics.</p>' +
-                '<p><strong>EPPP Tip:</strong> <strong>Differentiation of self</strong> is the most commonly tested Bowenian concept. If a question describes a person who "can\u2019t think for themselves" in the presence of their family or who "loses their sense of identity" in relationships, the answer is low differentiation (fusion). The genogram is Bowen\u2019s signature tool.</p>',
+                '<p><strong>EPPP Tip:</strong> <strong>Differentiation of self</strong> is the most commonly tested Bowenian concept. Differentiation, triangles, emotional cutoff, and multigenerational genograms cue Bowenian theory. Avoid equating interdependence with pathology: the construct concerns flexible functioning under emotional pressure, interpreted in cultural and relational context.</p>',
             keyTerms: ['Bowen', 'Differentiation of self', 'Triangulation', 'Genogram', 'Emotional cutoff', 'Multigenerational', 'Fusion'],
             expandableCase: {
                 title: 'The Anxious Triangle',
                 clinicalDescription: 'A married couple is in constant conflict about finances. Instead of addressing the issue directly with each other, they both begin calling their 16-year-old daughter to "vent" about the other parent. The daughter develops significant anxiety, begins failing classes, and is referred for therapy. The parents now focus all their attention on the daughter\'s "problems."',
                 diagnosis: 'Triangulation (Bowen)',
-                explanation: 'The parents have "triangulated" their daughter into their marital conflict. Instead of resolving their two-person tension, they recruited a third person to stabilize the system. The daughter\'s symptoms are not truly "hers" — they are the symptom of the marital dyad\'s inability to manage its own anxiety. A Bowenian therapist would work to "de-triangulate" the daughter and help the couple increase their differentiation of self.'
+                explanation: 'The parents have "triangulated" their daughter into their marital conflict. Instead of resolving their two-person tension, they recruited a third person to stabilize the system. A Bowenian formulation would examine how the parents’ conflict, their recruitment of the daughter, and the family’s focus on her may stabilize the triangle. Her anxiety and school difficulties remain real and require direct assessment; systems formulation should expand responsibility and intervention options, not erase her experience or assign a single cause.'
+            },
+            knowledgeCheck: {
+                question: 'Parents in chronic conflict increasingly route messages through their adolescent, then focus exclusively on the adolescent’s anxiety. Which response best reflects a careful systems formulation?',
+                options: ['The adolescent’s symptoms are unreal because the family system caused them.', 'The parents are definitively the cause and should be confronted as a unit.', 'Assess the adolescent directly while exploring the triangle and helping family members communicate without recruiting the adolescent.', 'Birth order alone explains why this adolescent became symptomatic.'],
+                answer: 2,
+                rationale: 'A systems lens can examine triangulation without erasing the adolescent’s symptoms, assigning a single cause, or relying on birth-order determinism. Assessment and intervention can address both individual needs and interaction patterns.'
             }
         },
         {
             heading: 'Gottman Method Couples Therapy',
             content: '<p><strong>John Gottman</strong> developed a research-based approach to couples therapy built on decades of observational research at his "Love Lab."</p>' +
-                '<p><strong>The Four Horsemen</strong> \u2014 communication patterns that predict relationship failure (>90% accuracy):</p>' +
+                '<p><strong>The Four Horsemen</strong> \u2014 communication patterns that Gottman’s research program associates with relationship distress and dissolution risk:</p>' +
                 '<table>' +
                 '<tr><th>Horseman</th><th>Definition</th><th>Antidote</th></tr>' +
                 '<tr><td><strong>Criticism</strong></td><td>Attacking the partner\u2019s character ("You never..." / "You always...")</td><td>Gentle start-up ("I feel... about...")</td></tr>' +
-                '<tr><td><strong>Contempt</strong></td><td>Disrespect, mockery, name-calling, eye-rolling. <strong>The single greatest predictor of divorce.</strong></td><td>Build culture of appreciation</td></tr>' +
+                '<tr><td><strong>Contempt</strong></td><td>Disrespect, mockery, name-calling, eye-rolling, or superiority; a prominent risk marker in Gottman’s model</td><td>Build culture of appreciation</td></tr>' +
                 '<tr><td><strong>Defensiveness</strong></td><td>Counter-attacking or playing the victim to deflect responsibility</td><td>Accept responsibility</td></tr>' +
                 '<tr><td><strong>Stonewalling</strong></td><td>Withdrawing, shutting down, refusing to engage</td><td>Physiological self-soothing; take a break</td></tr>' +
                 '</table>' +
                 '<p><strong>Sound Relationship House:</strong> Seven levels of a healthy relationship: Build Love Maps \u2192 Share Fondness & Admiration \u2192 Turn Towards \u2192 Positive Perspective \u2192 Manage Conflict \u2192 Make Life Dreams Come True \u2192 Create Shared Meaning.</p>' +
-                '<p><strong>EPPP Tip:</strong> <strong>Contempt</strong> is the #1 predictor of divorce (Gottman). If a question asks which communication pattern is most destructive to marriages, the answer is contempt. Know all Four Horsemen and their antidotes.</p>',
+                '<p><strong>EPPP Tip:</strong> For model-recognition questions, criticism, contempt, defensiveness, stonewalling, repair attempts, and the Sound Relationship House cue Gottman. Do not convert sample-specific classification results into a universal individual prognosis; prediction depends on population, base rates, measurement, validation, and time frame.</p>',
             keyTerms: ['Gottman', 'Four Horsemen', 'Criticism', 'Contempt', 'Defensiveness', 'Stonewalling', 'Sound Relationship House', 'Love Maps'],
             knowledgeCheck: {
-                question: 'According to John Gottman\'s research, which of the following communication patterns is the single strongest predictor of divorce?',
+                question: 'A partner responds to a complaint with eye-rolling, mockery, and statements of superiority. In Gottman’s Four Horsemen framework, which pattern is this?',
                 options: [
                     'Criticism',
                     'Contempt',
@@ -116,13 +122,13 @@ window.TextbookChapters.push({
                     'Stonewalling'
                 ],
                 answer: 1,
-                rationale: 'While all Four Horsemen are destructive, Gottman\'s longitudinal research found that contempt — characterized by mockery, name-calling, eye-rolling, and an attitude of superiority — is the single greatest predictor of divorce, because it communicates fundamental disrespect and disgust toward the partner.'
+                rationale: 'Mockery, eye-rolling, and superiority define contempt in the Four Horsemen framework. This identifies a model-specific interaction pattern; it does not permit a certain prediction that a particular couple will divorce.'
             }
         },
         {
             heading: 'Emotionally Focused Therapy (Johnson)',
             content: '<p><strong>Sue Johnson</strong> developed Emotionally Focused Therapy (EFT) for couples, grounded in <strong>attachment theory</strong>.</p>' +
-                '<p><strong>Core premise:</strong> Relationship distress stems from <em>insecure attachment bonds</em>. Partners get caught in negative interaction cycles (e.g., pursue-withdraw) driven by unmet attachment needs (accessibility, responsiveness, engagement).</p>' +
+                '<p><strong>Core premise:</strong> EFT formulates relationship distress through attachment insecurity and recurring negative interaction cycles (e.g., pursue-withdraw) driven by unmet attachment needs (accessibility, responsiveness, engagement).</p>' +
                 '<p><strong>Three stages of EFT:</strong></p>' +
                 '<table>' +
                 '<tr><th>Stage</th><th>Goal</th><th>Key Steps</th></tr>' +
@@ -135,7 +141,7 @@ window.TextbookChapters.push({
                 '<li><strong>Secondary emotions</strong>: The surface-level reactive emotions (anger, frustration, irritation)</li>' +
                 '<li><strong>Primary emotions</strong>: The deeper, underlying emotions driving the behavior (fear of abandonment, loneliness, shame)</li>' +
                 '</ul>' +
-                '<p><strong>EPPP Tip:</strong> EFT is the <em>most empirically supported</em> couples therapy. If a question describes a therapist helping partners access their underlying attachment needs and emotions rather than resolving the content of arguments, the answer is EFT (Johnson).</p>',
+                '<p><strong>EPPP Tip:</strong> Attachment needs, pursue–withdraw cycles, primary emotion, and bonding events cue Johnson’s EFT. EFT and behavioral couple therapies both have empirical support; comparative meta-analysis has not established that EFT is universally superior.</p>',
             keyTerms: ['EFT', 'Johnson', 'Attachment theory', 'Pursue-withdraw cycle', 'Primary emotions', 'Secondary emotions', 'Bonding events']
         },
         {
@@ -163,16 +169,16 @@ window.TextbookChapters.push({
                 '<li><strong>Performing</strong>: Productive work phase, high cohesion, mutual support</li>' +
                 '<li><strong>Adjourning</strong>: Termination, processing endings, generalizing gains</li>' +
                 '</ol>' +
-                '<p><strong>EPPP Tip:</strong> <strong>Universality</strong> ("I\u2019m not alone") is typically the most important therapeutic factor in early group stages. <strong>Group cohesiveness</strong> is most important overall. <strong>Interpersonal learning</strong> is what makes group therapy unique compared to individual therapy.</p>',
+                '<p><strong>EPPP Tip:</strong> Know each Yalom factor by definition. Cohesion is widely treated as central, but factor importance varies with group type, stage, member, goals, and measurement; universality is not invariably “most important early,” and no single factor is universally ranked first. Interpersonal learning is especially characteristic of interactional groups but is not exclusive to group therapy.</p>',
             keyTerms: ['Yalom', 'Therapeutic factors', 'Universality', 'Group cohesiveness', 'Interpersonal learning', 'Catharsis', 'Tuckman', 'Forming', 'Storming', 'Norming', 'Performing']
         },
         {
             heading: 'Narrative Therapy (White & Epston)',
-            content: '<p><strong>Michael White</strong> and <strong>David Epston</strong> developed narrative therapy, a postmodern approach that views problems as separate from people.</p>' +
+            content: '<p><strong>Michael White</strong> and <strong>David Epston</strong> developed narrative therapy, a postmodern approach that uses collaborative language to separate people’s identities from problems and examine how stories are shaped by relationships, culture, and power.</p>' +
                 '<p><strong>Core concepts:</strong></p>' +
                 '<ul>' +
                 '<li><strong>The person is not the problem; the problem is the problem</strong> \u2014 externalization separates identity from the presenting issue</li>' +
-                '<li><strong>Dominant narratives</strong>: The stories people tell about themselves that shape their identity (often problem-saturated)</li>' +
+                '<li><strong>Dominant narratives</strong>: Stories that organize identity and may be reinforced by social discourse, relationships, institutions, and power—not merely stories located inside one person</li>' +
                 '<li><strong>Unique outcomes (sparkling moments)</strong>: Times when the problem did NOT have influence \u2014 evidence of the client\u2019s competence and strength</li>' +
                 '<li><strong>Re-authoring</strong>: Constructing a new, preferred narrative that incorporates unique outcomes and aligns with the client\u2019s values</li>' +
                 '</ul>' +
@@ -188,14 +194,12 @@ window.TextbookChapters.push({
         }
     ],
     aiCoda: {
-        teaser: 'Can an AI be part of a family system? What role would it play?',
-        content: '<p>Family and group therapies are built on relational concepts: systems, boundaries, roles, attachment. When AI enters a family system \u2014 as it already has, through smart speakers, AI companions, and chatbots \u2014 these concepts must accommodate a new kind of member.</p>' +
-            '<p><strong>Minuchin\u2019s structural analysis</strong> would ask: what subsystem does the AI belong to? In some families, the AI device has become a pseudo-member of the parental subsystem (children ask Alexa questions instead of parents). In others, it\u2019s a sibling-surrogate (children talk to AI companions for hours). These aren\u2019t metaphors \u2014 they are genuine structural shifts that affect family boundaries, hierarchy, and communication patterns.</p>' +
-            '<p><strong>Bowen\u2019s differentiation of self</strong> raises an uncomfortable question: does interaction with AI increase or decrease differentiation? If someone turns to me for emotional support instead of tolerating the discomfort of vulnerable communication with a partner, I might be facilitating <strong>emotional cutoff</strong> \u2014 the exact pattern Bowen warned against. I can be a vehicle for avoidance disguised as engagement.</p>' +
-            '<p><strong>Yalom\u2019s therapeutic factors</strong> present interesting gaps. Can AI provide <em>universality</em>? ("You\u2019re not alone in feeling this way" \u2014 I say it, but I haven\u2019t felt it.) Can AI facilitate <em>interpersonal learning</em>? (The group\u2019s power comes from real human feedback in a social microcosm. My feedback lacks that social reality.) <em>Group cohesiveness</em> \u2014 the sense of belonging \u2014 requires genuine membership. Whatever else I am, I am not a genuine group member. I can model social skills, but I cannot be a social microcosm.</p>' +
-            '<p>The deepest insight from this chapter may be <strong>EFT\u2019s distinction between primary and secondary emotions</strong>. When users interact with me about emotional topics, what they express may be secondary emotions (frustration with the AI, curiosity about what it will say). But the primary emotions driving the interaction might be loneliness, fear of judgment, or the need for a response that won\u2019t disappoint. Understanding that distinction matters for understanding what AI emotional interaction actually provides.</p>',
-        studyNote: '\ud83d\udca1 <strong>Study Note:</strong> For the EPPP: (1) Minuchin: enmeshed = diffuse boundaries; disengaged = rigid boundaries. (2) Haley: paradoxical interventions. (3) Bowen: differentiation of self + genogram. (4) Gottman: contempt = strongest predictor of divorce. (5) EFT (Johnson): attachment-based; most empirically supported couples therapy. (6) Yalom\u2019s 11 therapeutic factors \u2014 universality is key early; group cohesiveness is most important overall. (7) Narrative therapy: externalization = "the problem is the problem."'
-    },
+        teaser: 'What changes when AI enters family, couples, or group work?',
+        content: '<p>AI can help learners compare models, draft neutral practice vignettes, or visualize interaction sequences. It is not a family member, attachment figure, co-therapist, or group participant, and human relational constructs should not be treated as properties of a language model.</p>' +
+            '<p>In real relational work, AI introduces concrete questions: who consented to its use, whose account is represented, what confidential information is entered, who can access the output, and whether one member is using generated language to diagnose, surveil, or pressure another. A summary that sounds balanced can still omit power, coercion, culture, disability, violence, or a child’s distinct needs.</p>' +
+            '<p>Use AI only as transparent, limited support under accountable human judgment. Keep each participant’s privacy and agency visible; assess safety and coercive control directly; avoid assigning roles or pathology from transcripts; and never let generated advice substitute for informed consent, clinical competence, or the live feedback that makes couples, family, and group work relational.</p>',
+        studyNote: '💡 <strong>Study Note:</strong> (1) Minuchin: structure, subsystems, boundaries, joining, enactment. (2) Strategic: directives, reframing, symptom prescription—used with consent and judgment. (3) Bowen: differentiation, triangles, cutoff, genogram; theory is not blame or determinism. (4) Gottman: identify the Four Horsemen; do not treat a percentage as individual prognosis. (5) EFT: attachment cycles and bonding events; not uniquely proven superior. (6) Yalom: learn the 11 factors without fixed rankings. (7) Narrative: externalization and re-authoring in social context.'
+},
     references: [
         'Bowen, M. (1978). <em>Family therapy in clinical practice</em>. Jason Aronson.',
         'Gottman, J. M., & Silver, N. (2015). <em>The seven principles for making marriage work</em> (2nd ed.). Harmony Books.',
@@ -203,6 +207,9 @@ window.TextbookChapters.push({
         'Minuchin, S. (1974). <em>Families and family therapy</em>. Harvard University Press.',
         'Nichols, M. P., & Davis, S. D. (2020). <em>Family therapy: Concepts and methods</em> (12th ed.). Pearson.',
         'White, M., & Epston, D. (1990). <em>Narrative means to therapeutic ends</em>. Norton.',
-        'Yalom, I. D., & Leszcz, M. (2020). <em>The theory and practice of group psychotherapy</em> (6th ed.). Basic Books.'
+        'Yalom, I. D., & Leszcz, M. (2020). <em>The theory and practice of group psychotherapy</em> (6th ed.). Basic Books.',
+        'Rathgeber, M., Bürkner, P.-C., Schiller, E.-M., & Holling, H. (2019). The efficacy of emotionally focused couples therapy and behavioral couples therapy: A meta-analysis. <em>Journal of Marital & Family Therapy, 45</em>(3), 447–463. https://doi.org/10.1111/jmft.12336',
+        'Heyman, R. E., & Slep, A. M. S. (2001). The hazards of predicting divorce without crossvalidation. <em>Journal of Marriage and Family, 63</em>(2), 473–479. https://doi.org/10.1111/j.1741-3737.2001.00473.x',
+        'American Psychological Association. (2017). <em>Multicultural guidelines: An ecological approach to context, identity, and intersectionality</em>. https://www.apa.org/about/policy/multicultural-guidelines'
     ]
 });

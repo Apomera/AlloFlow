@@ -142,7 +142,7 @@ window.StemLab = window.StemLab || {
 var d = labToolData.galaxy || {};
 if (!window._galaxyHasLoadedOnce) {
     window._galaxyHasLoadedOnce = true;
-    var allowedGalaxyModes = { galaxy: true, star: true, metalHunt: true, realSky: true };
+    var allowedGalaxyModes = { galaxy: true, blackHole: true, star: true, metalHunt: true, realSky: true };
     if (d.simMode && !allowedGalaxyModes[d.simMode]) {
         setTimeout(function() { ctx.setToolData(function(prev) { return Object.assign({}, prev, { galaxy: Object.assign({}, prev.galaxy || {}, {simMode: 'galaxy'})}); })}, 10);
         d.simMode = 'galaxy';
@@ -172,6 +172,16 @@ if (!window._galaxyHasLoadedOnce) {
           var galaxyType = d.galaxyType || 'barredSpiral';
 
           var simMode = d.simMode || 'galaxy';
+
+          var blackHoleSpin = d.blackHoleSpin !== undefined ? d.blackHoleSpin : 0.72;
+          var blackHoleDisk = d.blackHoleDisk !== undefined ? d.blackHoleDisk : 0.78;
+          var blackHolePaused = !!d.blackHolePaused;
+          var blackHoleReducedMotion = false;
+          try { blackHoleReducedMotion = !!window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+          var blackHoleMotionAllowed = d.blackHoleMotionAllowed === true || !blackHoleReducedMotion;
+          var blackHoleEffectivePaused = blackHolePaused || !blackHoleMotionAllowed;
+          var blackHoleDropObject = d.blackHoleDropObject || 'probe';
+          var blackHoleMassMode = d.blackHoleMassMode || 'stellar';
 
           var rotMode = d.rotMode || 'flat';
 
@@ -675,6 +685,142 @@ if (!window._galaxyHasLoadedOnce) {
 
 
 
+          var blackHoleCanvasActive = React.useRef(null);
+          var blackHoleRefCb = React.useCallback(function(canvas) {
+            if (!canvas) { if (blackHoleCanvasActive.current && blackHoleCanvasActive.current._blackHoleCleanup) blackHoleCanvasActive.current._blackHoleCleanup(); blackHoleCanvasActive.current = null; return; }
+            if (canvas._blackHoleInit) return;
+            blackHoleCanvasActive.current = canvas;
+            canvas._blackHoleInit = true;
+            var stopped = false, frame = 0, renderer, scene, camera, disk, stars, photonRing, corona, lensArcA, lensArcB, coreGlow, fallingObjects = [], lastFrameTime = 0, updateFalling = function(){}, disposeFalling = function(){};
+            var spin = parseFloat(canvas.getAttribute('data-spin')); if (isNaN(spin)) spin = 0.72;
+            var diskPower = parseFloat(canvas.getAttribute('data-disk')); if (isNaN(diskPower)) diskPower = 0.78;
+            var paused = canvas.getAttribute('data-paused') === 'true';
+            var drag = false, lastX = 0, lastY = 0, yaw = 0.28, pitch = 0.28, distance = 3.25, inView = true, pageHidden = !!document.hidden, observer = null;
+
+            function init() {
+              if (stopped || !window.THREE) return;
+              var THREE = window.THREE;
+              scene = new THREE.Scene();
+              camera = new THREE.PerspectiveCamera(48, 1, 0.01, 100);
+              try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'high-performance' }); } catch (webglError) { var fallback = document.getElementById('black-hole-status'); if (fallback) fallback.textContent = 'The interactive 3-D view is unavailable because WebGL could not start. The labeled explanation remains available.'; canvas.setAttribute('aria-label', 'Black hole simulation unavailable because WebGL could not start. Read the adjacent explanation for the event horizon, photon ring, accretion disk, and jets.'); return; }
+              renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+              renderer.setClearColor(0x010208, 1);
+              if ('outputEncoding' in renderer) renderer.outputEncoding = THREE.sRGBEncoding;
+              if ('toneMapping' in renderer) { renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.28; }
+
+              var starGeo = new THREE.BufferGeometry(), count = 2600, pos = new Float32Array(count * 3), col = new Float32Array(count * 3);
+              for (var i = 0; i < count; i++) {
+                var radius = 7 + Math.random() * 18, a = Math.random() * Math.PI * 2, z = Math.random() * 2 - 1, rr = Math.sqrt(1 - z * z);
+                pos[i*3] = radius * rr * Math.cos(a); pos[i*3+1] = radius * z; pos[i*3+2] = radius * rr * Math.sin(a);
+                var tint = Math.random(); col[i*3] = 0.55 + tint * 0.45; col[i*3+1] = 0.65 + tint * 0.3; col[i*3+2] = 1;
+              }
+              starGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); starGeo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+              stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ size: 0.032, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false })); scene.add(stars);
+
+              var horizon = new THREE.Mesh(new THREE.SphereGeometry(0.43, 96, 64), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+              horizon.renderOrder = 5; scene.add(horizon);
+              var shadow = new THREE.Mesh(new THREE.SphereGeometry(0.49, 96, 64), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.96, side: THREE.BackSide })); scene.add(shadow);
+
+              var ringMat = new THREE.MeshBasicMaterial({ color: 0xffe8a3, transparent: true, opacity: 0.72, blending: THREE.AdditiveBlending, depthWrite: false });
+              photonRing = new THREE.Mesh(new THREE.TorusGeometry(0.535, 0.012, 12, 192), ringMat); photonRing.rotation.x = Math.PI / 2; scene.add(photonRing);
+              var lensRing = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.018, 10, 192), new THREE.MeshBasicMaterial({ color: 0x8fc7ff, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false })); lensRing.rotation.x = Math.PI / 2; scene.add(lensRing);
+
+              var diskMat = new THREE.ShaderMaterial({ transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending,
+                uniforms: { uTime: { value: 0 }, uSpin: { value: spin }, uPower: { value: diskPower } },
+                vertexShader: 'varying vec2 vUv; void main(){vUv=uv; vec3 p=position; float r=length(p.xy); p.z += sin(atan(p.y,p.x)*7.0+r*12.0)*0.012; gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);}',
+                fragmentShader: 'varying vec2 vUv; uniform float uTime; uniform float uSpin; uniform float uPower; float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);} float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);} void main(){vec2 p=(vUv-.5)*2.; float r=length(p); if(r<.25||r>1.)discard; float a=atan(p.y,p.x); float speed=2.5+uSpin*8.; float spiral=sin(a*16.-r*115.-uTime*speed); float fine=sin(a*43.+r*210.+uTime*speed*.42); float turbulence=noise(vec2(a*9.+uTime*.18,r*72.-uTime*.7)); float bands=.22+.34*spiral+.18*fine+.5*turbulence; float edge=smoothstep(.25,.285,r)*(1.-smoothstep(.86,1.,r)); float heat=clamp((.92-r)/.68,0.,1.); vec3 outer=vec3(.08,.22,1.); vec3 mid=vec3(1.,.12,.018); vec3 inner=vec3(1.,.97,.72); vec3 c=mix(outer,mid,smoothstep(.05,.62,heat)); c=mix(c,inner,pow(heat,3.2)); float approaching=.5+.5*cos(a-.25); vec3 beam=mix(vec3(1.,.18,.03),vec3(.55,.82,1.),approaching); c=mix(c,beam,uSpin*.28*approaching); float doppler=.58+(0.34+uSpin*.34)*approaching; float hotSpot=pow(max(0.,sin(a*5.-uTime*speed*1.4+r*18.)),10.)*heat; c+=vec3(1.,.72,.3)*hotSpot*1.7; float alpha=edge*clamp(.34+bands,0.08,1.)*doppler*uPower; gl_FragColor=vec4(c,alpha);}'
+              });
+              disk = new THREE.Mesh(new THREE.RingGeometry(0.54, 2.15, 256, 8), diskMat); disk.rotation.x = -Math.PI / 2.45; scene.add(disk);
+              var rimMat = new THREE.MeshBasicMaterial({ color: 0xfff0bd, transparent: true, opacity: 0.82, blending: THREE.AdditiveBlending, depthWrite: false });
+              var innerRim = new THREE.Mesh(new THREE.TorusGeometry(0.555, 0.018, 12, 256), rimMat); innerRim.rotation.x = disk.rotation.x; scene.add(innerRim);
+
+              var glowCanvas = document.createElement('canvas'); glowCanvas.width = glowCanvas.height = 256;
+              var glowCtx = glowCanvas.getContext('2d'), glowGradient = glowCtx.createRadialGradient(128,128,34,128,128,128);
+              glowGradient.addColorStop(0,'rgba(255,245,195,0.7)'); glowGradient.addColorStop(.18,'rgba(255,118,35,0.34)'); glowGradient.addColorStop(.48,'rgba(82,126,255,0.12)'); glowGradient.addColorStop(1,'rgba(10,20,80,0)'); glowCtx.fillStyle=glowGradient; glowCtx.fillRect(0,0,256,256);
+              coreGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map:new THREE.CanvasTexture(glowCanvas), transparent:true, opacity:.7, blending:THREE.AdditiveBlending, depthWrite:false, depthTest:true })); coreGlow.scale.set(2.35,2.35,1); coreGlow.position.z=-.16; scene.add(coreGlow);
+
+              var arcMatA = new THREE.MeshBasicMaterial({ color:0xffd98a, transparent:true, opacity:.46, blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide });
+              var arcMatB = new THREE.MeshBasicMaterial({ color:0x72b7ff, transparent:true, opacity:.28, blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide });
+              lensArcA = new THREE.Mesh(new THREE.TorusGeometry(.69,.014,10,144,Math.PI*1.36),arcMatA); lensArcA.rotation.z=-.52; lensArcA.position.set(0,0,0); scene.add(lensArcA);
+              lensArcB = new THREE.Mesh(new THREE.TorusGeometry(.76,.01,8,128,Math.PI*1.05),arcMatB); lensArcB.rotation.z=2.42; lensArcB.position.set(0,0,0); scene.add(lensArcB);
+
+              var coronaCount=900, coronaGeo=new THREE.BufferGeometry(), coronaPos=new Float32Array(coronaCount*3), coronaCol=new Float32Array(coronaCount*3);
+              for(var ci=0;ci<coronaCount;ci++){ var ca=Math.random()*Math.PI*2, cr=.58+Math.pow(Math.random(),1.7)*1.7, cy=(Math.random()-.5)*.075*(1+cr); coronaPos[ci*3]=Math.cos(ca)*cr; coronaPos[ci*3+1]=Math.sin(ca)*cr; coronaPos[ci*3+2]=cy; var ch=1-(cr-.58)/1.7; coronaCol[ci*3]=.45+.55*ch; coronaCol[ci*3+1]=.18+.7*ch; coronaCol[ci*3+2]=.35+.65*(1-ch); }
+              coronaGeo.setAttribute('position',new THREE.BufferAttribute(coronaPos,3)); coronaGeo.setAttribute('color',new THREE.BufferAttribute(coronaCol,3));
+              corona=new THREE.Points(coronaGeo,new THREE.PointsMaterial({size:.018,vertexColors:true,transparent:true,opacity:.46,blending:THREE.AdditiveBlending,depthWrite:false})); corona.rotation.x=-Math.PI/2.45; scene.add(corona);
+
+              var jetMat = new THREE.MeshBasicMaterial({ color: 0x65bfff, transparent: true, opacity: 0.13, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+              var jet1 = new THREE.Mesh(new THREE.ConeGeometry(0.07, 4.2, 48, 1, true), jetMat); jet1.position.y = 2.1; scene.add(jet1);
+              var jet2 = jet1.clone(); jet2.rotation.z = Math.PI; jet2.position.y = -2.1; scene.add(jet2);
+              var jetCoreMat = new THREE.MeshBasicMaterial({ color:0xd7f4ff, transparent:true, opacity:.25, blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide });
+              var jetCore1=new THREE.Mesh(new THREE.ConeGeometry(.022,4.8,32,1,true),jetCoreMat); jetCore1.position.y=2.4; scene.add(jetCore1);
+              var jetCore2=jetCore1.clone(); jetCore2.rotation.z=Math.PI; jetCore2.position.y=-2.4; scene.add(jetCore2);
+              var jetCount=320, jetGeo=new THREE.BufferGeometry(), jetPos=new Float32Array(jetCount*3);
+              for(var ji=0;ji<jetCount;ji++){ var side=ji%2?1:-1, jy=side*(.5+Math.random()*4.6), spread=.014+Math.abs(jy)*.025, ja=Math.random()*Math.PI*2, jr=Math.pow(Math.random(),2)*spread; jetPos[ji*3]=Math.cos(ja)*jr; jetPos[ji*3+1]=jy; jetPos[ji*3+2]=Math.sin(ja)*jr; }
+              jetGeo.setAttribute('position',new THREE.BufferAttribute(jetPos,3));
+              var jetParticles=new THREE.Points(jetGeo,new THREE.PointsMaterial({color:0x9bdcff,size:.025,transparent:true,opacity:.48,blending:THREE.AdditiveBlending,depthWrite:false})); scene.add(jetParticles);
+              function makeDropMaterial(color){ return new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:1,depthWrite:false}); }
+              disposeFalling=function(item){ scene.remove(item.group); scene.remove(item.trail); item.group.traverse(function(node){if(node.geometry)node.geometry.dispose();if(node.material)node.material.dispose();}); item.trail.geometry.dispose(); item.trail.material.dispose(); };
+              canvas._dropIntoBlackHole=function(type,massMode){
+                if(fallingObjects.length>=4)disposeFalling(fallingObjects.shift());
+                var group=new THREE.Group(), mainMat, mesh;
+                if(type==='astronaut'){
+                  mainMat=makeDropMaterial(0x72d7ff); mesh=new THREE.Mesh(new THREE.CylinderGeometry(.05,.06,.18,16),mainMat); mesh.rotation.x=Math.PI/2; group.add(mesh);
+                  var helmet=new THREE.Mesh(new THREE.SphereGeometry(.065,16,12),makeDropMaterial(0xe8f7ff)); helmet.position.z=.14; group.add(helmet);
+                  var pack=new THREE.Mesh(new THREE.BoxGeometry(.09,.055,.13),makeDropMaterial(0x7c8da8)); pack.position.y=-.055; group.add(pack);
+                }else if(type==='star'){
+                  mainMat=makeDropMaterial(0xffc35a); mesh=new THREE.Mesh(new THREE.SphereGeometry(.115,24,18),mainMat); group.add(mesh);
+                  var starHalo=new THREE.Mesh(new THREE.SphereGeometry(.16,20,14),new THREE.MeshBasicMaterial({color:0xff5a18,transparent:true,opacity:.18,blending:THREE.AdditiveBlending,depthWrite:false})); group.add(starHalo);
+                }else{
+                  mainMat=makeDropMaterial(0xd7e3f4); mesh=new THREE.Mesh(new THREE.CylinderGeometry(.045,.065,.2,16),mainMat); mesh.rotation.x=Math.PI/2; group.add(mesh);
+                  var panelMat=makeDropMaterial(0x4f8fff), panelGeo=new THREE.BoxGeometry(.23,.055,.012);
+                  var panelA=new THREE.Mesh(panelGeo,panelMat); panelA.position.x=.14; group.add(panelA); var panelB=panelA.clone(); panelB.position.x=-.14; group.add(panelB);
+                }
+                var trailArray=new Float32Array(96*3), trailGeo=new THREE.BufferGeometry(); trailGeo.setAttribute('position',new THREE.BufferAttribute(trailArray,3)); trailGeo.setDrawRange(0,0);
+                var trail=new THREE.Line(trailGeo,new THREE.LineBasicMaterial({color:massMode==='stellar'?0xff9b55:0x77bfff,transparent:true,opacity:.52,blending:THREE.AdditiveBlending,depthWrite:false})); scene.add(group); scene.add(trail);
+                var item={group:group,trail:trail,trailArray:trailArray,trailCount:0,progress:0,phase:0,launchAngle:.42+Math.random()*.62,lift:.45+Math.random()*.35,strength:massMode==='stellar'?1:.23,label:type==='astronaut'?'Astronaut':type==='star'?'Star':'Probe'}; fallingObjects.push(item);
+                var signalBar=document.getElementById('black-hole-signal-bar'),signalLabel=document.getElementById('black-hole-signal-label');if(signalBar){signalBar.style.width='100%';signalBar.style.backgroundColor='#38bdf8';}if(signalLabel)signalLabel.textContent='Distant received signal: 100%'; var status=document.getElementById('black-hole-status'); if(status)status.textContent=item.label+(paused?' is ready to fall. Start animation to begin.':' released. Watch radial stretching and sideways compression increase toward the horizon.');
+              };
+              updateFalling=function(dt){
+                for(var fi=fallingObjects.length-1;fi>=0;fi--){
+                  var item=fallingObjects[fi]; item.progress=Math.min(1,item.progress+dt*.19); var p=item.progress, eased=1-Math.pow(1-p,1.55), radius=2.65-2.36*eased, angle=item.launchAngle+p*2.55;
+                  item.group.position.set(Math.cos(angle)*radius,item.lift*(1-p),Math.sin(angle)*radius); item.group.lookAt(0,0,0);
+                  var close=Math.max(0,(1.55-radius)/1.18), stretch=1+item.strength*close*close*10; item.group.scale.set(1/Math.sqrt(stretch),1/Math.sqrt(stretch),stretch);
+                  var fade=Math.max(0,Math.min(1,(radius-.3)/.34)); item.group.traverse(function(node){if(node.material){node.material.opacity=Math.min(node.material.opacity,fade);}});
+                  if(item.trailCount<96 && p>=item.trailCount/95){var ti=item.trailCount++;item.trailArray[ti*3]=item.group.position.x;item.trailArray[ti*3+1]=item.group.position.y;item.trailArray[ti*3+2]=item.group.position.z;item.trail.geometry.attributes.position.needsUpdate=true;item.trail.geometry.setDrawRange(0,item.trailCount);}
+                  if(fi===fallingObjects.length-1){var readout=document.getElementById('black-hole-drop-readout');if(readout)readout.textContent=item.label+' | '+(radius>.43?(radius/.43).toFixed(1)+' horizon radii':'inside horizon')+' | tidal stretch '+stretch.toFixed(1)+'x'; var signalRate=Math.max(0,Math.min(1,(radius-.43)/1.6)),signalBar=document.getElementById('black-hole-signal-bar'),signalLabel=document.getElementById('black-hole-signal-label');if(signalBar){signalBar.style.width=(signalRate*100).toFixed(0)+'%';signalBar.style.backgroundColor=signalRate>.55?'#38bdf8':signalRate>.2?'#f59e0b':'#ef4444';}if(signalLabel)signalLabel.textContent='Distant received signal: '+(signalRate*100).toFixed(0)+'%';}
+                  if(close>.08&&item.phase<1){item.phase=1;if(fi===fallingObjects.length-1){var status=document.getElementById('black-hole-status');if(status)status.textContent='Tidal forces are now visibly stretching the '+item.label.toLowerCase()+' radially and squeezing it sideways.';}}
+                  if(radius<.75&&item.phase<2){item.phase=2;if(fi===fallingObjects.length-1){var status=document.getElementById('black-hole-status');if(status)status.textContent=item.label+' is approaching the event horizon. Its light is fading from the distant observer view.';}}
+                  if(radius<=.43&&item.phase<3){item.phase=3;if(fi===fallingObjects.length-1){var status=document.getElementById('black-hole-status');if(status)status.textContent=item.label+' crossed the event horizon. No signal from it can return.';}}
+                  if(p>=1){if(fi===fallingObjects.length-1){var readout=document.getElementById('black-hole-drop-readout');if(readout)readout.textContent='Drop complete | object no longer visible';var signalBar=document.getElementById('black-hole-signal-bar'),signalLabel=document.getElementById('black-hole-signal-label');if(signalBar)signalBar.style.width='0%';if(signalLabel)signalLabel.textContent='Distant received signal: 0%';}disposeFalling(item);fallingObjects.splice(fi,1);}
+                }
+              }
+
+              canvas._setBlackHoleSpin = function(v) { spin = v; diskMat.uniforms.uSpin.value = v; };
+              canvas._setBlackHoleDisk = function(v) { diskPower = v; diskMat.uniforms.uPower.value = v; };
+              canvas._setBlackHolePaused = function(v) { paused = v; };
+              resize(); animate();
+            }
+            function resize() { if (!renderer) return; var w = canvas.clientWidth || 800, h = canvas.clientHeight || 540; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+            function updateCamera() { pitch = Math.max(-1.05, Math.min(1.05, pitch)); camera.position.set(Math.sin(yaw)*Math.cos(pitch)*distance, Math.sin(pitch)*distance, Math.cos(yaw)*Math.cos(pitch)*distance); camera.lookAt(0,0,0); if(lensArcA){lensArcA.quaternion.copy(camera.quaternion);lensArcA.rotateZ(-.52);} if(lensArcB){lensArcB.quaternion.copy(camera.quaternion);lensArcB.rotateZ(2.42);} if(coreGlow)coreGlow.position.copy(camera.position).normalize().multiplyScalar(-.16); }
+            function animate(t) { if (stopped) return; frame = requestAnimationFrame(animate); if (!renderer || !inView) return; var delta=lastFrameTime?Math.min(.04,((t||0)-lastFrameTime)/1000):0; lastFrameTime=t||0; if (!paused && !pageHidden) { updateFalling(delta); disk.material.uniforms.uTime.value = (t || 0) * .001; stars.rotation.y += .00012; photonRing.rotation.z += .001 + spin*.002; if(corona)corona.rotation.z += .0015 + spin*.003; if(lensArcA)lensArcA.material.opacity=.38+Math.sin((t||0)*.0017)*.08; if(lensArcB)lensArcB.material.opacity=.23+Math.cos((t||0)*.0013)*.05; if(coreGlow)coreGlow.material.opacity=.64+Math.sin((t||0)*.002)*.06; } updateCamera(); renderer.render(scene,camera); }
+            canvas.addEventListener('pointerdown', function(e){ drag=true; lastX=e.clientX; lastY=e.clientY; canvas.setPointerCapture(e.pointerId); });
+            canvas.addEventListener('pointermove', function(e){ if(!drag)return; yaw-=(e.clientX-lastX)*.006; pitch+=(e.clientY-lastY)*.006; lastX=e.clientX; lastY=e.clientY; });
+            canvas.addEventListener('pointerup', function(){drag=false;});
+            canvas.addEventListener('pointercancel', function(){drag=false;});
+            canvas.addEventListener('wheel', function(e){e.preventDefault(); distance=Math.max(1.6,Math.min(6,distance+e.deltaY*.002));},{passive:false});
+            canvas.addEventListener('keydown', function(e){ var handled=true; if(e.key==='ArrowLeft')yaw-=.1; else if(e.key==='ArrowRight')yaw+=.1; else if(e.key==='ArrowUp')pitch+=.1; else if(e.key==='ArrowDown')pitch-=.1; else if(e.key==='+'||e.key==='=')distance=Math.max(1.6,distance-.2); else if(e.key==='-')distance=Math.min(6,distance+.2); else if(e.key==='Home'){yaw=.28;pitch=.28;distance=3.25; var status=document.getElementById('black-hole-status'); if(status)status.textContent='Camera reset to the starting view.';} else handled=false; if(handled)e.preventDefault(); });
+            function onContextLost(e){ e.preventDefault(); paused=true; var status=document.getElementById('black-hole-status'); if(status)status.textContent='The 3-D graphics context was interrupted. The simulation is paused while it recovers.'; }
+            function onContextRestored(){ paused=canvas.getAttribute('data-paused')==='true'; var status=document.getElementById('black-hole-status'); if(status)status.textContent=paused?'The 3-D view recovered and remains paused.':'The 3-D view recovered and is running.'; }
+            canvas.addEventListener('webglcontextlost',onContextLost,false);
+            canvas.addEventListener('webglcontextrestored',onContextRestored,false);
+            function onVisibilityChange(){ pageHidden=!!document.hidden; }
+            document.addEventListener('visibilitychange', onVisibilityChange);
+            if (window.IntersectionObserver) { observer=new IntersectionObserver(function(entries){ inView=!!(entries[0]&&entries[0].isIntersecting); },{rootMargin:'100px'}); observer.observe(canvas); }
+            window.addEventListener('resize', resize);
+            canvas._blackHoleCleanup = function(){ stopped=true; cancelAnimationFrame(frame); window.removeEventListener('resize',resize); document.removeEventListener('visibilitychange',onVisibilityChange); canvas.removeEventListener('webglcontextlost',onContextLost); canvas.removeEventListener('webglcontextrestored',onContextRestored); if(observer)observer.disconnect(); while(fallingObjects.length)disposeFalling(fallingObjects.pop()); if(renderer)renderer.dispose(); };
+            if (window.THREE) init(); else { var script=document.createElement('script'); script.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'; script.onload=init; script.onerror=function(){ var fallback=document.getElementById('black-hole-status'); if(fallback)fallback.textContent='The 3-D library could not load. The labeled black-hole explanation remains available.'; }; document.head.appendChild(script); }
+          }, []);
           function generateStars(THREE, count, gType, galaxyType, ageDist) {
 
             var starGeo = new THREE.BufferGeometry();
@@ -2795,21 +2941,21 @@ if (!window._galaxyHasLoadedOnce) {
 
 
 
-          return React.createElement("div", { className: ((simMode === 'star' || simMode === 'realSky') ? 'max-w-7xl' : 'max-w-4xl') + " mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
+          return React.createElement("div", { className: ((simMode === 'star' || simMode === 'realSky' || simMode === 'blackHole') ? 'max-w-7xl' : 'max-w-4xl') + " mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
 
             renderTutorial('galaxy', _tutGalaxy),
 
             // ── Header ──
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
 
               React.createElement("button", { onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0C Galaxy Explorer"),
 
-              React.createElement("div", { className: "flex gap-1 ml-auto bg-slate-100 rounded-lg p-0.5" },
+              React.createElement("div", { className: "flex flex-wrap gap-1 ml-auto bg-slate-100 rounded-lg p-0.5 max-sm:w-full max-sm:justify-center" },
 
-                [{ key: 'galaxy', icon: '\uD83C\uDF0C', label: 'Galaxy' }, { key: 'realSky', icon: '\uD83D\uDD2D', label: 'Real Sky' }, { key: 'star', icon: '\u2B50', label: 'Star Life' }, { key: 'quiz', icon: '\uD83E\uDDE0', label: 'Quiz' }, { key: 'metalHunt', icon: '\uD83C\uDF1F', label: 'Metallicity' }].map(function (m) {
+                [{ key: 'galaxy', icon: '\uD83C\uDF0C', label: 'Galaxy' }, { key: 'blackHole', icon: '\uD83D\uDD73\uFE0F', label: 'Black Hole' }, { key: 'realSky', icon: '\uD83D\uDD2D', label: 'Real Sky' }, { key: 'star', icon: '\u2B50', label: 'Star Life' }, { key: 'quiz', icon: '\uD83E\uDDE0', label: 'Quiz' }, { key: 'metalHunt', icon: '\uD83C\uDF1F', label: 'Metallicity' }].map(function (m) {
 
                   var isActive = m.key === 'quiz' ? d.quizMode : (!d.quizMode && simMode === m.key);
 
@@ -2847,7 +2993,7 @@ if (!window._galaxyHasLoadedOnce) {
                         if (m.key === 'star') upd("showLifecycle", true);
                         // Canvas Narration: sim mode switch
                         if (typeof canvasNarrate === 'function') {
-                          var modeDesc = m.key === 'galaxy' ? 'Galaxy view. Explore the structure, stars, and nebulae of the Milky Way.' : m.key === 'realSky' ? 'Real Sky. Compare the model with live sky survey imagery and object catalogs.' : m.key === 'metalHunt' ? 'Metallicity. Investigate how star chemistry records galaxy history.' : 'Star Lifecycle. Adjust stellar mass to explore how stars are born, live, and die.';
+                          var modeDesc = m.key === 'galaxy' ? 'Galaxy view. Explore the structure, stars, and nebulae of the Milky Way.' : m.key === 'blackHole' ? 'Black Hole Lab. Orbit an event horizon and observe an accretion disk, photon ring, relativistic beaming, and polar jets.' : m.key === 'realSky' ? 'Real Sky. Compare the model with live sky survey imagery and object catalogs.' : m.key === 'metalHunt' ? 'Metallicity. Investigate how star chemistry records galaxy history.' : 'Star Lifecycle. Adjust stellar mass to explore how stars are born, live, and die.';
                           canvasNarrate('galaxy', 'simMode', {
                             first: 'Switched to ' + m.label + '. ' + modeDesc,
                             repeat: m.label + ' mode active.',
@@ -2980,7 +3126,7 @@ if (!window._galaxyHasLoadedOnce) {
               // ── Doppler shift lab: motion toward/away changes wavelength ──
               React.createElement("div", { "data-galaxy-doppler": "true", className: "mb-3 p-3 rounded-xl border bg-white shadow-sm", style: { borderColor: dopplerColor + '66' } },
                 React.createElement("div", { className: "flex flex-wrap items-start gap-2 mb-2" },
-                  React.createElement("span", { className: "text-lg", "aria-hidden": "true" }, dopplerVelocity < -8 ? "\uD83D\uDD35" : dopplerVelocity > 8 ? "\uD83D\uDD34" : "\u26AA"),
+                  React.createElement("span", { className: "text-lg", "aria-hidden": true }, dopplerVelocity < -8 ? "\uD83D\uDD35" : dopplerVelocity > 8 ? "\uD83D\uDD34" : "\u26AA"),
                   React.createElement("div", { className: "min-w-0 flex-1" },
                     React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider", style: { color: dopplerColor } }, "Doppler Shift Lab — toward = blue, away = red"),
                     React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" }, "Move the source along your line of sight. Negative radial velocity moves spectral lines toward blue; positive radial velocity moves them toward red.")
@@ -3068,12 +3214,12 @@ if (!window._galaxyHasLoadedOnce) {
               // ── Mission Control ──
               React.createElement("div", { className: "mb-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm" },
                 React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-2" },
-                  React.createElement("span", { className: "text-lg", "aria-hidden": "true" }, activeMission.icon),
+                  React.createElement("span", { className: "text-lg", "aria-hidden": true }, activeMission.icon),
                   React.createElement("div", { className: "min-w-0" },
                     React.createElement("p", { className: "text-xs font-black text-slate-800" }, "Mission Control"),
                     React.createElement("p", { className: "text-[11px] text-slate-500" }, activeMission.title + " • " + activeMissionDone + "/" + activeMission.steps.length + " complete")
                   ),
-                  React.createElement("div", { className: "ml-auto h-2 w-24 rounded-full bg-slate-100 overflow-hidden", "aria-hidden": "true" },
+                  React.createElement("div", { className: "ml-auto h-2 w-24 rounded-full bg-slate-100 overflow-hidden", "aria-hidden": true },
                     React.createElement("div", { className: "h-full rounded-full bg-emerald-500 transition-all", style: { width: Math.round((activeMissionDone / activeMission.steps.length) * 100) + "%" } })
                   )
                 ),
@@ -3104,7 +3250,7 @@ if (!window._galaxyHasLoadedOnce) {
               // ── Observatory Filters ──
               React.createElement("div", { "data-galaxy-observatory": "true", className: "mb-3 rounded-xl border border-cyan-100 bg-white p-3 shadow-sm" },
                 React.createElement("div", { className: "flex flex-wrap items-start gap-2 mb-2" },
-                  React.createElement("span", { className: "text-lg", "aria-hidden": "true" }, activeObserve.icon),
+                  React.createElement("span", { className: "text-lg", "aria-hidden": true }, activeObserve.icon),
                   React.createElement("div", { className: "min-w-0 flex-1" },
                     React.createElement("p", { className: "text-xs font-black text-slate-800" }, "Observatory Filters"),
                     React.createElement("p", { className: "text-[11px] text-slate-500 leading-relaxed" }, activeObserve.label + ": " + activeObserve.desc)
@@ -3189,10 +3335,10 @@ if (!window._galaxyHasLoadedOnce) {
 
                 }),
 
-                React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(circle at 50% 46%, transparent 34%, rgba(2,6,23,0.62) 100%), linear-gradient(rgba(129,140,248,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(129,140,248,0.045) 1px, transparent 1px)', backgroundSize: '100% 100%, 34px 34px, 34px 34px', mixBlendMode: 'screen', opacity: 0.72 } }),
-                React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(to bottom, rgba(2,6,23,0.82) 0%, rgba(2,6,23,0.3) 9%, rgba(2,6,23,0) 20%, rgba(2,6,23,0) 80%, rgba(2,6,23,0.34) 91%, rgba(2,6,23,0.88) 100%)', opacity: 0.86 } }),
-                React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', left: '10%', right: '10%', top: '50%', height: 1, pointerEvents: 'none', background: 'linear-gradient(90deg, transparent, rgba(125,211,252,0.24), rgba(255,255,255,0.42), rgba(244,114,182,0.18), transparent)', boxShadow: '0 0 20px rgba(125,211,252,0.24)', mixBlendMode: 'screen', opacity: 0.48 } }),
-                React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: '14px', pointerEvents: 'none', border: '1px solid rgba(191,219,254,0.07)', boxShadow: 'inset 0 0 30px rgba(15,23,42,0.5)', backgroundImage: 'linear-gradient(90deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(180deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(270deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(180deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(90deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(0deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(270deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(0deg, rgba(226,232,240,0.68), rgba(226,232,240,0))', backgroundPosition: 'top left, top left, top right, top right, bottom left, bottom left, bottom right, bottom right', backgroundSize: '92px 1px, 1px 58px, 92px 1px, 1px 58px, 92px 1px, 1px 58px, 92px 1px, 1px 58px', backgroundRepeat: 'no-repeat', opacity: 0.62 } }),
+                React.createElement("div", { "aria-hidden": true, style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(circle at 50% 46%, transparent 34%, rgba(2,6,23,0.62) 100%), linear-gradient(rgba(129,140,248,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(129,140,248,0.045) 1px, transparent 1px)', backgroundSize: '100% 100%, 34px 34px, 34px 34px', mixBlendMode: 'screen', opacity: 0.72 } }),
+                React.createElement("div", { "aria-hidden": true, style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(to bottom, rgba(2,6,23,0.82) 0%, rgba(2,6,23,0.3) 9%, rgba(2,6,23,0) 20%, rgba(2,6,23,0) 80%, rgba(2,6,23,0.34) 91%, rgba(2,6,23,0.88) 100%)', opacity: 0.86 } }),
+                React.createElement("div", { "aria-hidden": true, style: { position: 'absolute', left: '10%', right: '10%', top: '50%', height: 1, pointerEvents: 'none', background: 'linear-gradient(90deg, transparent, rgba(125,211,252,0.24), rgba(255,255,255,0.42), rgba(244,114,182,0.18), transparent)', boxShadow: '0 0 20px rgba(125,211,252,0.24)', mixBlendMode: 'screen', opacity: 0.48 } }),
+                React.createElement("div", { "aria-hidden": true, style: { position: 'absolute', inset: '14px', pointerEvents: 'none', border: '1px solid rgba(191,219,254,0.07)', boxShadow: 'inset 0 0 30px rgba(15,23,42,0.5)', backgroundImage: 'linear-gradient(90deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(180deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(270deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(180deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(90deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(0deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(270deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(0deg, rgba(226,232,240,0.68), rgba(226,232,240,0))', backgroundPosition: 'top left, top left, top right, top right, bottom left, bottom left, bottom right, bottom right', backgroundSize: '92px 1px, 1px 58px, 92px 1px, 1px 58px, 92px 1px, 1px 58px, 92px 1px, 1px 58px', backgroundRepeat: 'no-repeat', opacity: 0.62 } }),
 
                 // Star type legend
 
@@ -3823,7 +3969,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("div", { className: "mb-3 rounded-xl border border-cyan-100 bg-white p-3 shadow-sm" },
                 React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-2" },
-                  React.createElement("span", { className: "text-base", "aria-hidden": "true" }, "\uD83E\uDDEA"),
+                  React.createElement("span", { className: "text-base", "aria-hidden": true }, "\uD83E\uDDEA"),
                   React.createElement("p", { className: "text-xs font-black text-slate-800" }, "Real Data Lesson Prompt"),
                   React.createElement("span", { className: "ml-auto rounded-full bg-cyan-50 px-2 py-0.5 text-[10px] font-bold text-cyan-700" }, activeRealSkyTarget.short)
                 ),
@@ -3996,6 +4142,112 @@ if (!window._galaxyHasLoadedOnce) {
 
             // ══════════════════════════════════════════════
 
+            !d.quizMode && simMode === 'blackHole' && React.createElement("div", { className: "animate-in fade-in duration-300 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px] gap-4" },
+              React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-indigo-300/30 bg-[#010208] shadow-2xl shadow-indigo-500/10", style: { minHeight: 'clamp(420px, 65vw, 590px)' } },
+                React.createElement("canvas", { "data-black-hole-canvas": "true", "data-spin": blackHoleSpin, "data-disk": blackHoleDisk, "data-paused": blackHoleEffectivePaused ? "true" : "false", ref: blackHoleRefCb, tabIndex: 0, role: "img", "aria-label": "Interactive model of a rotating black hole with an event horizon, photon ring, accretion disk, polar jets, and a tidal-forces object-drop experiment.", "aria-describedby": "black-hole-instructions black-hole-description black-hole-status", className: 'focus:outline-none focus:ring-4 focus:ring-indigo-300 focus:ring-inset', style: { width: '100%', height: 'clamp(420px, 65vw, 590px)', display: 'block', cursor: 'grab', touchAction: 'none' } }),
+                React.createElement("div", { className: "absolute top-3 left-3 rounded-xl border border-white/15 bg-slate-950/75 px-3 py-2 text-white backdrop-blur-md pointer-events-none" },
+                  React.createElement("div", { className: "text-[11px] uppercase tracking-widest font-black text-violet-300" }, "Black Hole Lab"),
+                  React.createElement("div", { className: "text-[11px] text-slate-300 mt-0.5" }, "Drag to orbit - Scroll to zoom")),
+                React.createElement("div", { id: "black-hole-drop-readout", "aria-hidden": true, className: "absolute top-3 right-3 max-w-[55%] rounded-xl border border-orange-200/30 bg-slate-950/75 px-3 py-2 text-right text-[11px] font-bold text-orange-100 backdrop-blur-md pointer-events-none" }, "Drop an object to begin"),
+                React.createElement("p", { id: "black-hole-instructions", className: "sr-only" }, "Keyboard controls: use the arrow keys to orbit, plus and minus to zoom, and Home to reset the camera. Animation can be paused with the button after the canvas."),
+                React.createElement("div", { className: "absolute bottom-3 left-3 right-3 flex flex-wrap gap-2 pointer-events-none" },
+                  ['Event horizon', 'Photon ring', 'Accretion disk', 'Polar jets'].map(function(label, i){ return React.createElement("span", { key: label, className: "rounded-full border border-white/15 bg-slate-950/75 px-2 py-1 text-[11px] font-bold text-slate-200 backdrop-blur-md" }, (i===0?'\u25cf ':i===1?'\u25cb ':i===2?'\u2248 ':'\u2195 ') + label); }))
+              ),
+              React.createElement("aside", { className: "space-y-3" },
+                React.createElement("div", { className: "rounded-2xl border border-slate-200 bg-white p-4 shadow-sm" },
+                  React.createElement("h4", { className: "text-sm font-black text-slate-800" }, "Relativistic controls"),
+                  React.createElement("p", { id: "black-hole-description", className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, "A teaching model near a rotating black hole. Distances are visual, not to scale."),
+                  React.createElement("p", { id: "black-hole-status", role: "status", "aria-live": "polite", className: "mt-2 text-[11px] font-semibold text-indigo-800" }, blackHoleEffectivePaused ? (blackHoleReducedMotion && !blackHoleMotionAllowed ? "Animation paused to honor your reduced-motion preference." : "Simulation paused.") : "Simulation running."),
+                  React.createElement("label", { htmlFor: "black-hole-spin", className: "mt-4 block text-[11px] font-bold text-slate-700" }, "Spin: ", React.createElement("span", { className: "font-mono text-indigo-700" }, blackHoleSpin.toFixed(2))),
+                  React.createElement("input", { id: "black-hole-spin", type: "range", min: 0, max: 0.99, step: 0.01, value: blackHoleSpin, "aria-valuetext": blackHoleSpin.toFixed(2) + " of 0.99", className: "w-full accent-indigo-600", onChange: function(e){ var v=parseFloat(e.target.value); upd('blackHoleSpin',v); var cv=document.querySelector('[data-black-hole-canvas]'); if(cv&&cv._setBlackHoleSpin)cv._setBlackHoleSpin(v); } }),
+                  React.createElement("p", { className: "text-[11px] text-slate-600" }, "Higher spin speeds the inner disk and strengthens its bright approaching side."),
+                  React.createElement("label", { htmlFor: "black-hole-disk", className: "mt-3 block text-[11px] font-bold text-slate-700" }, "Disk brightness: ", React.createElement("span", { className: "font-mono text-indigo-700" }, Math.round(blackHoleDisk*100) + "%")),
+                  React.createElement("input", { id: "black-hole-disk", type: "range", min: 0.2, max: 1, step: 0.01, value: blackHoleDisk, "aria-valuetext": Math.round(blackHoleDisk*100) + " percent", className: "w-full accent-indigo-600", onChange: function(e){ var v=parseFloat(e.target.value); upd('blackHoleDisk',v); var cv=document.querySelector('[data-black-hole-canvas]'); if(cv&&cv._setBlackHoleDisk)cv._setBlackHoleDisk(v); } }),
+                  React.createElement("button", { type: "button", className: "mt-4 w-full rounded-lg bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-700", onClick: function(){ var next; if (!blackHoleMotionAllowed) { upd('blackHoleMotionAllowed',true); upd('blackHolePaused',false); next=false; } else { next=!blackHolePaused; upd('blackHolePaused',next); } var cv=document.querySelector('[data-black-hole-canvas]'); if(cv&&cv._setBlackHolePaused)cv._setBlackHolePaused(next); }, "aria-pressed": blackHoleEffectivePaused }, blackHoleEffectivePaused ? "\u25b6 Start animation" : "\u23f8 Pause animation")
+                ),
+                React.createElement("div", { className: "rounded-2xl border border-orange-200 bg-orange-50 p-4" },
+                  React.createElement("h4", { className: "text-sm font-black text-orange-950" }, "Tidal forces experiment"),
+                  React.createElement("p", { id: "black-hole-drop-help", className: "mt-1 text-[11px] leading-relaxed text-orange-950" }, "Release an object and observe spaghettification: gravity pulls harder on its near side, stretching it radially while compressing it sideways."),
+                  React.createElement("div", { className: "mt-3 rounded-xl border border-orange-300/60 bg-white/70 p-3" },
+                    React.createElement("p", { className: "text-[11px] font-black text-orange-950" }, "Two views of time and light"),
+                    React.createElement("div", { className: "mt-2 space-y-2", "aria-hidden": true },
+                      React.createElement("div", null,
+                        React.createElement("div", { className: "flex justify-between gap-2 text-[11px] font-bold text-slate-700" }, React.createElement("span", null, "Traveler's local clock"), React.createElement("span", null, "steady")),
+                        React.createElement("div", { className: "mt-1 h-2 overflow-hidden rounded-full bg-slate-200" }, React.createElement("div", { className: "h-full w-full rounded-full bg-indigo-500" }))),
+                      React.createElement("div", null,
+                        React.createElement("div", { className: "flex justify-between gap-2 text-[11px] font-bold text-slate-700" }, React.createElement("span", { id: "black-hole-signal-label" }, "Distant received signal: 100%"), React.createElement("span", null, "delayed + redshifted")),
+                        React.createElement("div", { className: "mt-1 h-2 overflow-hidden rounded-full bg-slate-200" }, React.createElement("div", { id: "black-hole-signal-bar", className: "h-full w-full rounded-full bg-sky-400 transition-all duration-300" })))
+                    ),
+                    React.createElement("p", { className: "mt-2 text-[11px] leading-relaxed text-orange-900" }, "Illustrative observer view: the traveler experiences their own clock normally, while a distant observer receives increasingly delayed and redshifted light signals.")
+                  ),                  React.createElement("label", { htmlFor: "black-hole-object", className: "mt-3 block text-[11px] font-bold text-orange-950" }, "Object"),
+                  React.createElement("select", { id: "black-hole-object", value: blackHoleDropObject, onChange: function(e){upd('blackHoleDropObject',e.target.value);}, className: "mt-1 w-full rounded-lg border border-orange-300 bg-white px-2 py-2 text-xs text-slate-900" },
+                    React.createElement("option", { value: "probe" }, "Space probe"), React.createElement("option", { value: "astronaut" }, "Astronaut model"), React.createElement("option", { value: "star" }, "Star")),
+                  React.createElement("label", { htmlFor: "black-hole-mass", className: "mt-3 block text-[11px] font-bold text-orange-950" }, "Black hole mass"),
+                  React.createElement("select", { id: "black-hole-mass", value: blackHoleMassMode, onChange: function(e){upd('blackHoleMassMode',e.target.value);}, className: "mt-1 w-full rounded-lg border border-orange-300 bg-white px-2 py-2 text-xs text-slate-900", "aria-describedby": "black-hole-mass-note" },
+                    React.createElement("option", { value: "stellar" }, "Stellar-mass"), React.createElement("option", { value: "supermassive" }, "Supermassive")),
+                  React.createElement("p", { id: "black-hole-mass-note", className: "mt-1 text-[11px] leading-relaxed text-orange-900" }, blackHoleMassMode==='stellar'?"Stronger tidal gradient: disruption begins farther outside the horizon.":"Gentler at the horizon: a compact object can cross before extreme stretching develops."),
+                  React.createElement("button", { type: "button", className: "mt-3 w-full rounded-lg bg-orange-700 px-3 py-2 text-xs font-bold text-white hover:bg-orange-800", onClick: function(){var cv=document.querySelector('[data-black-hole-canvas]');if(cv&&cv._dropIntoBlackHole)cv._dropIntoBlackHole(blackHoleDropObject,blackHoleMassMode);}, "aria-describedby": "black-hole-drop-help" }, "Drop object into black hole")
+                ),
+                React.createElement("div", { className: "rounded-2xl border border-violet-200 bg-violet-50 p-4" },
+                  React.createElement("h4", { className: "text-sm font-black text-violet-900" }, "What you are seeing"),
+                  React.createElement("ul", { className: "mt-2 space-y-2 text-[11px] leading-relaxed text-violet-950" },
+                    React.createElement("li", null, React.createElement("strong", null, "Event horizon:"), " the boundary beyond which light cannot escape."),
+                    React.createElement("li", null, React.createElement("strong", null, "Photon ring:"), " light bent into repeated paths around the shadow."),
+                    React.createElement("li", null, React.createElement("strong", null, "Doppler beaming:"), " the disk side moving toward us appears brighter."),
+                    React.createElement("li", null, React.createElement("strong", null, "Jets:"), " energized matter guided away from the disk along magnetic poles."))
+                )
+              ),
+              React.createElement("section", { className: "lg:col-span-2 overflow-hidden rounded-2xl border border-cyan-300/25 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 p-4 text-slate-100 shadow-xl", role: "region", "aria-labelledby": "black-hole-evidence-title" },
+                React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+                  React.createElement("div", null,
+                    React.createElement("h4", { id: "black-hole-evidence-title", className: "text-sm font-black text-cyan-100" }, "What is a black hole - and what might be inside?"),
+                    React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-300" }, "The event horizon is an evidence boundary: outside effects can reach us; information from inside cannot.")),
+                  React.createElement("span", { className: "rounded-full border border-cyan-200/25 bg-cyan-300/10 px-2 py-1 text-[11px] font-bold text-cyan-100" }, "Evidence map")
+                ),
+                React.createElement("div", { className: "mt-4 grid grid-cols-1 items-center gap-4 md:grid-cols-[1fr_150px_1fr]" },
+                  React.createElement("div", { className: "rounded-xl border border-emerald-300/25 bg-emerald-300/10 p-3" },
+                    React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-emerald-200" }, "Outside - observable"),
+                    React.createElement("ul", { className: "mt-2 space-y-1.5 text-[11px] leading-relaxed text-slate-200" },
+                      React.createElement("li", null, "Bright shadow and photon-ring structure"),
+                      React.createElement("li", null, "Fast stellar orbits, hot gas, and X-rays"),
+                      React.createElement("li", null, "Gravitational waves from black-hole mergers"))
+                  ),
+                  React.createElement("div", { className: "mx-auto flex h-36 w-36 items-center justify-center rounded-full border border-cyan-200/50 bg-cyan-300/10 shadow-[0_0_35px_rgba(34,211,238,0.24)]", "aria-hidden": true },
+                    React.createElement("div", { className: "flex h-28 w-28 items-center justify-center rounded-full border-2 border-amber-200/70 bg-gradient-to-br from-orange-400/30 via-indigo-500/20 to-black shadow-[0_0_24px_rgba(251,191,36,0.36)]" },
+                      React.createElement("div", { className: "flex h-20 w-20 items-center justify-center rounded-full border border-violet-300/40 bg-black text-center text-[11px] font-black text-violet-200" }, "EVENT", React.createElement("br"), "HORIZON"))
+                  ),
+                  React.createElement("div", { className: "rounded-xl border border-violet-300/25 bg-violet-300/10 p-3" },
+                    React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-violet-200" }, "Inside - causally hidden"),
+                    React.createElement("ul", { className: "mt-2 space-y-1.5 text-[11px] leading-relaxed text-slate-200" },
+                      React.createElement("li", null, "General relativity predicts continued collapse"),
+                      React.createElement("li", null, "Its singularity may mark the theory's limit"),
+                      React.createElement("li", null, "No outside observer can receive an interior signal"))
+                  )
+                ),
+                React.createElement("div", { className: "mt-4 grid grid-cols-1 gap-2 md:grid-cols-3" },
+                  React.createElement("div", { className: "rounded-xl border border-sky-300/20 bg-sky-300/10 p-3" }, React.createElement("p", { className: "text-[11px] font-black text-sky-200" }, "Strongly supported"), React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-300" }, "Horizons, curved light paths, accretion, and mergers match observations and relativity.")),
+                  React.createElement("div", { className: "rounded-xl border border-amber-300/20 bg-amber-300/10 p-3" }, React.createElement("p", { className: "text-[11px] font-black text-amber-200" }, "Predicted, not directly seen"), React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-300" }, "A classical singularity and extremely slow Hawking evaporation remain theoretical.")),
+                  React.createElement("div", { className: "rounded-xl border border-fuchsia-300/20 bg-fuchsia-300/10 p-3" }, React.createElement("p", { className: "text-[11px] font-black text-fuchsia-200" }, "Speculative ideas"), React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-300" }, "Quantum cores, fuzzballs, firewalls, wormholes, and white holes are hypotheses - not established destinations."))
+                ),
+                React.createElement("div", { className: "mt-4 border-t border-cyan-200/15 pt-4" },
+                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-cyan-200" }, "Black-hole life cycle"),
+                  React.createElement("ol", { className: "mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5", "aria-label": "Possible stages in a black hole's history" },
+                    [
+                      { icon: '\u2605', title: 'Formation', text: 'Massive-star collapse or growth of an earlier compact seed.', color: 'border-blue-300/25 bg-blue-300/10 text-blue-100' },
+                      { icon: '\u224b', title: 'Active feeding', text: 'Hot accretion, flares, and sometimes enormous particle jets.', color: 'border-orange-300/25 bg-orange-300/10 text-orange-100' },
+                      { icon: '\u25cf', title: 'Quiet phase', text: 'The disk can fade; gravity still reveals the hidden mass.', color: 'border-slate-300/25 bg-slate-300/10 text-slate-100' },
+                      { icon: '\u223f', title: 'Merger', text: 'Two black holes combine and send gravitational waves outward.', color: 'border-violet-300/25 bg-violet-300/10 text-violet-100' },
+                      { icon: '\u2726', title: 'Far future?', text: 'Hawking evaporation is predicted, but has not been observed.', color: 'border-fuchsia-300/25 bg-fuchsia-300/10 text-fuchsia-100' }
+                    ].map(function(stage, index){ return React.createElement("li", { key: stage.title, className: "relative rounded-xl border p-3 " + stage.color },
+                      React.createElement("div", { className: "flex items-center gap-2" },
+                        React.createElement("span", { className: "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-current/25 bg-black/25 text-sm", "aria-hidden": true }, stage.icon),
+                        React.createElement("span", { className: "text-[11px] font-black" }, (index + 1) + ". " + stage.title)),
+                      React.createElement("p", { className: "mt-2 text-[11px] leading-relaxed text-slate-300" }, stage.text)); })
+                  )
+                ),
+                React.createElement("p", { className: "mt-3 text-[11px] leading-relaxed text-cyan-100" }, "A black hole is not necessarily active forever: its surroundings can brighten, quiet down, and brighten again as matter becomes available.")
+              )
+            ),
             !d.quizMode && simMode === 'star' && React.createElement("div", { className: "animate-in fade-in duration-300", style: { display: "flex", gap: "16px", alignItems: "stretch" } },
 
 

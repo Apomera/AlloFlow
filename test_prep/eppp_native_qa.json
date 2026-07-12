@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-11T05:14:42.207Z",
+  "generatedAt": "2026-07-11T19:57:23.069Z",
   "packId": "eppp-part-one",
-  "packVersion": "0.27.0",
+  "packVersion": "1.0.0",
   "standard": {
     "label": "AlloFlow native test-prep content QA v1",
     "checks": [
@@ -17,15 +17,15 @@
     "limitation": "QA pass is not psychometric calibration, official exam approval, or independent licensed-psychologist validation."
   },
   "summary": {
-    "totalItems": 416,
-    "passedItems": 416,
+    "totalItems": 500,
+    "passedItems": 500,
     "reviewRequiredItems": 0,
     "domains": 8,
     "answerPositions": {
-      "0": 104,
-      "1": 104,
-      "2": 104,
-      "3": 104
+      "0": 125,
+      "1": 125,
+      "2": 125,
+      "3": 125
     },
     "packFindings": [],
     "status": "pass"
@@ -15428,6 +15428,3114 @@
       "findings": [],
       "references": [
         "https://www.apa.org/ethics/code/committee"
+      ]
+    },
+    {
+      "id": "eppp-b025-biological-1",
+      "domainId": "biological",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-e860c6b04d9369cf",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1038/nrn3820"
+      ]
+    },
+    {
+      "id": "eppp-b025-cognitive-1",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-e1e729f0cf4041e9",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1080/17470216008416717"
+      ]
+    },
+    {
+      "id": "eppp-b025-cognitive-2",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-d7ab0773db816a36",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1111/j.1467-9280.2006.01693.x"
+      ]
+    },
+    {
+      "id": "eppp-b025-social-1",
+      "domainId": "social-cultural",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-9ca60bce39ce1208",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1111/j.2044-8309.1994.tb01008.x"
+      ]
+    },
+    {
+      "id": "eppp-b025-social-2",
+      "domainId": "social-cultural",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-f4789c7151e628eb",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/0022-3514.69.5.797"
+      ]
+    },
+    {
+      "id": "eppp-b025-lifespan-1",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-a8e686f28a6e2e80",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://dictionary.apa.org/gender-identity"
+      ]
+    },
+    {
+      "id": "eppp-b025-lifespan-2",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-0a8498eba16cda53",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+      ]
+    },
+    {
+      "id": "eppp-b025-assessment-1",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-1069a3c0a1de509e",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1111/j.1745-3992.1994.tb00566.x"
+      ]
+    },
+    {
+      "id": "eppp-b025-assessment-2",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-43ed1b2d6fdfdcef",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0048070"
+      ]
+    },
+    {
+      "id": "eppp-b025-assessment-3",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-887bd5d18283fa5a",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/ed/accreditation/about/policies/personnel-selection-procedures.pdf"
+      ]
+    },
+    {
+      "id": "eppp-b025-assessment-4",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-de74d2d56c961950",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://openstax.org/books/introductory-statistics-2e/pages/6-1-the-standard-normal-distribution"
+      ]
+    },
+    {
+      "id": "eppp-b025-assessment-5",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-1643be06a2a757a7",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://r-pas.org/"
+      ]
+    },
+    {
+      "id": "eppp-b025-intervention-1",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-05c1e4073e278500",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://dictionary.apa.org/brief-psychotherapy"
+      ]
+    },
+    {
+      "id": "eppp-b025-intervention-2",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-e86b73ce3223f132",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://dictionary.apa.org/transference-neurosis"
+      ]
+    },
+    {
+      "id": "eppp-b025-intervention-3",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-e031a8eecc8809d4",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://dictionary.apa.org/paradoxical-intention"
+      ]
+    },
+    {
+      "id": "eppp-b025-intervention-4",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-b337d0b047ced23d",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://dictionary.apa.org/family-systems-theory"
+      ]
+    },
+    {
+      "id": "eppp-b025-professional-1",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-b48bc91e32131476",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/about/policy/multicultural-guidelines.pdf"
+      ]
+    },
+    {
+      "id": "eppp-b025-professional-2",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-7a6da861b15c8de6",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.hhs.gov/hipaa/for-professionals/privacy/guidance/disclosures-treatment-payment-health-care-operations/index.html"
+      ]
+    },
+    {
+      "id": "eppp-b025-professional-3",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-088a041d7f5d0a04",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ]
+    },
+    {
+      "id": "eppp-b025-professional-4",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-1607887a140d1adb",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/practice/guidelines/telepsychology-revisions.pdf"
+      ]
+    },
+    {
+      "id": "eppp-b026-biological-1",
+      "domainId": "biological",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-f46dbdf4e4a01886",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1038/nn1326"
+      ]
+    },
+    {
+      "id": "eppp-b026-biological-2",
+      "domainId": "biological",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-d549816ff59aa851",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1146/annurev.neuro.28.061604.135709"
+      ]
+    },
+    {
+      "id": "eppp-b026-cognitive-1",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-256144948c73c6b0",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1126/science.185.4157.1124"
+      ]
+    },
+    {
+      "id": "eppp-b026-cognitive-2",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-fc6c9424b144dc22",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0043158"
+      ]
+    },
+    {
+      "id": "eppp-b026-cognitive-3",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-6d8b42e4324bcdf3",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1016/0001-6918(67)90011-X"
+      ]
+    },
+    {
+      "id": "eppp-b026-social-1",
+      "domainId": "social-cultural",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-4ae52d12790495ff",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0027358"
+      ]
+    },
+    {
+      "id": "eppp-b026-social-2",
+      "domainId": "social-cultural",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-bff523650ed6235c",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0076284"
+      ]
+    },
+    {
+      "id": "eppp-b026-lifespan-1",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-820c65a17302975a",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development"
+      ]
+    },
+    {
+      "id": "eppp-b026-lifespan-2",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-1c8131fe55836c37",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+      ]
+    },
+    {
+      "id": "eppp-b026-lifespan-3",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-b87eb291ae5b5348",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+      ]
+    },
+    {
+      "id": "eppp-b026-assessment-1",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-a39d2337b2c2ed58",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.parinc.com/products/pai"
+      ]
+    },
+    {
+      "id": "eppp-b026-assessment-2",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-308d5279bb705870",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://dictionary.apa.org/face-validity"
+      ]
+    },
+    {
+      "id": "eppp-b026-assessment-3",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-06ef41728d634ee4",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Personality-%26-Biopsychosocial/Minnesota-Multiphasic-Personality-Inventory-2/p/100000461"
+      ]
+    },
+    {
+      "id": "eppp-b026-assessment-4",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-fbeef9d4cb91a7de",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/7-5-measures-of-intelligence"
+      ]
+    },
+    {
+      "id": "eppp-b026-assessment-5",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-3e1b95855a635b8d",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.itl.nist.gov/div898/handbook/prc/section4/prc412.htm"
+      ]
+    },
+    {
+      "id": "eppp-b026-intervention-1",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-3c9e0390a35af212",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://dictionary.apa.org/group-psychotherapy"
+      ]
+    },
+    {
+      "id": "eppp-b026-intervention-2",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-5062394fd5fab400",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://dictionary.apa.org/token-economy"
+      ]
+    },
+    {
+      "id": "eppp-b026-intervention-3",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-d5baccc4b9b6dd62",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.ptsd.va.gov/professional/treat/txessentials/emdr_pro.asp"
+      ]
+    },
+    {
+      "id": "eppp-b026-intervention-4",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-8175a0f403e2e7aa",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://dictionary.apa.org/acceptance-and-commitment-therapy"
+      ]
+    },
+    {
+      "id": "eppp-b026-professional-1",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-10e4b870ea241391",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ]
+    },
+    {
+      "id": "eppp-b026-professional-2",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-b3621e76cafb083b",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/a0035001"
+      ]
+    },
+    {
+      "id": "eppp-b026-professional-3",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-ad60945909c58c66",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ]
+    },
+    {
+      "id": "eppp-b026-professional-4",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-5fa4d4d3259d962b",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://law.justia.com/cases/california/supreme-court/3d/17/425.html"
+      ]
+    },
+    {
+      "id": "eppp-b026-professional-5",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-898ff90cd25f7741",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.hhs.gov/hipaa/for-professionals/privacy/guidance/minimum-necessary-requirement/index.html"
+      ]
+    },
+    {
+      "id": "eppp-b027-biological-1",
+      "domainId": "biological",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-bacdc9df5493e702",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.4088/JCP.tv17016ah4c"
+      ]
+    },
+    {
+      "id": "eppp-b027-cognitive-1",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-ecd95f3b3888c0d1",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1126/science.185.4157.1124"
+      ]
+    },
+    {
+      "id": "eppp-b027-cognitive-2",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-f060fa57f57132f9",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/0278-7393.4.6.592"
+      ]
+    },
+    {
+      "id": "eppp-b027-cognitive-3",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-f4027752d3dc61f3",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/0022-3514.74.5.1252"
+      ]
+    },
+    {
+      "id": "eppp-b027-social-1",
+      "domainId": "social-cultural",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-28dc65a01e4e83f0",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1111/j.1464-0597.1997.tb01087.x"
+      ]
+    },
+    {
+      "id": "eppp-b027-social-2",
+      "domainId": "social-cultural",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-8a7eac3e6a927678",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/12-3-attitudes-and-persuasion"
+      ]
+    },
+    {
+      "id": "eppp-b027-lifespan-1",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-2112bc2f66dfa680",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-4-death-and-dying"
+      ]
+    },
+    {
+      "id": "eppp-b027-lifespan-2",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-768b09103a2c8ab7",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+      ]
+    },
+    {
+      "id": "eppp-b027-assessment-1",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-bd7d79fcf5227361",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Behavior/Adaptive/Vineland-Adaptive-Behavior-Scales-%7C-Third-Edition/p/100001622"
+      ]
+    },
+    {
+      "id": "eppp-b027-assessment-2",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-b45801324ee58907",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://dictionary.apa.org/malingering"
+      ]
+    },
+    {
+      "id": "eppp-b027-assessment-3",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-b06a147b54e69e4f",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Cognition-%26-Neuro/Wechsler-Adult-Intelligence-Scale-%7C-Fifth-Edition/p/P100071002"
+      ]
+    },
+    {
+      "id": "eppp-b027-assessment-4",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-fd3fd2491b317db4",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Personality-%26-Biopsychosocial/Beck-Depression-Inventory-II/p/100000159"
+      ]
+    },
+    {
+      "id": "eppp-b027-intervention-1",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-1cd7634433394338",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0085885"
+      ]
+    },
+    {
+      "id": "eppp-b027-intervention-2",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-0ee2c588d5841d20",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://dictionary.apa.org/unconditional-positive-regard"
+      ]
+    },
+    {
+      "id": "eppp-b027-intervention-3",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-b98e097f59465709",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://dictionary.apa.org/narrative-therapy"
+      ]
+    },
+    {
+      "id": "eppp-b027-intervention-4",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-5d1c0de021d4bc5c",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://dictionary.apa.org/solution-focused-brief-therapy"
+      ]
+    },
+    {
+      "id": "eppp-b027-professional-1",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-62602a85aef2f294",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ]
+    },
+    {
+      "id": "eppp-b027-professional-2",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-2e6610e1b2408be3",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.law.cornell.edu/wex/m%27naghten_rule"
+      ]
+    },
+    {
+      "id": "eppp-b027-professional-3",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-b7554a86108142c6",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.childwelfare.gov/resources/clergy-mandated-reporters-child-abuse-and-neglect/"
+      ]
+    },
+    {
+      "id": "eppp-b027-professional-4",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-56818a83fef8e147",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/a0021250"
+      ]
+    },
+    {
+      "id": "eppp-b028-biological-1",
+      "domainId": "biological",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-ab4b163daf34ee76",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1159/000368279"
+      ]
+    },
+    {
+      "id": "eppp-b028-biological-2",
+      "domainId": "biological",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-8ffdaed252a5c433",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1136/jnnp.49.4.341"
+      ]
+    },
+    {
+      "id": "eppp-b028-cognitive-1",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-2fec96a6377568c0",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1016/0959-4388(95)80023-9"
+      ]
+    },
+    {
+      "id": "eppp-b028-cognitive-2",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-150e7071e69b12b1",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0030372"
+      ]
+    },
+    {
+      "id": "eppp-b028-cognitive-3",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-7ee70eb471a77252",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://dictionary.apa.org/token-economy"
+      ]
+    },
+    {
+      "id": "eppp-b028-social-1",
+      "domainId": "social-cultural",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-6dbfe6656a2ef6cc",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0076486"
+      ]
+    },
+    {
+      "id": "eppp-b028-social-2",
+      "domainId": "social-cultural",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-64c2610e70750b87",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0076284"
+      ]
+    },
+    {
+      "id": "eppp-b028-lifespan-1",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-676e7ab573ba6c4b",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development"
+      ]
+    },
+    {
+      "id": "eppp-b028-lifespan-2",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-bf0146cb39a4b2b9",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1111/j.1467-6494.1966.tb00543.x"
+      ]
+    },
+    {
+      "id": "eppp-b028-lifespan-3",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-fdda3f66984ea875",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+      ]
+    },
+    {
+      "id": "eppp-b028-assessment-1",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-f97bc750d1117ece",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Personality-%26-Biopsychosocial/Minnesota-Multiphasic-Personality-Inventory-2/p/100000461"
+      ]
+    },
+    {
+      "id": "eppp-b028-assessment-2",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-21d529b3da0ce6b5",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.itl.nist.gov/div898/handbook/prc/section4/prc412.htm"
+      ]
+    },
+    {
+      "id": "eppp-b028-assessment-3",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-efde168ab4e235db",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://dictionary.apa.org/face-validity"
+      ]
+    },
+    {
+      "id": "eppp-b028-intervention-1",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-91ca53981249deb3",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://dictionary.apa.org/harm-reduction"
+      ]
+    },
+    {
+      "id": "eppp-b028-intervention-2",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-9d15c4eed8950d5f",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.nimh.nih.gov/health/topics/obsessive-compulsive-disorder-ocd"
+      ]
+    },
+    {
+      "id": "eppp-b028-intervention-3",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-55a30769120cf678",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://dictionary.apa.org/systematic-desensitization"
+      ]
+    },
+    {
+      "id": "eppp-b028-professional-1",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-9bcf806e4add3647",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://law.justia.com/cases/california/supreme-court/3d/17/425.html"
+      ]
+    },
+    {
+      "id": "eppp-b028-professional-2",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-09a5c8d3ffec91d9",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://supreme.justia.com/cases/federal/us/362/402/"
+      ]
+    },
+    {
+      "id": "eppp-b028-professional-3",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-7c943b01c7807f8e",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/a0029889"
+      ]
+    },
+    {
+      "id": "eppp-b028-professional-4",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-223f5d6386f185de",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/ethics/code"
       ]
     }
   ]

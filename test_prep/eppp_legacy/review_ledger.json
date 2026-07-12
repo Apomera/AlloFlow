@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-11T05:14:42.636Z",
+  "generatedAt": "2026-07-11T19:57:23.892Z",
   "goal": "Deeply review the complete 2,933-question legacy universe; correct, diversify, or retire failures; and publish only items that pass the required gates.",
   "requiredGates": [
     "stable provenance and domain tagging",
@@ -19,10 +19,10 @@
   },
   "summary": {
     "legacyReviewUniverse": 2933,
-    "legacyItemsMigratedToNativeQa": 408,
-    "legacyItemsStillQuarantined": 2525,
+    "legacyItemsMigratedToNativeQa": 492,
+    "legacyItemsStillQuarantined": 2441,
     "nativeOriginalQaItems": 8,
-    "totalNativeQaItems": 416,
+    "totalNativeQaItems": 500,
     "independentExpertValidatedItems": 0,
     "productionValidatedItems": 0
   },
@@ -2430,9 +2430,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-cognitive-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -2502,9 +2502,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-cognitive-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -2930,9 +2930,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-cognitive-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -3032,9 +3032,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-cognitive-3",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -3816,9 +3816,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-cognitive-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -3833,9 +3833,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-cognitive-3",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -3922,9 +3922,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-social-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -4118,9 +4118,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-social-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -4154,9 +4154,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-social-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -4191,9 +4191,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-social-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -4311,9 +4311,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-social-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -4871,9 +4871,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-lifespan-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -4890,9 +4890,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-lifespan-3",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -6481,9 +6481,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-assessment-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -6710,9 +6710,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-assessment-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -6799,9 +6799,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-assessment-4",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -6817,9 +6817,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-assessment-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -6853,9 +6853,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-assessment-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -7439,9 +7439,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-assessment-3",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -7509,9 +7509,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-assessment-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -8283,9 +8283,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-intervention-3",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -8355,9 +8355,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-intervention-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -8478,9 +8478,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-intervention-4",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -8601,9 +8601,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-intervention-3",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -9432,9 +9432,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-intervention-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -12364,9 +12364,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-professional-5",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -12680,9 +12680,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-professional-4",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -12800,9 +12800,9 @@
         "time_sensitive_claim"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-professional-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -12836,9 +12836,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-professional-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -12889,9 +12889,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-professional-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -12977,9 +12977,9 @@
         "time_sensitive_claim"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-professional-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -13138,9 +13138,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-professional-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -13282,9 +13282,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-professional-3",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -13300,9 +13300,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-professional-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -13392,9 +13392,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-professional-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -13410,9 +13410,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-professional-3",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -17147,9 +17147,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-biological-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -17403,9 +17403,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-biological-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -17420,9 +17420,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-biological-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -17437,9 +17437,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-biological-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -17454,9 +17454,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-biological-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -17488,9 +17488,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-biological-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -23069,9 +23069,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-cognitive-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -23273,9 +23273,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-cognitive-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -23307,9 +23307,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-cognitive-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -27059,9 +27059,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-social-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -31350,9 +31350,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-lifespan-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -31384,9 +31384,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-lifespan-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -31435,9 +31435,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-lifespan-3",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -31503,9 +31503,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-lifespan-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -31605,9 +31605,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-lifespan-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -31622,9 +31622,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-lifespan-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -31639,9 +31639,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-lifespan-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -34316,9 +34316,9 @@
         "missing_reference"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-assessment-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -34333,9 +34333,9 @@
         "missing_reference"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-assessment-5",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -34386,9 +34386,9 @@
         "missing_reference"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-assessment-3",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -34490,9 +34490,9 @@
         "missing_reference"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-assessment-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -34593,9 +34593,9 @@
         "missing_reference"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-assessment-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -34680,9 +34680,9 @@
         "missing_reference"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-assessment-4",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -34697,9 +34697,9 @@
         "missing_reference"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-assessment-3",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -34732,9 +34732,9 @@
         "missing_reference"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-assessment-5",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -34749,9 +34749,9 @@
         "missing_reference"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-assessment-4",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -34766,9 +34766,9 @@
         "missing_reference"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-assessment-3",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -39475,9 +39475,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-intervention-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -39611,9 +39611,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-intervention-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -39679,9 +39679,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-intervention-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -39696,9 +39696,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-intervention-3",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -39866,9 +39866,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-intervention-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -39883,9 +39883,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-intervention-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -39900,9 +39900,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-intervention-3",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -39934,9 +39934,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-intervention-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -39951,9 +39951,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-intervention-4",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -39985,9 +39985,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-intervention-4",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -46544,9 +46544,9 @@
         "missing_reference"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-professional-3",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -46561,9 +46561,9 @@
         "missing_reference"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-professional-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -46578,9 +46578,9 @@
         "missing_reference"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-professional-3",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -46631,9 +46631,9 @@
         "missing_reference"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-professional-4",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -46648,9 +46648,9 @@
         "missing_reference"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-professional-4",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -46683,9 +46683,9 @@
         "missing_reference"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-professional-4",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -49068,9 +49068,9 @@
       "automatedPriority": "routine",
       "automatedFlags": [],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b028-cognitive-3",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -49458,9 +49458,9 @@
       "automatedPriority": "routine",
       "automatedFlags": [],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-cognitive-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -49473,9 +49473,9 @@
       "automatedPriority": "routine",
       "automatedFlags": [],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b026-social-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -49698,9 +49698,9 @@
       "automatedPriority": "routine",
       "automatedFlags": [],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b027-social-2",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -50088,9 +50088,9 @@
       "automatedPriority": "routine",
       "automatedFlags": [],
       "referenceCount": 1,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-b025-lifespan-1",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },

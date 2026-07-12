@@ -512,6 +512,18 @@
         .diagram-label-sm { font-family: 'Inter', sans-serif; font-size: 9px; fill: #94a3b8; }
         .diagram-box:hover { filter: brightness(1.3); cursor: pointer; }
         .diagram-box { transition: filter 0.3s; }
+        .textbook-study-toolbar { position:sticky;top:8px;z-index:20;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#111827;border:1px solid rgba(167,139,250,.3);border-radius:14px;padding:12px 14px;margin-bottom:18px;box-shadow:0 10px 28px rgba(0,0,0,.28); }
+        .textbook-study-toolbar button,.section-complete-btn { border:1px solid rgba(167,139,250,.35);background:#312e81;color:#ede9fe;border-radius:9px;padding:7px 10px;font-weight:700;cursor:pointer; }
+        .textbook-study-toolbar button:focus-visible,.section-complete-btn:focus-visible,.chapter-header:focus-visible,.case-header:focus-visible { outline:3px solid #fbbf24;outline-offset:3px; }
+        .textbook-progress { margin-left:auto;color:#c4b5fd;font-size:.84rem;font-weight:700; }
+        .section-study-row { display:flex;justify-content:flex-end;margin-top:14px; }
+        .section-complete-btn[aria-pressed="true"] { background:#065f46;border-color:#34d399;color:#d1fae5; }
+        .diagram-text-alternative { margin-top:10px;padding:10px 12px;border-left:3px solid #38bdf8;background:rgba(56,189,248,.08);color:#cbd5e1;font-size:.86rem;line-height:1.5; }
+        .textbook-container.hide-diagrams .interactive-diagram svg { display:none; }
+        .textbook-container.reduce-motion svg animate,.textbook-container.reduce-motion svg animateTransform { display:none; }
+        @media (prefers-reduced-motion: reduce) { .interactive-diagram svg animate,.interactive-diagram svg animateTransform { display:none; } .diagram-box { transition:none; } }
+        @media (max-width:640px) { .textbook-progress { width:100%;margin-left:0; } .textbook-study-toolbar { position:static; } }
+
     `;
     document.head.appendChild(style);
 
@@ -539,7 +551,14 @@
             return (domains[a].domainNumber || 99) - (domains[b].domainNumber || 99);
         });
 
-        let html = '<div class="textbook-container">';
+        let html = '<div class="textbook-container" data-library-version="1">';
+        html += '<div class="textbook-study-toolbar" role="toolbar" aria-label="Textbook study controls">';
+        html += '<button type="button" data-textbook-action="expand">Expand all</button>';
+        html += '<button type="button" data-textbook-action="collapse">Collapse all</button>';
+        html += '<button type="button" data-textbook-action="diagrams" aria-pressed="false">Hide diagrams</button>';
+        html += '<button type="button" data-textbook-action="motion" aria-pressed="false">Reduce motion</button>';
+        html += '<span class="textbook-progress" role="status" aria-live="polite">0 sections complete</span>';
+        html += '</div>';
 
         // Table of contents
         html += '<div class="textbook-toc">';
@@ -563,36 +582,39 @@
             html += '<div class="chapter-card" id="' + ch.id + '">';
 
             // Header (clickable to expand)
-            html += '<div class="chapter-header" onclick="this.parentElement.classList.toggle(\'open\')">';
+            html += '<button type="button" class="chapter-header" aria-expanded="false" aria-controls="' + ch.id + '-body">';
             html += '<span class="expand-icon">\u25bc</span>';
             html += '<span class="domain-badge">' + ch.domain + ' \u00b7 ' + ch.examWeight + '</span>';
             html += '<h2>' + ch.title + '</h2>';
             html += '<span class="meta">' + ch.id.replace('ch-', 'Chapter ').replace(/-/g, '.') + ' \u00b7 ' + ch.sections.length + ' sections \u00b7 ' + ch.references.length + ' references</span>';
-            html += '</div>';
+            html += '</button>';
 
             // Body
-            html += '<div class="chapter-body">';
+            html += '<div class="chapter-body" id="' + ch.id + '-body">';
 
             // Sections
-            ch.sections.forEach(function(sec) {
-                html += '<div class="chapter-section">';
+            ch.sections.forEach(function(sec, sectionIndex) {
+                var sectionId = ch.id + '-section-' + sectionIndex;
+                html += '<section class="chapter-section" data-section-id="' + sectionId + '">';
                 html += '<h3>' + sec.heading + '</h3>';
                 html += sec.content;
 
                 // Interactive Diagram
                 if (sec.interactiveDiagram) {
-                    html += '<div class="interactive-diagram">';
-                    html += sec.interactiveDiagram.svg;
+                    var diagramLabel = sec.interactiveDiagram.description || (sec.heading + ' diagram');
+                    html += '<figure class="interactive-diagram" role="group" aria-label="' + escapeAttribute(diagramLabel) + '">';
+                    html += sec.interactiveDiagram.svg.replace('<svg ', '<svg role="img" aria-label="' + escapeAttribute(diagramLabel) + '" focusable="false" ');
                     if (sec.interactiveDiagram.description) {
-                        html += '<div class="diagram-caption">' + sec.interactiveDiagram.description + '</div>';
+                        html += '<figcaption class="diagram-caption">' + sec.interactiveDiagram.description + '</figcaption>';
+                        html += '<div class="diagram-text-alternative"><strong>Text alternative:</strong> ' + sec.interactiveDiagram.description + '</div>';
                     }
-                    html += '</div>';
+                    html += '</figure>';
                 }
 
                 // Expandable Case Study
                 if (sec.expandableCase) {
-                    html += '<div class="expandable-case" onclick="this.classList.toggle(\'open\')">';
-                    html += '<div class="case-header"><span>\ud83d\udcc4 Clinical Vignette: ' + sec.expandableCase.title + '</span><span>\u25bc</span></div>';
+                    html += '<div class="expandable-case">';
+                    html += '<button type="button" class="case-header" aria-expanded="false"><span>\ud83d\udcc4 Clinical Vignette: ' + sec.expandableCase.title + '</span><span aria-hidden="true">▼</span></button>';
                     html += '<div class="case-body">';
                     html += '<p><strong>Presentation:</strong> ' + sec.expandableCase.clinicalDescription + '</p>';
                     html += '<div style="margin-top:12px;padding-top:12px;border-top:1px dashed rgba(255,255,255,0.1);">';
@@ -630,7 +652,8 @@
                     });
                     html += '</div>';
                 }
-                html += '</div>';
+                html += '<div class="section-study-row"><button type="button" class="section-complete-btn" data-section-complete="' + sectionId + '" aria-pressed="false">Mark section complete</button></div>';
+                html += '</section>';
             });
 
             // AI Coda (collapsible)
@@ -667,8 +690,62 @@
         html += '</div>';
         container.innerHTML = html;
 
+        setupTextbookInteractions(container);
+
         // ---- JS-driven tooltips for key term chips ----
         setupTermTooltips(container);
+    }
+
+    function escapeAttribute(value) {
+        return String(value || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function setupTextbookInteractions(root) {
+        var shell = root.querySelector('.textbook-container');
+        if (!shell) return;
+        var storageKey = 'alloflow_eppp_textbook_progress_v1';
+        var completed = {};
+        try { completed = JSON.parse(localStorage.getItem(storageKey) || '{}') || {}; } catch (_) { completed = {}; }
+        var progress = shell.querySelector('.textbook-progress');
+        var sectionButtons = Array.from(shell.querySelectorAll('[data-section-complete]'));
+        function updateProgress() {
+            var done = sectionButtons.filter(function(btn) { return !!completed[btn.dataset.sectionComplete]; }).length;
+            sectionButtons.forEach(function(btn) {
+                var isDone = !!completed[btn.dataset.sectionComplete];
+                btn.setAttribute('aria-pressed', String(isDone));
+                btn.textContent = isDone ? 'Section complete ✓' : 'Mark section complete';
+            });
+            if (progress) progress.textContent = done + ' of ' + sectionButtons.length + ' sections complete';
+        }
+        root.addEventListener('click', function(event) {
+            var header = event.target.closest('.chapter-header');
+            if (header) {
+                var card = header.closest('.chapter-card'); var open = !card.classList.contains('open');
+                card.classList.toggle('open', open); header.setAttribute('aria-expanded', String(open)); return;
+            }
+            var caseHeader = event.target.closest('.case-header');
+            if (caseHeader) {
+                var caseBox = caseHeader.closest('.expandable-case'); var caseOpen = !caseBox.classList.contains('open');
+                caseBox.classList.toggle('open', caseOpen); caseHeader.setAttribute('aria-expanded', String(caseOpen)); return;
+            }
+            var sectionButton = event.target.closest('[data-section-complete]');
+            if (sectionButton) {
+                var id = sectionButton.dataset.sectionComplete; completed[id] = !completed[id];
+                try { localStorage.setItem(storageKey, JSON.stringify(completed)); } catch (_) {}
+                updateProgress(); return;
+            }
+            var action = event.target.closest('[data-textbook-action]');
+            if (!action) return;
+            if (action.dataset.textbookAction === 'expand' || action.dataset.textbookAction === 'collapse') {
+                var openAll = action.dataset.textbookAction === 'expand';
+                shell.querySelectorAll('.chapter-card').forEach(function(card) { card.classList.toggle('open', openAll); var h=card.querySelector('.chapter-header'); if(h)h.setAttribute('aria-expanded',String(openAll)); });
+            } else if (action.dataset.textbookAction === 'diagrams') {
+                var hidden = shell.classList.toggle('hide-diagrams'); action.setAttribute('aria-pressed', String(hidden)); action.textContent = hidden ? 'Show diagrams' : 'Hide diagrams';
+            } else if (action.dataset.textbookAction === 'motion') {
+                var reduced = shell.classList.toggle('reduce-motion'); action.setAttribute('aria-pressed', String(reduced)); action.textContent = reduced ? 'Allow motion' : 'Reduce motion';
+            }
+        });
+        updateProgress();
     }
 
     function setupTermTooltips(root) {

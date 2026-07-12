@@ -3969,6 +3969,11 @@
                 color: 'amber', ready: true
               },
               {
+                id: 'particleLab3d', icon: '\u2728', label: 'Particle Lab 3D',
+                desc: 'Run fully 3D particle experiments with states of matter, gas laws, diffusion, collisions, attraction, live measurements, and particle tracing.',
+                color: 'cyan', ready: true
+              },
+              {
                 id: 'zoomGallery', icon: '\uD83D\uDD0D', label: 'Zoom Gallery',
                 desc: 'Zoom deep into real, openly-licensed images in OpenSeadragon \u2014 the viewer museums use \u2014 from the Pillars of Creation and Saturn\u2019s rings to an Apollo bootprint, the real Apollo 11 capsule, and a coral fan. Smithsonian Open Access (CC0) + NASA (public domain), with a Notice \u2192 Wonder observation coach beside it.',
                 color: 'sky', ready: true
@@ -3987,6 +3992,7 @@
               dataLab: 'data science codap statistics dataset table graph plot scatter chart mean median analyze census concord tutor socratic data literacy spreadsheet cases attributes',
               alphaFoldExplorer: 'alphafold alpha fold protein structure prediction uniprot accession molstar mol molecule molecular biology bioinformatics pdb cif mmcif bcif plddt pae confidence sequence amino acid fasta server deepmind ebi structure viewer',
               simShelf: 'phet simulation simulations sims physics forces energy circuits light waves matter orbits evolution fractions probability predict explore explain poe lab colorado interactive',
+              particleLab3d: 'particle particles 3d molecular dynamics states matter solid liquid gas diffusion kinetic theory temperature pressure collisions attraction intermolecular forces gas laws',
               zoomGallery: 'zoom gallery deep zoom openseadragon iiif image images photo photos picture pictures magnify magnifier close up detail details observe observation notice wonder smithsonian open access nasa museum artifact artifacts space astronomy hubble webb pillars creation saturn moon apollo bootprint coral fossil low vision cc0 public domain'
             };
             function _normalizeToolSearchText(value) {
@@ -5437,6 +5443,9 @@
             // Jul 2026: Molecule Shelf — Mol* (RCSB, MIT) companion window +
             // Notice→Wonder coach (launcher + AI bridge in stem_tool_moleculeshelf.js).
             moleculeShelf: true,
+            // Jul 2026: Particle Lab 3D — deterministic Three.js particle sandbox
+            // for states of matter, gas laws, diffusion, and collisions.
+            particleLab3d: true,
             // Jul 2026: Zoom Gallery — OpenSeadragon (BSD-3) deep-zoom companion
             // window over Smithsonian CC0 (IIIF) + NASA public-domain images +
             // Notice→Wonder coach (launcher + AI bridge in stem_tool_zoomgallery.js).

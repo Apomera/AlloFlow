@@ -144,3 +144,119 @@ describe('classifyRTITier — RTI tier classification (real bytes, explicit thre
     expect(Array.isArray(r.recommendations)).toBe(true);
   });
 });
+
+describe('_meta — reciprocal query surface (P3-1)', () => {
+  const META = () => window.AlloModules.StudentAnalytics._meta;
+  it('is registered on the module with read-only helpers', () => {
+    expect(META()).toBeTruthy();
+    expect(typeof META().getStudentProbeHistory).toBe('function');
+    expect(typeof META().getScreeningSummary).toBe('function');
+    expect(typeof META().getRTITier).toBe('function');
+  });
+  it('never throws + returns empty/null for an unknown student on empty storage', () => {
+    try { localStorage.removeItem('alloflow_probe_history'); } catch (e) {}
+    expect(META().getStudentProbeHistory('nobody')).toEqual([]);
+    expect(META().getScreeningSummary('nobody')).toMatchObject({ student: 'nobody', probeCount: 0, activities: [] });
+    expect(META().getRTITier('nobody')).toBeNull();
+  });
+  it('reads probe history and summarizes the latest record per activity', () => {
+    localStorage.setItem('alloflow_probe_history', JSON.stringify({ Robin: [
+      { activity: 'orf', grade: '3', wcpm: 40, timestamp: 1000 },
+      { activity: 'orf', grade: '3', wcpm: 55, timestamp: 2000 },
+      { activity: 'math', grade: '3', itemsPerMin: 20, timestamp: 1500 }
+    ] }));
+    expect(META().getStudentProbeHistory('Robin').length).toBe(3);
+    const sum = META().getScreeningSummary('Robin');
+    expect(sum.probeCount).toBe(3);
+    expect(sum.byActivity.orf.wcpm).toBe(55); // latest by timestamp
+    expect(sum.activities.slice().sort()).toEqual(['math', 'orf']);
+  });
+  it('getRTITier interprets latest probes and returns the most concerning tier', () => {
+    // timestamp 2000ms → Jan 1970 → winter. ORF g3 winter bench 92: 40 → 43% → Tier 3.
+    // math_dcpm g3 winter bench 35: 35 → 100% → Tier 1. Worst across probes = 3.
+    localStorage.setItem('alloflow_probe_history', JSON.stringify({ Robin: [
+      { activity: 'orf', grade: '3', wcpm: 40, timestamp: 2000 },
+      { activity: 'math_dcpm', grade: '3', itemsPerMin: 35, timestamp: 2000 }
+    ] }));
+    const rti = META().getRTITier('Robin');
+    expect(rti).toBeTruthy();
+    expect(rti.tier).toBe(3);
+    expect(rti.perProbe.length).toBe(2);
+  });
+  it('buildReportWriterExport assembles a payload + fact chunks and emits it', () => {
+    localStorage.setItem('alloflow_probe_history', JSON.stringify({ Robin: [{ activity: 'orf', grade: '3', wcpm: 40, timestamp: 2000 }] }));
+    try { localStorage.removeItem('alloflow_intervention_logs'); } catch (e) {}
+    let emitted = null;
+    const handler = (e) => { emitted = e.detail; };
+    window.addEventListener('alloRTIExportReady', handler);
+    const payload = META().buildReportWriterExport('Robin');
+    window.removeEventListener('alloRTIExportReady', handler);
+    expect(payload).toMatchObject({ source: 'AssessmentCenter', student: 'Robin' });
+    expect(payload.rtiTier.tier).toBe(3);
+    // IEP contract the Report Writer ingest depends on (prePopulatedSections keys
+    // must match the 'IEP-Ready Packet' blueprint section names).
+    expect(payload.studentNickname).toBe('Robin');
+    expect(payload.targetSectionName).toBe('RTI / CBM Screening & Benchmark Summary');
+    expect(typeof payload.prePopulatedSections['RTI / CBM Screening & Benchmark Summary']).toBe('string');
+    expect(payload.prePopulatedSections['RTI / CBM Screening & Benchmark Summary'].length).toBeGreaterThan(0);
+    expect(payload.prePopulatedSections).toHaveProperty('Intervention Summary');
+    expect(payload.prePopulatedSections).toHaveProperty('Dynamic Assessment Findings');
+    // Trendline series for the IEP progress-monitoring SVG (score points + benchmark).
+    expect(Array.isArray(payload.trendSeries)).toBe(true);
+    const orf = payload.trendSeries.find(s => s.activity === 'orf');
+    expect(orf).toBeTruthy();
+    expect(orf.benchmark).toBe(92); // ORF grade 3 winter 50th-%ile
+    expect(orf.points.length).toBe(1);
+    expect(orf.points[0].value).toBe(40);
+    expect(payload.factChunks.length).toBeGreaterThan(0);
+    expect(payload.caveat).toMatch(/not an eligibility determination/);
+    expect(window.__alloRTIExport).toBe(payload);
+    expect(emitted).toMatchObject({ student: 'Robin' });
+  });
+  it('buildReportWriterExport never throws for an unknown student', () => {
+    try { localStorage.removeItem('alloflow_probe_history'); } catch (e) {}
+    expect(() => META().buildReportWriterExport('ghost', { emit: false })).not.toThrow();
+    const p = META().buildReportWriterExport('ghost', { emit: false });
+    expect(p.student).toBe('ghost');
+    expect(p.rtiTier).toBeNull();
+  });
+  it('getTrendSeries caps to 12 points and overlays an aimline for ORF when a goal exists', () => {
+    const base = Date.parse('2026-01-08');
+    const probes = Array.from({ length: 14 }, (_, i) => ({ activity: 'orf', grade: '3', wcpm: 30 + i, timestamp: base + i * 7 * 24 * 3600 * 1000 }));
+    localStorage.setItem('alloflow_probe_history', JSON.stringify({ Robin: probes }));
+    localStorage.setItem('alloflow_rti_goals', JSON.stringify({ Robin: { baseline: 30, target: 90, baselineDate: '2026-01-01', targetDate: '2026-04-01' } }));
+    const orf = META().getTrendSeries('Robin').find(s => s.activity === 'orf');
+    expect(orf.points.length).toBe(12);          // capped from 14
+    expect(Array.isArray(orf.aimline)).toBe(true);
+    expect(orf.aimline.length).toBe(12);
+    expect(orf.goal).toMatchObject({ baseline: 30, target: 90 });
+    expect(typeof orf.benchmark).toBe('number'); // ORF g3 winter benchmark
+  });
+  it('getTrendSeries has no aimline when no goal is set', () => {
+    try { localStorage.removeItem('alloflow_rti_goals'); } catch (e) {}
+    localStorage.setItem('alloflow_probe_history', JSON.stringify({ Robin: [{ activity: 'orf', grade: '3', wcpm: 40, timestamp: 2000 }] }));
+    const orf = META().getTrendSeries('Robin').find(s => s.activity === 'orf');
+    expect(orf.aimline).toBeNull();
+  });
+});
+
+describe('calculateAimline — RTI decision-rule thresholds (P2-4)', () => {
+  const goal = { baseline: 10, target: 40, baselineDate: '2026-01-01', targetDate: '2026-04-01' };
+  // All points value 0 are below the aimline (baseline 10, rising), so consecutiveBelow == n.
+  const belowPoints = (n) => Array.from({ length: n }, (_, i) => ({ date: '2026-01-' + String(8 + i * 3).padStart(2, '0'), value: 0 }));
+  it('is exposed on the test seam', () => {
+    expect(typeof SAI.calculateAimline).toBe('function');
+  });
+  it('default (no threshold) reproduces the fixed 4-warn / 6-change rule EXACTLY', () => {
+    expect(SAI.calculateAimline(goal, belowPoints(3)).alert).toBe('ok');
+    expect(SAI.calculateAimline(goal, belowPoints(4)).alert).toBe('warning');
+    expect(SAI.calculateAimline(goal, belowPoints(6)).alert).toBe('critical');
+    expect(SAI.calculateAimline(goal, belowPoints(6))).toMatchObject({ warnThreshold: 4, changeThreshold: 6, consecutiveBelow: 6 });
+  });
+  it('picker threshold shifts when warning/critical fire', () => {
+    // threshold 6 → warn@6 / change@8: 6 consecutive below is only a WARNING now.
+    expect(SAI.calculateAimline(goal, belowPoints(6), 6).alert).toBe('warning');
+    // threshold 2 → warn@2 / change@4: 4 consecutive below is CRITICAL.
+    expect(SAI.calculateAimline(goal, belowPoints(4), 2).alert).toBe('critical');
+  });
+});

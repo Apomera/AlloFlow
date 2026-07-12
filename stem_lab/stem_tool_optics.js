@@ -725,12 +725,39 @@
         onClick: onClick,
         style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, cursor: 'crosshair', maxWidth: 460 }
       },
-        // Top medium tint
-        h('rect', { x: 0, y: 0, width: W, height: cy, fill: 'rgba(56,189,248,0.06)' }),
-        // Bottom medium tint (denser if n2 > n1)
-        h('rect', { x: 0, y: cy, width: W, height: H - cy, fill: n2 > n1 ? 'rgba(99,102,241,0.18)' : 'rgba(56,189,248,0.06)' }),
-        // Interface line
+        h('defs', null,
+          h('linearGradient', { id: 'op-refr-sky', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: '#071426' }),
+            h('stop', { offset: '72%', stopColor: '#0c2842' }),
+            h('stop', { offset: '100%', stopColor: '#124160' })
+          ),
+          h('linearGradient', { id: 'op-refr-depth', x1: '0', y1: '0', x2: '0', y2: '1' },
+            h('stop', { offset: '0%', stopColor: n2 > n1 ? '#263f87' : '#10344d', stopOpacity: 0.78 }),
+            h('stop', { offset: '100%', stopColor: n2 > n1 ? '#090f31' : '#071b2d', stopOpacity: 0.98 })
+          ),
+          h('linearGradient', { id: 'op-interface-spectrum', x1: '0', y1: '0', x2: '1', y2: '0' },
+            h('stop', { offset: '0%', stopColor: '#38bdf8', stopOpacity: 0 }),
+            h('stop', { offset: '35%', stopColor: '#67e8f9', stopOpacity: 0.8 }),
+            h('stop', { offset: '50%', stopColor: isTIR ? '#fb7185' : '#fef08a', stopOpacity: 1 }),
+            h('stop', { offset: '65%', stopColor: '#a78bfa', stopOpacity: 0.8 }),
+            h('stop', { offset: '100%', stopColor: '#38bdf8', stopOpacity: 0 })
+          ),
+          h('filter', { id: 'op-ray-bloom', x: '-40%', y: '-40%', width: '180%', height: '180%' },
+            h('feGaussianBlur', { stdDeviation: '4.5' })
+          ),
+          h('radialGradient', { id: 'op-impact-aura' },
+            h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.9 }),
+            h('stop', { offset: '28%', stopColor: isTIR ? '#fb7185' : '#fde047', stopOpacity: 0.55 }),
+            h('stop', { offset: '100%', stopColor: isTIR ? '#ef4444' : '#22d3ee', stopOpacity: 0 })
+          )
+        ),
+        // Layered media and luminous boundary make index changes visible at a glance.
+        h('rect', { x: 0, y: 0, width: W, height: cy, fill: 'url(#op-refr-sky)' }),
+        h('rect', { x: 0, y: cy, width: W, height: H - cy, fill: 'url(#op-refr-depth)' }),
+        h('ellipse', { cx: cx, cy: cy, rx: isTIR ? 72 : 48, ry: isTIR ? 16 : 11, fill: 'url(#op-impact-aura)', opacity: isTIR ? 0.95 : 0.72 }),
+        h('line', { x1: pad.l, y1: cy, x2: W - pad.r, y2: cy, stroke: 'url(#op-interface-spectrum)', strokeWidth: isTIR ? 10 : 7, opacity: 0.22, filter: 'url(#op-ray-bloom)' }),
         h('line', { x1: pad.l, y1: cy, x2: W - pad.r, y2: cy, stroke: '#94a3b8', strokeWidth: 2 }),
+        h('line', { x1: pad.l, y1: cy - 1, x2: W - pad.r, y2: cy - 1, stroke: 'url(#op-interface-spectrum)', strokeWidth: 1.2, opacity: 0.9 }),
         // Normal (dashed vertical)
         h('line', { x1: cx, y1: pad.t, x2: cx, y2: H - pad.b, stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 3' }),
         h('text', { x: cx + 4, y: pad.t + 12, fill: '#94a3b8', fontSize: 10 }, 'normal'),
@@ -799,14 +826,17 @@
           return arcs;
         })(),
         // Incident ray (yellow, with arrowhead at the interface)
+        h('line', { x1: inX, y1: inY, x2: cx, y2: cy, stroke: '#fde047', strokeWidth: 11, opacity: 0.18, filter: 'url(#op-ray-bloom)' }),
         h('line', { x1: inX, y1: inY, x2: cx, y2: cy, stroke: '#fbbf24', strokeWidth: 2.5 }),
         h('polygon', { points: (cx - 4) + ',' + (cy - 5) + ' ' + (cx + 4) + ',' + (cy - 5) + ' ' + cx + ',' + (cy + 1), fill: '#fbbf24', transform: 'rotate(' + theta1Deg + ' ' + cx + ' ' + cy + ')' }),
         h('text', { x: (inX + cx) / 2 + 8, y: (inY + cy) / 2, fill: '#fbbf24', fontSize: 10, fontWeight: 700 }, 'incident (' + theta1Deg.toFixed(1) + '°)'),
         // Reflected ray (green, dashed)
-        h('line', { x1: cx, y1: cy, x2: reflX, y2: reflY, stroke: '#10b981', strokeWidth: 1.8, strokeDasharray: '4 3', opacity: 0.85 }),
+        h('line', { x1: cx, y1: cy, x2: reflX, y2: reflY, stroke: isTIR ? '#fb7185' : '#34d399', strokeWidth: isTIR ? 13 : 7, opacity: isTIR ? 0.3 : 0.1, filter: 'url(#op-ray-bloom)' }),
+        h('line', { x1: cx, y1: cy, x2: reflX, y2: reflY, stroke: isTIR ? '#fb7185' : '#10b981', strokeWidth: isTIR ? 2.8 : 1.8, strokeDasharray: isTIR ? '0' : '4 3', opacity: isTIR ? 1 : 0.85 }),
         h('text', { x: (reflX + cx) / 2 + 4, y: (reflY + cy) / 2, fill: '#10b981', fontSize: 10 }, 'reflected'),
         // Refracted (or TIR) ray
         !isTIR && theta2 != null ? [
+          h('line', { key: 'rfrglow', x1: cx, y1: cy, x2: refrX, y2: refrY, stroke: '#22d3ee', strokeWidth: 12, opacity: 0.18, filter: 'url(#op-ray-bloom)' }),
           h('line', { key: 'rfr', x1: cx, y1: cy, x2: refrX, y2: refrY, stroke: '#06b6d4', strokeWidth: 2.5 }),
           h('text', { key: 'rfrlab', x: (refrX + cx) / 2 + 8, y: (refrY + cy) / 2, fill: '#06b6d4', fontSize: 10, fontWeight: 700 }, 'refracted (' + radToDeg(theta2).toFixed(1) + '°)')
         ] : [
@@ -1127,25 +1157,35 @@
         })(),
         // Optical axis
         h('line', { x1: pad.l, y1: sy(0), x2: W - pad.r, y2: sy(0), stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
-        // Lens at x = 0 — converging is biconvex; diverging is biconcave
+        // Lens at x = 0 — dimensional glass profile with an accessible symbolic outline.
         (function() {
           var lensX = sx(0);
-          var topY = sy(10), botY = sy(-10);
-          if (lt === 'converging') {
-            // Biconvex: outward arrows on both sides
-            return h('g', null,
-              h('line', { x1: lensX, y1: topY, x2: lensX, y2: botY, stroke: '#a5b4fc', strokeWidth: 3 }),
-              h('polygon', { points: (lensX - 4) + ',' + (topY + 6) + ' ' + (lensX + 4) + ',' + (topY + 6) + ' ' + lensX + ',' + topY, fill: '#a5b4fc' }),
-              h('polygon', { points: (lensX - 4) + ',' + (botY - 6) + ' ' + (lensX + 4) + ',' + (botY - 6) + ' ' + lensX + ',' + botY, fill: '#a5b4fc' })
-            );
-          } else {
-            // Biconcave: inward arrows
-            return h('g', null,
-              h('line', { x1: lensX, y1: topY, x2: lensX, y2: botY, stroke: '#a5b4fc', strokeWidth: 3 }),
-              h('polygon', { points: (lensX - 4) + ',' + topY + ' ' + (lensX + 4) + ',' + topY + ' ' + lensX + ',' + (topY + 8), fill: '#a5b4fc' }),
-              h('polygon', { points: (lensX - 4) + ',' + botY + ' ' + (lensX + 4) + ',' + botY + ' ' + lensX + ',' + (botY - 8), fill: '#a5b4fc' })
-            );
-          }
+          var topY = sy(10), botY = sy(-10), midY = sy(0);
+          var glassPath = lt === 'converging'
+            ? 'M ' + lensX + ' ' + topY + ' C ' + (lensX + 13) + ' ' + (topY + 28) + ' ' + (lensX + 13) + ' ' + (botY - 28) + ' ' + lensX + ' ' + botY + ' C ' + (lensX - 13) + ' ' + (botY - 28) + ' ' + (lensX - 13) + ' ' + (topY + 28) + ' ' + lensX + ' ' + topY + ' Z'
+            : 'M ' + (lensX - 11) + ' ' + topY + ' C ' + (lensX - 3) + ' ' + (topY + 32) + ' ' + (lensX - 3) + ' ' + (botY - 32) + ' ' + (lensX - 11) + ' ' + botY + ' L ' + (lensX + 11) + ' ' + botY + ' C ' + (lensX + 3) + ' ' + (botY - 32) + ' ' + (lensX + 3) + ' ' + (topY + 32) + ' ' + (lensX + 11) + ' ' + topY + ' Z';
+          return h('g', { 'aria-hidden': 'true' },
+            h('defs', null,
+              h('linearGradient', { id: 'op-lens-glass', x1: '0', y1: '0', x2: '1', y2: '0' },
+                h('stop', { offset: '0%', stopColor: '#67e8f9', stopOpacity: 0.18 }),
+                h('stop', { offset: '42%', stopColor: '#e0f2fe', stopOpacity: 0.7 }),
+                h('stop', { offset: '58%', stopColor: '#ffffff', stopOpacity: 0.82 }),
+                h('stop', { offset: '100%', stopColor: '#818cf8', stopOpacity: 0.24 })
+              ),
+              h('radialGradient', { id: 'op-lens-aura' },
+                h('stop', { offset: '0%', stopColor: '#a5f3fc', stopOpacity: 0.38 }),
+                h('stop', { offset: '100%', stopColor: '#6366f1', stopOpacity: 0 })
+              ),
+              h('filter', { id: 'op-lens-soft-glow', x: '-80%', y: '-30%', width: '260%', height: '160%' },
+                h('feGaussianBlur', { stdDeviation: '8' })
+              )
+            ),
+            h('ellipse', { cx: lensX, cy: midY, rx: 26, ry: 94, fill: 'url(#op-lens-aura)', opacity: 0.55, filter: 'url(#op-lens-soft-glow)' }),
+            h('path', { d: glassPath, fill: 'url(#op-lens-glass)', stroke: '#a5f3fc', strokeWidth: 1.8 }),
+            h('path', { d: 'M ' + (lensX - 2) + ' ' + (topY + 8) + ' C ' + (lensX + 3) + ' ' + (topY + 38) + ' ' + (lensX + 3) + ' ' + (botY - 38) + ' ' + (lensX - 2) + ' ' + (botY - 8), fill: 'none', stroke: '#ffffff', strokeWidth: 1.2, opacity: 0.68 }),
+            h('circle', { cx: lensX, cy: midY, r: 3.5, fill: '#e0f2fe', stroke: '#22d3ee', strokeWidth: 1 }),
+            h('text', { x: lensX + 15, y: topY + 12, fill: '#bae6fd', fontSize: 9, fontWeight: 700 }, lt === 'converging' ? 'convex glass' : 'concave glass')
+          );
         })(),
         // Focal points: F at ±|f|
         h('circle', { cx: sx(-fAbs), cy: sy(0), r: 3, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 1 }),
@@ -1531,6 +1571,26 @@
           });
           return [defs].concat(rings);
         })(),
+        // Luminous interference field: bright maxima become tapered energy corridors
+        // joining both coherent slits to their corresponding screen fringes.
+        (function() {
+          var lobes = [];
+          for (var li = 2; li < nSamples - 2; li += 2) {
+            var lobeI = clamp(intensitySamples[li] / I0, 0, 1);
+            if (lobeI < 0.08) continue;
+            var ly = screenTop + screenHeight * (li / (nSamples - 1));
+            var halfBand = Math.max(1.4, screenHeight / nSamples * 1.7);
+            lobes.push(h('path', {
+              key: 'lobe' + li,
+              d: 'M ' + (barX + 6) + ' ' + slitTopY + ' L ' + screenX + ' ' + (ly - halfBand) + ' L ' + screenX + ' ' + (ly + halfBand) + ' L ' + (barX + 6) + ' ' + slitBotY + ' Z',
+              fill: color,
+              opacity: 0.018 + lobeI * 0.075
+            }));
+          }
+          return lobes;
+        })(),
+        // The observation screen blooms where the intensity is high.
+        h('rect', { x: screenX - 10, y: screenTop - 4, width: 28, height: screenHeight + 8, fill: color, opacity: 0.08, rx: 12, style: { filter: 'blur(7px)' } }),
         // Screen
         h('rect', { x: screenX, y: screenTop, width: 8, height: screenHeight, fill: '#1e293b', stroke: '#475569', strokeWidth: 1 }),
         // Intensity bars on the screen (one per sample, mapped to screen y range)

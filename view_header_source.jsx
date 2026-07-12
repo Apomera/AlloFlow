@@ -997,6 +997,7 @@ function HeaderBar(props) {
                             {showExportMenu && <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[90]" onClick={handleSetShowExportMenuToFalse}></div>}
                         </div>
                         )}
+                            {isTeacherMode && (
                             <button
                                 onClick={() => setShowClassAnalytics(true)}
                                 className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 ring-1 ring-violet-400/40"
@@ -1005,6 +1006,7 @@ function HeaderBar(props) {
                             >
                                 <ClipboardList size={14} /> <span className="hidden lg:inline">{t('common.assessment_center') || 'Assessment Center'}</span>
                             </button>
+                            )}
                         {!isTeacherMode && (
                             <button
                                 onClick={handleSetShowSubmitModalToTrue}

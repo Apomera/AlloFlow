@@ -58,6 +58,94 @@ function ExportPreviewView(props) {
   // Writing-check panel state: null | {status:'loading'} | {status:'error',error}
   // | {status:'done', items:[{blockIndex,message,start,end,bad,snippet,suggestions}], capped}
   const [writingCheck, setWritingCheck] = React.useState(null);
+  const [wordGoalProgress, setWordGoalProgress] = React.useState({ count: 0, goal: 0, percent: 0 });
+  const [pendingImageFile, setPendingImageFile] = React.useState(null);
+  const [imageAltText, setImageAltText] = React.useState('');
+  const [imageDecorative, setImageDecorative] = React.useState(false);
+  const [imageAltError, setImageAltError] = React.useState('');
+  const imageFileInputRef = React.useRef(null);
+  const imageAddButtonRef = React.useRef(null);
+  const imageAltInputRef = React.useRef(null);
+  const imageInsertionRangeRef = React.useRef(null);
+
+  const closeImageDialog = React.useCallback(() => {
+    setPendingImageFile(null);
+    setImageAltText('');
+    setImageDecorative(false);
+    setImageAltError('');
+    window.setTimeout(() => imageAddButtonRef.current?.focus(), 0);
+  }, []);
+
+  React.useEffect(() => {
+    if (!pendingImageFile) return undefined;
+    const timer = window.setTimeout(() => imageAltInputRef.current?.focus(), 0);
+    return () => window.clearTimeout(timer);
+  }, [pendingImageFile]);
+
+  const insertPendingImage = React.useCallback(() => {
+    if (!pendingImageFile) return;
+    const alt = imageDecorative ? '' : imageAltText.trim();
+    if (!imageDecorative && !alt) {
+      setImageAltError('Describe the image, or mark it as decorative.');
+      imageAltInputRef.current?.focus();
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const iframe = exportPreviewRef.current;
+      const doc = iframe?.contentDocument;
+      if (!doc) {
+        addToast && addToast('Preview not ready yet.', 'error');
+        return;
+      }
+      const img = doc.createElement('img');
+      img.src = ev.target.result;
+      img.style.cssText = 'max-width:100%;height:auto;border-radius:8px;margin:12px 0;cursor:move;';
+      img.alt = alt;
+      const savedRange = imageInsertionRangeRef.current;
+      if (savedRange && savedRange.startContainer?.ownerDocument === doc) {
+        try {
+          savedRange.collapse(false);
+          savedRange.insertNode(img);
+        } catch (_) {
+          (doc.querySelector('main') || doc.body).appendChild(img);
+        }
+      } else {
+        (doc.querySelector('main') || doc.body).appendChild(img);
+      }
+      imageInsertionRangeRef.current = null;
+      closeImageDialog();
+      addToast && addToast(imageDecorative ? 'Decorative image inserted.' : 'Image inserted with alternative text.', 'success');
+    };
+    reader.onerror = () => addToast && addToast('Could not read that image.', 'error');
+    reader.readAsDataURL(pendingImageFile);
+  }, [pendingImageFile, imageDecorative, imageAltText, exportPreviewRef, addToast, closeImageDialog]);
+  const openerRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!showExportPreview) return undefined;
+    openerRef.current = document.activeElement;
+    return () => {
+      const opener = openerRef.current;
+      if (opener && opener.isConnected && typeof opener.focus === 'function') {
+        window.setTimeout(() => opener.focus(), 0);
+      }
+    };
+  }, [showExportPreview]);
+
+  const handleRadioGroupKeyDown = React.useCallback((e) => {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) return;
+    const radios = Array.from(e.currentTarget.querySelectorAll('[role="radio"]:not([disabled])'));
+    if (!radios.length) return;
+    e.preventDefault();
+    const current = Math.max(0, radios.indexOf(document.activeElement));
+    let next = current;
+    if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = radios.length - 1;
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (current - 1 + radios.length) % radios.length;
+    else next = (current + 1) % radios.length;
+    radios[next].focus();
+    radios[next].click();
+  }, []);
   const brandProfiles = React.useMemo(() => {
     try {
       const bp = window.AlloModules && window.AlloModules.BrandProfile;
@@ -78,19 +166,19 @@ function ExportPreviewView(props) {
   if (!showExportPreview) return null;
 
   return (
-          <div className="allo-docsuite fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-4" role="dialog" aria-modal="true" aria-label={t("a11y.doc_builder")}
+          <div className="allo-docsuite fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="document-builder-title"
             onClick={(e) => { if (e.target === e.currentTarget) setShowExportPreview(false); }}
-            onKeyDown={(e) => { if (e.key === 'Escape') setShowExportPreview(false); }}
+            onKeyDown={(e) => { if (e.key !== 'Escape') return; if (pendingImageFile) { e.stopPropagation(); closeImageDialog(); } else setShowExportPreview(false); }}
             ref={(el) => {
               if (!el) return;
               // iframe included: the WYSIWYG editing surface was previously
               // unreachable by Tab inside the trap — a WCAG 2.1.1 failure on
               // the builder's main feature.
-              const focusables = el.querySelectorAll('button, [href], input, select, textarea, iframe, [tabindex]:not([tabindex="-1"])');
+              const focusables = el.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])');
               if (focusables.length > 0 && !el.contains(document.activeElement)) focusables[0].focus();
               el.__focusTrap = el.__focusTrap || ((ev) => {
                 if (ev.key !== 'Tab') return;
-                const fl = el.querySelectorAll('button, [href], input, select, textarea, iframe, [tabindex]:not([tabindex="-1"])');
+                const fl = el.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])');
                 if (fl.length === 0) return;
                 const first = fl[0], last = fl[fl.length - 1];
                 if (ev.shiftKey) { if (document.activeElement === first) { ev.preventDefault(); last.focus(); } }
@@ -99,11 +187,45 @@ function ExportPreviewView(props) {
               el.removeEventListener('keydown', el.__focusTrap);
               el.addEventListener('keydown', el.__focusTrap);
             }}>
-            <div className="bg-white rounded-2xl shadow-2xl flex w-full max-w-[95vw] max-h-[95vh] overflow-hidden">
+            {pendingImageFile && (
+              <div className="fixed inset-0 z-[210] bg-black/70 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="image-description-title"
+                onClick={(e) => { if (e.target === e.currentTarget) closeImageDialog(); }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeImageDialog(); return; }
+                  if (e.key !== 'Tab') return;
+                  const controls = Array.from(e.currentTarget.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled])'));
+                  if (!controls.length) return;
+                  const first = controls[0], last = controls[controls.length - 1];
+                  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+                }}>
+                <div className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl" role="document">
+                  <h3 id="image-description-title" className="text-lg font-black text-slate-900">Describe this image</h3>
+                  <p className="mt-1 text-sm text-slate-700">Alternative text should communicate the image’s purpose to someone who cannot see it.</p>
+                  <p className="mt-2 text-xs font-medium text-slate-600 truncate" title={pendingImageFile.name}>{pendingImageFile.name}</p>
+                  <label htmlFor="builder-image-alt" className="mt-4 block text-sm font-bold text-slate-800">Alternative text</label>
+                  <textarea id="builder-image-alt" ref={imageAltInputRef} value={imageAltText} disabled={imageDecorative} rows={3}
+                    onChange={(e) => { setImageAltText(e.target.value); setImageAltError(''); }}
+                    aria-describedby="builder-image-alt-help builder-image-alt-error" aria-invalid={imageAltError ? 'true' : undefined}
+                    className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:bg-slate-100" />
+                  <p id="builder-image-alt-help" className="mt-1 text-xs text-slate-600">Describe what matters in this document, not every visual detail.</p>
+                  <label className="mt-3 flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 hover:bg-slate-50">
+                    <input type="checkbox" checked={imageDecorative} onChange={(e) => { setImageDecorative(e.target.checked); setImageAltError(''); }} />
+                    <span><strong>Decorative image</strong> — it adds no information and should be skipped by screen readers.</span>
+                  </label>
+                  <p id="builder-image-alt-error" className="mt-2 min-h-5 text-sm font-bold text-red-700" role="alert">{imageAltError}</p>
+                  <div className="mt-4 flex justify-end gap-3">
+                    <button type="button" onClick={closeImageDialog} className="min-h-11 rounded-lg border border-slate-400 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">Cancel</button>
+                    <button type="button" onClick={insertPendingImage} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800">Insert image</button>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="bg-white rounded-2xl shadow-2xl flex w-full max-w-[95vw] max-h-[95vh] overflow-hidden" inert={pendingImageFile ? true : undefined} aria-hidden={pendingImageFile ? 'true' : undefined}>
               {/* Left Panel — Settings */}
               <div className="w-72 shrink-0 bg-gradient-to-b from-slate-50 to-white border-r border-slate-200 overflow-y-auto p-4 space-y-3">
                 <div className="flex items-center justify-between mb-1">
-                  <h2 className="text-sm font-black text-slate-800 flex items-center gap-2">🛠️ Document Builder</h2>
+                  <h2 id="document-builder-title" className="text-sm font-black text-slate-800 flex items-center gap-2">🛠️ Document Builder</h2>
                   <div className="flex items-center gap-1">
                     <button onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }} className="p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm" aria-label={t('a11y.toggle_theme') || 'Toggle color theme'} title={theme === 'contrast' ? (t('theme.high_contrast') || 'High Contrast') : theme === 'dark' ? (t('theme.dark') || 'Dark Mode') : (t('theme.light') || 'Light Mode')}><span aria-hidden="true">{theme === 'contrast' ? '👁' : theme === 'dark' ? '🌙' : '☀️'}</span></button>
                     <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
@@ -137,7 +259,7 @@ function ExportPreviewView(props) {
                           title={`Apply "${preset.name}" preset`}
                         >{preset.emoji} {preset.name}</button>
                         <button onClick={() => deleteExportPreset(key)}
-                          className="px-1 py-1 bg-white border border-violet-600 border-l-0 rounded-r-lg text-[11px] text-red-600 hover:text-red-700 hover:bg-red-50 transition-all"
+                          className="min-w-6 min-h-6 px-1 py-1 bg-white border border-violet-600 border-l-0 rounded-r-lg text-[11px] text-red-700 hover:text-red-800 hover:bg-red-50 transition-all" aria-label={`Delete "${preset.name}" preset`}
                           title={`Delete "${preset.name}" preset`}
                         ><X size={10} /></button>
                       </div>
@@ -154,9 +276,9 @@ function ExportPreviewView(props) {
                 {/* Export Mode */}
                 <div>
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Format</div>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1" role="radiogroup" aria-label="Export format" onKeyDown={handleRadioGroupKeyDown}>
                     {[['print', '📄 PDF'], ['worksheet', '📝 Worksheet'], ['html', '💻 HTML'], ['slides', '📊 Slides']].map(([m, label]) => (
-                      <button key={m} onClick={() => setExportPreviewMode(m)} className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}>{label}</button>
+                      <button key={m} role="radio" aria-checked={exportPreviewMode === m} tabIndex={exportPreviewMode === m ? 0 : -1} onClick={() => setExportPreviewMode(m)} className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}>{label}</button>
                     ))}
                   </div>
                 </div>
@@ -186,16 +308,16 @@ function ExportPreviewView(props) {
                       className="w-full mb-1.5 text-left text-[11px] px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-300 text-rose-800 hover:border-rose-400 hover:from-rose-100 hover:to-orange-100 transition-colors"
                     >🏷️ <strong>First time?</strong> Set up your school brand → colors, fonts, logo for branded exports</button>
                   )}
-                  <div className="grid grid-cols-2 gap-1">
+                  <div className="grid grid-cols-2 gap-1" role="radiogroup" aria-label="Document style" onKeyDown={handleRadioGroupKeyDown}>
                     {Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars).map(([key, s]) => (
-                      <button key={key} onClick={() => { setExportTheme(key); setTimeout(updateExportPreview, 50); }}
+                      <button key={key} role="radio" aria-checked={exportTheme === key} tabIndex={exportTheme === key ? 0 : -1} onClick={() => { setExportTheme(key); setTimeout(updateExportPreview, 50); }}
                         className={`text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === key ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}
                       >{s.emoji} {s.name}</button>
                     ))}
                     {/* User brand profiles as selectable themes — clicking one applies its
                         CSS vars via doc_pipeline_source.jsx:16325 BrandProfile fallback. */}
                     {brandProfiles.map(p => (
-                      <button key={p.id} onClick={() => { setExportTheme(p.id); setTimeout(updateExportPreview, 50); }}
+                      <button key={p.id} role="radio" aria-checked={exportTheme === p.id} tabIndex={exportTheme === p.id ? 0 : -1} onClick={() => { setExportTheme(p.id); setTimeout(updateExportPreview, 50); }}
                         className={`text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === p.id ? 'bg-rose-600 text-white ring-2 ring-rose-300' : 'bg-white border border-rose-400 text-rose-700 hover:bg-rose-50'}`}
                         title="School brand profile"
                       >🏷️ {p.name || 'Brand'}</button>
@@ -284,13 +406,18 @@ function ExportPreviewView(props) {
                         const lbl = document.getElementById('word-goal-label');
                         if (bar && goal > 0) {
                           const pct = Math.min(100, Math.round((count / goal) * 100));
+                          setWordGoalProgress({ count, goal, percent: pct });
                           bar.style.width = pct + '%';
                           bar.style.background = pct >= 100 ? '#16a34a' : pct >= 75 ? '#2563eb' : '#d97706';
                           if (lbl) lbl.textContent = count + ' / ' + goal + ' (' + pct + '%)';
+                        } else {
+                          setWordGoalProgress({ count, goal: 0, percent: 0 });
+                          if (bar) bar.style.width = '0%';
+                          if (lbl) lbl.textContent = '';
                         }
                       }} />
                   </div>
-                  <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden" role="progressbar" aria-label={t("a11y.word_count_progress")}>
+                  <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden" role="progressbar" aria-label={t("a11y.word_count_progress")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={wordGoalProgress.percent} aria-valuetext={wordGoalProgress.goal > 0 ? `${wordGoalProgress.count} of ${wordGoalProgress.goal} words (${wordGoalProgress.percent}%)` : 'No word-count goal set'}>
                     <div id="word-goal-bar" className="h-full rounded-full transition-all duration-300" style={{ width: '0%', background: '#d97706' }}></div>
                   </div>
                   <div id="word-goal-label" className="text-[11px] text-slate-600 mt-0.5"></div>
@@ -303,16 +430,17 @@ function ExportPreviewView(props) {
                   <input type="text" id="wordart-text-input" placeholder={t("placeholders.word_art_text_input")} defaultValue="" className="w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none" aria-label={t("a11y.word_art_text")} />
                   <div>
                     <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Style</div>
-                    <div className="grid grid-cols-3 gap-1" role="radiogroup" aria-label={t("a11y.word_art_style")}>
+                    <div className="grid grid-cols-3 gap-1" role="radiogroup" aria-label={t("a11y.word_art_style")} onKeyDown={handleRadioGroupKeyDown}>
                       {[['goldFoil','✨','Gold'],['neonGlow','💡','Neon'],['retroArcade','🕹️','Retro'],['chalkboard','🖍️','Chalk'],['embossed','🏛️','3D'],['rainbow','🌈','Rainbow']].map(([key, emoji, label], i) => (
-                        <button key={key} type="button" role="radio" aria-checked={i === 0} data-wa-preset={key}
+                        <button key={key} type="button" role="radio" aria-checked={i === 0} tabIndex={i === 0 ? 0 : -1} data-wa-preset={key}
                           className="wordart-preset-btn text-[10px] font-bold py-1.5 px-1 rounded-md border text-slate-700 transition-all"
                           style={i === 0 ? { background: '#f59e0b', color: 'white', borderColor: '#f59e0b' } : { background: 'white', borderColor: '#fcd34d' }}
                           onClick={(e) => {
                             const parent = e.currentTarget.parentElement;
                             if (!parent) return;
-                            parent.querySelectorAll('.wordart-preset-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.style.background = 'white'; b.style.color = ''; b.style.borderColor = '#fcd34d'; });
+                            parent.querySelectorAll('.wordart-preset-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.tabIndex = -1; b.style.background = 'white'; b.style.color = ''; b.style.borderColor = '#fcd34d'; });
                             e.currentTarget.setAttribute('aria-checked', 'true');
+                            e.currentTarget.tabIndex = 0;
                             e.currentTarget.style.background = '#f59e0b';
                             e.currentTarget.style.color = 'white';
                             e.currentTarget.style.borderColor = '#f59e0b';
@@ -324,16 +452,17 @@ function ExportPreviewView(props) {
                   <div className="flex gap-2">
                     <div className="flex-1">
                       <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Size</div>
-                      <div className="flex gap-0.5" role="radiogroup" aria-label={t("a11y.word_art_size")}>
+                      <div className="flex gap-0.5" role="radiogroup" aria-label={t("a11y.word_art_size")} onKeyDown={handleRadioGroupKeyDown}>
                         {['S','M','L','XL'].map((s) => (
-                          <button key={s} type="button" role="radio" aria-checked={s === 'L'} data-wa-size={s}
+                          <button key={s} type="button" role="radio" aria-checked={s === 'L'} tabIndex={s === 'L' ? 0 : -1} data-wa-size={s}
                             className="wordart-size-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all"
                             style={s === 'L' ? { background: '#4f46e5', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569' }}
                             onClick={(e) => {
                               const parent = e.currentTarget.parentElement;
                               if (!parent) return;
-                              parent.querySelectorAll('.wordart-size-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.style.background = 'white'; b.style.color = '#475569'; b.style.borderColor = '#e2e8f0'; });
+                              parent.querySelectorAll('.wordart-size-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.tabIndex = -1; b.style.background = 'white'; b.style.color = '#475569'; b.style.borderColor = '#e2e8f0'; });
                               e.currentTarget.setAttribute('aria-checked', 'true');
+                              e.currentTarget.tabIndex = 0;
                               e.currentTarget.style.background = '#4f46e5';
                               e.currentTarget.style.color = 'white';
                               e.currentTarget.style.borderColor = '#4f46e5';
@@ -344,16 +473,17 @@ function ExportPreviewView(props) {
                     </div>
                     <div className="flex-1">
                       <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Align</div>
-                      <div className="flex gap-0.5" role="radiogroup" aria-label={t("a11y.word_art_alignment")}>
+                      <div className="flex gap-0.5" role="radiogroup" aria-label={t("a11y.word_art_alignment")} onKeyDown={handleRadioGroupKeyDown}>
                         {[['left','⇤'],['center','⇔'],['right','⇥']].map(([a, icon]) => (
-                          <button key={a} type="button" role="radio" aria-checked={a === 'center'} data-wa-align={a}
+                          <button key={a} type="button" role="radio" aria-checked={a === 'center'} tabIndex={a === 'center' ? 0 : -1} data-wa-align={a}
                             className="wordart-align-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all"
                             style={a === 'center' ? { background: '#4f46e5', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569' }}
                             onClick={(e) => {
                               const parent = e.currentTarget.parentElement;
                               if (!parent) return;
-                              parent.querySelectorAll('.wordart-align-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.style.background = 'white'; b.style.color = '#475569'; b.style.borderColor = '#e2e8f0'; });
+                              parent.querySelectorAll('.wordart-align-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.tabIndex = -1; b.style.background = 'white'; b.style.color = '#475569'; b.style.borderColor = '#e2e8f0'; });
                               e.currentTarget.setAttribute('aria-checked', 'true');
+                              e.currentTarget.tabIndex = 0;
                               e.currentTarget.style.background = '#4f46e5';
                               e.currentTarget.style.color = 'white';
                               e.currentTarget.style.borderColor = '#4f46e5';
@@ -433,7 +563,7 @@ function ExportPreviewView(props) {
                           const update = {};
                           resourceKeys.forEach(k => { update[k] = !allOn; });
                           setExportConfigAndRefresh(p => ({ ...p, ...update }));
-                        }} className="text-[11px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors">
+                        }} className="text-[11px] font-bold text-indigo-700 hover:text-indigo-800 transition-colors">
                           {allOn ? 'Deselect All' : 'Select All'}
                         </button>
                       );
@@ -484,7 +614,7 @@ function ExportPreviewView(props) {
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
                       <p className="text-[11px] font-bold text-amber-700 mb-1">Interactive resources not included:</p>
                       <p className="text-[11px] text-amber-600">{skipped.join(', ')}</p>
-                      <p className="text-[11px] text-amber-500 mt-1 italic">These are interactive tools that can't be rendered as static documents.</p>
+                      <p className="text-[11px] text-amber-700 mt-1 italic">These are interactive tools that can't be rendered as static documents.</p>
                     </div>
                   );
                 })()}
@@ -716,7 +846,7 @@ function ExportPreviewView(props) {
                     >{isGeneratingStyle ? '...' : '✨'}</button>
                   </div>
                   {customExportCSS && <div className="flex items-center gap-2 mt-1">
-                    <div className="text-[11px] text-green-600 font-medium">✓ Custom style active</div>
+                    <div className="text-[11px] text-green-700 font-medium">✓ Custom style active</div>
                     <button onClick={() => { setCustomExportCSS(''); setTimeout(() => { if (typeof updateExportPreview === 'function') updateExportPreview(); }, 50); }} className="text-[11px] text-slate-600 hover:text-red-500 font-bold">Reset</button>
                   </div>}
                 </div>
@@ -913,7 +1043,7 @@ function ExportPreviewView(props) {
                     <div className="mt-2 space-y-2">
                       <div className={`text-center p-3 rounded-xl ${exportAuditResult.score >= 80 ? 'bg-green-50 border border-green-200' : exportAuditResult.score >= 60 ? 'bg-amber-50 border border-amber-200' : 'bg-red-50 border border-red-200'}`}>
                         <div className={`text-2xl font-black ${exportAuditResult.score >= 80 ? 'text-green-700' : exportAuditResult.score >= 60 ? 'text-amber-700' : 'text-red-700'}`}>{exportAuditResult.score}/100</div>
-                        <div className="text-[11px] font-bold text-slate-600 uppercase">WCAG 2.1 AA Score</div>
+                        <div className="text-[11px] font-bold text-slate-600 uppercase">Accessibility Automated Score</div>
                       </div>
                       <p className="text-[11px] text-slate-600">{exportAuditResult.summary}</p>
                       {(exportAuditResult.axeViolations != null && exportAuditResult.eaViolations != null) && (
@@ -947,8 +1077,8 @@ function ExportPreviewView(props) {
                           ))}
                         </div>
                       )}
-                      <p className="text-[11px] text-indigo-500 italic">Use the A11y Inspect toggle above to see and fix issues visually, then re-audit.</p>
-                      <p className="text-[11px] text-slate-500 italic">Automated checks (axe-core + IBM Equal Access) find many problems but can’t confirm full WCAG 2.1 AA conformance — a manual screen-reader + keyboard pass is still needed. The score above includes an AI review and is a guide, not a certification.</p>
+                      <p className="text-[11px] text-indigo-700 italic">Use the A11y Inspect toggle above to see and fix issues visually, then re-audit.</p>
+                      <p className="text-[11px] text-slate-600 italic">Automated checks (axe-core + IBM Equal Access) find many problems but can’t confirm full WCAG 2.2 AA conformance — a manual screen-reader, keyboard, zoom/reflow, and forced-colors pass is still needed. The score above includes an AI review and is a guide, not a certification.</p>
                     </div>
                   )}
                 </div>
@@ -961,45 +1091,32 @@ function ExportPreviewView(props) {
                   <div className="flex items-center gap-3">
                     <h3 className="text-sm font-bold text-slate-700">Live Preview</h3>
                     <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
-                    <span className="text-[11px] text-indigo-500 font-medium">Click text to edit directly</span>
+                    <span className="text-[11px] text-indigo-700 font-medium">Focus the preview and edit text directly</span>
                   </div>
                   <div className="flex items-center gap-2">
                     {/* Editing toolbar */}
-                    <button onClick={() => {
-                      const input = document.createElement('input');
-                      input.type = 'file'; input.accept = 'image/*';
-                      input.onchange = (e) => {
-                        const file = e.target.files?.[0]; if (!file) return;
-                        const reader = new FileReader();
-                        reader.onload = (ev) => {
-                          const iframe = exportPreviewRef.current;
-                          const doc = iframe?.contentDocument;
-                          if (!doc) return;
-                          const img = doc.createElement('img');
-                          img.src = ev.target.result;
-                          img.style.cssText = 'max-width:100%;height:auto;border-radius:8px;margin:12px 0;cursor:move;';
-                          img.alt = 'User-inserted image';
-                          const sel = doc.getSelection();
-                          if (sel && sel.rangeCount > 0) {
-                            const range = sel.getRangeAt(0);
-                            range.collapse(false);
-                            range.insertNode(img);
-                          } else {
-                            const main = doc.querySelector('main') || doc.body;
-                            main.appendChild(img);
-                          }
-                          addToast && addToast('Image inserted! Drag to reposition.');
-                        };
-                        reader.readAsDataURL(file);
-                      };
-                      input.click();
-                    }} className="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100" title="Insert image into document">
-                      <ImageIcon size={12} /> Add Image
+                    <input ref={imageFileInputRef} type="file" accept="image/*" className="sr-only" tabIndex={-1} aria-hidden="true"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = '';
+                        if (!file) return;
+                        setImageAltText('');
+                        setImageDecorative(false);
+                        setImageAltError('');
+                        setPendingImageFile(file);
+                      }} />
+                    <button ref={imageAddButtonRef} type="button" onClick={() => {
+                      const doc = exportPreviewRef.current?.contentDocument;
+                      const selection = doc?.getSelection();
+                      imageInsertionRangeRef.current = selection && selection.rangeCount > 0 ? selection.getRangeAt(0).cloneRange() : null;
+                      imageFileInputRef.current?.click();
+                    }} className="min-h-8 text-xs font-bold text-slate-700 hover:text-indigo-700 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100" aria-label="Add an image and provide alternative text" title="Insert image into document">
+                      <ImageIcon size={12} aria-hidden="true" /> Add Image
                     </button>
                     <div className="w-px h-5 bg-slate-200"></div>
                     <button onClick={toggleA11yInspect}
                       className={`text-xs font-bold flex items-center gap-1 px-2 py-1 rounded transition-all ${a11yInspectMode ? 'bg-violet-100 text-violet-700 ring-1 ring-violet-300' : 'text-slate-600 hover:text-violet-600 hover:bg-slate-100'}`}
-                      title="Toggle accessibility inspector — shows heading hierarchy, alt text, ARIA labels, table structure, and input labels. Click any badge to edit.">
+                      title="Toggle accessibility inspector — shows heading hierarchy, alt text, ARIA labels, table structure, and input labels. Select any badge to edit.">
                       ♿ A11y Inspect
                     </button>
                     {/* Diff view entry point for the remediated-PDF pathway of Document Builder.
@@ -1349,7 +1466,7 @@ function ExportPreviewView(props) {
                     { cmd: 'underline', icon: 'U', label: 'Underline', style: 'underline' },
                   ].map(btn => (
                     <button key={btn.cmd} onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand(btn.cmd, false, null); }}
-                      className={`w-7 h-7 rounded text-xs ${btn.style} text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600`}
+                      className={`w-8 h-8 rounded text-xs ${btn.style} text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600`}
                       aria-label={btn.label} title={btn.label}>{btn.icon}</button>
                   ))}
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
@@ -1359,14 +1476,14 @@ function ExportPreviewView(props) {
                     { cmd: 'formatBlock', val: '<p>', icon: '¶', label: 'Paragraph' },
                   ].map(btn => (
                     <button key={btn.icon} onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand(btn.cmd, false, btn.val); }}
-                      className="px-1.5 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600"
+                      className="min-w-8 h-8 px-1.5 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600"
                       aria-label={btn.label} title={btn.label}>{btn.icon}</button>
                   ))}
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('insertUnorderedList', false, null); }}
-                    className="w-7 h-7 rounded text-xs text-slate-600 hover:bg-indigo-100 transition-colors" aria-label={t("a11y.bullet_list")} title="Bullet list">•</button>
+                    className="w-8 h-8 rounded text-xs text-slate-600 hover:bg-indigo-100 transition-colors" aria-label={t("a11y.bullet_list")} title="Bullet list">•</button>
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('insertOrderedList', false, null); }}
-                    className="w-7 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Numbered list" title="Numbered list">1.</button>
+                    className="w-8 h-8 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Numbered list" title="Numbered list">1.</button>
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (!doc) return; const url = prompt('Link URL:'); if (!url) return;
                     // Scheme allowlist (builder-review A4, 2026-07-01): createLink accepted ANY URI —
@@ -1378,7 +1495,7 @@ function ExportPreviewView(props) {
                     const _okScheme = !_schemeMatch || ['http', 'https', 'mailto', 'tel'].includes(_schemeMatch[1].toLowerCase());
                     if (!_okScheme) { alert('Only web (http/https), mailto:, tel:, and internal links are allowed.'); return; }
                     doc.execCommand('createLink', false, _u); }}
-                    className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Insert link" title="Insert link">🔗</button>
+                    className="w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Insert link" title="Insert link">🔗</button>
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
                   <button onClick={async () => {
                     // Insert accessible math authored in MathLive (mathlive_loader.js →
@@ -1423,16 +1540,16 @@ function ExportPreviewView(props) {
                       addToast('Could not insert the equation.', 'error');
                     }
                   }}
-                    className="px-1.5 h-7 rounded text-[13px] font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600" aria-label="Insert an equation (accessible math)" title="Insert an equation (accessible math)">∑</button>
+                    className="min-w-8 h-8 px-1.5 rounded text-[13px] font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600" aria-label="Insert an equation (accessible math)" title="Insert an equation (accessible math)">∑</button>
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('removeFormat', false, null); }}
-                    className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Clear formatting" title="Clear formatting">✕</button>
+                    className="w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Clear formatting" title="Clear formatting">✕</button>
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('undo', false, null); }}
-                    className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Undo" title="Undo">↩</button>
+                    className="w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Undo" title="Undo">↩</button>
                   <button onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand('redo', false, null); }}
-                    className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Redo" title="Redo">↪</button>
+                    className="w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors" aria-label="Redo" title="Redo">↪</button>
                   <select onChange={(e) => { const doc = exportPreviewRef.current?.contentDocument; if (doc && e.target.value) doc.execCommand('foreColor', false, e.target.value); e.target.value = ''; }}
-                    className="h-7 text-[11px] border border-slate-400 rounded px-1 text-slate-600 ml-0.5" aria-label="Text color" defaultValue="">
+                    className="h-8 text-[11px] border border-slate-400 rounded px-1 text-slate-600 ml-0.5" aria-label="Text color" defaultValue="">
                     <option value="" disabled>Color</option>
                     <option value="#000000">⬛ Black</option>
                     <option value="#1e3a5f">🟦 Navy</option>
@@ -1536,7 +1653,7 @@ function ExportPreviewView(props) {
                 <div className="flex-1 overflow-hidden bg-slate-100 p-4">
                   <iframe
                     ref={exportPreviewRef}
-                    title="Export Preview — click any text to edit"
+                    title="Editable document preview"
                     className="w-full h-full bg-white rounded-lg shadow-inner border border-slate-400"
                     sandbox="allow-same-origin allow-scripts allow-forms"
                     onLoad={() => {

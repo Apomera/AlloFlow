@@ -9989,5 +9989,2021 @@
     "references": [
       "https://www.apa.org/ethics/code/committee"
     ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-biological-1",
+    "domainId": "biological",
+    "legacySourceId": "legacy-e860c6b04d9369cf",
+    "legacySourceFile": "js/data_batch22.js",
+    "prompt": "Which statement best describes the roles of the omega-3 fatty acids DHA and EPA in nervous-system health?",
+    "choices": [
+      "DHA is a structural membrane component, while omega-3 pathways can also influence signaling and inflammation",
+      "They function only as rapidly released neurotransmitters at dopaminergic synapses",
+      "They replace glucose as the brain's mandatory and exclusive energy source",
+      "They prevent every neuropsychiatric disorder when taken above a fixed dose"
+    ],
+    "answerIndex": 0,
+    "rationale": "DHA is an important structural component of neuronal membranes, and omega-3 fatty acids can influence membrane properties, signaling, synaptic function, and inflammatory pathways. Their biological importance does not mean supplements universally prevent or treat psychiatric or neurologic conditions; evidence and indications vary.",
+    "references": [
+      "https://doi.org/10.1038/nrn3820"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-cognitive-1",
+    "domainId": "cognitive-affective",
+    "legacySourceId": "legacy-e1e729f0cf4041e9",
+    "legacySourceFile": "js/data_batch24.js",
+    "prompt": "A clinician believes a new intervention is highly effective and searches only for successful cases while discounting failures. This most clearly illustrates:",
+    "choices": [
+      "Confirmation bias in selecting and weighting evidence",
+      "State-dependent retrieval caused by a change in mood",
+      "Retroactive interference from material learned later",
+      "The generation effect during intentional encoding"
+    ],
+    "answerIndex": 0,
+    "rationale": "Confirmation bias includes preferentially seeking, noticing, interpreting, or remembering information that supports an existing hypothesis while neglecting disconfirming evidence. Good evaluation deliberately specifies contrary predictions, examines failures, and uses systematic comparison rather than relying on selected cases.",
+    "references": [
+      "https://doi.org/10.1080/17470216008416717"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-cognitive-2",
+    "domainId": "cognitive-affective",
+    "legacySourceId": "legacy-d7ab0773db816a36",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "Which study plan best applies retrieval-practice evidence to durable learning?",
+    "choices": [
+      "Reread the same chapter continuously in one sitting without checking recall",
+      "Attempt spaced recall and use corrective feedback to repair errors",
+      "Copy definitions repeatedly while keeping the answers visible",
+      "Delay every practice attempt until immediately before the final examination"
+    ],
+    "answerIndex": 1,
+    "rationale": "Retrieval practice strengthens later access when learners actively attempt to recall material. Spacing attempts and receiving corrective feedback can improve durability and prevent repeated errors. Retrieval should be appropriately challenging and combined with comprehension; it is not simply taking a high-stakes test.",
+    "references": [
+      "https://doi.org/10.1111/j.1467-9280.2006.01693.x"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-social-1",
+    "domainId": "social-cultural",
+    "legacySourceId": "legacy-9ca60bce39ce1208",
+    "legacySourceFile": "js/data_batch24.js",
+    "prompt": "Which finding would be most consistent with a system-justification motive?",
+    "choices": [
+      "A disadvantaged group sometimes endorses beliefs that legitimize the existing hierarchy",
+      "Every person invariably opposes institutions that provide personal benefits",
+      "Prejudice disappears whenever group boundaries become psychologically salient",
+      "People explain all inequality only through deliberate deception by authorities"
+    ],
+    "answerIndex": 0,
+    "rationale": "System-justification theory proposes that people can be motivated to view prevailing social arrangements as legitimate, stable, or fair, sometimes even when those arrangements disadvantage their group or self-interest. This is a probabilistic motive shaped by context, not a claim that everyone always endorses the status quo.",
+    "references": [
+      "https://doi.org/10.1111/j.2044-8309.1994.tb01008.x"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-social-2",
+    "domainId": "social-cultural",
+    "legacySourceId": "legacy-f4789c7151e628eb",
+    "legacySourceFile": "js/data_batch20.js",
+    "prompt": "Which change is most likely to reduce stereotype-threat pressure during an evaluative task?",
+    "choices": [
+      "Emphasizing that the task reveals fixed group differences in ability",
+      "Reducing cues that make a negative group stereotype relevant to evaluation",
+      "Telling participants that anxiety proves the stereotype is accurate",
+      "Publicly sorting examinees into negatively stereotyped groups before testing"
+    ],
+    "answerIndex": 1,
+    "rationale": "Stereotype threat arises when a negative group stereotype becomes relevant to performance and creates additional cognitive or affective pressure. Reducing stereotype-relevant cues, communicating an incremental view of ability, or supporting belonging can reduce that burden; effects vary across people and contexts.",
+    "references": [
+      "https://doi.org/10.1037/0022-3514.69.5.797"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-lifespan-1",
+    "domainId": "lifespan",
+    "legacySourceId": "legacy-a8e686f28a6e2e80",
+    "legacySourceFile": "js/data_batch16.js",
+    "prompt": "Which statement about gender identity development is most accurate?",
+    "choices": [
+      "Gender identity is a person's internal sense of gender and development varies across people and contexts",
+      "A child's toy preferences alone establish a clinical diagnosis of gender identity",
+      "Gender identity must permanently match sex assigned at birth by a universal fixed age",
+      "Gender expression and gender identity are interchangeable terms with identical meanings"
+    ],
+    "answerIndex": 0,
+    "rationale": "Gender identity refers to a person's internal sense of gender and may or may not correspond with sex assigned at birth. Gender expression concerns outward presentation and is not identical to identity. Developmental pathways and timing vary, so preferences, clothing, or one behavior should not be treated as a diagnostic test.",
+    "references": [
+      "https://dictionary.apa.org/gender-identity"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-lifespan-2",
+    "domainId": "lifespan",
+    "legacySourceId": "legacy-0a8498eba16cda53",
+    "legacySourceFile": "js/data_batch24.js",
+    "prompt": "In Piagetian theory, assimilation occurs when a child:",
+    "choices": [
+      "Abandons every existing schema whenever an unfamiliar event occurs",
+      "Interprets a new experience using an existing schema",
+      "Shows conservation without using any existing cognitive structure",
+      "Develops formal operations solely through biological maturation"
+    ],
+    "answerIndex": 1,
+    "rationale": "Assimilation incorporates or interprets new experience through an existing cognitive schema. Accommodation changes a schema when it cannot adequately fit the experience. Piaget viewed adaptation as an ongoing interplay between both processes rather than a choice to use only one throughout development.",
+    "references": [
+      "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-assessment-1",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-1069a3c0a1de509e",
+    "legacySourceFile": "js/data_batch24.js",
+    "prompt": "A criterion-referenced interpretation answers which question?",
+    "choices": [
+      "Has the examinee demonstrated specified knowledge or performance standards?",
+      "How unusual is the score relative to a representative norm group?",
+      "How strongly does the score correlate with an unrelated personality trait?",
+      "Which percentile rank would result if all raw scores were normally distributed?"
+    ],
+    "answerIndex": 0,
+    "rationale": "Criterion-referenced interpretation evaluates performance against explicitly defined skills, knowledge, or standards. Norm-referenced interpretation instead compares an examinee with a specified reference group. A test can sometimes support both uses, but validity evidence must address each intended interpretation.",
+    "references": [
+      "https://doi.org/10.1111/j.1745-3992.1994.tb00566.x"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-assessment-2",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-43ed1b2d6fdfdcef",
+    "legacySourceFile": "js/data_batch26.js",
+    "prompt": "Why does the base rate of a disorder matter when interpreting a positive test result?",
+    "choices": [
+      "Base rates determine the test's reliability coefficient in every population",
+      "Predictive value depends partly on how prevalent the disorder is in the assessed population",
+      "A low base rate automatically makes sensitivity and specificity equal to zero",
+      "Prevalence replaces the need to consider false positives and false negatives"
+    ],
+    "answerIndex": 1,
+    "rationale": "The probability that a positive result identifies a true case depends on sensitivity, specificity, and the condition's base rate in the relevant population. Even a reasonably accurate test may yield many false positives when a condition is rare, so predictive values do not transfer unchanged across settings.",
+    "references": [
+      "https://doi.org/10.1037/h0048070"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-assessment-3",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-887bd5d18283fa5a",
+    "legacySourceFile": "js/data.js",
+    "prompt": "Evidence that an employment test forecasts later job performance primarily supports:",
+    "choices": [
+      "Internal consistency based on correlations among test items",
+      "Content coverage based only on expert inspection of the item pool",
+      "Predictive criterion-related validity for the proposed selection use",
+      "Interrater reliability between two observers scoring the same behavior"
+    ],
+    "answerIndex": 2,
+    "rationale": "Predictive criterion-related validity concerns whether scores obtained at one time forecast a relevant future criterion, such as later job performance. Evidence must use an appropriate criterion and sample and should be accompanied by fairness, reliability, utility, and legal or ethical review for the intended selection context.",
+    "references": [
+      "https://www.apa.org/ed/accreditation/about/policies/personnel-selection-procedures.pdf"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-assessment-4",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-de74d2d56c961950",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "On a T-score metric with mean 50 and standard deviation 10, a T-score of 70 is:",
+    "choices": [
+      "One standard deviation below the mean",
+      "Exactly at the population mean",
+      "Two standard deviations above the mean",
+      "One standard deviation above the mean"
+    ],
+    "answerIndex": 2,
+    "rationale": "A T-score of 70 is 20 points above the mean of 50. Because the standard deviation is 10, that difference equals two standard deviations. Clinical meaning still depends on the measure, reference group, confidence interval, validity indicators, and applicable interpretive guidance.",
+    "references": [
+      "https://openstax.org/books/introductory-statistics-2e/pages/6-1-the-standard-normal-distribution"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-assessment-5",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-1643be06a2a757a7",
+    "legacySourceFile": "js/data.js",
+    "prompt": "The Rorschach is best classified as:",
+    "choices": [
+      "A structured intelligence scale yielding a Full Scale IQ",
+      "A curriculum-based reading-fluency probe",
+      "A direct behavioral count requiring no interpretive system",
+      "An inkblot-based performance task interpreted with a standardized system"
+    ],
+    "answerIndex": 3,
+    "rationale": "The Rorschach presents inkblots and asks examinees what each might be, producing a complex performance sample. Contemporary systems standardize administration, coding, and interpretation. Calling it simply projective can obscure that structure, while results still require training, appropriate norms, and integration with other evidence.",
+    "references": [
+      "https://r-pas.org/"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-intervention-1",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-05c1e4073e278500",
+    "legacySourceFile": "js/data_batch24.js",
+    "prompt": "Compared with traditional open-ended psychoanalysis, brief psychodynamic therapy generally places greater emphasis on:",
+    "choices": [
+      "Eliminating attention to recurring relationship patterns and emotional conflict",
+      "A circumscribed focus, active time-limited work, and selected psychodynamic themes",
+      "Using medication serum levels as the sole mechanism of psychological change",
+      "Avoiding the therapeutic relationship because transference cannot occur briefly"
+    ],
+    "answerIndex": 1,
+    "rationale": "Brief psychodynamic approaches retain attention to emotion, defenses, conflict, recurring interpersonal patterns, and the therapeutic relationship while using a clearer focus and limited time frame. Specific models differ in technique and suitability; brief does not mean superficial or free of assessment.",
+    "references": [
+      "https://dictionary.apa.org/brief-psychotherapy"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-intervention-2",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-e86b73ce3223f132",
+    "legacySourceFile": "js/data_batch25.js",
+    "prompt": "In classical psychoanalytic theory, a transference neurosis refers to:",
+    "choices": [
+      "A neurologic disease produced by excessive interpretation during therapy",
+      "The therapist's personal reactions replacing all attention to the patient",
+      "The patient's central conflicts becoming organized and reexperienced in relation to the analyst",
+      "Complete resolution of transference before emotionally significant material emerges"
+    ],
+    "answerIndex": 2,
+    "rationale": "Transference neurosis refers to the concentration and reexperience of characteristic conflicts, wishes, defenses, and relationship patterns within the patient's transference to the analyst. Classical analysis treats working through this pattern as a vehicle for insight and change, not as a literal neurologic disorder.",
+    "references": [
+      "https://dictionary.apa.org/transference-neurosis"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-intervention-3",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-e031a8eecc8809d4",
+    "legacySourceFile": "js/data_batch20.js",
+    "prompt": "Frankl's paradoxical intention asks a client to:",
+    "choices": [
+      "Suppress every unwanted thought before it can enter awareness",
+      "Analyze reinforcement schedules without approaching the feared experience",
+      "Replace all personal values with instructions chosen by the therapist",
+      "Deliberately wish for or exaggerate a feared response to loosen anticipatory anxiety"
+    ],
+    "answerIndex": 3,
+    "rationale": "In paradoxical intention, the client intentionally wishes for, invites, or exaggerates the feared response, often with humor, to interrupt anticipatory anxiety and the struggle to control it. It should be selected collaboratively and sensitively rather than used as ridicule, coercion, or a universal technique.",
+    "references": [
+      "https://dictionary.apa.org/paradoxical-intention"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-intervention-4",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-b337d0b047ced23d",
+    "legacySourceFile": "js/data_batch17.js",
+    "prompt": "Bowen family systems therapy especially emphasizes:",
+    "choices": [
+      "Immediate symptom removal through directives that conceal the therapist's purpose",
+      "Dream interpretation conducted separately with each family member",
+      "Medication adherence as the only relevant influence on family interaction",
+      "Differentiation of self and recurring emotional processes across generations"
+    ],
+    "answerIndex": 3,
+    "rationale": "Bowen theory emphasizes differentiation of self, triangles, the nuclear-family emotional process, family projection, multigenerational transmission, sibling position, emotional cutoff, and societal emotional process. Therapy often uses genograms and coaching to increase thoughtful functioning within relationships.",
+    "references": [
+      "https://dictionary.apa.org/family-systems-theory"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-professional-1",
+    "domainId": "professional",
+    "legacySourceId": "legacy-b48bc91e32131476",
+    "legacySourceFile": "js/data_batch17.js",
+    "prompt": "Culturally responsive psychological practice most appropriately requires psychologists to:",
+    "choices": [
+      "Develop self-awareness, seek relevant knowledge, adapt responsively, and consult when needed",
+      "Memorize a fixed trait list for each cultural group and apply it to every member",
+      "Assume good intentions eliminate the effects of bias or power differences",
+      "Avoid discussing culture unless a client uses the psychologist's preferred terminology"
+    ],
+    "answerIndex": 2,
+    "rationale": "Culturally responsive practice is an ongoing process involving self-reflection, knowledge, skill, humility, attention to power and context, individualized inquiry, and appropriate adaptation or consultation. Group-level knowledge can inform questions but should not become stereotyping or replace the client's own experience.",
+    "references": [
+      "https://www.apa.org/about/policy/multicultural-guidelines.pdf"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-professional-2",
+    "domainId": "professional",
+    "legacySourceId": "legacy-7a6da861b15c8de6",
+    "legacySourceFile": "js/data_batch26.js",
+    "prompt": "Which statement about the HIPAA Privacy Rule is most accurate for a covered provider?",
+    "choices": [
+      "Every treatment disclosure requires a separate signed authorization without exception",
+      "HIPAA prohibits sharing protected health information for payment activities",
+      "Permitted treatment, payment, and operations uses can occur subject to the Rule's conditions",
+      "HIPAA applies identically to every employer and private business in the United States"
+    ],
+    "answerIndex": 2,
+    "rationale": "The Privacy Rule permits covered entities to use and disclose protected health information for treatment, payment, and health care operations under specified conditions, with special rules for psychotherapy notes and other situations. HIPAA applies to covered entities and business associates, not every person or business.",
+    "references": [
+      "https://www.hhs.gov/hipaa/for-professionals/privacy/guidance/disclosures-treatment-payment-health-care-operations/index.html"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-professional-3",
+    "domainId": "professional",
+    "legacySourceId": "legacy-088a041d7f5d0a04",
+    "legacySourceFile": "js/data.js",
+    "prompt": "Valid informed consent for psychological services most centrally requires:",
+    "choices": [
+      "A signature alone even when the person cannot understand the information",
+      "Disclosure only after treatment ends so expectations do not influence participation",
+      "A guarantee that no unexpected risk, discomfort, or outcome can ever occur",
+      "Understandable information, voluntariness, decision capacity, and an opportunity for questions"
+    ],
+    "answerIndex": 3,
+    "rationale": "Informed consent is a process, not merely a form. It includes understandable information about the nature and anticipated course of services, fees, involvement of third parties, confidentiality limits, material risks and alternatives as relevant, voluntary choice, capacity, and opportunity to ask questions, subject to law.",
+    "references": [
+      "https://www.apa.org/ethics/code"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b025-professional-4",
+    "domainId": "professional",
+    "legacySourceId": "legacy-1607887a140d1adb",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "Before beginning telepsychology with a client in another jurisdiction, a psychologist should first determine:",
+    "choices": [
+      "Whether video quality is high enough to eliminate every clinical and privacy risk",
+      "Whether the client agrees that emergency planning will never be necessary",
+      "Whether paper records can be avoided regardless of legal retention requirements",
+      "Applicable authority-to-practice rules, competence, privacy, consent, and emergency arrangements"
+    ],
+    "answerIndex": 3,
+    "rationale": "Telepsychology requires attention to legal authority where the psychologist and client are located, professional competence, informed consent, technology and data security, identity and location, emergency and disruption plans, assessment limits, and continuity of care. Requirements vary by jurisdiction and circumstance.",
+    "references": [
+      "https://www.apa.org/practice/guidelines/telepsychology-revisions.pdf"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-biological-1",
+    "domainId": "biological",
+    "legacySourceId": "legacy-f46dbdf4e4a01886",
+    "legacySourceFile": "js/data_batch17.js",
+    "prompt": "Which sequence correctly describes the hypothalamic-pituitary-gonadal axis?",
+    "choices": [
+      "Hypothalamic GnRH stimulates pituitary gonadotropins, which act on the gonads",
+      "Pituitary cortisol stimulates hypothalamic insulin, which acts on the thyroid",
+      "Gonadal melatonin directly suppresses every pituitary hormone without feedback",
+      "Adrenal epinephrine stimulates cortical acetylcholine to initiate gamete production"
+    ],
+    "answerIndex": 0,
+    "rationale": "In the HPG axis, pulsatile hypothalamic gonadotropin-releasing hormone stimulates pituitary luteinizing hormone and follicle-stimulating hormone, which act on the gonads. Gonadal hormones and inhibins provide feedback. The axis contributes to puberty and reproductive function across sexes.",
+    "references": [
+      "https://doi.org/10.1038/nn1326"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-biological-2",
+    "domainId": "biological",
+    "legacySourceId": "legacy-d549816ff59aa851",
+    "legacySourceFile": "js/data_batch22.js",
+    "prompt": "The locus coeruleus is especially important because it:",
+    "choices": [
+      "Provides the cortex with its primary source of serotonin during slow-wave sleep",
+      "Supplies widespread norepinephrine projections involved in arousal and attention",
+      "Produces cerebrospinal fluid and maintains the blood-brain barrier",
+      "Coordinates voluntary movement through direct spinal dopamine projections"
+    ],
+    "answerIndex": 1,
+    "rationale": "The locus coeruleus is a small pontine nucleus whose widespread norepinephrine projections modulate arousal, vigilance, attention, learning, and responses to salient or stressful events. Its influence is broad and state-dependent rather than a simple on-off center for one emotion.",
+    "references": [
+      "https://doi.org/10.1146/annurev.neuro.28.061604.135709"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-cognitive-1",
+    "domainId": "cognitive-affective",
+    "legacySourceId": "legacy-256144948c73c6b0",
+    "legacySourceFile": "js/data_batch24.js",
+    "prompt": "Which strategy most directly reduces anchoring when making a numerical estimate?",
+    "choices": [
+      "Generate independent estimates or consider reasons the initial value may be wrong",
+      "Repeat the initial value until it becomes easier to retrieve from memory",
+      "Treat any first number as informative even when it was randomly generated",
+      "Avoid examining alternative values after committing to the first estimate"
+    ],
+    "answerIndex": 0,
+    "rationale": "Anchoring occurs when an initial value exerts disproportionate influence on a later judgment. Making an independent estimate before seeing an anchor, considering alternatives, or explicitly generating reasons the anchor may be wrong can reduce reliance, although no debiasing method works perfectly in every context.",
+    "references": [
+      "https://doi.org/10.1126/science.185.4157.1124"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-cognitive-2",
+    "domainId": "cognitive-affective",
+    "legacySourceId": "legacy-fc6c9424b144dc22",
+    "legacySourceFile": "js/data_batch22.js",
+    "prompt": "Why can chunking improve immediate recall of a long sequence?",
+    "choices": [
+      "It permanently removes the capacity limits of working memory",
+      "It organizes separate elements into fewer meaningful units",
+      "It prevents prior knowledge from influencing how material is encoded",
+      "It transfers all information directly into procedural memory"
+    ],
+    "answerIndex": 1,
+    "rationale": "Chunking groups separate elements into larger meaningful units, reducing the number of units that must be actively maintained. Expertise and prior knowledge often support useful chunks. The process expands effective organization, not the underlying capacity without limit, and poor chunks can hinder recall.",
+    "references": [
+      "https://doi.org/10.1037/h0043158"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-cognitive-3",
+    "domainId": "cognitive-affective",
+    "legacySourceId": "legacy-6d8b42e4324bcdf3",
+    "legacySourceFile": "js/data_batch50.js",
+    "prompt": "Which age-related pattern is most consistent with the fluid-crystallized distinction?",
+    "choices": [
+      "Both abilities inevitably disappear at the same age in healthy adults",
+      "Crystallized knowledge declines sharply before fluid reasoning reaches maturity",
+      "Accumulated knowledge often remains relatively stable longer than novel problem-solving speed",
+      "Fluid reasoning depends entirely on vocabulary learned through formal schooling"
+    ],
+    "answerIndex": 2,
+    "rationale": "Crystallized ability reflects accumulated knowledge and learned skills and often remains stable or grows longer across adulthood. Fluid reasoning and processing efficiency tend to show earlier average decline. Individual trajectories vary with health, education, experience, cohort, and the particular measures used.",
+    "references": [
+      "https://doi.org/10.1016/0001-6918(67)90011-X"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-social-1",
+    "domainId": "social-cultural",
+    "legacySourceId": "legacy-4ae52d12790495ff",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "What is the most defensible conclusion to draw from the Stanford prison study?",
+    "choices": [
+      "It raised influential hypotheses about roles and situations, but methodological and ethical limits constrain causal claims",
+      "It proved that any randomly assigned person inevitably becomes abusive when labeled a guard",
+      "It established a universal biological difference between guards and incarcerated people",
+      "It showed that demand characteristics and researcher influence cannot affect simulated institutions"
+    ],
+    "answerIndex": 0,
+    "rationale": "The study stimulated attention to situational power and assigned roles, but its small sample, researcher involvement, demand characteristics, contested procedures, lack of replication, and serious ethical concerns limit strong causal or universal conclusions. It should not be taught as definitive proof of inevitable behavior.",
+    "references": [
+      "https://doi.org/10.1037/h0027358"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-social-2",
+    "domainId": "social-cultural",
+    "legacySourceId": "legacy-bff523650ed6235c",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "The door-in-the-face technique attempts to increase compliance by:",
+    "choices": [
+      "Securing agreement to a small request before revealing a much larger target request",
+      "Following refusal of a large request with a smaller target request",
+      "Changing the cost of an agreed request only after the person commits",
+      "Providing no initial request and relying entirely on observational learning"
+    ],
+    "answerIndex": 1,
+    "rationale": "Door-in-the-face begins with a large request likely to be refused and then retreats to a smaller target request. Reciprocal concessions and contrast can contribute. It differs from foot-in-the-door, which begins small, and it does not guarantee compliance or make manipulative use ethically acceptable.",
+    "references": [
+      "https://doi.org/10.1037/h0076284"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-lifespan-1",
+    "domainId": "lifespan",
+    "legacySourceId": "legacy-820c65a17302975a",
+    "legacySourceFile": "js/data_batch21.js",
+    "prompt": "Ainsworth's Strange Situation was designed primarily to assess:",
+    "choices": [
+      "Patterns of infant-caregiver attachment behavior during separation and reunion",
+      "The infant's general intelligence through novel object manipulation",
+      "Whether the caregiver meets diagnostic criteria for a personality disorder",
+      "Language comprehension without involving caregiver presence or absence"
+    ],
+    "answerIndex": 0,
+    "rationale": "The Strange Situation is a standardized observational procedure using separations, reunions, a stranger, and exploration to classify patterns of attachment behavior. Classification describes relationship behavior in that context; it is not a global diagnosis of the infant or a direct test of caregiver personality.",
+    "references": [
+      "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-lifespan-2",
+    "domainId": "lifespan",
+    "legacySourceId": "legacy-1c8131fe55836c37",
+    "legacySourceFile": "js/data_batch19.js",
+    "prompt": "Piagetian egocentrism during the preoperational period refers primarily to difficulty:",
+    "choices": [
+      "Forming any mental representation of an absent object or event",
+      "Coordinating one's own perspective with another person's perspective",
+      "Recognizing familiar caregivers after a short separation",
+      "Learning through imitation before spoken language develops"
+    ],
+    "answerIndex": 1,
+    "rationale": "Preoperational egocentrism is difficulty decentering from one's own perceptual or conceptual perspective to coordinate another viewpoint. It is not selfishness or absence of empathy in the ordinary moral sense, and perspective-taking develops gradually and varies with task demands.",
+    "references": [
+      "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-lifespan-3",
+    "domainId": "lifespan",
+    "legacySourceId": "legacy-b87eb291ae5b5348",
+    "legacySourceFile": "js/data_batch21.js",
+    "prompt": "Object permanence is demonstrated when an infant:",
+    "choices": [
+      "Repeats a sound only while an adult is visibly modeling it",
+      "Selects the taller container as holding more liquid after a transformation",
+      "Searches for an object that has been hidden from view",
+      "Uses abstract hypotheses to test every possible solution systematically"
+    ],
+    "answerIndex": 2,
+    "rationale": "Object permanence is understanding that objects continue to exist when they are not currently perceived. Searching for a hidden object is a classic indicator, although performance depends on memory, motor ability, inhibition, and task design. It develops during the sensorimotor period rather than all at once.",
+    "references": [
+      "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-assessment-1",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-a39d2337b2c2ed58",
+    "legacySourceFile": "js/data_batch8.js",
+    "prompt": "Which feature is characteristic of the adult Personality Assessment Inventory (PAI)?",
+    "choices": [
+      "Its 344 items contribute to 22 nonoverlapping validity, clinical, treatment, and interpersonal scales",
+      "It uses only ambiguous inkblots and has no fixed item content",
+      "It yields a Full Scale IQ from individually administered performance subtests",
+      "It measures adaptive behavior only through a caregiver interview"
+    ],
+    "answerIndex": 0,
+    "rationale": "The adult PAI is a broad self-report measure of psychopathology and treatment-relevant constructs. Its 344 items form 22 nonoverlapping scales: four validity, eleven clinical, five treatment, and two interpersonal scales. Results generate hypotheses and should be integrated with other assessment evidence.",
+    "references": [
+      "https://www.parinc.com/products/pai"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-assessment-2",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-308d5279bb705870",
+    "legacySourceFile": "js/data_batch18.js",
+    "prompt": "Why is high face validity insufficient evidence that a psychological test is valid?",
+    "choices": [
+      "Face validity can be calculated only after a twenty-year longitudinal study",
+      "The test may look relevant without supporting accurate intended score interpretations",
+      "Any measure that appears relevant must necessarily have low reliability",
+      "Face validity proves construct validity but never criterion validity"
+    ],
+    "answerIndex": 1,
+    "rationale": "Face validity concerns whether a measure appears, on inspection, to assess its intended construct. That appearance may affect acceptability but does not establish relationships with the construct, criteria, response processes, or consequences needed to justify score interpretation and use.",
+    "references": [
+      "https://dictionary.apa.org/face-validity"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-assessment-3",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-06ef41728d634ee4",
+    "legacySourceFile": "js/data_batch45.js",
+    "prompt": "On the MMPI-2, why must L, F, and K validity indicators be interpreted together with the profile and context?",
+    "choices": [
+      "They directly establish a DSM diagnosis without considering clinical scales",
+      "They measure identical response patterns and should always have equal scores",
+      "Elevations can have multiple meanings and do not alone prove deception or malingering",
+      "They are intelligence subtests used to calculate a Full Scale IQ"
+    ],
+    "answerIndex": 2,
+    "rationale": "MMPI-2 validity indicators sample different response tendencies, including uncommon responding, conventional self-presentation, and defensiveness. Elevations can reflect misunderstanding, unusual genuine symptoms, reading problems, random responding, or impression management, so interpretation requires configuration and context.",
+    "references": [
+      "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Personality-%26-Biopsychosocial/Minnesota-Multiphasic-Personality-Inventory-2/p/100000461"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-assessment-4",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-fbeef9d4cb91a7de",
+    "legacySourceFile": "js/data_batch24.js",
+    "prompt": "A norm-referenced score is meaningful only in relation to:",
+    "choices": [
+      "A universal cutoff that never changes across tests or populations",
+      "The examinee's preferred score regardless of administration conditions",
+      "A criterion domain with no comparison group or normative sample",
+      "The identified norm group and the conditions under which norms were developed"
+    ],
+    "answerIndex": 3,
+    "rationale": "Norm-referenced interpretation compares performance with a specified reference group. Meaning depends on the group's relevance, representativeness, recency, sample size, administration, and score transformation. A percentile or standard score is not an inherent property independent of its norms.",
+    "references": [
+      "https://openstax.org/books/psychology-2e/pages/7-5-measures-of-intelligence"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-assessment-5",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-3e1b95855a635b8d",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "A diagnostic procedure with 95% sensitivity correctly identifies approximately:",
+    "choices": [
+      "Ninety-five percent of people who do not have the condition as negative",
+      "Ninety-five percent of all positive results as true cases in every population",
+      "Five percent of true cases while missing ninety-five percent",
+      "Ninety-five percent of people who truly have the condition as positive"
+    ],
+    "answerIndex": 3,
+    "rationale": "Sensitivity is the true-positive rate among people who actually have the condition, so 95% sensitivity means about 95% of true cases test positive under relevant conditions. It does not specify specificity or positive predictive value, which also depends on prevalence.",
+    "references": [
+      "https://www.itl.nist.gov/div898/handbook/prc/section4/prc412.htm"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-intervention-1",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-3c9e0390a35af212",
+    "legacySourceFile": "js/data_batch22.js",
+    "prompt": "In group psychotherapy, universality is the therapeutic experience of:",
+    "choices": [
+      "Recognizing that others share struggles one had experienced as uniquely isolating",
+      "Receiving an individual diagnosis from every other group member",
+      "Avoiding all interpersonal feedback so conflict can never emerge",
+      "Replacing confidentiality agreements with unrestricted discussion outside the group"
+    ],
+    "answerIndex": 0,
+    "rationale": "Universality occurs when members discover that important fears, feelings, or struggles are shared by others, reducing shame and isolation. It is one of several group therapeutic factors and does not mean members have identical experiences or that confidentiality boundaries disappear.",
+    "references": [
+      "https://dictionary.apa.org/group-psychotherapy"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-intervention-2",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-5062394fd5fab400",
+    "legacySourceFile": "js/data_batch24.js",
+    "prompt": "In a token economy, tokens are most accurately understood as:",
+    "choices": [
+      "Unconditioned stimuli that elicit reflexes without any learning history",
+      "Conditioned reinforcers exchangeable for selected backup reinforcers",
+      "Punishers delivered after every instance of an appropriate target behavior",
+      "Private thoughts that must be disputed before behavior can change"
+    ],
+    "answerIndex": 1,
+    "rationale": "Tokens become conditioned reinforcers through association with backup reinforcers and are delivered contingent on defined target behavior. Effective programs specify behaviors, exchange rules, monitoring, fairness, fading and generalization, and safeguards against coercive or deprivation-based practices.",
+    "references": [
+      "https://dictionary.apa.org/token-economy"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-intervention-3",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-d5baccc4b9b6dd62",
+    "legacySourceFile": "js/data_batch24.js",
+    "prompt": "During EMDR processing, bilateral stimulation is used while the client attends to:",
+    "choices": [
+      "Only a relaxation image with no identified traumatic target",
+      "Medication side effects recorded over an entire treatment year",
+      "Aspects of a selected distressing memory and associated cognition, emotion, and body sensation",
+      "An unrestricted dream narrative interpreted solely through archetypal symbols"
+    ],
+    "answerIndex": 2,
+    "rationale": "EMDR uses a phased protocol. After preparation and target assessment, the client attends to aspects of a traumatic memory while engaging in bilateral stimulation, then processes emerging material. It requires trained delivery, stabilization and monitoring; eye movements are not the entire treatment.",
+    "references": [
+      "https://www.ptsd.va.gov/professional/treat/txessentials/emdr_pro.asp"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-intervention-4",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-8175a0f403e2e7aa",
+    "legacySourceFile": "js/data_batch25.js",
+    "prompt": "In acceptance and commitment therapy, cognitive defusion aims to help clients:",
+    "choices": [
+      "Prove that every distressing thought is factually false",
+      "Suppress unwanted thoughts until they no longer enter awareness",
+      "Replace personal values with rules selected by the therapist",
+      "Experience thoughts as mental events rather than commands or literal truths"
+    ],
+    "answerIndex": 3,
+    "rationale": "Cognitive defusion changes the person's relationship to thoughts so they can be noticed as words, images, or mental events rather than obeyed as literal truths. ACT does not require eliminating thoughts; it builds psychological flexibility and value-consistent action in their presence.",
+    "references": [
+      "https://dictionary.apa.org/acceptance-and-commitment-therapy"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-professional-1",
+    "domainId": "professional",
+    "legacySourceId": "legacy-10e4b870ea241391",
+    "legacySourceFile": "js/data_batch20.js",
+    "prompt": "Under APA Ethics Code Standard 6.05, accepting barter from a client is:",
+    "choices": [
+      "Always required when a client reports difficulty paying a standard fee",
+      "Automatically permitted whenever the exchanged goods have a market price",
+      "Potentially permissible if not clinically contraindicated and not exploitative",
+      "Prohibited only when the psychologist documents the agreement in writing"
+    ],
+    "answerIndex": 2,
+    "rationale": "The Ethics Code permits barter only when it is not clinically contraindicated and the resulting arrangement is not exploitative. Psychologists should consider clinical effects, power, boundaries, culture, valuation, taxes, law, alternatives, and documentation rather than treating barter as automatically acceptable.",
+    "references": [
+      "https://www.apa.org/ethics/code"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-professional-2",
+    "domainId": "professional",
+    "legacySourceId": "legacy-b3621e76cafb083b",
+    "legacySourceFile": "js/data_batch27.js",
+    "prompt": "Telepsychology informed consent should specifically address:",
+    "choices": [
+      "A promise that technology can never fail or expose information",
+      "Only the fee because ordinary clinical risks do not apply remotely",
+      "Technology, privacy limits, service disruptions, emergencies, and relevant alternatives",
+      "A waiver of every client right under licensing and privacy law"
+    ],
+    "answerIndex": 2,
+    "rationale": "Telepsychology consent should cover the nature of remote services, technology and data risks, privacy, identity and location procedures, interruptions, emergency plans, records, fees, alternatives, and relevant jurisdictional limits. Consent is ongoing and does not eliminate professional responsibilities.",
+    "references": [
+      "https://doi.org/10.1037/a0035001"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-professional-3",
+    "domainId": "professional",
+    "legacySourceId": "legacy-ad60945909c58c66",
+    "legacySourceFile": "js/data_batch27.js",
+    "prompt": "When responding to an authorized ethics investigation, a psychologist should generally:",
+    "choices": [
+      "Refuse every request because confidentiality always prohibits cooperation",
+      "Publish the client's complete record so the process appears transparent",
+      "Contact the complainant privately and pressure the person to withdraw",
+      "Cooperate while appropriately addressing confidentiality and privilege"
+    ],
+    "answerIndex": 3,
+    "rationale": "The APA Ethics Code requires cooperation with authorized ethics investigations, proceedings, and resulting requirements while appropriately addressing confidentiality issues. Cooperation does not mean indiscriminate disclosure, retaliation, or treating an allegation as already proven.",
+    "references": [
+      "https://www.apa.org/ethics/code"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-professional-4",
+    "domainId": "professional",
+    "legacySourceId": "legacy-5fa4d4d3259d962b",
+    "legacySourceFile": "js/data_batch15.js",
+    "prompt": "What is the safest general lesson from Tarasoff for contemporary practice?",
+    "choices": [
+      "Every jurisdiction imposes one identical duty triggered by any angry statement",
+      "Warning a potential victim is always the only legally acceptable protective action",
+      "Confidentiality ends permanently whenever violence is discussed in treatment",
+      "Clinicians must assess threats and follow current jurisdiction-specific protection duties"
+    ],
+    "answerIndex": 3,
+    "rationale": "Tarasoff is associated with duties of reasonable care to protect under specified circumstances, but statutes, cases, thresholds, protected persons, and permissible actions vary by jurisdiction. Clinicians should conduct competent risk assessment, document reasoning, consult when needed, and follow current law and policy.",
+    "references": [
+      "https://law.justia.com/cases/california/supreme-court/3d/17/425.html"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b026-professional-5",
+    "domainId": "professional",
+    "legacySourceId": "legacy-898ff90cd25f7741",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "Which disclosure is generally exempt from HIPAA's minimum-necessary requirement?",
+    "choices": [
+      "A marketing disclosure made without required authorization",
+      "A broad records request from an employer with no valid basis",
+      "A public posting of identifiable clinical information for teaching",
+      "A disclosure to another health care provider for treatment"
+    ],
+    "answerIndex": 3,
+    "rationale": "The HIPAA minimum-necessary standard generally does not apply to disclosures to or requests by health care providers for treatment, although other safeguards and laws still apply. It does apply to many payment and operations uses; exceptions should not be generalized into permission for unrestricted disclosure.",
+    "references": [
+      "https://www.hhs.gov/hipaa/for-professionals/privacy/guidance/minimum-necessary-requirement/index.html"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-biological-1",
+    "domainId": "biological",
+    "legacySourceId": "legacy-bacdc9df5493e702",
+    "legacySourceFile": "js/data_batch22.js",
+    "prompt": "Which presentation is most characteristic of tardive dyskinesia?",
+    "choices": [
+      "Delayed, repetitive involuntary movements after exposure to dopamine-receptor-blocking medication",
+      "A brief fever and rash occurring immediately after the first antidepressant dose",
+      "Progressive loss of sensation caused only by vitamin C deficiency",
+      "A voluntary tremor that stops whenever antipsychotic medication is continued"
+    ],
+    "answerIndex": 0,
+    "rationale": "Tardive dyskinesia is a potentially persistent movement disorder associated with exposure to dopamine-receptor-blocking agents, often involving repetitive oral, facial, trunk, or limb movements. Risk varies, and monitoring supports early recognition; it is distinct from acute dystonia, akathisia, and parkinsonism.",
+    "references": [
+      "https://doi.org/10.4088/JCP.tv17016ah4c"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-cognitive-1",
+    "domainId": "cognitive-affective",
+    "legacySourceId": "legacy-ecd95f3b3888c0d1",
+    "legacySourceFile": "js/data_batch48.js",
+    "prompt": "A description closely matches a stereotype of an engineer, so a person judges “engineer and musician” more likely than “musician.” This error most directly reflects:",
+    "choices": [
+      "Representativeness overriding the conjunction rule",
+      "Proactive interference from an earlier list",
+      "State-dependent memory for occupational labels",
+      "Negative reinforcement of category learning"
+    ],
+    "answerIndex": 0,
+    "rationale": "Representativeness judgments rely on similarity to a prototype and can neglect probability rules or base rates. A conjunction cannot be more probable than either constituent event, even when the combined description feels more representative. The heuristic can be useful but can also yield systematic errors.",
+    "references": [
+      "https://doi.org/10.1126/science.185.4157.1124"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-cognitive-2",
+    "domainId": "cognitive-affective",
+    "legacySourceId": "legacy-f060fa57f57132f9",
+    "legacySourceFile": "js/data_batch18.js",
+    "prompt": "Which learning activity best illustrates the generation effect?",
+    "choices": [
+      "Rereading a complete target word several times without responding",
+      "Producing a target from a cue before later trying to remember it",
+      "Listening passively to unrelated sounds while copying the target",
+      "Viewing the answer continuously so retrieval is never attempted"
+    ],
+    "answerIndex": 1,
+    "rationale": "The generation effect is better later memory, on average, for material the learner actively generates rather than simply reads. Generating from a cue can increase distinctive, item-specific, and relational processing. Benefits depend on task conditions and do not mean every incorrect generation should remain uncorrected.",
+    "references": [
+      "https://doi.org/10.1037/0278-7393.4.6.592"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-cognitive-3",
+    "domainId": "cognitive-affective",
+    "legacySourceId": "legacy-f4027752d3dc61f3",
+    "legacySourceFile": "js/data_batch20.js",
+    "prompt": "Which statement is the most scientifically cautious description of “decision fatigue”?",
+    "choices": [
+      "Every choice irreversibly depletes a single proven mental resource",
+      "Decision quality always improves as the number of prior choices increases",
+      "Repeated decisions may sometimes affect effort or choice, but mechanisms and robustness remain debated",
+      "The phenomenon is identical to neurologic fatigue caused by demyelinating disease"
+    ],
+    "answerIndex": 2,
+    "rationale": "Decision fatigue is a proposed decline or shift in decision behavior after repeated choice, often linked historically to ego-depletion accounts. Findings vary across tasks and contexts, and the size, mechanism, and reliability of depletion effects are debated. It should not be treated as an inevitable neurologic syndrome.",
+    "references": [
+      "https://doi.org/10.1037/0022-3514.74.5.1252"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-social-1",
+    "domainId": "social-cultural",
+    "legacySourceId": "legacy-28dc65a01e4e83f0",
+    "legacySourceFile": "js/data_batch11.js",
+    "prompt": "In Berry's bidimensional acculturation framework, integration involves:",
+    "choices": [
+      "Maintaining heritage-culture involvement while also participating in the larger society",
+      "Rejecting both heritage culture and contact with the larger society",
+      "Adopting the larger society exclusively while abandoning all heritage involvement",
+      "Maintaining heritage culture while avoiding participation in the larger society"
+    ],
+    "answerIndex": 0,
+    "rationale": "Integration combines maintenance of heritage culture with participation in the larger society. Assimilation emphasizes the larger society, separation emphasizes heritage maintenance with limited broader participation, and marginalization reflects low orientation to both. These are strategies and contexts, not fixed personality types.",
+    "references": [
+      "https://doi.org/10.1111/j.1464-0597.1997.tb01087.x"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-social-2",
+    "domainId": "social-cultural",
+    "legacySourceId": "legacy-8a7eac3e6a927678",
+    "legacySourceFile": "js/data_batch15.js",
+    "prompt": "In an induced-compliance experiment, cognitive dissonance is often greatest when a person:",
+    "choices": [
+      "Receives a large external reward that fully explains the counterattitudinal act",
+      "Freely performs a counterattitudinal act with little external justification",
+      "Is physically prevented from engaging in any behavior relevant to the attitude",
+      "Reports an attitude without any inconsistency, commitment, or consequence"
+    ],
+    "answerIndex": 1,
+    "rationale": "When a person freely engages in counterattitudinal behavior with insufficient external justification, the inconsistency can create dissonance and motivate attitude change. Choice, commitment, aversive consequences, and available justification matter; dissonance is not simply any unpleasant feeling after a reward.",
+    "references": [
+      "https://openstax.org/books/psychology-2e/pages/12-3-attitudes-and-persuasion"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-lifespan-1",
+    "domainId": "lifespan",
+    "legacySourceId": "legacy-2112bc2f66dfa680",
+    "legacySourceFile": "js/data_batch24.js",
+    "prompt": "Which activity most clearly reflects Erikson's concept of generativity?",
+    "choices": [
+      "Investing in and guiding people or work that will outlast oneself",
+      "Avoiding every commitment so identity options remain permanently open",
+      "Seeking caregiver proximity as the central task of infancy",
+      "Mastering object permanence through repeated visual search"
+    ],
+    "answerIndex": 0,
+    "rationale": "Generativity involves care, guidance, creation, mentoring, parenting, productive work, and contribution to future generations or the wider world. It is often salient in midlife but is broader than biological parenthood and does not occur on one rigid timetable for every adult.",
+    "references": [
+      "https://openstax.org/books/psychology-2e/pages/9-4-death-and-dying"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-lifespan-2",
+    "domainId": "lifespan",
+    "legacySourceId": "legacy-768b09103a2c8ab7",
+    "legacySourceFile": "js/data_batch24.js",
+    "prompt": "A child calls every four-legged animal “dog,” then revises the category after learning that cats differ from dogs. The revision illustrates:",
+    "choices": [
+      "Conservation without any change in cognitive structure",
+      "Accommodation of a schema to fit discrepant experience",
+      "Object permanence after a hidden-object search",
+      "Egocentrism caused by failure to recognize another viewpoint"
+    ],
+    "answerIndex": 1,
+    "rationale": "Accommodation changes an existing schema or creates a new one when experience does not fit adequately. Assimilation would apply the existing dog schema to the cat. Piaget viewed adaptation as the continuing interaction of assimilation and accommodation, not a one-time developmental switch.",
+    "references": [
+      "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-assessment-1",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-bd7d79fcf5227361",
+    "legacySourceFile": "js/data_batch46.js",
+    "prompt": "Which feature distinguishes the Vineland-3 as a measure of adaptive behavior?",
+    "choices": [
+      "It assesses everyday communication, daily living, and socialization across contexts",
+      "It derives personality diagnoses from responses to ambiguous inkblots",
+      "It measures only maximal abstract reasoning under timed laboratory conditions",
+      "It produces a depression-severity score from twenty-one self-report items"
+    ],
+    "answerIndex": 0,
+    "rationale": "Vineland-3 assesses adaptive functioning in domains including Communication, Daily Living Skills, and Socialization, with Motor Skills for younger examinees and an optional Maladaptive Behavior domain. Multiple forms gather information about everyday performance rather than intelligence or achievement alone.",
+    "references": [
+      "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Behavior/Adaptive/Vineland-Adaptive-Behavior-Scales-%7C-Third-Edition/p/100001622"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-assessment-2",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-b45801324ee58907",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "Which evidence is most important when evaluating possible malingering?",
+    "choices": [
+      "One unusual score interpreted without referral context or alternative explanations",
+      "Converging evidence of intentional symptom production linked to an external incentive",
+      "Any disagreement between the examinee and evaluator about test feedback",
+      "A genuine disorder accompanied by severe symptoms and functional impairment"
+    ],
+    "answerIndex": 1,
+    "rationale": "Malingering involves intentional production or gross exaggeration of symptoms motivated by external incentives. It is not established by one cutoff or inconsistency. Evaluation requires validated performance or symptom validity evidence, behavioral and collateral data, context, and consideration of genuine impairment and alternatives.",
+    "references": [
+      "https://dictionary.apa.org/malingering"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-assessment-3",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-b06a147b54e69e4f",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "Why is it inappropriate to diagnose age-related cognitive decline from one low Wechsler subtest?",
+    "choices": [
+      "All Wechsler subtests measure exactly the same ability with perfect reliability",
+      "Age norms remove every possible influence of health, education, language, or effort",
+      "A single score is nonspecific and requires profile, history, validity, and functional evidence",
+      "Subtest scores cannot be calculated for adults under any circumstances"
+    ],
+    "answerIndex": 2,
+    "rationale": "A low subtest score can reflect normal variability, measurement error, premorbid ability, education, language, sensory or motor factors, attention, fatigue, health, medication, or invalid performance. Neurocognitive conclusions require converging history, functional change, appropriate norms, validity evidence, and broader assessment.",
+    "references": [
+      "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Cognition-%26-Neuro/Wechsler-Adult-Intelligence-Scale-%7C-Fifth-Edition/p/P100071002"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-assessment-4",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-fd3fd2491b317db4",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "The BDI-II is best used as:",
+    "choices": [
+      "A substitute for suicide-risk assessment whenever the total score is low",
+      "A stand-alone diagnostic interview that establishes a depressive disorder",
+      "A performance-validity test proving whether reported symptoms are genuine",
+      "A self-report symptom-severity measure integrated with other clinical information"
+    ],
+    "answerIndex": 3,
+    "rationale": "The BDI-II is a brief self-report measure of depressive symptom severity. It can support screening, baseline description, and monitoring, but it is not a diagnostic interview or stand-alone risk assessment. Interpretation requires item review, context, response validity, history, and direct safety assessment when indicated.",
+    "references": [
+      "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Personality-%26-Biopsychosocial/Beck-Depression-Inventory-II/p/100000159"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-intervention-1",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-1cd7634433394338",
+    "legacySourceFile": "js/data_batch52.js",
+    "prompt": "When a client and therapist disagree about a treatment task, the most alliance-supportive response is to:",
+    "choices": [
+      "Ignore the disagreement as long as the therapist believes the goal is correct",
+      "Explore the rupture and collaboratively renegotiate goals or tasks",
+      "End treatment immediately because alliance ruptures cannot be repaired",
+      "Insist that a positive bond eliminates the need for agreement about methods"
+    ],
+    "answerIndex": 1,
+    "rationale": "Bordin's alliance includes agreement on goals, agreement on tasks, and an affective bond. A disagreement can be an alliance rupture; recognizing and exploring it, validating the client's perspective, and collaboratively revising the work can support repair rather than assuming rapport alone is sufficient.",
+    "references": [
+      "https://doi.org/10.1037/h0085885"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-intervention-2",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-0ee2c588d5841d20",
+    "legacySourceFile": "js/data_batch19.js",
+    "prompt": "Rogers's unconditional positive regard is best understood as:",
+    "choices": [
+      "Agreement with every behavior or decision the client reports",
+      "Praise delivered only after the client follows the therapist's advice",
+      "Nonpossessive acceptance of the client without making worth conditional",
+      "Avoidance of empathic challenge when behavior harms the client or others"
+    ],
+    "answerIndex": 2,
+    "rationale": "Unconditional positive regard is warm, nonpossessive acceptance that does not make the client's human worth contingent on particular disclosures or behavior. It does not require approving harmful actions, withholding honest responses, abandoning boundaries, or ignoring safety and accountability.",
+    "references": [
+      "https://dictionary.apa.org/unconditional-positive-regard"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-intervention-3",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-b98e097f59465709",
+    "legacySourceFile": "js/data_batch22.js",
+    "prompt": "In narrative therapy, externalizing a problem means:",
+    "choices": [
+      "Assigning the client a fixed diagnostic identity that explains every action",
+      "Locating the cause exclusively in relatives who are absent from treatment",
+      "Treating the therapist's preferred story as the only objective account",
+      "Separating the person from the problem so alternative stories and actions can emerge"
+    ],
+    "answerIndex": 3,
+    "rationale": "Narrative therapy uses externalizing language to distinguish people from problems and examine how problem-saturated stories shape experience. Clients identify exceptions, values, preferred identities, and alternative narratives. Externalizing does not deny responsibility or locate blame mechanically outside the person.",
+    "references": [
+      "https://dictionary.apa.org/narrative-therapy"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-intervention-4",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-5d1c0de021d4bc5c",
+    "legacySourceFile": "js/data_batch26.js",
+    "prompt": "In solution-focused brief therapy, an exception question asks about:",
+    "choices": [
+      "Unconscious conflicts presumed to occur identically in every relationship",
+      "Reasons the client should accept that change is impossible",
+      "Diagnostic criteria that must be met before strengths can be discussed",
+      "Times the problem was absent or less severe and what was different"
+    ],
+    "answerIndex": 3,
+    "rationale": "Exception questions identify occasions when the problem did not occur or was less intense, drawing attention to existing resources, contextual differences, and repeatable actions. SFBT also uses preferred-future, miracle, coping, and scaling questions; it does not deny risk, history, or structural constraints.",
+    "references": [
+      "https://dictionary.apa.org/solution-focused-brief-therapy"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-professional-1",
+    "domainId": "professional",
+    "legacySourceId": "legacy-62602a85aef2f294",
+    "legacySourceFile": "js/data_batch17.js",
+    "prompt": "A psychologist who must end services because of illness best protects against abandonment by:",
+    "choices": [
+      "Stopping contact without notice so the professional boundary remains clear",
+      "Transferring every client automatically without considering preference or fit",
+      "Providing reasonable notice, interim planning, referrals, and continuity safeguards",
+      "Retaining all clients indefinitely despite being unable to practice competently"
+    ],
+    "answerIndex": 2,
+    "rationale": "Avoiding abandonment requires reasonable steps for continuity when services end, such as timely communication, clinically appropriate transition planning, emergency coverage, referrals, records arrangements, and attention to client needs and applicable law. Exact steps depend on urgency and circumstances.",
+    "references": [
+      "https://www.apa.org/ethics/code"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-professional-2",
+    "domainId": "professional",
+    "legacySourceId": "legacy-2e6610e1b2408be3",
+    "legacySourceFile": "js/data_batch15.js",
+    "prompt": "The traditional M'Naghten insanity rule focuses primarily on whether, because of mental disease or defect, the defendant:",
+    "choices": [
+      "Had any psychiatric diagnosis before the offense occurred",
+      "Experienced strong emotion while committing the charged act",
+      "Did not understand the nature and quality of the act or that it was wrong",
+      "Currently lacks capacity to consult rationally with defense counsel"
+    ],
+    "answerIndex": 2,
+    "rationale": "The traditional M'Naghten cognitive test asks whether a defect of reason from disease of mind prevented knowledge of the act's nature and quality or its wrongfulness. It concerns criminal responsibility at the time of the act, not present competence; jurisdictions vary in wording and standards.",
+    "references": [
+      "https://www.law.cornell.edu/wex/m%27naghten_rule"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-professional-3",
+    "domainId": "professional",
+    "legacySourceId": "legacy-b7554a86108142c6",
+    "legacySourceFile": "js/data_batch25.js",
+    "prompt": "When a psychologist reasonably suspects reportable child maltreatment, the psychologist should generally:",
+    "choices": [
+      "Conduct a forensic interrogation until the allegation is conclusively proven",
+      "Wait until another professional reports so duplicate reports never occur",
+      "Promise secrecy before deciding whether a legal reporting duty applies",
+      "Make the required report promptly and avoid conducting the agency's investigation"
+    ],
+    "answerIndex": 3,
+    "rationale": "Mandatory-reporting laws generally require a report based on specified suspicion or reasonable-cause thresholds, not proof beyond doubt. Authorized agencies investigate. Covered professionals, definitions, timing, recipients, privilege, documentation, and institutional procedures vary, so current jurisdictional law controls.",
+    "references": [
+      "https://www.childwelfare.gov/resources/clergy-mandated-reporters-child-abuse-and-neglect/"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b027-professional-4",
+    "domainId": "professional",
+    "legacySourceId": "legacy-56818a83fef8e147",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "In a child-custody evaluation, the evaluator should primarily:",
+    "choices": [
+      "Advocate for the retaining parent as though providing legal representation",
+      "Provide therapy to every family member while also claiming complete neutrality",
+      "Accept one parent's account without seeking relevant collateral information",
+      "Use impartial methods focused on the child's psychological best interests and referral questions"
+    ],
+    "answerIndex": 3,
+    "rationale": "A custody evaluator serves an impartial evaluative role rather than as an advocate or treating therapist. The evaluator should clarify roles, use multiple relevant data sources, consider alternative hypotheses and culture, limit conclusions to the evidence and referral, and focus on the child's psychological welfare.",
+    "references": [
+      "https://doi.org/10.1037/a0021250"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-biological-1",
+    "domainId": "biological",
+    "legacySourceId": "legacy-ab4b163daf34ee76",
+    "legacySourceFile": "js/data_batch22.js",
+    "prompt": "Dopamine signaling involving the nucleus accumbens is most closely associated with:",
+    "choices": [
+      "Motivation, reinforcement learning, and attribution of incentive salience",
+      "Primary visual transduction in rods and cones",
+      "Production of cerebrospinal fluid by the choroid plexus",
+      "Voluntary motor output through lower motor neurons only"
+    ],
+    "answerIndex": 0,
+    "rationale": "The nucleus accumbens is a major ventral-striatal target of mesolimbic dopamine projections and participates in motivation, reinforcement learning, and incentive salience. Calling it a simple pleasure center is misleading because its activity reflects learning, effort, context, and approach-related processes.",
+    "references": [
+      "https://doi.org/10.1159/000368279"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-biological-2",
+    "domainId": "biological",
+    "legacySourceId": "legacy-8ffdaed252a5c433",
+    "legacySourceFile": "js/data_batch22.js",
+    "prompt": "A confused, malnourished patient with gait ataxia and abnormal eye movements requires urgent consideration of:",
+    "choices": [
+      "A folate excess treated by restricting all dietary protein",
+      "Wernicke encephalopathy from thiamine deficiency",
+      "Tardive dyskinesia caused by one missed antipsychotic dose",
+      "Serotonin withdrawal caused by acute vitamin D exposure"
+    ],
+    "answerIndex": 1,
+    "rationale": "Wernicke encephalopathy is an acute neurologic emergency caused by thiamine deficiency. Confusion or altered mental status, gait or coordination problems, and ocular abnormalities are classic features, but the full triad is often absent. Suspected cases require prompt medical evaluation and parenteral thiamine.",
+    "references": [
+      "https://doi.org/10.1136/jnnp.49.4.341"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-cognitive-1",
+    "domainId": "cognitive-affective",
+    "legacySourceId": "legacy-2fec96a6377568c0",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "A temporally graded retrograde amnesia pattern means that:",
+    "choices": [
+      "Older memories are relatively better preserved than memories formed near onset",
+      "New learning is normal only for information presented before onset",
+      "All implicit and explicit memories are lost to exactly the same degree",
+      "Memory loss is restricted to future intentions and prospective tasks"
+    ],
+    "answerIndex": 0,
+    "rationale": "Retrograde amnesia affects information acquired before onset and can show a temporal gradient in which remote memories are better preserved than more recent premorbid memories. Patterns vary with etiology and memory system; anterograde amnesia instead concerns impaired formation of new lasting memories.",
+    "references": [
+      "https://doi.org/10.1016/0959-4388(95)80023-9"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-cognitive-2",
+    "domainId": "cognitive-affective",
+    "legacySourceId": "legacy-150e7071e69b12b1",
+    "legacySourceFile": "js/data_batch50.js",
+    "prompt": "Baumrind's permissive parenting pattern is characterized by relatively:",
+    "choices": [
+      "Low warmth combined with rigid control and punitive enforcement",
+      "High responsiveness with few demands or consistently enforced limits",
+      "High responsiveness combined with developmentally appropriate firm expectations",
+      "Low responsiveness and low involvement arising only from economic hardship"
+    ],
+    "answerIndex": 1,
+    "rationale": "Permissive parenting is generally high in warmth or responsiveness and low in demandingness, structure, or consistent limit-setting. Authoritative parenting combines responsiveness with appropriate demands. These are broad patterns rather than diagnoses, and parenting behavior varies across contexts and cultures.",
+    "references": [
+      "https://doi.org/10.1037/h0030372"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-cognitive-3",
+    "domainId": "cognitive-affective",
+    "legacySourceId": "legacy-7ee70eb471a77252",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "Token economies apply which learning principle most directly?",
+    "choices": [
+      "Classical conditioning through pairing two neutral stimuli without consequences",
+      "Habituation produced by repeated exposure to an irrelevant stimulus",
+      "Operant reinforcement of defined behavior using exchangeable conditioned reinforcers",
+      "Latent learning that must occur without goals, feedback, or reinforcement"
+    ],
+    "answerIndex": 2,
+    "rationale": "A token economy is an operant system in which defined target behaviors earn tokens that function as conditioned reinforcers and can be exchanged for backup reinforcers. Ethical implementation requires clear rules, monitoring, meaningful choice, appropriate reinforcement, fading, and protection against coercion.",
+    "references": [
+      "https://dictionary.apa.org/token-economy"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-social-1",
+    "domainId": "social-cultural",
+    "legacySourceId": "legacy-6dbfe6656a2ef6cc",
+    "legacySourceFile": "js/data_batch10.js",
+    "prompt": "Which attribution best illustrates a self-serving bias?",
+    "choices": [
+      "Crediting one's success to ability but blaming a similar failure on unfair circumstances",
+      "Explaining both success and failure entirely through stable personal traits",
+      "Attributing another person's behavior to context after examining situational constraints",
+      "Revising a belief because carefully sampled evidence contradicts it"
+    ],
+    "answerIndex": 0,
+    "rationale": "Self-serving bias is the tendency to claim relatively internal credit for positive outcomes while attributing negative outcomes more externally. It is not universal; magnitude and expression vary with culture, relationships, mental health, accountability, evidence, and the degree of control over the outcome.",
+    "references": [
+      "https://doi.org/10.1037/h0076486"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-social-2",
+    "domainId": "social-cultural",
+    "legacySourceId": "legacy-64c2610e70750b87",
+    "legacySourceFile": "js/data_batch9.js",
+    "prompt": "A fundraiser first requests $500, accepts the refusal, and then asks for the intended $25 donation. This sequence illustrates:",
+    "choices": [
+      "Foot-in-the-door through an initial small commitment",
+      "Door-in-the-face through a concession from a large request",
+      "Low-balling by increasing costs after agreement",
+      "Social loafing caused by reduced individual identifiability"
+    ],
+    "answerIndex": 1,
+    "rationale": "Door-in-the-face uses an initially large request followed after refusal by a smaller target request. The requester's apparent concession can elicit reciprocal concession, and contrast can make the target seem smaller. It differs from foot-in-the-door and does not make deceptive pressure ethically appropriate.",
+    "references": [
+      "https://doi.org/10.1037/h0076284"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-lifespan-1",
+    "domainId": "lifespan",
+    "legacySourceId": "legacy-676e7ab573ba6c4b",
+    "legacySourceFile": "js/data_batch22.js",
+    "prompt": "An infant's stranger anxiety is most likely to vary with:",
+    "choices": [
+      "Temperament, familiarity, context, and the caregiver's presence",
+      "A universal schedule that produces identical distress in every infant",
+      "Formal operational reasoning about the stranger's hypothetical intentions",
+      "Whether object permanence has been completely absent since birth"
+    ],
+    "answerIndex": 0,
+    "rationale": "Wariness of unfamiliar people commonly emerges in the latter half of the first year, but its intensity depends on temperament, gradual versus abrupt approach, setting, prior experience, and caregiver cues or availability. Variation is expected and one observation is not a diagnosis of attachment or anxiety disorder.",
+    "references": [
+      "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-lifespan-2",
+    "domainId": "lifespan",
+    "legacySourceId": "legacy-bf0146cb39a4b2b9",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "In Marcia's identity-status model, moratorium describes:",
+    "choices": [
+      "Commitment adopted without meaningful exploration",
+      "Active exploration without a settled commitment",
+      "Neither exploration nor commitment in any identity domain",
+      "Commitment following a period of exploration"
+    ],
+    "answerIndex": 1,
+    "rationale": "Moratorium is active exploration of identity alternatives without a firm commitment. Achievement follows exploration and commitment; foreclosure is commitment without meaningful exploration; diffusion reflects low exploration and low commitment. Status can differ by domain and change over time.",
+    "references": [
+      "https://doi.org/10.1111/j.1467-6494.1966.tb00543.x"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-lifespan-3",
+    "domainId": "lifespan",
+    "legacySourceId": "legacy-fdda3f66984ea875",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "In Vygotskian theory, a child talking aloud to guide the steps of a puzzle is using:",
+    "choices": [
+      "Echolalia with no possible regulatory function",
+      "A conditioned reflex that cannot become internal thought",
+      "Private speech to support planning and self-regulation",
+      "Formal operational debate intended primarily for another listener"
+    ],
+    "answerIndex": 2,
+    "rationale": "Private speech is self-directed language used to guide attention, planning, problem solving, and behavioral regulation. Vygotsky proposed that socially mediated speech becomes increasingly internalized as inner speech. Talking aloud during a difficult task can therefore be developmentally functional rather than meaningless.",
+    "references": [
+      "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-assessment-1",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-f97bc750d1117ece",
+    "legacySourceFile": "js/data.js",
+    "prompt": "An elevated MMPI-2 F scale should initially be interpreted as indicating:",
+    "choices": [
+      "Infrequent item endorsement requiring examination of several possible explanations",
+      "Definitive proof of intentional malingering for financial gain",
+      "A specific depressive disorder regardless of the clinical scales",
+      "Superior cognitive ability relative to same-age peers"
+    ],
+    "answerIndex": 0,
+    "rationale": "The F scale contains items infrequently endorsed in the normative population. Elevation can reflect genuine severe distress or unusual experiences, misunderstanding, random responding, reading difficulty, or overreporting. Configuration, degree of elevation, context, and other validity evidence are required.",
+    "references": [
+      "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Personality-%26-Biopsychosocial/Minnesota-Multiphasic-Personality-Inventory-2/p/100000461"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-assessment-2",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-21d529b3da0ce6b5",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "When a diagnostic cutoff is lowered, the usual tradeoff is:",
+    "choices": [
+      "Lower sensitivity and lower false-positive rate in every sample",
+      "Higher sensitivity but potentially lower specificity",
+      "Higher reliability with no change in classification outcomes",
+      "Lower prevalence of the disorder in the underlying population"
+    ],
+    "answerIndex": 1,
+    "rationale": "Lowering a cutoff generally labels more results positive, which tends to increase sensitivity and reduce false negatives while decreasing specificity and increasing false positives. The best threshold depends on consequences, prevalence, setting, and intended use rather than sensitivity alone.",
+    "references": [
+      "https://www.itl.nist.gov/div898/handbook/prc/section4/prc412.htm"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-assessment-3",
+    "domainId": "assessment",
+    "legacySourceId": "legacy-efde168ab4e235db",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "A questionnaire has high face validity when:",
+    "choices": [
+      "It predicts a future criterion with a large cross-validated coefficient",
+      "Its scores are stable across time despite measuring the wrong construct",
+      "Its items appear relevant to the construct to examinees or observers",
+      "It has been proven fair and valid for every population and purpose"
+    ],
+    "answerIndex": 2,
+    "rationale": "Face validity is the extent to which a measure appears on inspection to assess what it claims to assess. It can affect acceptability and response behavior but is not substantive evidence of construct representation, internal structure, criterion relations, fairness, or consequences of score use.",
+    "references": [
+      "https://dictionary.apa.org/face-validity"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-intervention-1",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-91ca53981249deb3",
+    "legacySourceFile": "js/data_batch21.js",
+    "prompt": "Which statement best captures a harm-reduction approach to substance use?",
+    "choices": [
+      "Services are withheld until a person promises permanent abstinence",
+      "Any reduction in risk is rejected unless all substance use ends immediately",
+      "Practical steps reduce health and social harms while respecting the person's goals",
+      "Risk information is concealed so it cannot affect willingness to seek care"
+    ],
+    "answerIndex": 2,
+    "rationale": "Harm reduction uses pragmatic, person-centered strategies to reduce adverse health and social consequences without requiring abstinence as a precondition for help. Abstinence may still be a chosen goal. Approaches can include overdose prevention, safer-use education, medication, testing, and connection to care.",
+    "references": [
+      "https://dictionary.apa.org/harm-reduction"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-intervention-2",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-9d15c4eed8950d5f",
+    "legacySourceFile": "js/data_batch14.js",
+    "prompt": "For obsessive-compulsive disorder, exposure and response prevention asks a client to:",
+    "choices": [
+      "Avoid every trigger until anxiety disappears permanently",
+      "Neutralize intrusive thoughts immediately with a competing ritual",
+      "Analyze childhood dreams without approaching current feared cues",
+      "Approach feared cues while refraining from the usual compulsion or ritual"
+    ],
+    "answerIndex": 3,
+    "rationale": "ERP combines planned exposure to obsessional triggers with prevention of the ritual or avoidance response. Repeated learning can weaken threat expectancies and increase tolerance of uncertainty and distress. Treatment should be collaborative, graded as appropriate, and delivered without covert reassurance rituals.",
+    "references": [
+      "https://www.nimh.nih.gov/health/topics/obsessive-compulsive-disorder-ocd"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-intervention-3",
+    "domainId": "intervention",
+    "legacySourceId": "legacy-55a30769120cf678",
+    "legacySourceFile": "js/data_batch12.js",
+    "prompt": "Traditional systematic desensitization combines:",
+    "choices": [
+      "Immediate maximal exposure with no preparation or hierarchy",
+      "Response cost with removal of every positive reinforcer",
+      "Free association with interpretation of resistance and transference",
+      "A graded fear hierarchy with relaxation as an incompatible response"
+    ],
+    "answerIndex": 3,
+    "rationale": "Wolpe's systematic desensitization pairs relaxation training with gradual progression through an anxiety hierarchy, historically framed as reciprocal inhibition. Contemporary exposure approaches need not depend on relaxation, but systematic desensitization is distinguished from flooding by its graded hierarchy and coping response.",
+    "references": [
+      "https://dictionary.apa.org/systematic-desensitization"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-professional-1",
+    "domainId": "professional",
+    "legacySourceId": "legacy-9bcf806e4add3647",
+    "legacySourceFile": "js/data_batch21.js",
+    "prompt": "Which statement best reflects the legal significance of Tarasoff in the United States?",
+    "choices": [
+      "It created one uniform federal warning rule that overrides every state law",
+      "It abolished confidentiality whenever a client expresses anger",
+      "It influenced jurisdiction-specific duties to protect identifiable potential victims",
+      "It requires clinicians to predict all future violence with certainty"
+    ],
+    "answerIndex": 2,
+    "rationale": "Tarasoff influenced duties of reasonable care to protect potential victims under specified circumstances, but there is no single uniform nationwide rule. Statutes and cases vary in threshold, protected persons, and permissible actions, so clinicians must use competent assessment and current jurisdiction-specific guidance.",
+    "references": [
+      "https://law.justia.com/cases/california/supreme-court/3d/17/425.html"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-professional-2",
+    "domainId": "professional",
+    "legacySourceId": "legacy-09a5c8d3ffec91d9",
+    "legacySourceFile": "js/data.js",
+    "prompt": "Under Dusky, competence to stand trial requires present ability to:",
+    "choices": [
+      "Recall every event surrounding the alleged offense with perfect accuracy",
+      "Prove legal innocence before discussing a plea with counsel",
+      "Meet the jurisdiction's insanity standard at the time of the offense",
+      "Consult rationally with counsel and understand proceedings rationally and factually"
+    ],
+    "answerIndex": 3,
+    "rationale": "Dusky requires sufficient present ability to consult with counsel with a reasonable degree of rational understanding and a rational as well as factual understanding of proceedings. Competence concerns current adjudicative capacity, not criminal responsibility at the time of the alleged act.",
+    "references": [
+      "https://supreme.justia.com/cases/federal/us/362/402/"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-professional-3",
+    "domainId": "professional",
+    "legacySourceId": "legacy-7c943b01c7807f8e",
+    "legacySourceFile": "js/data.js",
+    "prompt": "Why should a treating psychologist generally avoid also serving as the same client's neutral forensic evaluator?",
+    "choices": [
+      "Forensic evaluators may never interview or test anyone they evaluate",
+      "Treatment automatically eliminates every form of legal privilege",
+      "A therapist is legally required to advocate for conviction in all proceedings",
+      "The roles have conflicting purposes, loyalties, confidentiality, and objectivity demands"
+    ],
+    "answerIndex": 3,
+    "rationale": "Therapeutic and forensic roles differ in purpose, alliance, confidentiality, intended audience, and obligations. Combining them can confuse consent, impair objectivity, create exploitation or harm, and distort treatment. Separate professionals are generally preferable when a neutral forensic opinion is needed.",
+    "references": [
+      "https://doi.org/10.1037/a0029889"
+    ]
+  },
+  {
+    "type": "single-choice",
+    "difficulty": "foundation",
+    "reviewStatus": "source-reviewed",
+    "qaStatus": "qa-passed",
+    "qaReviewedAt": "2026-07-11",
+    "migrationStatus": "re-authored-source-reviewed",
+    "id": "eppp-b028-professional-4",
+    "domainId": "professional",
+    "legacySourceId": "legacy-223f5d6386f185de",
+    "legacySourceFile": "js/questions_bank.js",
+    "prompt": "When ethical principles point in different directions, the psychologist should:",
+    "choices": [
+      "Apply one preferred principle mechanically without considering facts or stakeholders",
+      "Assume legal compliance alone resolves every professional responsibility",
+      "Let the party paying for services decide which ethical obligations apply",
+      "Use a documented decision process considering rights, welfare, context, law, and consultation"
+    ],
+    "answerIndex": 3,
+    "rationale": "Ethical practice often requires balancing beneficence, nonmaleficence, autonomy, justice, fidelity, rights, culture, power, and law. A defensible process identifies stakeholders and options, seeks relevant consultation, documents reasoning, minimizes harm, and revisits the decision as circumstances change.",
+    "references": [
+      "https://www.apa.org/ethics/code"
+    ]
   }
 ]

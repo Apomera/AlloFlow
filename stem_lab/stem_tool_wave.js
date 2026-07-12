@@ -847,134 +847,124 @@ const d = labToolData.wave;
 
 
               if (currentMode === 'standing') {
-
-                // Standing wave mode
-
                 var n = harmonic;
+                var standMid = cH / 2;
+                var standPhase = Math.cos(tick * 0.05 * speed);
+                var lobeWidth = cW / n;
 
-                // Draw standing wave envelope
+                // Antinode energy wells give every resonant lobe a dimensional
+                // center without obscuring the mathematical envelope.
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                for (var lk = 0; lk < n; lk++) {
+                  var lcx = (lk + 0.5) * lobeWidth;
+                  var lobeR = Math.min(lobeWidth * 0.44, amp * dpr * 1.25 + 28 * dpr);
+                  var lobeGlow = ctx.createRadialGradient(lcx, standMid, 0, lcx, standMid, lobeR);
+                  lobeGlow.addColorStop(0, 'rgba(167,139,250,0.20)');
+                  lobeGlow.addColorStop(0.38, 'rgba(34,211,238,0.10)');
+                  lobeGlow.addColorStop(1, 'rgba(34,211,238,0)');
+                  ctx.fillStyle = lobeGlow;
+                  ctx.beginPath(); ctx.arc(lcx, standMid, lobeR, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.restore();
 
-                ctx.globalAlpha = 0.2;
-
-                ctx.fillStyle = accent;
-
-                ctx.beginPath();
-
-                for (var x = 0; x < cW; x++) {
-
-                  var envelope = Math.sin(n * Math.PI * x / cW) * amp * dpr;
-
-                  var py = cH / 2 - envelope;
-
-                  if (x === 0) ctx.moveTo(x, py); else ctx.lineTo(x, py);
-
+                function traceStandingEnvelope(sign) {
+                  ctx.beginPath();
+                  for (var ex = 0; ex < cW; ex++) {
+                    var envY = Math.sin(n * Math.PI * ex / cW) * amp * dpr * sign;
+                    var envPy = standMid - envY;
+                    if (ex === 0) ctx.moveTo(ex, envPy); else ctx.lineTo(ex, envPy);
+                  }
                 }
 
-                for (var x = cW - 1; x >= 0; x--) {
+                // Filled maximum-displacement envelope.
+                ctx.save(); ctx.globalAlpha = 0.15; ctx.fillStyle = accent;
+                traceStandingEnvelope(1);
+                for (var ex2 = cW - 1; ex2 >= 0; ex2--) ctx.lineTo(ex2, standMid + Math.sin(n * Math.PI * ex2 / cW) * amp * dpr);
+                ctx.closePath(); ctx.fill(); ctx.restore();
 
-                  var envelope = Math.sin(n * Math.PI * x / cW) * amp * dpr;
+                // Fine dashed envelope boundaries keep maximum displacement visible.
+                ctx.save(); ctx.globalAlpha = 0.42; ctx.strokeStyle = accent; ctx.lineWidth = 1 * dpr; ctx.setLineDash([5*dpr,5*dpr]);
+                traceStandingEnvelope(1); ctx.stroke(); traceStandingEnvelope(-1); ctx.stroke(); ctx.restore();
 
-                  var py = cH / 2 + envelope;
-
-                  ctx.lineTo(x, py);
-
+                // Node planes remain fixed while the lobes oscillate.
+                ctx.save();
+                for (var nk = 0; nk <= n; nk++) {
+                  var nodeX = nk * cW / n;
+                  var nodeGrad = ctx.createLinearGradient(nodeX, standMid-amp*dpr*1.25, nodeX, standMid+amp*dpr*1.25);
+                  nodeGrad.addColorStop(0,'rgba(248,113,113,0)'); nodeGrad.addColorStop(.5,'rgba(248,113,113,.42)'); nodeGrad.addColorStop(1,'rgba(248,113,113,0)');
+                  ctx.strokeStyle=nodeGrad; ctx.lineWidth=1*dpr; ctx.beginPath(); ctx.moveTo(nodeX,standMid-amp*dpr*1.25); ctx.lineTo(nodeX,standMid+amp*dpr*1.25); ctx.stroke();
                 }
+                ctx.restore();
 
-                ctx.fill();
-
-                ctx.globalAlpha = 1;
-
-                // Draw standing wave (animated)
-
-                ctx.lineWidth = 3 * dpr;
-
-                ctx.strokeStyle = accent;
-
-                ctx.shadowColor = accent;
-
-                ctx.shadowBlur = 10;
-
-                ctx.beginPath();
-
-                for (var x = 0; x < cW; x++) {
-
-                  var y = Math.sin(n * Math.PI * x / cW) * Math.cos(tick * 0.05 * speed) * amp * dpr;
-
-                  var py = cH / 2 - y;
-
-                  if (x === 0) ctx.moveTo(x, py); else ctx.lineTo(x, py);
-
+                function traceStandingWave() {
+                  ctx.beginPath();
+                  for (var sxw = 0; sxw < cW; sxw++) {
+                    var standY = Math.sin(n * Math.PI * sxw / cW) * standPhase * amp * dpr;
+                    var standPy = standMid - standY;
+                    if (sxw === 0) ctx.moveTo(sxw, standPy); else ctx.lineTo(sxw, standPy);
+                  }
                 }
+                ctx.strokeStyle=accent; ctx.shadowColor=accent;
+                traceStandingWave(); ctx.save(); ctx.globalAlpha=.18; ctx.lineWidth=12*dpr; ctx.shadowBlur=24; ctx.stroke(); ctx.restore();
+                traceStandingWave(); ctx.lineWidth=3*dpr; ctx.shadowBlur=10; ctx.stroke();
+                traceStandingWave(); ctx.save(); ctx.globalAlpha=.3; ctx.strokeStyle='#fff'; ctx.lineWidth=.8*dpr; ctx.shadowBlur=0; ctx.stroke(); ctx.restore();
+                ctx.shadowBlur=0;
 
-                ctx.stroke();
-
-                ctx.shadowBlur = 0;
-
-                // Mark nodes and antinodes
-
+                // Accessible HTML below carries the legend; compact N/A marks stay
+                // on-canvas as direct spatial labels.
+                ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='bold '+(11*dpr)+'px sans-serif';
                 for (var k = 0; k <= n; k++) {
-
-                  var nx = k * cW / n;
-
-                  ctx.fillStyle = '#ef4444';
-
-                  ctx.beginPath(); ctx.arc(nx, cH / 2, 5 * dpr, 0, Math.PI * 2); ctx.fill();
-
-                  ctx.fillStyle = '#ffffff';
-
-                  ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
-
-                  ctx.fillText('N', nx - 3 * dpr, cH / 2 - 8 * dpr);
-
+                  var nx = k*cW/n;
+                  ctx.shadowColor='#ef4444'; ctx.shadowBlur=10; ctx.fillStyle='#ef4444'; ctx.beginPath(); ctx.arc(nx,standMid,5*dpr,0,Math.PI*2); ctx.fill();
+                  ctx.shadowBlur=0; ctx.fillStyle='#fff'; var nodeLabelX=Math.max(9*dpr,Math.min(cW-9*dpr,nx)); ctx.fillText('N',nodeLabelX,standMid-11*dpr);
                 }
-
-                for (var k = 0; k < n; k++) {
-
-                  var anx = (k + 0.5) * cW / n;
-
-                  ctx.fillStyle = '#22c55e';
-
-                  ctx.beginPath(); ctx.arc(anx, cH / 2, 4 * dpr, 0, Math.PI * 2); ctx.fill();
-
-                  ctx.fillStyle = '#ffffff';
-
-                  ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
-
-                  ctx.fillText('A', anx - 3 * dpr, cH / 2 - 8 * dpr);
-
+                for (var ak = 0; ak < n; ak++) {
+                  var anx=(ak+.5)*cW/n;
+                  var pulseR=(4+1.2*Math.abs(standPhase))*dpr;
+                  ctx.shadowColor='#22c55e'; ctx.shadowBlur=12; ctx.fillStyle='#22c55e'; ctx.beginPath(); ctx.arc(anx,standMid,pulseR,0,Math.PI*2); ctx.fill();
+                  ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.fillText('A',anx,standMid-11*dpr);
                 }
-
-                // (Legend lives in the HTML info panel below the canvas — canvas-baked
-                // text was tiny, unlocalizable, and invisible to screen readers.)
+                ctx.textAlign='start'; ctx.textBaseline='alphabetic';
 
               } else if (currentMode === 'free') {
                 // Free wave mode
-                // Draw main wave
+                // Draw main wave as a layered instrument trace.
                 ctx.lineWidth = 3 * dpr;
                 ctx.strokeStyle = accent;
                 ctx.shadowColor = accent;
                 ctx.shadowBlur = 8;
-
-                ctx.beginPath();
-
-                // ω ∝ f so every wave shares ONE phase velocity (same medium ⇒ same v;
-                // crest speed must not change with frequency). 0.04·f matches the old
-                // default speed at f=2 and keeps the drawn sum equal to the drawn parts.
-                for (var x = 0; x < cW; x++) {
-
-                  var t = x / (cW) * Math.PI * 2 * freq - tick * 0.04 * freq * speed;
-
-                  var y = waveVal(t, waveType);
-                  if (dampOn) { y *= Math.exp(-dampAlpha * (x / cW) * 3); }
-
-                  var py = cH / 2 - y * amp * dpr;
-
-                  if (x === 0) ctx.moveTo(x, py); else ctx.lineTo(x, py);
-
+                function tracePrimaryWave() {
+                  ctx.beginPath();
+                  for (var x = 0; x < cW; x++) {
+                    var wt = x / cW * Math.PI * 2 * freq - tick * 0.04 * freq * speed;
+                    var wy = waveVal(wt, waveType);
+                    if (dampOn) wy *= Math.exp(-dampAlpha * (x / cW) * 3);
+                    var wpy = cH / 2 - wy * amp * dpr;
+                    if (x === 0) ctx.moveTo(x, wpy); else ctx.lineTo(x, wpy);
+                  }
                 }
-
-                ctx.stroke();
-
+                tracePrimaryWave();
+                ctx.lineTo(cW, cH / 2); ctx.lineTo(0, cH / 2); ctx.closePath();
+                ctx.save(); ctx.globalAlpha = 0.12; ctx.fillStyle = accent; ctx.fill(); ctx.restore();
+                tracePrimaryWave();
+                ctx.save(); ctx.globalAlpha = 0.18; ctx.lineWidth = 11 * dpr; ctx.shadowBlur = 22; ctx.stroke(); ctx.restore();
+                tracePrimaryWave();
+                ctx.lineWidth = 3 * dpr; ctx.globalAlpha = 1; ctx.shadowBlur = 8; ctx.stroke();
+                tracePrimaryWave();
+                ctx.save(); ctx.globalAlpha = 0.32; ctx.lineWidth = 0.8 * dpr; ctx.strokeStyle = '#ffffff'; ctx.shadowBlur = 0; ctx.stroke(); ctx.restore();
+                ctx.save();
+                for (var pm = 0; pm < 9; pm++) {
+                  var pmx = ((pm / 8 + tick * 0.00055 * speed) % 1) * cW;
+                  var pmt = pmx / cW * Math.PI * 2 * freq - tick * 0.04 * freq * speed;
+                  var pmyVal = waveVal(pmt, waveType);
+                  if (dampOn) pmyVal *= Math.exp(-dampAlpha * (pmx / cW) * 3);
+                  var pmy = cH / 2 - pmyVal * amp * dpr;
+                  ctx.globalAlpha = 0.35 + 0.2 * Math.sin(tick * 0.025 + pm);
+                  ctx.beginPath(); ctx.arc(pmx, pmy, 2.2 * dpr, 0, Math.PI * 2);
+                  ctx.fillStyle = '#ffffff'; ctx.fill();
+                }
+                ctx.restore();
                 ctx.shadowBlur = 0;
 
                 // ── Match the Waveform target ──
@@ -1161,24 +1151,56 @@ const d = labToolData.wave;
                     var v1 = amp * Math.sin(2 * Math.PI * (d1 / rippleWL - t * freq * 0.05)) * Math.exp(-rippleDamp * d1);
                     var v2 = amp * Math.sin(2 * Math.PI * (d2 / rippleWL - t * freq * 0.05)) * Math.exp(-rippleDamp * d2);
                     var vSum = (v1 + v2) / 2;
-                    // Map to color: blue for troughs, cyan/white for crests
-                    var bright = Math.floor(128 + vSum * 127);
-                    bright = Math.max(0, Math.min(255, bright));
+                    // Diverging water-light palette: deep indigo troughs, dark
+                    // equilibrium water, and cyan-white constructive crests.
+                    var norm = Math.max(-1, Math.min(1, vSum / Math.max(1, amp)));
                     var idx = (py * rBW + px) * 4;
-                    data[idx] = Math.floor(bright * 0.2);       // R
-                    data[idx + 1] = Math.floor(bright * 0.6);   // G
-                    data[idx + 2] = bright;                       // B
-                    data[idx + 3] = 255;                          // A
+                    if (norm >= 0) {
+                      var crest = Math.pow(norm, 0.72);
+                      data[idx] = Math.floor(8 + crest * 230);
+                      data[idx + 1] = Math.floor(62 + crest * 190);
+                      data[idx + 2] = Math.floor(118 + crest * 137);
+                    } else {
+                      var trough = Math.pow(-norm, 0.78);
+                      data[idx] = Math.floor(7 + (1 - trough) * 13);
+                      data[idx + 1] = Math.floor(18 + (1 - trough) * 55);
+                      data[idx + 2] = Math.floor(52 + (1 - trough) * 90);
+                    }
+                    data[idx + 3] = 255;
                   }
                 }
                 rbCtx.putImageData(imgData, 0, 0);
                 ctx.imageSmoothingEnabled = true;
                 ctx.drawImage(canvasEl._rippleBuf, 0, 0, cW, cH);
+                // Overlay physically aligned crest contours. They preserve the
+                // interference field beneath while giving each source real depth.
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                var maxRippleR = Math.hypot(cW, cH);
+                var crestPhaseR = (t * freq * 0.05 * rippleWL) % rippleWL;
+                function drawCrestContours(cx, cy) {
+                  for (var wr = crestPhaseR; wr < maxRippleR; wr += rippleWL) {
+                    var wrAlpha = Math.max(0.025, 0.24 * Math.exp(-rippleDamp * wr));
+                    ctx.globalAlpha = wrAlpha;
+                    ctx.strokeStyle = '#b8f3ff';
+                    ctx.lineWidth = (wr < rippleWL * 2 ? 1.35 : 0.75) * dpr;
+                    ctx.beginPath(); ctx.arc(cx, cy, wr, 0, Math.PI * 2); ctx.stroke();
+                  }
+                }
+                drawCrestContours(src1x, src1y);
+                drawCrestContours(src2x, src2y);
+                ctx.restore();
 
                 // Mark sources with prominent drag handles (rendered larger
                 // when the user is hovering or dragging them).
                 var active = canvasEl._drag.activeHandle;
                 function drawSourceHandle(x, y, label, isActive) {
+                  var sourceGlow = ctx.createRadialGradient(x, y, 0, x, y, 28 * dpr);
+                  sourceGlow.addColorStop(0, isActive ? 'rgba(255,255,255,0.72)' : 'rgba(255,120,100,0.52)');
+                  sourceGlow.addColorStop(0.25, 'rgba(255,95,95,0.22)');
+                  sourceGlow.addColorStop(1, 'rgba(255,95,95,0)');
+                  ctx.fillStyle = sourceGlow;
+                  ctx.beginPath(); ctx.arc(x, y, 28 * dpr, 0, Math.PI * 2); ctx.fill();
                   // Outer pulsing ring (hint that it's draggable)
                   var ringR = 14 * dpr * (1 + 0.15 * Math.sin(t * 0.1));
                   ctx.strokeStyle = isActive ? 'rgba(255,255,255,0.9)' : 'rgba(255,107,107,0.5)';
@@ -1188,8 +1210,8 @@ const d = labToolData.wave;
                   ctx.fillStyle = '#ff6b6b';
                   ctx.beginPath(); ctx.arc(x, y, 7 * dpr, 0, 2 * Math.PI); ctx.fill();
                   ctx.fillStyle = '#fff';
-                  ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
-                  ctx.fillText(label, x - 6 * dpr, y + 3 * dpr);
+                  ctx.font = 'bold ' + (11 * dpr) + 'px sans-serif';
+                  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, x, y); ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
                 }
                 drawSourceHandle(src1x, src1y, 'S\u2081', active === 'r1');
                 drawSourceHandle(src2x, src2y, 'S\u2082', active === 'r2');
@@ -1206,22 +1228,34 @@ const d = labToolData.wave;
                 var longAmp = (amp / 100) * cW / (2 * Math.PI * freq);
                 var midY = cH / 2;
 
+                // Moving pressure field behind the particles: warm bands are
+                // compressions, cool bands are rarefactions.
+                ctx.save();
+                var tubeTop=midY-40*dpr, tubeHeight=80*dpr, pressureBands=96, bandW=cW/pressureBands;
+                for(var bi=0;bi<pressureBands;bi++){
+                  var bx=bi*bandW, bp=-Math.cos(2*Math.PI*(bx/cW*freq-t*freq*.05));
+                  var bandAlpha=.035+.13*Math.abs(bp);
+                  ctx.fillStyle=bp>0?'rgba(251,113,133,'+bandAlpha.toFixed(3)+')':'rgba(59,130,246,'+bandAlpha.toFixed(3)+')';
+                  ctx.fillRect(bx,tubeTop,bandW+1,tubeHeight);
+                }
+                var glassGrad=ctx.createLinearGradient(0,tubeTop,0,tubeTop+tubeHeight);
+                glassGrad.addColorStop(0,'rgba(255,255,255,.15)');glassGrad.addColorStop(.18,'rgba(255,255,255,.02)');glassGrad.addColorStop(.82,'rgba(0,15,35,.04)');glassGrad.addColorStop(1,'rgba(0,8,24,.22)');
+                ctx.fillStyle=glassGrad;ctx.fillRect(10,tubeTop,cW-20,tubeHeight);
+                ctx.restore();
                 // Draw tube outline
                 ctx.strokeStyle = 'rgba(100,200,255,0.15)';
                 ctx.lineWidth = 1;
                 ctx.strokeRect(10, midY - 40 * dpr, cW - 20, 80 * dpr);
 
                 // Pressure graph (top)
-                ctx.strokeStyle = '#f472b6';
-                ctx.lineWidth = 2 * dpr;
-                ctx.setLineDash([]);
-                ctx.beginPath();
-                for (var lx = 0; lx < cW; lx += 2) {
-                  var pressure = -Math.cos(2 * Math.PI * (lx / cW * freq - t * freq * 0.05)) * amp * 0.5;
-                  var py_p = midY - 60 * dpr + pressure * 40 * dpr;
-                  if (lx === 0) ctx.moveTo(lx, py_p); else ctx.lineTo(lx, py_p);
+                function tracePressureGraph(){
+                  ctx.beginPath();
+                  for(var lx=0;lx<cW;lx+=2){var pressure=-Math.cos(2*Math.PI*(lx/cW*freq-t*freq*.05))*amp*.5;var py_p=midY-60*dpr+pressure*40*dpr;if(lx===0)ctx.moveTo(lx,py_p);else ctx.lineTo(lx,py_p);}
                 }
-                ctx.stroke();
+                ctx.setLineDash([]);ctx.strokeStyle='#f472b6';ctx.shadowColor='#f472b6';
+                tracePressureGraph();ctx.save();ctx.globalAlpha=.16;ctx.lineWidth=10*dpr;ctx.shadowBlur=20;ctx.stroke();ctx.restore();
+                tracePressureGraph();ctx.lineWidth=2*dpr;ctx.shadowBlur=8;ctx.stroke();
+                tracePressureGraph();ctx.save();ctx.globalAlpha=.3;ctx.strokeStyle='#fff';ctx.lineWidth=.7*dpr;ctx.shadowBlur=0;ctx.stroke();ctx.restore();ctx.shadowBlur=0;
 
                 // Draw particles as vertical lines (density visualization)
                 for (var pi = 0; pi < numParticles; pi++) {
@@ -1233,14 +1267,24 @@ const d = labToolData.wave;
                   var localDensity = 1 - (nextDisp - displacement) / (particleSpacing * 0.8);
                   localDensity = Math.max(0.1, Math.min(2, localDensity));
                   var alpha = Math.min(1, localDensity * 0.7);
-                  ctx.strokeStyle = 'rgba(96,165,250,' + alpha.toFixed(2) + ')';
+                  var particleRGB = localDensity > 1.08 ? '251,113,133' : '96,165,250';
+                  ctx.strokeStyle = 'rgba(' + particleRGB + ',' + alpha.toFixed(2) + ')';
+                  ctx.shadowColor = localDensity > 1.08 ? '#fb7185' : '#60a5fa';
+                  ctx.shadowBlur = Math.max(2, localDensity * 5 * dpr);
                   ctx.lineWidth = Math.max(1, localDensity * 3 * dpr);
-                  ctx.beginPath();
-                  ctx.moveTo(drawX, midY - 30 * dpr);
-                  ctx.lineTo(drawX, midY + 30 * dpr);
-                  ctx.stroke();
+                  ctx.beginPath(); ctx.moveTo(drawX, midY - 30 * dpr); ctx.lineTo(drawX, midY + 30 * dpr); ctx.stroke();
+                  ctx.shadowBlur = 0; ctx.globalAlpha = Math.min(1, .25 + localDensity * .35);
+                  ctx.fillStyle = localDensity > 1.08 ? '#fecdd3' : '#bfdbfe';
+                  ctx.beginPath(); ctx.arc(drawX, midY, Math.max(1.8, localDensity * 1.8) * dpr, 0, Math.PI * 2); ctx.fill();
+                  ctx.globalAlpha = 1;
                 }
 
+                // The pressure pattern travels right even though each material
+                // particle only oscillates around its own equilibrium position.
+                ctx.save();ctx.strokeStyle='rgba(255,255,255,.42)';ctx.lineWidth=1.3*dpr;ctx.lineCap='round';
+                var longArrowOffset=(tick*.9*speed)%(100*dpr);
+                for(var la=25*dpr+longArrowOffset;la<cW-20*dpr;la+=100*dpr){ctx.beginPath();ctx.moveTo(la-8*dpr,midY+34*dpr);ctx.lineTo(la+8*dpr,midY+34*dpr);ctx.lineTo(la+3*dpr,midY+30*dpr);ctx.moveTo(la+8*dpr,midY+34*dpr);ctx.lineTo(la+3*dpr,midY+38*dpr);ctx.stroke();}
+                ctx.restore();
                 // Misconception-buster: highlight ONE tracer particle (gold) against a dashed
                 // marker at its equilibrium (rest) position, so students SEE it only jiggles
                 // back and forth in place \u2014 the wave travels right, but matter does not move with it.
@@ -1257,6 +1301,12 @@ const d = labToolData.wave;
                 ctx.beginPath(); ctx.moveTo(_trX, midY - 32 * dpr); ctx.lineTo(_trX, midY + 32 * dpr); ctx.stroke();
                 ctx.fillStyle = '#fbbf24';
                 ctx.beginPath(); ctx.arc(_trX, midY, 4 * dpr, 0, 2 * Math.PI); ctx.fill();
+                ctx.save();
+                ctx.strokeStyle='rgba(251,191,36,.72)';ctx.lineWidth=1.5*dpr;
+                ctx.beginPath();ctx.moveTo(_trBaseX,midY);ctx.lineTo(_trX,midY);ctx.stroke();
+                var tracerDir=_trX>=_trBaseX?1:-1;
+                ctx.beginPath();ctx.moveTo(_trX,midY);ctx.lineTo(_trX-tracerDir*5*dpr,midY-3*dpr);ctx.moveTo(_trX,midY);ctx.lineTo(_trX-tracerDir*5*dpr,midY+3*dpr);ctx.stroke();
+                ctx.restore();
 
                 // (Legend + gold-tracer note moved to HTML overlay chips.)
 
@@ -1401,29 +1451,42 @@ const d = labToolData.wave;
                 var k = 2 * Math.PI * freq / cW;
                 var omega = freq * 0.05 * speed;
 
+                // Directional energy fields separate the incoming and returning
+                // components before their curves superpose.
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                var incidentField = ctx.createLinearGradient(0, 0, wallX, 0);
+                incidentField.addColorStop(0, 'rgba(59,130,246,0.04)');
+                incidentField.addColorStop(1, 'rgba(59,130,246,0.17)');
+                ctx.fillStyle = incidentField; ctx.fillRect(0, 0, wallX, cH);
+                var reflectedField = ctx.createLinearGradient(wallX, 0, 0, 0);
+                reflectedField.addColorStop(0, 'rgba(244,114,182,' + (0.16 * refReflectivity).toFixed(3) + ')');
+                reflectedField.addColorStop(1, 'rgba(244,114,182,0.02)');
+                ctx.fillStyle = reflectedField; ctx.fillRect(0, 0, wallX, cH);
+                ctx.restore();
                 // Build the incident + reflected wave at each x position.
                 // For x < wallX:
                 //   incident y_i(x,t) = A sin(k x - ω t)
                 //   reflected y_r(x,t) = phaseFlip * R * A sin(k (2*wallX - x) - ω t)
                 //                        = phaseFlip * R * A sin(k (2*wallX - x) - ω t)
                 // For x > wallX: no wave (transmitted = 0 — perfect wall).
-                ctx.lineWidth = 3 * dpr;
-                ctx.strokeStyle = accent;
-                ctx.shadowColor = accent;
-                ctx.shadowBlur = 6;
-                ctx.beginPath();
-                var started = false;
-                for (var rx = 0; rx < wallX; rx += 2) {
-                  var phaseIn = k * rx - omega * t;
-                  var phaseRe = k * (2 * wallX - rx) - omega * t;
-                  var yi = Math.sin(phaseIn);
-                  var yre = phaseFlip * refReflectivity * Math.sin(phaseRe);
-                  var ry = midY_r - (yi + yre) * refAmp;
-                  if (!started) { ctx.moveTo(rx, ry); started = true; }
-                  else ctx.lineTo(rx, ry);
+                function traceCombinedReflection() {
+                  ctx.beginPath();
+                  var started = false;
+                  for (var rx = 0; rx < wallX; rx += 2) {
+                    var phaseIn = k * rx - omega * t;
+                    var phaseRe = k * (2 * wallX - rx) - omega * t;
+                    var yi = Math.sin(phaseIn);
+                    var yre = phaseFlip * refReflectivity * Math.sin(phaseRe);
+                    var ry = midY_r - (yi + yre) * refAmp;
+                    if (!started) { ctx.moveTo(rx, ry); started = true; } else ctx.lineTo(rx, ry);
+                  }
                 }
-                ctx.stroke();
-                ctx.shadowBlur = 0;
+                ctx.strokeStyle=accent; ctx.shadowColor=accent;
+                traceCombinedReflection(); ctx.save(); ctx.globalAlpha=.18; ctx.lineWidth=12*dpr; ctx.shadowBlur=24; ctx.stroke(); ctx.restore();
+                traceCombinedReflection(); ctx.lineWidth=3*dpr; ctx.globalAlpha=1; ctx.shadowBlur=8; ctx.stroke();
+                traceCombinedReflection(); ctx.save(); ctx.globalAlpha=.3; ctx.strokeStyle='#fff'; ctx.lineWidth=.8*dpr; ctx.shadowBlur=0; ctx.stroke(); ctx.restore();
+                ctx.shadowBlur=0;
 
                 // Faintly show the incident component alone (dashed)
                 ctx.strokeStyle = 'rgba(96,165,250,0.45)';
@@ -1450,6 +1513,24 @@ const d = labToolData.wave;
                 ctx.stroke();
                 ctx.setLineDash([]);
 
+                // Animated energy-direction chevrons make travel direction explicit.
+                ctx.save();
+                function drawEnergyArrow(ax, ay, dir, color, alpha) {
+                  ctx.globalAlpha=alpha; ctx.strokeStyle=color; ctx.lineWidth=1.6*dpr; ctx.lineCap='round';
+                  ctx.beginPath(); ctx.moveTo(ax-dir*8*dpr,ay); ctx.lineTo(ax+dir*8*dpr,ay); ctx.lineTo(ax+dir*3*dpr,ay-4*dpr); ctx.moveTo(ax+dir*8*dpr,ay); ctx.lineTo(ax+dir*3*dpr,ay+4*dpr); ctx.stroke();
+                }
+                var arrowOffset=(tick*1.2*speed)%(90*dpr);
+                for(var ia=35*dpr+arrowOffset;ia<wallX-20*dpr;ia+=90*dpr)drawEnergyArrow(ia,54*dpr,1,'#60a5fa',.72);
+                for(var ra=wallX-35*dpr-arrowOffset;ra>20*dpr;ra-=90*dpr)drawEnergyArrow(ra,72*dpr,-1,'#f472b6',.42+.3*refReflectivity);
+                ctx.restore();
+
+                // Boundary-impact glow tracks the instantaneous arriving amplitude.
+                var impactStrength=.25+.55*Math.abs(Math.sin(k*wallX-omega*t));
+                var impactGlow=ctx.createRadialGradient(wallX,midY_r,0,wallX,midY_r,55*dpr);
+                impactGlow.addColorStop(0,'rgba(251,191,36,'+impactStrength.toFixed(3)+')');
+                impactGlow.addColorStop(.25,'rgba(251,113,133,'+(impactStrength*.28).toFixed(3)+')');
+                impactGlow.addColorStop(1,'rgba(251,191,36,0)');
+                ctx.fillStyle=impactGlow;ctx.beginPath();ctx.arc(wallX,midY_r,55*dpr,0,Math.PI*2);ctx.fill();
                 // Draw the wall (draggable handle)
                 var wallActive = canvasEl._drag.activeHandle === 'wall';
                 ctx.fillStyle = wallActive ? 'rgba(251,191,36,0.95)' : 'rgba(251,191,36,0.75)';
@@ -1467,15 +1548,15 @@ const d = labToolData.wave;
                 ctx.fillStyle = '#fbbf24';
                 ctx.beginPath(); ctx.arc(wallX, midY_r, 10 * dpr, 0, 2 * Math.PI); ctx.fill();
                 ctx.fillStyle = '#000';
-                ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
+                ctx.font = 'bold ' + (11 * dpr) + 'px sans-serif';
                 ctx.fillText('⇔', wallX - 6 * dpr, midY_r + 3 * dpr);
 
                 // End-type label near the wall
                 ctx.fillStyle = endType === 'fixed' ? '#ef4444' : '#22c55e';
-                ctx.font = 'bold ' + (7 * dpr) + 'px sans-serif';
+                ctx.font = 'bold ' + (11 * dpr) + 'px sans-serif';
                 ctx.fillText(endType === 'fixed' ? 'FIXED END' : 'FREE END', wallX - 24 * dpr, 20 * dpr);
                 ctx.fillStyle = 'rgba(255,255,255,0.6)';
-                ctx.font = (5 * dpr) + 'px sans-serif';
+                ctx.font = (11 * dpr) + 'px sans-serif';
                 ctx.fillText(endType === 'fixed' ? '(phase inverts)' : '(phase preserved)', wallX - 28 * dpr, 28 * dpr);
 
                 // (Color key moved to the reflection controls row below the canvas.)
@@ -1865,6 +1946,7 @@ const d = labToolData.wave;
               React.createElement("canvas", {
 
                 ref: canvasRef,
+                className: "focus:outline-none focus:ring-4 focus:ring-cyan-300 focus:ring-inset",
                 "data-wave-canvas": "true",
 
                 tabIndex: 0, role: "application", "aria-label": "Wave simulator — arrow up/down adjusts amplitude, arrow left/right adjusts frequency, +/- adjusts speed, space pauses or resumes the animation",
@@ -1917,7 +1999,7 @@ const d = labToolData.wave;
 
                 },
 
-                style: { width: "100%", height: "100%", display: "block", outline: "none", background: "transparent" }
+                style: { width: "100%", height: "100%", display: "block", background: "transparent" }
 
               }),
 
@@ -1932,7 +2014,7 @@ const d = labToolData.wave;
               React.createElement("div", {
                 className: "pointer-events-none absolute left-3 top-3 rounded-lg border border-white/20 bg-slate-950/60 px-3 py-2 text-white shadow-xl backdrop-blur-md"
               },
-                React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-cyan-100/80" }, "Live wave"),
+                React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-cyan-100/80" }, "Live wave"),
                 React.createElement("p", { className: "text-sm font-black leading-tight" }, waveViewMeta.label),
                 React.createElement("p", { className: "mt-1 text-[11px] text-cyan-50/90" }, "A " + displayAmp + " | f " + displayFreq + " Hz | T " + displayPeriod.toFixed(2) + " s")
               ),
@@ -1940,7 +2022,7 @@ const d = labToolData.wave;
               React.createElement("div", {
                 className: "pointer-events-none absolute right-3 top-3 hidden rounded-lg border border-white/20 bg-slate-950/60 px-3 py-2 text-right text-white shadow-xl backdrop-blur-md sm:block"
               },
-                React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-slate-200/80" }, waveViewMeta.chip),
+                React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-slate-200/80" }, waveViewMeta.chip),
                 React.createElement("p", { className: "text-[11px] text-slate-100/90" }, "Type " + activeWaveType),
                 React.createElement("p", { className: "text-[11px] text-slate-100/90" }, "Medium " + displayMediumSpeed + " m/s")
               ),
@@ -1954,19 +2036,22 @@ const d = labToolData.wave;
                   ['Energy', (displayAmp * displayAmp).toFixed(0)]
                 ].map(function(item) {
                   return React.createElement("div", { key: item[0], className: "rounded-lg border border-white/10 bg-slate-950/50 px-2.5 py-1.5 shadow-lg backdrop-blur-md" },
-                    React.createElement("p", { className: "text-[9px] font-black uppercase tracking-wider text-cyan-100/75" }, item[0]),
+                    React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-cyan-100/75" }, item[0]),
                     React.createElement("p", { className: "text-xs font-black leading-tight" }, item[1])
                   );
                 }),
 
                 waveMode === 'spectrum' && React.createElement("div", { className: "rounded-lg border border-emerald-300/40 bg-slate-950/60 px-2.5 py-1.5 shadow-lg backdrop-blur-md" },
-                  React.createElement("p", { className: "text-[9px] font-black uppercase tracking-wider text-emerald-200/80" }, "Timbre = harmonics"),
+                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-emerald-200/80" }, "Timbre = harmonics"),
                   React.createElement("p", { className: "text-xs font-bold leading-tight" }, timbreNote)
                 ),
 
                 waveMode === 'longitudinal' && React.createElement("div", { className: "rounded-lg border border-amber-300/40 bg-slate-950/60 px-2.5 py-1.5 shadow-lg backdrop-blur-md" },
-                  React.createElement("p", { className: "text-[9px] font-black uppercase tracking-wider text-amber-200/80" }, "● Gold tracer"),
-                  React.createElement("p", { className: "text-xs font-bold leading-tight" }, "Jiggles in place — the wave travels, the matter does not")
+                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-wider text-amber-200/80" }, "● Gold tracer"),
+                  React.createElement("p", { className: "text-xs font-bold leading-tight" }, "Jiggles in place — the wave travels, the matter does not"),
+                  React.createElement("p", { className: "mt-1 flex flex-wrap gap-x-2 text-[11px] font-bold" },
+                    React.createElement("span", { className: "text-rose-200" }, "Warm = compression"),
+                    React.createElement("span", { className: "text-blue-200" }, "Blue = rarefaction"))
                 )
               )
 

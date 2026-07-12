@@ -52,7 +52,13 @@ describe('wave — equation-editor a11y', () => {
     const html = renderWave({ matchTarget: { amp: 60, freq: 3 } });
     expect(/aria-valuetext="[^"]*period 0\.50 seconds/.test(html)).toBe(true);
   });
-  it('amplitude input announces what it controls', () => {
+  it('canvas exposes a visible keyboard-focus treatment and readable HUD labels', () => {
+    const html = renderWave({});
+    expect(html).toContain('focus:ring-4');
+    expect(html).toContain('focus:ring-cyan-300');
+    expect(html).toContain('Live wave');
+    expect(html).not.toContain('outline: none');
+  });  it('amplitude input announces what it controls', () => {
     const html = renderWave({ matchTarget: { amp: 60, freq: 3 } });
     expect(/aria-valuetext="[^"]*amplitude sets the wave height/.test(html)).toBe(true);
   });

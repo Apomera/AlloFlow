@@ -923,7 +923,7 @@ function HeaderBar(props) {
     t("export_menu.ims")
   )), showExportMenu && /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: (e) => {
     if (e.key === "Escape") e.currentTarget.click();
-  }, className: "fixed inset-0 z-[90]", onClick: handleSetShowExportMenuToFalse })), /* @__PURE__ */ React.createElement(
+  }, className: "fixed inset-0 z-[90]", onClick: handleSetShowExportMenuToFalse })), isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setShowClassAnalytics(true),

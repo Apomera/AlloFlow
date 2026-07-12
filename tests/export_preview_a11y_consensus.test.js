@@ -53,7 +53,7 @@ describe('Export preview · two-engine deterministic consensus (Phase B, teacher
   it('the report surfaces the consensus AND an honest automation-≠-conformance disclosure', () => {
     expect(moduleSrc).toContain('Two independent rule engines agree');
     expect(moduleSrc).toContain('IBM Equal Access');
-    expect(moduleSrc).toMatch(/confirm full WCAG 2\.1 AA conformance/);
+    expect(moduleSrc).toMatch(/confirm full WCAG 2\.2 AA conformance/);
     expect(moduleSrc).toContain('a guide, not a certification');
   });
 });

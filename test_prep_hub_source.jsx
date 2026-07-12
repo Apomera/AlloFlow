@@ -105,18 +105,20 @@ const EPPP_PART_ONE_SCAFFOLD = {
   id: 'eppp-part-one',
   title: 'EPPP Part 1 — Source-Reviewed Pilot',
   shortTitle: 'EPPP Part 1 pilot',
-  description: 'Four hundred sixteen source-reviewed practice items across all eight Part 1 domains, including traced, re-authored migrations from the Pass the EPPP legacy workspace.',
+  description: 'Five hundred source-reviewed practice items across all eight Part 1 domains, including traced, re-authored migrations from the Pass the EPPP legacy workspace.',
   credentialOwner: 'Association of State and Provincial Psychology Boards',
-  version: '0.27.0',
+  version: '1.0.0',
   status: 'ready',
   accent: 'violet',
-  contentReview: '416/416 native items passed content QA; independent expert validation pending',
+  contentReview: '500/500 native items passed content QA; independent expert validation pending',
   legacyUrl: './test_prep/eppp_legacy/index.html?embedded=1',
   legacyAuditUrl: './test_prep/eppp_legacy/content_audit.json',
   legacyInventoryUrl: './test_prep/eppp_legacy/content_inventory.json',
   legacyReviewLedgerUrl: './test_prep/eppp_legacy/review_ledger.json',
   curation500Url: './test_prep/eppp_legacy/curation_500.json',
   nativeQaUrl: './test_prep/eppp_native_qa.json',
+  learningLibraryUrl: './test_prep/eppp_learning_library.json',
+  learningLibraryQaUrl: './test_prep/eppp_learning_library_qa.json',
   disclaimer: 'Independent preparation material. Not affiliated with or endorsed by ASPPB. Practice results are not official scores or pass predictions.',
   domains: [
     { id: 'biological', label: 'Biological bases of behavior', weight: 0.10 },
@@ -236,6 +238,8 @@ function normalizeTestPrepPack(pack) {
     legacyReviewLedgerUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.legacyReviewLedgerUrl || '').trim()) && !String(input.legacyReviewLedgerUrl || '').includes('..') ? String(input.legacyReviewLedgerUrl).trim() : '',
     curation500Url: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.curation500Url || '').trim()) && !String(input.curation500Url || '').includes('..') ? String(input.curation500Url).trim() : '',
     nativeQaUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.nativeQaUrl || '').trim()) && !String(input.nativeQaUrl || '').includes('..') ? String(input.nativeQaUrl).trim() : '',
+    learningLibraryUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.learningLibraryUrl || '').trim()) && !String(input.learningLibraryUrl || '').includes('..') ? String(input.learningLibraryUrl).trim() : '',
+    learningLibraryQaUrl: /^\.?\/test_prep\/[a-zA-Z0-9_./?=&-]+$/.test(String(input.learningLibraryQaUrl || '').trim()) && !String(input.learningLibraryQaUrl || '').includes('..') ? String(input.learningLibraryQaUrl).trim() : '',
     domains,
     sections,
     items,
@@ -362,6 +366,18 @@ function TestPrepHub(props) {
   const [legacyAuditStatus, setLegacyAuditStatus] = React.useState('idle');
   const [legacyInventory, setLegacyInventory] = React.useState(null);
   const [legacyInventoryStatus, setLegacyInventoryStatus] = React.useState('idle');
+  const [learningLibrary, setLearningLibrary] = React.useState(null);
+  const [learningLibraryStatus, setLearningLibraryStatus] = React.useState('idle');
+  const [librarySearch, setLibrarySearch] = React.useState('');
+  const [libraryDomain, setLibraryDomain] = React.useState('all');
+  const [libraryChapterId, setLibraryChapterId] = React.useState('');
+  const [libraryMode, setLibraryMode] = React.useState('chapters');
+  const [flashcardIndex, setFlashcardIndex] = React.useState(0);
+  const [flashcardRevealed, setFlashcardRevealed] = React.useState(false);
+  const [flashcardRatings, setFlashcardRatings] = React.useState(() => {
+    try { return JSON.parse(localStorage.getItem('alloflow_eppp_flashcard_progress_v1') || '{}') || {}; } catch (_) { return {}; }
+  });
+  const [memoryAidOpen, setMemoryAidOpen] = React.useState('');
   const dialogRef = React.useRef(null);
   const selectedPack = packs.find((pack) => pack.id === selectedPackId) || readyPack;
   const currentItem = selectedPack && selectedPack.items[questionIndex];
@@ -428,6 +444,30 @@ function TestPrepHub(props) {
       .catch(() => { if (!cancelled) setLegacyInventoryStatus('unavailable'); });
     return () => { cancelled = true; };
   }, [selectedPack && selectedPack.legacyInventoryUrl]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    const libraryUrl = selectedPack && selectedPack.learningLibraryUrl;
+    setLearningLibrary(null);
+    setLibraryChapterId('');
+    setFlashcardIndex(0);
+    setFlashcardRevealed(false);
+    setMemoryAidOpen('');
+    if (!libraryUrl || typeof fetch !== 'function') { setLearningLibraryStatus('idle'); return undefined; }
+    setLearningLibraryStatus('loading');
+    fetch(libraryUrl, { cache: 'no-store' })
+      .then((response) => {
+        if (!response || !response.ok) throw new Error('Learning library unavailable.');
+        return response.json();
+      })
+      .then((catalog) => {
+        if (cancelled || !catalog || catalog.schemaVersion !== 1 || !catalog.summary || !Array.isArray(catalog.chapters)) return;
+        setLearningLibrary(catalog);
+        setLearningLibraryStatus('ready');
+      })
+      .catch(() => { if (!cancelled) setLearningLibraryStatus('unavailable'); });
+    return () => { cancelled = true; };
+  }, [selectedPack && selectedPack.learningLibraryUrl]);
 
   if (!isOpen) return null;
 
@@ -514,6 +554,7 @@ function TestPrepHub(props) {
           {[
             ['explore', 'Explore packs'],
             ['practice', 'Practice'],
+            ['library', 'Learning library'],
             ['progress', 'Progress'],
           ].map(([id, label]) => (
             <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={'whitespace-nowrap rounded-t-lg border-x border-t px-4 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-600 ' + (tab === id ? 'border-indigo-300 bg-white text-indigo-900' : 'border-transparent text-slate-700 hover:bg-slate-100')}>
@@ -738,6 +779,106 @@ function TestPrepHub(props) {
                       <button type="button" onClick={advance} className="rounded-xl bg-indigo-700 px-5 py-3 font-black text-white hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">{questionIndex >= selectedPack.items.length - 1 ? 'Finish practice' : 'Next question'}</button>
                     )}
                   </div>
+                </section>
+              )}
+            </div>
+          )}
+
+          {tab === 'library' && selectedPack && (
+            <div className="mx-auto max-w-6xl space-y-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-wider text-indigo-700">Native catalog · guarded legacy content</p>
+                  <h3 className="text-xl font-black text-slate-900">EPPP learning library</h3>
+                  <p className="mt-1 max-w-3xl text-sm leading-relaxed text-slate-700">Browse all preserved chapters through stable AlloFlow catalog records. “Source reviewed” records completed a primary-source editorial pass; independent expert review remains pending. “Review required” records have accessible infrastructure but still await claim-level review.</p><p className="mt-1 text-xs font-bold text-emerald-800">{learningLibrary.summary.sourceReviewedChapters || 0} source reviewed · {(learningLibrary.summary.chapters || 0) - (learningLibrary.summary.sourceReviewedChapters || 0)} review required</p>
+                </div>
+                {libraryChapterId && <button type="button" onClick={() => setLibraryChapterId('')} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600">Back to chapter catalog</button>}
+              </div>
+
+              <nav className="flex flex-wrap gap-2" aria-label="Learning library modes">
+                {[['chapters', 'Chapters'], ['flashcards', 'Flashcards'], ['memory-aids', 'Memory aids']].map(([id, label]) => <button key={id} type="button" aria-pressed={libraryMode === id} onClick={() => { setLibraryMode(id); setLibraryChapterId(''); setFlashcardRevealed(false); setMemoryAidOpen(''); }} className={'rounded-lg border px-4 py-2 text-sm font-black focus:outline-none focus:ring-2 focus:ring-indigo-600 ' + (libraryMode === id ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-800')}>{label}</button>)}
+              </nav>
+
+              {learningLibraryStatus === 'loading' && <p className="rounded-xl border border-indigo-200 bg-white p-5 text-sm font-bold text-indigo-900" role="status">Loading the learning library…</p>}
+              {learningLibraryStatus === 'unavailable' && <p className="rounded-xl border border-rose-300 bg-rose-50 p-5 text-sm text-rose-950" role="alert">The native catalog is unavailable in this preview. The guarded legacy workspace remains available from Practice.</p>}
+
+              {learningLibrary && !libraryChapterId && libraryMode === 'chapters' && (() => {
+                const domains = Array.from(new Set(learningLibrary.chapters.map((chapter) => chapter.domain))).sort();
+                const query = librarySearch.trim().toLowerCase();
+                const visible = learningLibrary.chapters.filter((chapter) => (libraryDomain === 'all' || chapter.domain === libraryDomain) && (!query || (chapter.title + ' ' + chapter.domain + ' ' + chapter.sections.map((section) => section.heading).join(' ')).toLowerCase().includes(query)));
+                return <>
+                  <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6" aria-label="Learning library inventory">
+                    {[['Chapters', learningLibrary.summary.chapters], ['Sections', learningLibrary.summary.sections], ['Diagrams', learningLibrary.summary.diagrams], ['Diagram uses', learningLibrary.summary.diagramPlacements], ['Flashcards', learningLibrary.summary.flashcards], ['Memory aids', learningLibrary.summary.memoryAids]].map(([label, value]) => <div key={label} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm"><p className="text-2xl font-black text-slate-900">{Number(value || 0).toLocaleString()}</p><p className="text-xs font-bold text-slate-600">{label}</p></div>)}
+                  </div>
+                  <div className="grid gap-3 rounded-xl border border-slate-300 bg-white p-4 sm:grid-cols-[1fr_260px]">
+                    <label className="text-sm font-bold text-slate-800">Search chapters and section headings<input value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Try assessment, memory, ethics…" /></label>
+                    <label className="text-sm font-bold text-slate-800">Domain<select value={libraryDomain} onChange={(event) => setLibraryDomain(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-indigo-600"><option value="all">All domains</option>{domains.map((domain) => <option key={domain} value={domain}>{domain}</option>)}</select></label>
+                  </div>
+                  <p className="text-sm font-bold text-slate-700" role="status">Showing {visible.length} of {learningLibrary.chapters.length} chapters</p>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {visible.map((chapter) => <article key={chapter.id} className="flex flex-col rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
+                      <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{chapter.id.replace('ch-', 'Chapter ').replace(/-/g, '.')} · {chapter.domain}</p><h4 className="mt-1 text-lg font-black text-slate-900">{chapter.title}</h4></div><span className={'rounded-full border px-2 py-1 text-xs font-black ' + (chapter.reviewStatus === 'source-reviewed-editorial-pass' ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-amber-300 bg-amber-50 text-amber-900')}>{chapter.reviewStatus === 'source-reviewed-editorial-pass' ? 'Source reviewed' : 'Review required'}</span></div>
+                      <p className="mt-3 flex-1 text-sm text-slate-700">{chapter.sectionCount} sections · {chapter.diagramCount} diagrams · {chapter.knowledgeCheckCount} knowledge checks · {chapter.referenceCount} references</p>
+                      <button type="button" onClick={() => setLibraryChapterId(chapter.id)} className="mt-4 rounded-xl bg-indigo-700 px-4 py-3 text-sm font-black text-white hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">Open chapter workspace</button>
+                    </article>)}
+                  </div>
+                  {!visible.length && <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No chapters match those filters.</p>}
+                </>;
+              })()}
+
+              {learningLibrary && libraryMode === 'flashcards' && (() => {
+                const query = librarySearch.trim().toLowerCase();
+                const cards = learningLibrary.flashcards.filter((card) => (libraryDomain === 'all' || card.domain === libraryDomain) && (!query || (card.front + ' ' + card.back + ' ' + card.domain).toLowerCase().includes(query)));
+                const safeIndex = cards.length ? Math.min(flashcardIndex, cards.length - 1) : 0;
+                const card = cards[safeIndex];
+                const known = cards.filter((item) => flashcardRatings[item.id] === 'know').length;
+                const rate = (rating) => {
+                  if (!card) return;
+                  const next = Object.assign({}, flashcardRatings, { [card.id]: rating });
+                  setFlashcardRatings(next);
+                  try { localStorage.setItem('alloflow_eppp_flashcard_progress_v1', JSON.stringify(next)); } catch (_) {}
+                  setFlashcardRevealed(false);
+                  if (cards.length) setFlashcardIndex((safeIndex + 1) % cards.length);
+                };
+                return <section className="space-y-4" aria-labelledby="flashcard-study-title">
+                  <div><h4 id="flashcard-study-title" className="text-lg font-black text-slate-900">Flashcard study</h4><p className="text-sm text-slate-700">Self-ratings support practice scheduling; they are not evidence that a legacy card has passed content review. Review badges identify cards that completed source and editorial checks.</p><p className="mt-1 text-xs font-bold text-emerald-800">{learningLibrary.summary.sourceReviewedFlashcards || 0} source reviewed</p></div>
+                  <div className="grid gap-3 rounded-xl border border-slate-300 bg-white p-4 sm:grid-cols-[1fr_260px]">
+                    <label className="text-sm font-bold text-slate-800">Search cards<input value={librarySearch} onChange={(event) => { setLibrarySearch(event.target.value); setFlashcardIndex(0); setFlashcardRevealed(false); }} type="search" className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-indigo-600" /></label>
+                    <label className="text-sm font-bold text-slate-800">Domain<select value={libraryDomain} onChange={(event) => { setLibraryDomain(event.target.value); setFlashcardIndex(0); setFlashcardRevealed(false); }} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-indigo-600"><option value="all">All domains</option>{Array.from(new Set(learningLibrary.flashcards.map((item) => item.domain))).sort().map((domain) => <option key={domain} value={domain}>{domain}</option>)}</select></label>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-bold text-slate-700"><span>{cards.length ? safeIndex + 1 : 0} of {cards.length} matching cards</span><span>{known} marked “Know” in this view</span></div>
+                  {card ? <article className="rounded-2xl border border-indigo-300 bg-white p-6 text-center shadow-sm" aria-live="polite">
+                    <div className="flex flex-wrap items-center justify-center gap-2"><span className="rounded-full bg-indigo-100 px-2 py-1 text-xs font-black text-indigo-900">{card.domain}</span><span className={'rounded-full border px-2 py-1 text-xs font-black ' + (card.reviewStatus === 'source-reviewed-editorial-pass' ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-amber-300 bg-amber-50 text-amber-900')}>{card.reviewStatus === 'source-reviewed-editorial-pass' ? 'Source reviewed' : 'Review required'}</span></div>
+                    <p className="mx-auto mt-6 max-w-3xl text-xl font-black leading-relaxed text-slate-900">{card.front}</p>
+                    {flashcardRevealed ? <div className="mx-auto mt-6 max-w-3xl rounded-xl bg-emerald-50 p-5 text-left text-base leading-relaxed text-emerald-950"><strong>Answer:</strong> {card.back}</div> : <button type="button" onClick={() => setFlashcardRevealed(true)} className="mt-6 rounded-xl bg-indigo-700 px-6 py-3 font-black text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">Reveal answer</button>}
+                    <div className="mt-6 flex flex-wrap justify-center gap-3">
+                      <button type="button" onClick={() => { setFlashcardIndex((safeIndex - 1 + cards.length) % cards.length); setFlashcardRevealed(false); }} className="rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600">Previous</button>
+                      {flashcardRevealed && <><button type="button" onClick={() => rate('again')} className="rounded-lg border border-rose-400 bg-rose-50 px-4 py-2 font-black text-rose-950 focus:outline-none focus:ring-2 focus:ring-rose-600">Study again</button><button type="button" onClick={() => rate('know')} className="rounded-lg bg-emerald-700 px-4 py-2 font-black text-white focus:outline-none focus:ring-2 focus:ring-emerald-600">Know it</button></>}
+                      <button type="button" onClick={() => { setFlashcardIndex((safeIndex + 1) % cards.length); setFlashcardRevealed(false); }} className="rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600">Next</button>
+                    </div>
+                  </article> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No flashcards match those filters.</p>}
+                </section>;
+              })()}
+
+              {learningLibrary && libraryMode === 'memory-aids' && (() => {
+                const query = librarySearch.trim().toLowerCase();
+                const aids = learningLibrary.memoryAids.filter((aid) => (libraryDomain === 'all' || aid.domain === libraryDomain) && (!query || (aid.title + ' ' + aid.content + ' ' + aid.tags.join(' ')).toLowerCase().includes(query)));
+                return <section className="space-y-4" aria-labelledby="memory-aids-title">
+                  <div><h4 id="memory-aids-title" className="text-lg font-black text-slate-900">Memory-aid library</h4><p className="text-sm text-slate-700">Mnemonics can cue retrieval but may oversimplify. Review badges distinguish source-reviewed corrections from editorial passes still awaiting sources and untouched legacy aids.</p><p className="mt-1 text-xs font-bold text-emerald-800">{learningLibrary.summary.sourceReviewedMemoryAids || 0} source reviewed · {learningLibrary.summary.editorialReviewedSourcePendingMemoryAids || 0} editorial pass/source pending</p></div>
+                  <div className="grid gap-3 rounded-xl border border-slate-300 bg-white p-4 sm:grid-cols-[1fr_260px]">
+                    <label className="text-sm font-bold text-slate-800">Search titles, content, and tags<input value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-indigo-600" /></label>
+                    <label className="text-sm font-bold text-slate-800">Domain<select value={libraryDomain} onChange={(event) => setLibraryDomain(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:outline-none focus:ring-2 focus:ring-indigo-600"><option value="all">All domains</option>{Array.from(new Set(learningLibrary.memoryAids.map((item) => item.domain))).sort().map((domain) => <option key={domain} value={domain}>{domain}</option>)}</select></label>
+                  </div>
+                  <p className="text-sm font-bold text-slate-700" role="status">Showing {aids.length} of {learningLibrary.memoryAids.length} memory aids</p>
+                  <div className="grid gap-3 md:grid-cols-2">{aids.map((aid) => { const open = memoryAidOpen === aid.id; return <article key={aid.id} className="rounded-xl border border-slate-300 bg-white p-4 shadow-sm"><div className="flex items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{aid.domain} · {aid.type}</p><h5 className="mt-1 font-black text-slate-900">{aid.title}</h5></div><span className={'rounded-full border px-2 py-1 text-xs font-black ' + (aid.reviewStatus === 'source-reviewed-editorial-pass' ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : aid.reviewStatus === 'editorial-reviewed-source-pending' ? 'border-sky-300 bg-sky-50 text-sky-900' : 'border-amber-300 bg-amber-50 text-amber-900')}>{aid.reviewStatus === 'source-reviewed-editorial-pass' ? 'Source reviewed' : aid.reviewStatus === 'editorial-reviewed-source-pending' ? 'Editorial pass · source pending' : 'Review required'}</span></div><button type="button" aria-expanded={open} onClick={() => setMemoryAidOpen(open ? '' : aid.id)} className="mt-3 rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-black text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-600">{open ? 'Hide aid' : 'Show aid'}</button>{open && <><p className="mt-4 whitespace-pre-line rounded-lg bg-slate-50 p-4 text-sm leading-relaxed text-slate-800">{aid.content}</p><div className="mt-3 flex flex-wrap gap-1">{aid.tags.slice(0, 10).map((tag) => <span key={tag} className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">{tag}</span>)}</div></>}</article>; })}</div>
+                  {!aids.length && <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No memory aids match those filters.</p>}
+                </section>;
+              })()}
+
+              {learningLibrary && libraryChapterId && selectedPack.legacyUrl && (
+                <section className="overflow-hidden rounded-2xl border border-violet-300 bg-white shadow-sm">
+                  <h4 className="sr-only">Selected EPPP chapter workspace</h4>
+                  <iframe title="Selected EPPP chapter workspace" src={selectedPack.legacyUrl + '&page=textbook#' + encodeURIComponent(libraryChapterId)} className="h-[68vh] min-h-[560px] w-full border-0" sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-downloads" />
                 </section>
               )}
             </div>

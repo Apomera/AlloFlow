@@ -97,6 +97,90 @@ function ExportPreviewView(props) {
     exportPreviewSource
   } = props;
   const [writingCheck, setWritingCheck] = React.useState(null);
+  const [wordGoalProgress, setWordGoalProgress] = React.useState({ count: 0, goal: 0, percent: 0 });
+  const [pendingImageFile, setPendingImageFile] = React.useState(null);
+  const [imageAltText, setImageAltText] = React.useState("");
+  const [imageDecorative, setImageDecorative] = React.useState(false);
+  const [imageAltError, setImageAltError] = React.useState("");
+  const imageFileInputRef = React.useRef(null);
+  const imageAddButtonRef = React.useRef(null);
+  const imageAltInputRef = React.useRef(null);
+  const imageInsertionRangeRef = React.useRef(null);
+  const closeImageDialog = React.useCallback(() => {
+    setPendingImageFile(null);
+    setImageAltText("");
+    setImageDecorative(false);
+    setImageAltError("");
+    window.setTimeout(() => imageAddButtonRef.current?.focus(), 0);
+  }, []);
+  React.useEffect(() => {
+    if (!pendingImageFile) return void 0;
+    const timer = window.setTimeout(() => imageAltInputRef.current?.focus(), 0);
+    return () => window.clearTimeout(timer);
+  }, [pendingImageFile]);
+  const insertPendingImage = React.useCallback(() => {
+    if (!pendingImageFile) return;
+    const alt = imageDecorative ? "" : imageAltText.trim();
+    if (!imageDecorative && !alt) {
+      setImageAltError("Describe the image, or mark it as decorative.");
+      imageAltInputRef.current?.focus();
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const iframe = exportPreviewRef.current;
+      const doc = iframe?.contentDocument;
+      if (!doc) {
+        addToast && addToast("Preview not ready yet.", "error");
+        return;
+      }
+      const img = doc.createElement("img");
+      img.src = ev.target.result;
+      img.style.cssText = "max-width:100%;height:auto;border-radius:8px;margin:12px 0;cursor:move;";
+      img.alt = alt;
+      const savedRange = imageInsertionRangeRef.current;
+      if (savedRange && savedRange.startContainer?.ownerDocument === doc) {
+        try {
+          savedRange.collapse(false);
+          savedRange.insertNode(img);
+        } catch (_) {
+          (doc.querySelector("main") || doc.body).appendChild(img);
+        }
+      } else {
+        (doc.querySelector("main") || doc.body).appendChild(img);
+      }
+      imageInsertionRangeRef.current = null;
+      closeImageDialog();
+      addToast && addToast(imageDecorative ? "Decorative image inserted." : "Image inserted with alternative text.", "success");
+    };
+    reader.onerror = () => addToast && addToast("Could not read that image.", "error");
+    reader.readAsDataURL(pendingImageFile);
+  }, [pendingImageFile, imageDecorative, imageAltText, exportPreviewRef, addToast, closeImageDialog]);
+  const openerRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!showExportPreview) return void 0;
+    openerRef.current = document.activeElement;
+    return () => {
+      const opener = openerRef.current;
+      if (opener && opener.isConnected && typeof opener.focus === "function") {
+        window.setTimeout(() => opener.focus(), 0);
+      }
+    };
+  }, [showExportPreview]);
+  const handleRadioGroupKeyDown = React.useCallback((e) => {
+    if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(e.key)) return;
+    const radios = Array.from(e.currentTarget.querySelectorAll('[role="radio"]:not([disabled])'));
+    if (!radios.length) return;
+    e.preventDefault();
+    const current = Math.max(0, radios.indexOf(document.activeElement));
+    let next = current;
+    if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = radios.length - 1;
+    else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (current - 1 + radios.length) % radios.length;
+    else next = (current + 1) % radios.length;
+    radios[next].focus();
+    radios[next].click();
+  }, []);
   const brandProfiles = React.useMemo(() => {
     try {
       const bp = window.AlloModules && window.AlloModules.BrandProfile;
@@ -121,20 +205,24 @@ function ExportPreviewView(props) {
       className: "allo-docsuite fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-4",
       role: "dialog",
       "aria-modal": "true",
-      "aria-label": t("a11y.doc_builder"),
+      "aria-labelledby": "document-builder-title",
       onClick: (e) => {
         if (e.target === e.currentTarget) setShowExportPreview(false);
       },
       onKeyDown: (e) => {
-        if (e.key === "Escape") setShowExportPreview(false);
+        if (e.key !== "Escape") return;
+        if (pendingImageFile) {
+          e.stopPropagation();
+          closeImageDialog();
+        } else setShowExportPreview(false);
       },
       ref: (el) => {
         if (!el) return;
-        const focusables = el.querySelectorAll('button, [href], input, select, textarea, iframe, [tabindex]:not([tabindex="-1"])');
+        const focusables = el.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])');
         if (focusables.length > 0 && !el.contains(document.activeElement)) focusables[0].focus();
         el.__focusTrap = el.__focusTrap || ((ev) => {
           if (ev.key !== "Tab") return;
-          const fl = el.querySelectorAll('button, [href], input, select, textarea, iframe, [tabindex]:not([tabindex="-1"])');
+          const fl = el.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])');
           if (fl.length === 0) return;
           const first = fl[0], last = fl[fl.length - 1];
           if (ev.shiftKey) {
@@ -153,7 +241,58 @@ function ExportPreviewView(props) {
         el.addEventListener("keydown", el.__focusTrap);
       }
     },
-    /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl flex w-full max-w-[95vw] max-h-[95vh] overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "w-72 shrink-0 bg-gradient-to-b from-slate-50 to-white border-r border-slate-200 overflow-y-auto p-4 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("h2", { className: "text-sm font-black text-slate-800 flex items-center gap-2" }, "\u{1F6E0}\uFE0F Document Builder"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    pendingImageFile && /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        className: "fixed inset-0 z-[210] bg-black/70 flex items-center justify-center p-4",
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-labelledby": "image-description-title",
+        onClick: (e) => {
+          if (e.target === e.currentTarget) closeImageDialog();
+        },
+        onKeyDown: (e) => {
+          if (e.key === "Escape") {
+            e.preventDefault();
+            e.stopPropagation();
+            closeImageDialog();
+            return;
+          }
+          if (e.key !== "Tab") return;
+          const controls = Array.from(e.currentTarget.querySelectorAll("button:not([disabled]), input:not([disabled]), textarea:not([disabled])"));
+          if (!controls.length) return;
+          const first = controls[0], last = controls[controls.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      },
+      /* @__PURE__ */ React.createElement("div", { className: "w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl", role: "document" }, /* @__PURE__ */ React.createElement("h3", { id: "image-description-title", className: "text-lg font-black text-slate-900" }, "Describe this image"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-sm text-slate-700" }, "Alternative text should communicate the image\u2019s purpose to someone who cannot see it."), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs font-medium text-slate-600 truncate", title: pendingImageFile.name }, pendingImageFile.name), /* @__PURE__ */ React.createElement("label", { htmlFor: "builder-image-alt", className: "mt-4 block text-sm font-bold text-slate-800" }, "Alternative text"), /* @__PURE__ */ React.createElement(
+        "textarea",
+        {
+          id: "builder-image-alt",
+          ref: imageAltInputRef,
+          value: imageAltText,
+          disabled: imageDecorative,
+          rows: 3,
+          onChange: (e) => {
+            setImageAltText(e.target.value);
+            setImageAltError("");
+          },
+          "aria-describedby": "builder-image-alt-help builder-image-alt-error",
+          "aria-invalid": imageAltError ? "true" : void 0,
+          className: "mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:bg-slate-100"
+        }
+      ), /* @__PURE__ */ React.createElement("p", { id: "builder-image-alt-help", className: "mt-1 text-xs text-slate-600" }, "Describe what matters in this document, not every visual detail."), /* @__PURE__ */ React.createElement("label", { className: "mt-3 flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 hover:bg-slate-50" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: imageDecorative, onChange: (e) => {
+        setImageDecorative(e.target.checked);
+        setImageAltError("");
+      } }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Decorative image"), " \u2014 it adds no information and should be skipped by screen readers.")), /* @__PURE__ */ React.createElement("p", { id: "builder-image-alt-error", className: "mt-2 min-h-5 text-sm font-bold text-red-700", role: "alert" }, imageAltError), /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex justify-end gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeImageDialog, className: "min-h-11 rounded-lg border border-slate-400 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: insertPendingImage, className: "min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800" }, "Insert image")))
+    ),
+    /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl flex w-full max-w-[95vw] max-h-[95vh] overflow-hidden", inert: pendingImageFile ? true : void 0, "aria-hidden": pendingImageFile ? "true" : void 0 }, /* @__PURE__ */ React.createElement("div", { className: "w-72 shrink-0 bg-gradient-to-b from-slate-50 to-white border-r border-slate-200 overflow-y-auto p-4 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("h2", { id: "document-builder-title", className: "text-sm font-black text-slate-800 flex items-center gap-2" }, "\u{1F6E0}\uFE0F Document Builder"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
       if (typeof window.AlloToggleTheme === "function") window.AlloToggleTheme();
     }, className: "p-1.5 rounded-full hover:bg-indigo-50 text-slate-600 transition-colors text-sm", "aria-label": t("a11y.toggle_theme") || "Toggle color theme", title: theme === "contrast" ? t("theme.high_contrast") || "High Contrast" : theme === "dark" ? t("theme.dark") || "Dark Mode" : t("theme.light") || "Light Mode" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, theme === "contrast" ? "\u{1F441}" : theme === "dark" ? "\u{1F319}" : "\u2600\uFE0F")), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowExportPreview(false), className: "p-2 ml-1 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors", "data-help-key": "doc_builder_close_btn", "aria-label": t("a11y.close_doc_builder") }, /* @__PURE__ */ React.createElement(X, { size: 20 })))), exportPreviewSource === "remediation" && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-300 rounded-lg px-2.5 py-1.5 text-[11px] text-emerald-800", role: "status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\u267F ", t("export_preview.remediation_banner_title") || "Editing the remediated document."), " ", t("export_preview.remediation_banner_body") || "Your edits here are saved back into it when you close the builder, so the Tagged PDF / Word / PowerPoint downloads include them."), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Quick Start", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Presets"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, Object.entries(BUILT_IN_PRESETS).map(([key, preset]) => /* @__PURE__ */ React.createElement(
       "button",
@@ -180,14 +319,15 @@ function ExportPreviewView(props) {
       "button",
       {
         onClick: () => deleteExportPreset(key),
-        className: "px-1 py-1 bg-white border border-violet-600 border-l-0 rounded-r-lg text-[11px] text-red-600 hover:text-red-700 hover:bg-red-50 transition-all",
+        className: "min-w-6 min-h-6 px-1 py-1 bg-white border border-violet-600 border-l-0 rounded-r-lg text-[11px] text-red-700 hover:text-red-800 hover:bg-red-50 transition-all",
+        "aria-label": `Delete "${preset.name}" preset`,
         title: `Delete "${preset.name}" preset`
       },
       /* @__PURE__ */ React.createElement(X, { size: 10 })
     )))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const name = prompt("Preset name:");
       if (name && name.trim()) saveExportPreset(name.trim());
-    }, className: "mt-1.5 w-full px-2 py-1.5 border border-dashed border-slate-300 rounded-lg text-[11px] font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all" }, "+ Save Current as Preset")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Format"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, [["print", "\u{1F4C4} PDF"], ["worksheet", "\u{1F4DD} Worksheet"], ["html", "\u{1F4BB} HTML"], ["slides", "\u{1F4CA} Slides"]].map(([m, label]) => /* @__PURE__ */ React.createElement("button", { key: m, onClick: () => setExportPreviewMode(m), className: `flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? "bg-indigo-600 text-white" : "bg-white border border-slate-400 text-slate-600 hover:bg-slate-100"}` }, label)))), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Appearance", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Style"), setShowBrandProfileEditor && /* @__PURE__ */ React.createElement(
+    }, className: "mt-1.5 w-full px-2 py-1.5 border border-dashed border-slate-300 rounded-lg text-[11px] font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all" }, "+ Save Current as Preset")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Format"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1", role: "radiogroup", "aria-label": "Export format", onKeyDown: handleRadioGroupKeyDown }, [["print", "\u{1F4C4} PDF"], ["worksheet", "\u{1F4DD} Worksheet"], ["html", "\u{1F4BB} HTML"], ["slides", "\u{1F4CA} Slides"]].map(([m, label]) => /* @__PURE__ */ React.createElement("button", { key: m, role: "radio", "aria-checked": exportPreviewMode === m, tabIndex: exportPreviewMode === m ? 0 : -1, onClick: () => setExportPreviewMode(m), className: `flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? "bg-indigo-600 text-white" : "bg-white border border-slate-400 text-slate-600 hover:bg-slate-100"}` }, label)))), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Appearance", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Style"), setShowBrandProfileEditor && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -206,10 +346,13 @@ function ExportPreviewView(props) {
       "\u{1F3F7}\uFE0F ",
       /* @__PURE__ */ React.createElement("strong", null, "First time?"),
       " Set up your school brand \u2192 colors, fonts, logo for branded exports"
-    ), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1" }, Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars).map(([key, s]) => /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1", role: "radiogroup", "aria-label": "Document style", onKeyDown: handleRadioGroupKeyDown }, Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars).map(([key, s]) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key,
+        role: "radio",
+        "aria-checked": exportTheme === key,
+        tabIndex: exportTheme === key ? 0 : -1,
         onClick: () => {
           setExportTheme(key);
           setTimeout(updateExportPreview, 50);
@@ -223,6 +366,9 @@ function ExportPreviewView(props) {
       "button",
       {
         key: p.id,
+        role: "radio",
+        "aria-checked": exportTheme === p.id,
+        tabIndex: exportTheme === p.id ? 0 : -1,
         onClick: () => {
           setExportTheme(p.id);
           setTimeout(updateExportPreview, 50);
@@ -309,19 +455,25 @@ function ExportPreviewView(props) {
           const lbl = document.getElementById("word-goal-label");
           if (bar && goal > 0) {
             const pct = Math.min(100, Math.round(count / goal * 100));
+            setWordGoalProgress({ count, goal, percent: pct });
             bar.style.width = pct + "%";
             bar.style.background = pct >= 100 ? "#16a34a" : pct >= 75 ? "#2563eb" : "#d97706";
             if (lbl) lbl.textContent = count + " / " + goal + " (" + pct + "%)";
+          } else {
+            setWordGoalProgress({ count, goal: 0, percent: 0 });
+            if (bar) bar.style.width = "0%";
+            if (lbl) lbl.textContent = "";
           }
         }
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden", role: "progressbar", "aria-label": t("a11y.word_count_progress") }, /* @__PURE__ */ React.createElement("div", { id: "word-goal-bar", className: "h-full rounded-full transition-all duration-300", style: { width: "0%", background: "#d97706" } })), /* @__PURE__ */ React.createElement("div", { id: "word-goal-label", className: "text-[11px] text-slate-600 mt-0.5" }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, "\u2328 Ctrl+1/2/3 = headings \xB7 Ctrl+K = link \xB7 Ctrl+Shift+L = list")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Word Art", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-rose-50 rounded-lg border border-amber-200 p-2 space-y-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", id: "wordart-text-input", placeholder: t("placeholders.word_art_text_input"), defaultValue: "", className: "w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none", "aria-label": t("a11y.word_art_text") }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Style"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-1", role: "radiogroup", "aria-label": t("a11y.word_art_style") }, [["goldFoil", "\u2728", "Gold"], ["neonGlow", "\u{1F4A1}", "Neon"], ["retroArcade", "\u{1F579}\uFE0F", "Retro"], ["chalkboard", "\u{1F58D}\uFE0F", "Chalk"], ["embossed", "\u{1F3DB}\uFE0F", "3D"], ["rainbow", "\u{1F308}", "Rainbow"]].map(([key, emoji, label], i) => /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-1.5 mt-1.5 overflow-hidden", role: "progressbar", "aria-label": t("a11y.word_count_progress"), "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": wordGoalProgress.percent, "aria-valuetext": wordGoalProgress.goal > 0 ? `${wordGoalProgress.count} of ${wordGoalProgress.goal} words (${wordGoalProgress.percent}%)` : "No word-count goal set" }, /* @__PURE__ */ React.createElement("div", { id: "word-goal-bar", className: "h-full rounded-full transition-all duration-300", style: { width: "0%", background: "#d97706" } })), /* @__PURE__ */ React.createElement("div", { id: "word-goal-label", className: "text-[11px] text-slate-600 mt-0.5" }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, "\u2328 Ctrl+1/2/3 = headings \xB7 Ctrl+K = link \xB7 Ctrl+Shift+L = list")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Word Art", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-rose-50 rounded-lg border border-amber-200 p-2 space-y-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", id: "wordart-text-input", placeholder: t("placeholders.word_art_text_input"), defaultValue: "", className: "w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none", "aria-label": t("a11y.word_art_text") }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Style"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-1", role: "radiogroup", "aria-label": t("a11y.word_art_style"), onKeyDown: handleRadioGroupKeyDown }, [["goldFoil", "\u2728", "Gold"], ["neonGlow", "\u{1F4A1}", "Neon"], ["retroArcade", "\u{1F579}\uFE0F", "Retro"], ["chalkboard", "\u{1F58D}\uFE0F", "Chalk"], ["embossed", "\u{1F3DB}\uFE0F", "3D"], ["rainbow", "\u{1F308}", "Rainbow"]].map(([key, emoji, label], i) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key,
         type: "button",
         role: "radio",
         "aria-checked": i === 0,
+        tabIndex: i === 0 ? 0 : -1,
         "data-wa-preset": key,
         className: "wordart-preset-btn text-[10px] font-bold py-1.5 px-1 rounded-md border text-slate-700 transition-all",
         style: i === 0 ? { background: "#f59e0b", color: "white", borderColor: "#f59e0b" } : { background: "white", borderColor: "#fcd34d" },
@@ -330,11 +482,13 @@ function ExportPreviewView(props) {
           if (!parent) return;
           parent.querySelectorAll(".wordart-preset-btn").forEach((b) => {
             b.setAttribute("aria-checked", "false");
+            b.tabIndex = -1;
             b.style.background = "white";
             b.style.color = "";
             b.style.borderColor = "#fcd34d";
           });
           e.currentTarget.setAttribute("aria-checked", "true");
+          e.currentTarget.tabIndex = 0;
           e.currentTarget.style.background = "#f59e0b";
           e.currentTarget.style.color = "white";
           e.currentTarget.style.borderColor = "#f59e0b";
@@ -343,13 +497,14 @@ function ExportPreviewView(props) {
       emoji,
       " ",
       label
-    )))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Size"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5", role: "radiogroup", "aria-label": t("a11y.word_art_size") }, ["S", "M", "L", "XL"].map((s) => /* @__PURE__ */ React.createElement(
+    )))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Size"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5", role: "radiogroup", "aria-label": t("a11y.word_art_size"), onKeyDown: handleRadioGroupKeyDown }, ["S", "M", "L", "XL"].map((s) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: s,
         type: "button",
         role: "radio",
         "aria-checked": s === "L",
+        tabIndex: s === "L" ? 0 : -1,
         "data-wa-size": s,
         className: "wordart-size-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all",
         style: s === "L" ? { background: "#4f46e5", color: "white", borderColor: "#4f46e5" } : { background: "white", color: "#475569" },
@@ -358,24 +513,27 @@ function ExportPreviewView(props) {
           if (!parent) return;
           parent.querySelectorAll(".wordart-size-btn").forEach((b) => {
             b.setAttribute("aria-checked", "false");
+            b.tabIndex = -1;
             b.style.background = "white";
             b.style.color = "#475569";
             b.style.borderColor = "#e2e8f0";
           });
           e.currentTarget.setAttribute("aria-checked", "true");
+          e.currentTarget.tabIndex = 0;
           e.currentTarget.style.background = "#4f46e5";
           e.currentTarget.style.color = "white";
           e.currentTarget.style.borderColor = "#4f46e5";
         }
       },
       s
-    )))), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Align"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5", role: "radiogroup", "aria-label": t("a11y.word_art_alignment") }, [["left", "\u21E4"], ["center", "\u21D4"], ["right", "\u21E5"]].map(([a, icon]) => /* @__PURE__ */ React.createElement(
+    )))), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Align"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5", role: "radiogroup", "aria-label": t("a11y.word_art_alignment"), onKeyDown: handleRadioGroupKeyDown }, [["left", "\u21E4"], ["center", "\u21D4"], ["right", "\u21E5"]].map(([a, icon]) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: a,
         type: "button",
         role: "radio",
         "aria-checked": a === "center",
+        tabIndex: a === "center" ? 0 : -1,
         "data-wa-align": a,
         className: "wordart-align-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all",
         style: a === "center" ? { background: "#4f46e5", color: "white", borderColor: "#4f46e5" } : { background: "white", color: "#475569" },
@@ -384,11 +542,13 @@ function ExportPreviewView(props) {
           if (!parent) return;
           parent.querySelectorAll(".wordart-align-btn").forEach((b) => {
             b.setAttribute("aria-checked", "false");
+            b.tabIndex = -1;
             b.style.background = "white";
             b.style.color = "#475569";
             b.style.borderColor = "#e2e8f0";
           });
           e.currentTarget.setAttribute("aria-checked", "true");
+          e.currentTarget.tabIndex = 0;
           e.currentTarget.style.background = "#4f46e5";
           e.currentTarget.style.color = "white";
           e.currentTarget.style.borderColor = "#4f46e5";
@@ -476,7 +636,7 @@ function ExportPreviewView(props) {
           update[k] = !allOn;
         });
         setExportConfigAndRefresh((p) => ({ ...p, ...update }));
-      }, className: "text-[11px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors" }, allOn ? "Deselect All" : "Select All");
+      }, className: "text-[11px] font-bold text-indigo-700 hover:text-indigo-800 transition-colors" }, allOn ? "Deselect All" : "Select All");
     })()), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, (() => {
       const teacherOnlyDefault = /* @__PURE__ */ new Set(["includeAnalysis", "includeUdlAdvice", "includeBrainstorm"]);
       const available = [
@@ -503,7 +663,7 @@ function ExportPreviewView(props) {
     })())), (() => {
       const skipped = getSkippedResources();
       if (skipped.length === 0) return null;
-      return /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-1" }, "Interactive resources not included:"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600" }, skipped.join(", ")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-500 mt-1 italic" }, "These are interactive tools that can't be rendered as static documents."));
+      return /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-1" }, "Interactive resources not included:"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600" }, skipped.join(", ")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 mt-1 italic" }, "These are interactive tools that can't be rendered as static documents."));
     })(), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Export", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Options"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.includeTeacherKey, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, includeTeacherKey: e.target.checked })), className: "rounded" }), "\u{1F4CE} Teacher Answer Key"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.includeStudentResponses, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, includeStudentResponses: e.target.checked })), className: "rounded" }), "\u{1F4DD} Student Responses"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5", title: "For graded work: removes the hidden self-check answers and the 'Check my answers' button from the exported file, and leaves the teacher key out even if it's checked above. Students can still fill in and save/submit their answers \u2014 they just can't look up or self-grade against the key." }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.assessmentMode === true, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, assessmentMode: e.target.checked })), className: "rounded" }), "\u{1F512} Assessment mode (no embedded answers)"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig.singleFileHtml, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, singleFileHtml: e.target.checked })), className: "rounded" }), "\u{1F4C4} Single file (.html, no zip)"))), showDisplayModes && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Display modes"), hasGlossary && /* @__PURE__ */ React.createElement("div", { className: `mb-2 ${exportConfig.includeGlossary ? "" : "opacity-50"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-semibold text-slate-700 mb-1 px-1" }, "Glossary"), /* @__PURE__ */ React.createElement("div", { className: "space-y-0.5" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: (exportConfig.glossaryDisplayMode || "table") === "table", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "table" })), disabled: !exportConfig.includeGlossary }), "Table (default)"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: exportConfig.glossaryDisplayMode === "flash-cards", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "flash-cards" })), disabled: !exportConfig.includeGlossary }), "\u{1F0CF} Flash cards (fold-and-cut for paper, flip for digital)"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "glossaryDisplayMode", checked: exportConfig.glossaryDisplayMode === "language-cards", onChange: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: "language-cards" })), disabled: !exportConfig.includeGlossary }), "\u{1F310} Language cards (emphasizes translations)")), (exportConfig.glossaryDisplayMode || "table") === "table" && /* @__PURE__ */ React.createElement("div", { className: "mt-2 pl-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-semibold text-slate-500 mb-1" }, "Image size"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, [
       { v: "small", label: "S", px: 40 },
       { v: "medium", label: "M", px: 64 },
@@ -608,7 +768,7 @@ function ExportPreviewView(props) {
         className: "px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200 disabled:opacity-40"
       },
       isGeneratingStyle ? "..." : "\u2728"
-    )), customExportCSS && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mt-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-green-600 font-medium" }, "\u2713 Custom style active"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    )), customExportCSS && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mt-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-green-700 font-medium" }, "\u2713 Custom style active"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       setCustomExportCSS("");
       setTimeout(() => {
         if (typeof updateExportPreview === "function") updateExportPreview();
@@ -812,42 +972,36 @@ function ExportPreviewView(props) {
         className: "w-full px-3 py-2 bg-violet-100 text-violet-700 rounded-lg text-xs font-bold hover:bg-violet-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
       },
       exportAuditLoading ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin", "aria-hidden": "true" }), " Auditing...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u267F"), " Run WCAG Audit")
-    ), exportAuditResult && exportAuditResult.score >= 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: `text-center p-3 rounded-xl ${exportAuditResult.score >= 80 ? "bg-green-50 border border-green-200" : exportAuditResult.score >= 60 ? "bg-amber-50 border border-amber-200" : "bg-red-50 border border-red-200"}` }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${exportAuditResult.score >= 80 ? "text-green-700" : exportAuditResult.score >= 60 ? "text-amber-700" : "text-red-700"}` }, exportAuditResult.score, "/100"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "WCAG 2.1 AA Score")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, exportAuditResult.summary), exportAuditResult.axeViolations != null && exportAuditResult.eaViolations != null && /* @__PURE__ */ React.createElement("div", { className: `rounded-lg border p-2 text-[11px] ${exportAuditResult.deterministicConsensus === "clean" ? "bg-green-50 border-green-200 text-green-800" : "bg-amber-50 border-amber-200 text-amber-800"}` }, exportAuditResult.deterministicConsensus === "clean" ? "\u2713 Two independent rule engines agree (axe-core + IBM Equal Access): 0 violations." : `Rule engines \u2014 axe-core: ${exportAuditResult.axeViolations}, IBM Equal Access: ${exportAuditResult.eaViolations} violation(s).`, exportAuditResult.eaPotential > 0 && /* @__PURE__ */ React.createElement("span", { className: "block mt-1 text-slate-500" }, "IBM Equal Access also flags ", exportAuditResult.eaPotential, " item(s) for human review.")), exportAuditResult.eaViolations == null && exportAuditResult.axeViolations != null && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 italic" }, "Second deterministic engine (IBM Equal Access) unavailable \u2014 showing axe-core only."), exportAuditResult.issues?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-red-600 uppercase mb-1" }, "Issues (", exportAuditResult.issues.length, ")"), exportAuditResult.issues.slice(0, 5).map((issue, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-slate-600 mb-1 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-red-600 shrink-0" }, "\u25CF"), /* @__PURE__ */ React.createElement("span", null, typeof issue === "string" ? issue : issue.issue, issue.wcag ? ` (${issue.wcag})` : ""))), exportAuditResult.issues.length > 5 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic" }, "+", exportAuditResult.issues.length - 5, " more")), exportAuditResult.passes?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-green-600 uppercase mb-1" }, "Passes (", exportAuditResult.passes.length, ")"), exportAuditResult.passes.slice(0, 3).map((pass, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-green-700 mb-0.5 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-green-500" }, "\u2713"), " ", pass))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-500 italic" }, "Use the A11y Inspect toggle above to see and fix issues visually, then re-audit."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic" }, "Automated checks (axe-core + IBM Equal Access) find many problems but can\u2019t confirm full WCAG 2.1 AA conformance \u2014 a manual screen-reader + keyboard pass is still needed. The score above includes an AI review and is a guide, not a certification.")))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-white shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700" }, "Live Preview"), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-indigo-500 font-medium" }, "Click text to edit directly")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/*";
-      input.onchange = (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          const iframe = exportPreviewRef.current;
-          const doc = iframe?.contentDocument;
-          if (!doc) return;
-          const img = doc.createElement("img");
-          img.src = ev.target.result;
-          img.style.cssText = "max-width:100%;height:auto;border-radius:8px;margin:12px 0;cursor:move;";
-          img.alt = "User-inserted image";
-          const sel = doc.getSelection();
-          if (sel && sel.rangeCount > 0) {
-            const range = sel.getRangeAt(0);
-            range.collapse(false);
-            range.insertNode(img);
-          } else {
-            const main = doc.querySelector("main") || doc.body;
-            main.appendChild(img);
-          }
-          addToast && addToast("Image inserted! Drag to reposition.");
-        };
-        reader.readAsDataURL(file);
-      };
-      input.click();
-    }, className: "text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100", title: "Insert image into document" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 12 }), " Add Image"), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5 bg-slate-200" }), /* @__PURE__ */ React.createElement(
+    ), exportAuditResult && exportAuditResult.score >= 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: `text-center p-3 rounded-xl ${exportAuditResult.score >= 80 ? "bg-green-50 border border-green-200" : exportAuditResult.score >= 60 ? "bg-amber-50 border border-amber-200" : "bg-red-50 border border-red-200"}` }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${exportAuditResult.score >= 80 ? "text-green-700" : exportAuditResult.score >= 60 ? "text-amber-700" : "text-red-700"}` }, exportAuditResult.score, "/100"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Accessibility Automated Score")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, exportAuditResult.summary), exportAuditResult.axeViolations != null && exportAuditResult.eaViolations != null && /* @__PURE__ */ React.createElement("div", { className: `rounded-lg border p-2 text-[11px] ${exportAuditResult.deterministicConsensus === "clean" ? "bg-green-50 border-green-200 text-green-800" : "bg-amber-50 border-amber-200 text-amber-800"}` }, exportAuditResult.deterministicConsensus === "clean" ? "\u2713 Two independent rule engines agree (axe-core + IBM Equal Access): 0 violations." : `Rule engines \u2014 axe-core: ${exportAuditResult.axeViolations}, IBM Equal Access: ${exportAuditResult.eaViolations} violation(s).`, exportAuditResult.eaPotential > 0 && /* @__PURE__ */ React.createElement("span", { className: "block mt-1 text-slate-500" }, "IBM Equal Access also flags ", exportAuditResult.eaPotential, " item(s) for human review.")), exportAuditResult.eaViolations == null && exportAuditResult.axeViolations != null && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 italic" }, "Second deterministic engine (IBM Equal Access) unavailable \u2014 showing axe-core only."), exportAuditResult.issues?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-red-600 uppercase mb-1" }, "Issues (", exportAuditResult.issues.length, ")"), exportAuditResult.issues.slice(0, 5).map((issue, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-slate-600 mb-1 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-red-600 shrink-0" }, "\u25CF"), /* @__PURE__ */ React.createElement("span", null, typeof issue === "string" ? issue : issue.issue, issue.wcag ? ` (${issue.wcag})` : ""))), exportAuditResult.issues.length > 5 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic" }, "+", exportAuditResult.issues.length - 5, " more")), exportAuditResult.passes?.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-green-600 uppercase mb-1" }, "Passes (", exportAuditResult.passes.length, ")"), exportAuditResult.passes.slice(0, 3).map((pass, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-[11px] text-green-700 mb-0.5 flex items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-green-500" }, "\u2713"), " ", pass))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-700 italic" }, "Use the A11y Inspect toggle above to see and fix issues visually, then re-audit."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic" }, "Automated checks (axe-core + IBM Equal Access) find many problems but can\u2019t confirm full WCAG 2.2 AA conformance \u2014 a manual screen-reader, keyboard, zoom/reflow, and forced-colors pass is still needed. The score above includes an AI review and is a guide, not a certification.")))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-white shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700" }, "Live Preview"), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono" }, exportPreviewMode === "worksheet" ? "Worksheet" : exportPreviewMode === "html" ? "HTML" : exportPreviewMode === "slides" ? "Slides" : "PDF"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-indigo-700 font-medium" }, "Focus the preview and edit text directly")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        ref: imageFileInputRef,
+        type: "file",
+        accept: "image/*",
+        className: "sr-only",
+        tabIndex: -1,
+        "aria-hidden": "true",
+        onChange: (e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (!file) return;
+          setImageAltText("");
+          setImageDecorative(false);
+          setImageAltError("");
+          setPendingImageFile(file);
+        }
+      }
+    ), /* @__PURE__ */ React.createElement("button", { ref: imageAddButtonRef, type: "button", onClick: () => {
+      const doc = exportPreviewRef.current?.contentDocument;
+      const selection = doc?.getSelection();
+      imageInsertionRangeRef.current = selection && selection.rangeCount > 0 ? selection.getRangeAt(0).cloneRange() : null;
+      imageFileInputRef.current?.click();
+    }, className: "min-h-8 text-xs font-bold text-slate-700 hover:text-indigo-700 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100", "aria-label": "Add an image and provide alternative text", title: "Insert image into document" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 12, "aria-hidden": "true" }), " Add Image"), /* @__PURE__ */ React.createElement("div", { className: "w-px h-5 bg-slate-200" }), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: toggleA11yInspect,
         className: `text-xs font-bold flex items-center gap-1 px-2 py-1 rounded transition-all ${a11yInspectMode ? "bg-violet-100 text-violet-700 ring-1 ring-violet-300" : "text-slate-600 hover:text-violet-600 hover:bg-slate-100"}`,
-        title: "Toggle accessibility inspector \u2014 shows heading hierarchy, alt text, ARIA labels, table structure, and input labels. Click any badge to edit."
+        title: "Toggle accessibility inspector \u2014 shows heading hierarchy, alt text, ARIA labels, table structure, and input labels. Select any badge to edit."
       },
       "\u267F A11y Inspect"
     ), pdfFixResult && pdfFixResult.sourceText && pdfFixResult.finalText && /* @__PURE__ */ React.createElement(
@@ -1224,7 +1378,7 @@ function ExportPreviewView(props) {
           const doc = exportPreviewRef.current?.contentDocument;
           if (doc) doc.execCommand(btn.cmd, false, null);
         },
-        className: `w-7 h-7 rounded text-xs ${btn.style} text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600`,
+        className: `w-8 h-8 rounded text-xs ${btn.style} text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600`,
         "aria-label": btn.label,
         title: btn.label
       },
@@ -1241,7 +1395,7 @@ function ExportPreviewView(props) {
           const doc = exportPreviewRef.current?.contentDocument;
           if (doc) doc.execCommand(btn.cmd, false, btn.val);
         },
-        className: "px-1.5 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600",
+        className: "min-w-8 h-8 px-1.5 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600",
         "aria-label": btn.label,
         title: btn.label
       },
@@ -1253,7 +1407,7 @@ function ExportPreviewView(props) {
           const doc = exportPreviewRef.current?.contentDocument;
           if (doc) doc.execCommand("insertUnorderedList", false, null);
         },
-        className: "w-7 h-7 rounded text-xs text-slate-600 hover:bg-indigo-100 transition-colors",
+        className: "w-8 h-8 rounded text-xs text-slate-600 hover:bg-indigo-100 transition-colors",
         "aria-label": t("a11y.bullet_list"),
         title: "Bullet list"
       },
@@ -1265,7 +1419,7 @@ function ExportPreviewView(props) {
           const doc = exportPreviewRef.current?.contentDocument;
           if (doc) doc.execCommand("insertOrderedList", false, null);
         },
-        className: "w-7 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 transition-colors",
+        className: "w-8 h-8 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 transition-colors",
         "aria-label": "Numbered list",
         title: "Numbered list"
       },
@@ -1287,7 +1441,7 @@ function ExportPreviewView(props) {
           }
           doc.execCommand("createLink", false, _u);
         },
-        className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors",
+        className: "w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors",
         "aria-label": "Insert link",
         title: "Insert link"
       },
@@ -1327,7 +1481,7 @@ function ExportPreviewView(props) {
             addToast("Could not insert the equation.", "error");
           }
         },
-        className: "px-1.5 h-7 rounded text-[13px] font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600",
+        className: "min-w-8 h-8 px-1.5 rounded text-[13px] font-semibold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600",
         "aria-label": "Insert an equation (accessible math)",
         title: "Insert an equation (accessible math)"
       },
@@ -1339,7 +1493,7 @@ function ExportPreviewView(props) {
           const doc = exportPreviewRef.current?.contentDocument;
           if (doc) doc.execCommand("removeFormat", false, null);
         },
-        className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors",
+        className: "w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors",
         "aria-label": "Clear formatting",
         title: "Clear formatting"
       },
@@ -1351,7 +1505,7 @@ function ExportPreviewView(props) {
           const doc = exportPreviewRef.current?.contentDocument;
           if (doc) doc.execCommand("undo", false, null);
         },
-        className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors",
+        className: "w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors",
         "aria-label": "Undo",
         title: "Undo"
       },
@@ -1363,7 +1517,7 @@ function ExportPreviewView(props) {
           const doc = exportPreviewRef.current?.contentDocument;
           if (doc) doc.execCommand("redo", false, null);
         },
-        className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors",
+        className: "w-8 h-8 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors",
         "aria-label": "Redo",
         title: "Redo"
       },
@@ -1376,7 +1530,7 @@ function ExportPreviewView(props) {
           if (doc && e.target.value) doc.execCommand("foreColor", false, e.target.value);
           e.target.value = "";
         },
-        className: "h-7 text-[11px] border border-slate-400 rounded px-1 text-slate-600 ml-0.5",
+        className: "h-8 text-[11px] border border-slate-400 rounded px-1 text-slate-600 ml-0.5",
         "aria-label": "Text color",
         defaultValue: ""
       },
@@ -1482,7 +1636,7 @@ function ExportPreviewView(props) {
       "iframe",
       {
         ref: exportPreviewRef,
-        title: "Export Preview \u2014 click any text to edit",
+        title: "Editable document preview",
         className: "w-full h-full bg-white rounded-lg shadow-inner border border-slate-400",
         sandbox: "allow-same-origin allow-scripts allow-forms",
         onLoad: () => {

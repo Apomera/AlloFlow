@@ -1,23 +1,23 @@
 {
-  "generatedAt": "2026-07-11T05:00:42.871Z",
+  "generatedAt": "2026-07-11T18:00:25.740Z",
   "source": {
-    "stemToolFileCount": 118,
-    "registeredToolCount": 121
+    "stemToolFileCount": 119,
+    "registeredToolCount": 122
   },
-  "toolCount": 121,
+  "toolCount": 122,
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 24,
+    "issueCount": 33,
     "errorCount": 0,
-    "warningCount": 2,
+    "warningCount": 11,
     "noticeCount": 22,
-    "toolsWithIssues": 23,
+    "toolsWithIssues": 30,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 2,
-    "toolsWithCanvas": 35,
+    "toolsWithWarnings": 10,
+    "toolsWithCanvas": 36,
     "shellCoverage": {
-      "standardShellTools": 121,
+      "standardShellTools": 122,
       "lightBackgroundTools": [],
       "toolsWithoutStandardShell": []
     },
@@ -37,7 +37,7 @@
       "math": {
         "toolCount": 22,
         "errorCount": 0,
-        "warningCount": 0,
+        "warningCount": 6,
         "noticeCount": 0
       },
       "Games": {
@@ -47,9 +47,9 @@
         "noticeCount": 0
       },
       "science": {
-        "toolCount": 47,
+        "toolCount": 48,
         "errorCount": 0,
-        "warningCount": 1,
+        "warningCount": 3,
         "noticeCount": 4
       },
       "technology": {
@@ -67,7 +67,7 @@
       "explore": {
         "toolCount": 4,
         "errorCount": 0,
-        "warningCount": 0,
+        "warningCount": 1,
         "noticeCount": 4
       },
       "creative": {
@@ -170,6 +170,34 @@
   },
   "topFindings": [
     {
+      "code": "tiny-text",
+      "severity": "warning",
+      "count": 9,
+      "toolCount": 9,
+      "exampleTools": [
+        "base10",
+        "calculus",
+        "coordinate",
+        "geologyExplorer",
+        "particleLab3d",
+        "protractor",
+        "unitConvert",
+        "universe",
+        "volume"
+      ],
+      "recommendation": "Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height."
+    },
+    {
+      "code": "canvas-focus",
+      "severity": "warning",
+      "count": 1,
+      "toolCount": 1,
+      "exampleTools": [
+        "particleLab3d"
+      ],
+      "recommendation": "If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives."
+    },
+    {
       "code": "inline-contrast",
       "severity": "warning",
       "count": 1,
@@ -178,16 +206,6 @@
         "appLab"
       ],
       "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
-    },
-    {
-      "code": "tiny-text",
-      "severity": "warning",
-      "count": 1,
-      "toolCount": 1,
-      "exampleTools": [
-        "universe"
-      ],
-      "recommendation": "Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height."
     },
     {
       "code": "metadata",
@@ -790,11 +808,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Base-10 blocks, abacus, slide rule & place value quiz.",
-      "renderedBytes": 14969,
+      "renderedBytes": 19782,
       "standardShell": true,
-      "issueCount": 0,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 0,
+      "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
         "buttons": 51,
@@ -805,10 +823,21 @@
         "images": 0,
         "headings": 3,
         "links": 0,
-        "tinyTextClassHits": 0,
+        "tinyTextClassHits": 3,
         "fixedWidthRiskCount": 0
       },
-      "issues": []
+      "issues": [
+        {
+          "toolId": "base10",
+          "severity": "warning",
+          "code": "tiny-text",
+          "message": "Tool uses persistent 8px/9px text utility classes.",
+          "count": 3,
+          "classes": [
+            "text-[9px]"
+          ]
+        }
+      ]
     },
     {
       "id": "beehive",
@@ -1010,11 +1039,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Riemann sums, derivatives, and guided discovery missions",
-      "renderedBytes": 20975,
+      "renderedBytes": 24340,
       "standardShell": true,
-      "issueCount": 0,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 0,
+      "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
         "buttons": 29,
@@ -1025,10 +1054,21 @@
         "images": 0,
         "headings": 3,
         "links": 0,
-        "tinyTextClassHits": 0,
+        "tinyTextClassHits": 3,
         "fixedWidthRiskCount": 0
       },
-      "issues": []
+      "issues": [
+        {
+          "toolId": "calculus",
+          "severity": "warning",
+          "code": "tiny-text",
+          "message": "Tool uses persistent 8px/9px text utility classes.",
+          "count": 3,
+          "classes": [
+            "text-[9px]"
+          ]
+        }
+      ]
     },
     {
       "id": "cell",
@@ -1304,11 +1344,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Plot points, draw lines, calculate slope/distance/midpoint with sound effects and badges.",
-      "renderedBytes": 10190,
+      "renderedBytes": 13317,
       "standardShell": true,
-      "issueCount": 0,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 0,
+      "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
         "buttons": 14,
@@ -1319,10 +1359,21 @@
         "images": 0,
         "headings": 2,
         "links": 0,
-        "tinyTextClassHits": 0,
+        "tinyTextClassHits": 3,
         "fixedWidthRiskCount": 0
       },
-      "issues": []
+      "issues": [
+        {
+          "toolId": "coordinate",
+          "severity": "warning",
+          "code": "tiny-text",
+          "message": "Tool uses persistent 8px/9px text utility classes.",
+          "count": 3,
+          "classes": [
+            "text-[9px]"
+          ]
+        }
+      ]
     },
     {
       "id": "cyberDefense",
@@ -1521,7 +1572,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 24186,
+      "renderedBytes": 24175,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1752,7 +1803,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 25921,
+      "renderedBytes": 25882,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1976,14 +2027,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore galaxy types, stellar lifecycles, star classification, and metallicity in an interactive 3D Milky Way simulation.",
-      "renderedBytes": 37119,
+      "renderedBytes": 37364,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 51,
+        "buttons": 52,
         "roleButtons": 0,
         "fields": 3,
         "canvases": 1,
@@ -2088,11 +2139,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 12464,
+      "renderedBytes": 15244,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 2,
       "errorCount": 0,
-      "warningCount": 0,
+      "warningCount": 1,
       "noticeCount": 1,
       "metrics": {
         "buttons": 23,
@@ -2103,10 +2154,20 @@
         "images": 0,
         "headings": 2,
         "links": 0,
-        "tinyTextClassHits": 0,
+        "tinyTextClassHits": 3,
         "fixedWidthRiskCount": 0
       },
       "issues": [
+        {
+          "toolId": "geologyExplorer",
+          "severity": "warning",
+          "code": "tiny-text",
+          "message": "Tool uses persistent 8px/9px text utility classes.",
+          "count": 3,
+          "classes": [
+            "text-[9px]"
+          ]
+        },
         {
           "toolId": "geologyExplorer",
           "severity": "notice",
@@ -2151,7 +2212,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1752,
+      "renderedBytes": 1735,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -2557,7 +2618,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13518,
+      "renderedBytes": 13481,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2753,6 +2814,53 @@
       "issues": []
     },
     {
+      "id": "particleLab3d",
+      "label": "Particle Lab 3D",
+      "category": "science",
+      "ready": true,
+      "lightBackground": false,
+      "aliases": [],
+      "desc": "Run fully 3D particle experiments with states of matter, gas laws, diffusion, collisions, attraction, live measurements, and particle tracing.",
+      "renderedBytes": 9901,
+      "standardShell": true,
+      "issueCount": 2,
+      "errorCount": 0,
+      "warningCount": 2,
+      "noticeCount": 0,
+      "metrics": {
+        "buttons": 19,
+        "roleButtons": 0,
+        "fields": 4,
+        "canvases": 1,
+        "svgs": 1,
+        "images": 0,
+        "headings": 5,
+        "links": 0,
+        "tinyTextClassHits": 1,
+        "fixedWidthRiskCount": 0
+      },
+      "issues": [
+        {
+          "toolId": "particleLab3d",
+          "severity": "warning",
+          "code": "canvas-focus",
+          "message": "Canvas is not focusable in initial markup.",
+          "index": 0,
+          "selector": "div.max-w-7xl.mx-auto > div.grid.gap-4:nth-of-type(2) > section.overflow-hidden.border > div.relative.min-h-[380px]:nth-of-type(2) > canvas.h-full.w-full"
+        },
+        {
+          "toolId": "particleLab3d",
+          "severity": "warning",
+          "code": "tiny-text",
+          "message": "Tool uses persistent 8px/9px text utility classes.",
+          "count": 1,
+          "classes": [
+            "text-[9px]"
+          ]
+        }
+      ]
+    },
+    {
       "id": "petsLab",
       "label": "Science of Pets Lab",
       "category": "life-earth-science",
@@ -2862,7 +2970,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 18056,
+      "renderedBytes": 18061,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -2960,11 +3068,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Measure and construct angles. Classify acute, right, obtuse, and reflex.",
-      "renderedBytes": 28182,
+      "renderedBytes": 31688,
       "standardShell": true,
-      "issueCount": 0,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 0,
+      "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
         "buttons": 69,
@@ -2975,10 +3083,21 @@
         "images": 0,
         "headings": 4,
         "links": 0,
-        "tinyTextClassHits": 0,
+        "tinyTextClassHits": 3,
         "fixedWidthRiskCount": 0
       },
-      "issues": []
+      "issues": [
+        {
+          "toolId": "protractor",
+          "severity": "warning",
+          "code": "tiny-text",
+          "message": "Tool uses persistent 8px/9px text utility classes.",
+          "count": 3,
+          "classes": [
+            "text-[9px]"
+          ]
+        }
+      ]
     },
     {
       "id": "punnett",
@@ -3401,7 +3520,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Inferential statistics: t-tests, ANOVA, correlation, regression, chi-square, non-parametric, power analysis. AP Psych / AP Bio focus. Transparent computation, plain-English results, APA write-ups, AI interpretation grader.",
-      "renderedBytes": 17091,
+      "renderedBytes": 17058,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3576,7 +3695,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Keyboarding designed for students with disabilities — accommodations are the product, not a menu. AI-personalized passages, IEP-ready progress, no ads or racing.",
-      "renderedBytes": 30624,
+      "renderedBytes": 30626,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3604,11 +3723,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Convert units with visual comparison, quiz, AI word problems, badges & keyboard shortcuts",
-      "renderedBytes": 9129,
+      "renderedBytes": 13187,
       "standardShell": true,
-      "issueCount": 0,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 0,
+      "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
         "buttons": 21,
@@ -3619,10 +3738,21 @@
         "images": 0,
         "headings": 4,
         "links": 0,
-        "tinyTextClassHits": 0,
+        "tinyTextClassHits": 3,
         "fixedWidthRiskCount": 0
       },
-      "issues": []
+      "issues": [
+        {
+          "toolId": "unitConvert",
+          "severity": "warning",
+          "code": "tiny-text",
+          "message": "Tool uses persistent 8px/9px text utility classes.",
+          "count": 3,
+          "classes": [
+            "text-[9px]"
+          ]
+        }
+      ]
     },
     {
       "id": "universe",
@@ -3671,11 +3801,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "3D cube building with volume, surface area, badges & AI tutor.",
-      "renderedBytes": 31357,
+      "renderedBytes": 34844,
       "standardShell": true,
-      "issueCount": 0,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 0,
+      "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
         "buttons": 26,
@@ -3686,10 +3816,21 @@
         "images": 0,
         "headings": 5,
         "links": 0,
-        "tinyTextClassHits": 0,
+        "tinyTextClassHits": 3,
         "fixedWidthRiskCount": 0
       },
-      "issues": []
+      "issues": [
+        {
+          "toolId": "volume",
+          "severity": "warning",
+          "code": "tiny-text",
+          "message": "Tool uses persistent 8px/9px text utility classes.",
+          "count": 3,
+          "classes": [
+            "text-[9px]"
+          ]
+        }
+      ]
     },
     {
       "id": "waterCycle",
@@ -3699,20 +3840,20 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live water cycle canvas plus Journey Mode: ride one droplet through evaporation, condensation, precipitation, collection, transpiration, and infiltration with real choices along the way.",
-      "renderedBytes": 18419,
+      "renderedBytes": 21969,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 18,
+        "buttons": 30,
         "roleButtons": 0,
-        "fields": 4,
+        "fields": 6,
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 7,
+        "headings": 8,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0

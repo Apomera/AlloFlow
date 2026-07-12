@@ -21,9 +21,9 @@ describe('EPPP traced migration batch', () => {
   it('adds traced source-reviewed items under blueprint-weighted curation', () => {
     const migrated = eppp.items.filter((item) => item.legacySourceId);
 
-    expect(eppp.version).toBe('0.27.0');
-    expect(eppp.items).toHaveLength(416);
-    expect(migrated).toHaveLength(408);
+    expect(eppp.version).toBe('1.0.0');
+    expect(eppp.items).toHaveLength(500);
+    expect(migrated).toHaveLength(492);
     expect(new Set(migrated.map((item) => item.domainId))).toEqual(new Set(eppp.domains.map((domain) => domain.id)));
     expect(migrated.every((item) => item.reviewStatus === 'source-reviewed')).toBe(true);
     expect(migrated.every((item) => item.migrationStatus === 're-authored-source-reviewed')).toBe(true);
@@ -51,7 +51,7 @@ describe('EPPP traced migration batch', () => {
       return counts;
     }, {});
 
-    expect(distribution).toEqual({ 0: 104, 1: 104, 2: 104, 3: 104 });
+    expect(distribution).toEqual({ 0: 125, 1: 125, 2: 125, 3: 125 });
   });
 
   it('does not make migrated correct choices conspicuously longer than every distractor', () => {

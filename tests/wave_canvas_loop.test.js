@@ -11,7 +11,8 @@ describe('wave canvas animation loop', () => {
     WAVE_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain('if (_prevCv && _prevCv._waveCleanup) _prevCv._waveCleanup();');
+      expect(source).toContain('if (_prevCv && !document.body.contains(_prevCv)) {');
+      expect(source).toContain('if (_prevCv._waveCleanup) _prevCv._waveCleanup();');
       expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
       expect(source).toContain('function isWaveHidden()');
       expect(source).toContain('function cancelWaveFrame()');
@@ -29,7 +30,8 @@ describe('wave canvas animation loop', () => {
       expect(source).toContain("document.removeEventListener('visibilitychange', onWaveVisibilityChange);");
       expect(source).toContain('if (!document.body.contains(canvasEl)) { cleanupWaveCanvas(); return; }');
       expect(source).toContain('tick += waveMotionReduced ? 0.2 : 1;');
-      expect(source).toContain('try { if (d && d._audioCtx) { d._audioCtx.close(); d._audioCtx = null; } } catch (e) {}');
+      expect(source).toContain('function _waveAudioStop()');
+      expect(source).toContain('_waveAudioStop();');
       expect(source).toContain('scheduleWaveFrame();');
       expect(source).not.toContain('if (!document.body.contains(canvasEl)) return;');
     });

@@ -1,24 +1,24 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-11T05:04:17.522Z
+Generated: 2026-07-11T18:00:31.104Z
 
 ## Scope
 
-- Registered STEM tools: 121
-- STEM tool files: 118
-- Monitored student-facing visual markers: 63
+- Registered STEM tools: 122
+- STEM tool files: 119
+- Monitored student-facing visual markers: 72
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
 | Load errors | 0 |
-| Marker passes | 63 |
+| Marker passes | 72 |
 | Marker failures | 0 |
-| Monitored first-screen findings | 12 |
+| Monitored first-screen findings | 15 |
 | High-confidence monitored errors | 0 |
 | Source/public drift | 0 |
-| Any source/public/build drift | 0 |
+| Any source/public/build drift | 1 |
 | Monitored file drift | 0 |
 
 ## Visual Marker Coverage
@@ -66,6 +66,7 @@ Generated: 2026-07-11T05:04:17.522Z
 | pass | `playlab` | `data-playlab-gameplan` | Rendered |
 | pass | `plateTectonics` | `data-pt-sim-focus` | Rendered |
 | pass | `astronomy` | `data-astronomy-command` | Rendered |
+| pass | `geologyExplorer` | `data-geology-command` | Rendered |
 | pass | `rockCycle` | `data-rockcycle-command` | Rendered |
 | pass | `aquarium` | `data-aquarium-focus-panel` | Rendered |
 | pass | `moonMission` | `data-moonmission-control` | Rendered |
@@ -76,11 +77,19 @@ Generated: 2026-07-11T05:04:17.522Z
 | pass | `skatelab` | `data-skatelab-run-focus` | Rendered |
 | pass | `probability` | `data-probability-command` | Rendered |
 | pass | `statsLab` | `data-statslab-command` | Rendered |
+| pass | `funcGrapher` | `data-funcgrapher-command` | Rendered |
+| pass | `calculus` | `data-calculus-command` | Rendered |
+| pass | `physics` | `data-physics-command` | Rendered |
+| pass | `unitConvert` | `data-unitconvert-command` | Rendered |
 | pass | `punnett` | `data-punnett-cross-focus` | Rendered |
 | pass | `circuit` | `data-circuit-bench` | Rendered |
 | pass | `chemBalance` | `data-chembalance-command` | Rendered |
 | pass | `titrationLab` | `data-titration-command` | Rendered |
 | pass | `areamodel` | `data-areamodel-focus` | Rendered |
+| pass | `coordinate` | `data-coordinate-command` | Rendered |
+| pass | `protractor` | `data-protractor-command` | Rendered |
+| pass | `volume` | `data-volume-command` | Rendered |
+| pass | `base10` | `data-manipulatives-command` | Rendered |
 | pass | `numberline` | `data-numberline-focus` | Rendered |
 | pass | `moneyMath` | `data-moneymath-focus` | Rendered |
 | pass | `logicLab` | `data-logiclab-focus` | Rendered |
@@ -93,13 +102,16 @@ Generated: 2026-07-11T05:04:17.522Z
 
 | Severity | Code | Count | Tools |
 | --- | --- | ---: | --- |
+| warning | `canvas-focus` | 2 | `bikeLab`, `funcGrapher` |
 | warning | `heading` | 2 | `cellularLab`, `bikeLab` |
-| warning | `canvas-focus` | 1 | `bikeLab` |
-| notice | `horizontal-overflow-risk` | 9 | `opticsLab`, `cellularLab`, `dinoLab`, `printingPress`, `birdLab`, `playlab`, `bikeLab`, `echolocation`, `statsLab` |
+| warning | `canvas-name` | 1 | `funcGrapher` |
+| notice | `horizontal-overflow-risk` | 10 | `opticsLab`, `cellularLab`, `dinoLab`, `printingPress`, `birdLab`, `playlab`, `bikeLab`, `echolocation`, `statsLab`, `volume` |
 
 ## Sync Drift
 
-All source, public, and local build STEM tool copies match.
+| Status | File | Monitored | Hashes |
+| --- | --- | --- | --- |
+| build-drift | `stem_tool_particlelab3d.js` | no | source `A284849D1A8B`, public `A284849D1A8B`, build `FACF95D1AC25` |
 
 ## Gate Policy
 

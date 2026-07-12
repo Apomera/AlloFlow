@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-11T05:14:42.904Z",
+  "generatedAt": "2026-07-11T19:57:24.201Z",
   "target": "Exactly 500 blueprint-weighted native EPPP questions; every slot must pass the existing native QA gate before completion.",
   "summary": {
     "targetSlots": 500,
-    "qaPassed": 416,
-    "selectedPendingQa": 84,
+    "qaPassed": 500,
+    "selectedPendingQa": 0,
     "legacySourceSlots": 492,
     "nativeOriginalSlots": 8,
-    "webSourcePresentPendingVerification": 35,
-    "bibliographicSourceNeedsResolution": 33,
-    "sourceMissing": 16
+    "webSourcePresentPendingVerification": 0,
+    "bibliographicSourceNeedsResolution": 0,
+    "sourceMissing": 0
   },
   "domainSummary": [
     {
@@ -18,9 +18,9 @@
       "label": "Biological bases of behavior",
       "blueprintWeight": 0.1,
       "target": 50,
-      "qaPassed": 44,
-      "selectedPending": 6,
-      "sourceReadyPending": 6,
+      "qaPassed": 50,
+      "selectedPending": 0,
+      "sourceReadyPending": 0,
       "sourceResolutionPending": 0
     },
     {
@@ -28,50 +28,50 @@
       "label": "Cognitive-affective bases of behavior",
       "blueprintWeight": 0.13,
       "target": 65,
-      "qaPassed": 54,
-      "selectedPending": 11,
-      "sourceReadyPending": 10,
-      "sourceResolutionPending": 1
+      "qaPassed": 65,
+      "selectedPending": 0,
+      "sourceReadyPending": 0,
+      "sourceResolutionPending": 0
     },
     {
       "domainId": "social-cultural",
       "label": "Social and cultural bases of behavior",
       "blueprintWeight": 0.11,
       "target": 55,
-      "qaPassed": 47,
-      "selectedPending": 8,
-      "sourceReadyPending": 6,
-      "sourceResolutionPending": 2
+      "qaPassed": 55,
+      "selectedPending": 0,
+      "sourceReadyPending": 0,
+      "sourceResolutionPending": 0
     },
     {
       "domainId": "lifespan",
       "label": "Growth and lifespan development",
       "blueprintWeight": 0.12,
       "target": 60,
-      "qaPassed": 50,
-      "selectedPending": 10,
-      "sourceReadyPending": 3,
-      "sourceResolutionPending": 7
+      "qaPassed": 60,
+      "selectedPending": 0,
+      "sourceReadyPending": 0,
+      "sourceResolutionPending": 0
     },
     {
       "domainId": "assessment",
       "label": "Assessment and diagnosis",
       "blueprintWeight": 0.16,
       "target": 80,
-      "qaPassed": 63,
-      "selectedPending": 17,
-      "sourceReadyPending": 2,
-      "sourceResolutionPending": 15
+      "qaPassed": 80,
+      "selectedPending": 0,
+      "sourceReadyPending": 0,
+      "sourceResolutionPending": 0
     },
     {
       "domainId": "intervention",
       "label": "Treatment, intervention, prevention and supervision",
       "blueprintWeight": 0.15,
       "target": 75,
-      "qaPassed": 60,
-      "selectedPending": 15,
-      "sourceReadyPending": 1,
-      "sourceResolutionPending": 14
+      "qaPassed": 75,
+      "selectedPending": 0,
+      "sourceReadyPending": 0,
+      "sourceResolutionPending": 0
     },
     {
       "domainId": "research",
@@ -88,10 +88,10 @@
       "label": "Ethical, legal, and professional issues",
       "blueprintWeight": 0.16,
       "target": 80,
-      "qaPassed": 63,
-      "selectedPending": 17,
-      "sourceReadyPending": 7,
-      "sourceResolutionPending": 10
+      "qaPassed": 80,
+      "selectedPending": 0,
+      "sourceReadyPending": 0,
+      "sourceResolutionPending": 0
     }
   ],
   "slots": [
@@ -664,6 +664,25 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-biological-1",
+      "legacyId": "legacy-f46dbdf4e4a01886",
+      "sourceFile": "js/data_batch17.js",
+      "domainId": "biological",
+      "prompt": "The hypothalamic-pituitary-gonadal (HPG) axis regulates:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1038/nn1326"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b015-biological-1",
       "legacyId": "legacy-f5b02266c6d114b0",
       "sourceFile": "js/data_batch17.js",
@@ -835,6 +854,101 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-biological-1",
+      "legacyId": "legacy-bacdc9df5493e702",
+      "sourceFile": "js/data_batch22.js",
+      "domainId": "biological",
+      "prompt": "Tardive dyskinesia is a side effect of:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.4088/JCP.tv17016ah4c"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b028-biological-1",
+      "legacyId": "legacy-ab4b163daf34ee76",
+      "sourceFile": "js/data_batch22.js",
+      "domainId": "biological",
+      "prompt": "The nucleus accumbens is part of the brain's:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1159/000368279"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b028-biological-2",
+      "legacyId": "legacy-8ffdaed252a5c433",
+      "sourceFile": "js/data_batch22.js",
+      "domainId": "biological",
+      "prompt": "Wernicke's encephalopathy is an ACUTE condition caused by:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1136/jnnp.49.4.341"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-biological-2",
+      "legacyId": "legacy-d549816ff59aa851",
+      "sourceFile": "js/data_batch22.js",
+      "domainId": "biological",
+      "prompt": "The locus coeruleus is the brain's primary source of:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1146/annurev.neuro.28.061604.135709"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-biological-1",
+      "legacyId": "legacy-e860c6b04d9369cf",
+      "sourceFile": "js/data_batch22.js",
+      "domainId": "biological",
+      "prompt": "Omega-3 fatty acids are important for brain health because:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1038/nrn3820"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b024-biological-2",
       "legacyId": "legacy-036f2799d3070608",
       "sourceFile": "js/data_batch23.js",
@@ -870,144 +984,6 @@
       "status": "qa-passed",
       "sourceReadiness": "qa-passed",
       "requiredWork": []
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-f46dbdf4e4a01886",
-      "sourceFile": "js/data_batch17.js",
-      "domainId": "biological",
-      "prompt": "The hypothalamic-pituitary-gonadal (HPG) axis regulates:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1038/nn1326"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-bacdc9df5493e702",
-      "sourceFile": "js/data_batch22.js",
-      "domainId": "biological",
-      "prompt": "Tardive dyskinesia is a side effect of:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.4088/JCP.tv17016ah4c"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-ab4b163daf34ee76",
-      "sourceFile": "js/data_batch22.js",
-      "domainId": "biological",
-      "prompt": "The nucleus accumbens is part of the brain's:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1159/000368279"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-8ffdaed252a5c433",
-      "sourceFile": "js/data_batch22.js",
-      "domainId": "biological",
-      "prompt": "Wernicke's encephalopathy is an ACUTE condition caused by:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1136/jnnp.49.4.341"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-d549816ff59aa851",
-      "sourceFile": "js/data_batch22.js",
-      "domainId": "biological",
-      "prompt": "The locus coeruleus is the brain's primary source of:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1146/annurev.neuro.28.061604.135709"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-e860c6b04d9369cf",
-      "sourceFile": "js/data_batch22.js",
-      "domainId": "biological",
-      "prompt": "Omega-3 fatty acids are important for brain health because:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1038/nrn3820"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
     },
     {
       "slotType": "native-original",
@@ -1292,6 +1268,23 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-cognitive-1",
+      "legacyId": "legacy-ecd95f3b3888c0d1",
+      "sourceFile": "js/data_batch48.js",
+      "domainId": "cognitive-affective",
+      "prompt": "The representativeness heuristic leads to:",
+      "answerIndex": 1,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1126/science.185.4157.1124"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b008-cognitive-2",
       "legacyId": "legacy-fdf18f2cb2e446aa",
       "sourceFile": "js/questions_bank.js",
@@ -1463,6 +1456,25 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-cognitive-2",
+      "legacyId": "legacy-fc6c9424b144dc22",
+      "sourceFile": "js/data_batch22.js",
+      "domainId": "cognitive-affective",
+      "prompt": "Chunking in working memory:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1037/h0043158"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b013-cognitive-1",
       "legacyId": "legacy-e45adb79b524e6cb",
       "sourceFile": "js/data_batch22.js",
@@ -1558,6 +1570,25 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-cognitive-1",
+      "legacyId": "legacy-256144948c73c6b0",
+      "sourceFile": "js/data_batch24.js",
+      "domainId": "cognitive-affective",
+      "prompt": "Anchoring bias occurs when:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1126/science.185.4157.1124"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b015-cognitive-2",
       "legacyId": "legacy-7073126aa78f841a",
       "sourceFile": "js/data_batch24.js",
@@ -1570,6 +1601,25 @@
       ],
       "extractedSourceUrls": [
         "https://doi.org/10.1037/0278-7393.13.3.501"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-cognitive-1",
+      "legacyId": "legacy-e1e729f0cf4041e9",
+      "sourceFile": "js/data_batch24.js",
+      "domainId": "cognitive-affective",
+      "prompt": "The confirmation bias leads people to:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1080/17470216008416717"
       ],
       "status": "qa-passed",
       "sourceReadiness": "qa-passed",
@@ -1729,6 +1779,44 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-cognitive-2",
+      "legacyId": "legacy-d7ab0773db816a36",
+      "sourceFile": "js/questions_bank.js",
+      "domainId": "cognitive-affective",
+      "prompt": "The testing effect (retrieval practice) demonstrates that:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1111/j.1467-9280.2006.01693.x"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b028-cognitive-1",
+      "legacyId": "legacy-2fec96a6377568c0",
+      "sourceFile": "js/questions_bank.js",
+      "domainId": "cognitive-affective",
+      "prompt": "Retrograde amnesia involves:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1016/0959-4388(95)80023-9"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b018-cognitive-1",
       "legacyId": "legacy-0eb212ed9d02ab1c",
       "sourceFile": "js/data_batch14.js",
@@ -1760,6 +1848,25 @@
       ],
       "extractedSourceUrls": [
         "https://doi.org/10.1037/0033-2909.114.1.3"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-cognitive-2",
+      "legacyId": "legacy-f060fa57f57132f9",
+      "sourceFile": "js/data_batch18.js",
+      "domainId": "cognitive-affective",
+      "prompt": "The generation effect demonstrates that:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1037/0278-7393.4.6.592"
       ],
       "status": "qa-passed",
       "sourceReadiness": "qa-passed",
@@ -1817,6 +1924,25 @@
       ],
       "extractedSourceUrls": [
         "https://doi.org/10.1068/p281059"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-cognitive-3",
+      "legacyId": "legacy-f4027752d3dc61f3",
+      "sourceFile": "js/data_batch20.js",
+      "domainId": "cognitive-affective",
+      "prompt": "Decision fatigue refers to:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1037/0022-3514.74.5.1252"
       ],
       "status": "qa-passed",
       "sourceReadiness": "qa-passed",
@@ -1919,6 +2045,44 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b028-cognitive-2",
+      "legacyId": "legacy-150e7071e69b12b1",
+      "sourceFile": "js/data_batch50.js",
+      "domainId": "cognitive-affective",
+      "prompt": "Permissive parenting (Baumrind) is characterized by:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1037/h0030372"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-cognitive-3",
+      "legacyId": "legacy-6d8b42e4324bcdf3",
+      "sourceFile": "js/data_batch50.js",
+      "domainId": "cognitive-affective",
+      "prompt": "Crystallized intelligence (Gc) tends to:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1016/0001-6918(67)90011-X"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b023-cognitive-3",
       "legacyId": "legacy-a234df4168cd86bd",
       "sourceFile": "js/questions_bank.js",
@@ -1939,6 +2103,21 @@
       "sourceFile": "js/questions_bank.js",
       "domainId": "cognitive-affective",
       "prompt": "According to dual-process theory, System 1 thinking is BEST characterized as:",
+      "answerIndex": 1,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b028-cognitive-3",
+      "legacyId": "legacy-7ee70eb471a77252",
+      "sourceFile": "js/questions_bank.js",
+      "domainId": "cognitive-affective",
+      "prompt": "Token economies are based primarily on principles of:",
       "answerIndex": 1,
       "automatedPriority": "routine",
       "automatedFlags": [],
@@ -1976,252 +2155,6 @@
       "status": "qa-passed",
       "sourceReadiness": "qa-passed",
       "requiredWork": []
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-ecd95f3b3888c0d1",
-      "sourceFile": "js/data_batch48.js",
-      "domainId": "cognitive-affective",
-      "prompt": "The representativeness heuristic leads to:",
-      "answerIndex": 1,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1126/science.185.4157.1124"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-fc6c9424b144dc22",
-      "sourceFile": "js/data_batch22.js",
-      "domainId": "cognitive-affective",
-      "prompt": "Chunking in working memory:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1037/h0043158"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-256144948c73c6b0",
-      "sourceFile": "js/data_batch24.js",
-      "domainId": "cognitive-affective",
-      "prompt": "Anchoring bias occurs when:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1126/science.185.4157.1124"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-e1e729f0cf4041e9",
-      "sourceFile": "js/data_batch24.js",
-      "domainId": "cognitive-affective",
-      "prompt": "The confirmation bias leads people to:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1080/17470216008416717"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-d7ab0773db816a36",
-      "sourceFile": "js/questions_bank.js",
-      "domainId": "cognitive-affective",
-      "prompt": "The testing effect (retrieval practice) demonstrates that:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1111/j.1467-9280.2006.01693.x"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-2fec96a6377568c0",
-      "sourceFile": "js/questions_bank.js",
-      "domainId": "cognitive-affective",
-      "prompt": "Retrograde amnesia involves:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1016/0959-4388(95)80023-9"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-f060fa57f57132f9",
-      "sourceFile": "js/data_batch18.js",
-      "domainId": "cognitive-affective",
-      "prompt": "The generation effect demonstrates that:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1037/0278-7393.4.6.592"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-f4027752d3dc61f3",
-      "sourceFile": "js/data_batch20.js",
-      "domainId": "cognitive-affective",
-      "prompt": "Decision fatigue refers to:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1037/0022-3514.74.5.1252"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-150e7071e69b12b1",
-      "sourceFile": "js/data_batch50.js",
-      "domainId": "cognitive-affective",
-      "prompt": "Permissive parenting (Baumrind) is characterized by:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1037/h0030372"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-6d8b42e4324bcdf3",
-      "sourceFile": "js/data_batch50.js",
-      "domainId": "cognitive-affective",
-      "prompt": "Crystallized intelligence (Gc) tends to:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1016/0001-6918(67)90011-X"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-7ee70eb471a77252",
-      "sourceFile": "js/questions_bank.js",
-      "domainId": "cognitive-affective",
-      "prompt": "Token economies are based primarily on principles of:",
-      "answerIndex": 1,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
     },
     {
       "slotType": "native-original",
@@ -2713,6 +2646,25 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-social-1",
+      "legacyId": "legacy-9ca60bce39ce1208",
+      "sourceFile": "js/data_batch24.js",
+      "domainId": "social-cultural",
+      "prompt": "System justification theory (Jost & Banaji) proposes that:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1111/j.2044-8309.1994.tb01008.x"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b014-social-1",
       "legacyId": "legacy-e49aef8e8ef3cd17",
       "sourceFile": "js/data_batch25.js",
@@ -2922,6 +2874,25 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-social-2",
+      "legacyId": "legacy-f4789c7151e628eb",
+      "sourceFile": "js/data_batch20.js",
+      "domainId": "social-cultural",
+      "prompt": "Stereotype threat (Steele & Aronson) occurs when:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1037/0022-3514.69.5.797"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b017-social-1",
       "legacyId": "legacy-53b6a693a24ea099",
       "sourceFile": "js/data_batch42.js",
@@ -2941,6 +2912,21 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-social-1",
+      "legacyId": "legacy-4ae52d12790495ff",
+      "sourceFile": "js/questions_bank.js",
+      "domainId": "social-cultural",
+      "prompt": "Zimbardo's Stanford Prison Experiment primarily demonstrated:",
+      "answerIndex": 1,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b021-social-1",
       "legacyId": "legacy-e9cd51435316f114",
       "sourceFile": "js/questions_bank.js",
@@ -2950,6 +2936,26 @@
       "automatedPriority": "routine",
       "automatedFlags": [],
       "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-social-2",
+      "legacyId": "legacy-bff523650ed6235c",
+      "sourceFile": "js/questions_bank.js",
+      "domainId": "social-cultural",
+      "prompt": "The door-in-the-face technique works by first:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "correct_answer_length_clue",
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1037/h0076284"
+      ],
       "status": "qa-passed",
       "sourceReadiness": "qa-passed",
       "requiredWork": []
@@ -2986,6 +2992,66 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b028-social-2",
+      "legacyId": "legacy-64c2610e70750b87",
+      "sourceFile": "js/data_batch9.js",
+      "domainId": "social-cultural",
+      "prompt": "The door-in-the-face technique involves:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "correct_answer_length_clue",
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1037/h0076284"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b028-social-1",
+      "legacyId": "legacy-6dbfe6656a2ef6cc",
+      "sourceFile": "js/data_batch10.js",
+      "domainId": "social-cultural",
+      "prompt": "Self-serving bias refers to:",
+      "answerIndex": 0,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "correct_answer_length_clue",
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1037/h0076486"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-social-1",
+      "legacyId": "legacy-28dc65a01e4e83f0",
+      "sourceFile": "js/data_batch11.js",
+      "domainId": "social-cultural",
+      "prompt": "Acculturation strategies (Berry) include:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "correct_answer_length_clue",
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1111/j.1464-0597.1997.tb01087.x"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b022-social-2",
       "legacyId": "legacy-3bcb86adb02ecd5d",
       "sourceFile": "js/data_batch14.js",
@@ -3006,6 +3072,21 @@
       "sourceFile": "js/data_batch14.js",
       "domainId": "social-cultural",
       "prompt": "Scapegoat theory proposes that prejudice increases when:",
+      "answerIndex": 1,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-social-2",
+      "legacyId": "legacy-8a7eac3e6a927678",
+      "sourceFile": "js/data_batch15.js",
+      "domainId": "social-cultural",
+      "prompt": "Cognitive dissonance increases with:",
       "answerIndex": 1,
       "automatedPriority": "routine",
       "automatedFlags": [],
@@ -3043,190 +3124,6 @@
       "status": "qa-passed",
       "sourceReadiness": "qa-passed",
       "requiredWork": []
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-9ca60bce39ce1208",
-      "sourceFile": "js/data_batch24.js",
-      "domainId": "social-cultural",
-      "prompt": "System justification theory (Jost & Banaji) proposes that:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1111/j.2044-8309.1994.tb01008.x"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-f4789c7151e628eb",
-      "sourceFile": "js/data_batch20.js",
-      "domainId": "social-cultural",
-      "prompt": "Stereotype threat (Steele & Aronson) occurs when:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1037/0022-3514.69.5.797"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-4ae52d12790495ff",
-      "sourceFile": "js/questions_bank.js",
-      "domainId": "social-cultural",
-      "prompt": "Zimbardo's Stanford Prison Experiment primarily demonstrated:",
-      "answerIndex": 1,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-bff523650ed6235c",
-      "sourceFile": "js/questions_bank.js",
-      "domainId": "social-cultural",
-      "prompt": "The door-in-the-face technique works by first:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "correct_answer_length_clue",
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1037/h0076284"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-64c2610e70750b87",
-      "sourceFile": "js/data_batch9.js",
-      "domainId": "social-cultural",
-      "prompt": "The door-in-the-face technique involves:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "correct_answer_length_clue",
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1037/h0076284"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-6dbfe6656a2ef6cc",
-      "sourceFile": "js/data_batch10.js",
-      "domainId": "social-cultural",
-      "prompt": "Self-serving bias refers to:",
-      "answerIndex": 0,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "correct_answer_length_clue",
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1037/h0076486"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-28dc65a01e4e83f0",
-      "sourceFile": "js/data_batch11.js",
-      "domainId": "social-cultural",
-      "prompt": "Acculturation strategies (Berry) include:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "correct_answer_length_clue",
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1111/j.1464-0597.1997.tb01087.x"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-8a7eac3e6a927678",
-      "sourceFile": "js/data_batch15.js",
-      "domainId": "social-cultural",
-      "prompt": "Cognitive dissonance increases with:",
-      "answerIndex": 1,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
     },
     {
       "slotType": "native-original",
@@ -3521,6 +3418,25 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b028-lifespan-1",
+      "legacyId": "legacy-676e7ab573ba6c4b",
+      "sourceFile": "js/data_batch22.js",
+      "domainId": "lifespan",
+      "prompt": "Stranger anxiety typically appears around:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.2307/1128323"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b008-lifespan-2",
       "legacyId": "legacy-f28aa7eef81942b6",
       "sourceFile": "js/data_batch23.js",
@@ -3720,6 +3636,21 @@
       "domainId": "lifespan",
       "prompt": "Object permanence is fully achieved by approximately:",
       "answerIndex": 2,
+      "automatedPriority": "routine",
+      "automatedFlags": [],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-lifespan-1",
+      "legacyId": "legacy-a8e686f28a6e2e80",
+      "sourceFile": "js/data_batch16.js",
+      "domainId": "lifespan",
+      "prompt": "Gender identity is typically established by age:",
+      "answerIndex": 1,
       "automatedPriority": "routine",
       "automatedFlags": [],
       "extractedSourceUrls": [],
@@ -3938,11 +3869,62 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-lifespan-2",
+      "legacyId": "legacy-1c8131fe55836c37",
+      "sourceFile": "js/data_batch19.js",
+      "domainId": "lifespan",
+      "prompt": "Egocentrism in Piaget's preoperational stage means:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-lifespan-1",
+      "legacyId": "legacy-820c65a17302975a",
+      "sourceFile": "js/data_batch21.js",
+      "domainId": "lifespan",
+      "prompt": "Strange Situation procedure (Ainsworth) is used to assess:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b022-lifespan-1",
       "legacyId": "legacy-cb279d87fe193209",
       "sourceFile": "js/data_batch21.js",
       "domainId": "lifespan",
       "prompt": "Disorganized attachment (Main & Solomon, Type D) is characterized by:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-lifespan-3",
+      "legacyId": "legacy-b87eb291ae5b5348",
+      "sourceFile": "js/data_batch21.js",
+      "domainId": "lifespan",
+      "prompt": "Object permanence develops during Piaget's:",
       "answerIndex": 1,
       "automatedPriority": "medium",
       "automatedFlags": [
@@ -4023,6 +4005,57 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-lifespan-1",
+      "legacyId": "legacy-2112bc2f66dfa680",
+      "sourceFile": "js/data_batch24.js",
+      "domainId": "lifespan",
+      "prompt": "Erikson's generativity vs. stagnation stage (~40-65) involves:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-lifespan-2",
+      "legacyId": "legacy-0a8498eba16cda53",
+      "sourceFile": "js/data_batch24.js",
+      "domainId": "lifespan",
+      "prompt": "Piaget's assimilation involves:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-lifespan-2",
+      "legacyId": "legacy-768b09103a2c8ab7",
+      "sourceFile": "js/data_batch24.js",
+      "domainId": "lifespan",
+      "prompt": "Piaget's accommodation involves:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b024-lifespan-2",
       "legacyId": "legacy-7679b14f7d4ad276",
       "sourceFile": "js/data_batch24.js",
@@ -4074,223 +4107,40 @@
     },
     {
       "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-676e7ab573ba6c4b",
-      "sourceFile": "js/data_batch22.js",
+      "nativeItemId": "eppp-b028-lifespan-2",
+      "legacyId": "legacy-bf0146cb39a4b2b9",
+      "sourceFile": "js/questions_bank.js",
       "domainId": "lifespan",
-      "prompt": "Stranger anxiety typically appears around:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.2307/1128323"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-a4cde02dd8bea435",
-      "sourceFile": "js/data_batch50.js",
-      "domainId": "lifespan",
-      "prompt": "Stereotype threat (Steele & Aronson) occurs when:",
+      "prompt": "Marcia's identity status of 'moratorium' is characterized by:",
       "answerIndex": 1,
       "automatedPriority": "high",
       "automatedFlags": [
+        "missing_reference",
         "duplicate_prompt"
       ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1037/0022-3514.69.5.797"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
     },
     {
       "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-d5af4a5163c29d15",
-      "sourceFile": "js/data_batch50.js",
+      "nativeItemId": "eppp-b028-lifespan-3",
+      "legacyId": "legacy-fdda3f66984ea875",
+      "sourceFile": "js/questions_bank.js",
       "domainId": "lifespan",
-      "prompt": "Self-serving bias refers to:",
+      "prompt": "Vygotsky's concept of 'private speech' refers to:",
       "answerIndex": 1,
       "automatedPriority": "high",
       "automatedFlags": [
+        "missing_reference",
+        "correct_answer_length_clue",
         "duplicate_prompt"
       ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1037/h0076486"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-a8e686f28a6e2e80",
-      "sourceFile": "js/data_batch16.js",
-      "domainId": "lifespan",
-      "prompt": "Gender identity is typically established by age:",
-      "answerIndex": 1,
-      "automatedPriority": "routine",
-      "automatedFlags": [],
       "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-1c8131fe55836c37",
-      "sourceFile": "js/data_batch19.js",
-      "domainId": "lifespan",
-      "prompt": "Egocentrism in Piaget's preoperational stage means:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-820c65a17302975a",
-      "sourceFile": "js/data_batch21.js",
-      "domainId": "lifespan",
-      "prompt": "Strange Situation procedure (Ainsworth) is used to assess:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-b87eb291ae5b5348",
-      "sourceFile": "js/data_batch21.js",
-      "domainId": "lifespan",
-      "prompt": "Object permanence develops during Piaget's:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-2112bc2f66dfa680",
-      "sourceFile": "js/data_batch24.js",
-      "domainId": "lifespan",
-      "prompt": "Erikson's generativity vs. stagnation stage (~40-65) involves:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-0a8498eba16cda53",
-      "sourceFile": "js/data_batch24.js",
-      "domainId": "lifespan",
-      "prompt": "Piaget's assimilation involves:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-768b09103a2c8ab7",
-      "sourceFile": "js/data_batch24.js",
-      "domainId": "lifespan",
-      "prompt": "Piaget's accommodation involves:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
     },
     {
       "slotType": "native-original",
@@ -5079,6 +4929,23 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-assessment-1",
+      "legacyId": "legacy-a39d2337b2c2ed58",
+      "sourceFile": "js/data_batch8.js",
+      "domainId": "assessment",
+      "prompt": "The PAI (Personality Assessment Inventory) differs from the MMPI-2 in that it:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b018-assessment-3",
       "legacyId": "legacy-b4f0b40e78bb3e92",
       "sourceFile": "js/data_batch14.js",
@@ -5101,6 +4968,57 @@
       "sourceFile": "js/data_batch15.js",
       "domainId": "assessment",
       "prompt": "Norm-referenced tests differ from criterion-referenced tests in that norm-referenced tests:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-assessment-2",
+      "legacyId": "legacy-308d5279bb705870",
+      "sourceFile": "js/data_batch18.js",
+      "domainId": "assessment",
+      "prompt": "Face validity refers to:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-assessment-3",
+      "legacyId": "legacy-06ef41728d634ee4",
+      "sourceFile": "js/data_batch45.js",
+      "domainId": "assessment",
+      "prompt": "The MMPI-2 validity scales include:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-assessment-1",
+      "legacyId": "legacy-bd7d79fcf5227361",
+      "sourceFile": "js/data_batch46.js",
+      "domainId": "assessment",
+      "prompt": "The Vineland Adaptive Behavior Scales measure:",
       "answerIndex": 1,
       "automatedPriority": "high",
       "automatedFlags": [
@@ -5147,6 +5065,64 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-assessment-4",
+      "legacyId": "legacy-fbeef9d4cb91a7de",
+      "sourceFile": "js/data_batch24.js",
+      "domainId": "assessment",
+      "prompt": "Norm-referenced tests compare an individual's performance to:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "correct_answer_length_clue",
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-assessment-1",
+      "legacyId": "legacy-1069a3c0a1de509e",
+      "sourceFile": "js/data_batch24.js",
+      "domainId": "assessment",
+      "prompt": "Criterion-referenced tests measure:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "time_sensitive_claim",
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1111/j.1745-3992.1994.tb00566.x"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-assessment-2",
+      "legacyId": "legacy-43ed1b2d6fdfdcef",
+      "sourceFile": "js/data_batch26.js",
+      "domainId": "assessment",
+      "prompt": "Base rate in diagnostic assessment refers to:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "time_sensitive_claim",
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1037/h0048070"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b020-assessment-3",
       "legacyId": "legacy-47a1e132c65c8ca6",
       "sourceFile": "js/data_batch18.js",
@@ -5171,6 +5147,57 @@
       "domainId": "assessment",
       "prompt": "A test with high reliability but low validity is analogous to:",
       "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "missing_reference"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b028-assessment-1",
+      "legacyId": "legacy-f97bc750d1117ece",
+      "sourceFile": "js/data.js",
+      "domainId": "assessment",
+      "prompt": "Which MMPI-2 validity scale detects over-reporting of symptoms?",
+      "answerIndex": 2,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "missing_reference"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-assessment-5",
+      "legacyId": "legacy-1643be06a2a757a7",
+      "sourceFile": "js/data.js",
+      "domainId": "assessment",
+      "prompt": "The Rorschach is classified as a:",
+      "answerIndex": 2,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "missing_reference"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-assessment-3",
+      "legacyId": "legacy-887bd5d18283fa5a",
+      "sourceFile": "js/data.js",
+      "domainId": "assessment",
+      "prompt": "A test's ability to predict future job performance is an example of:",
+      "answerIndex": 2,
       "automatedPriority": "medium",
       "automatedFlags": [
         "missing_reference"
@@ -5222,6 +5249,23 @@
       "domainId": "assessment",
       "prompt": "Content validity is BEST established by:",
       "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "missing_reference"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b028-assessment-2",
+      "legacyId": "legacy-21d529b3da0ce6b5",
+      "sourceFile": "js/questions_bank.js",
+      "domainId": "assessment",
+      "prompt": "A test with high sensitivity will:",
+      "answerIndex": 0,
       "automatedPriority": "medium",
       "automatedFlags": [
         "missing_reference"
@@ -5301,6 +5345,23 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-assessment-2",
+      "legacyId": "legacy-b45801324ee58907",
+      "sourceFile": "js/questions_bank.js",
+      "domainId": "assessment",
+      "prompt": "Malingering should be suspected when:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "missing_reference"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b022-assessment-2",
       "legacyId": "legacy-4ed44080f967c5bc",
       "sourceFile": "js/questions_bank.js",
@@ -5335,6 +5396,91 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-assessment-4",
+      "legacyId": "legacy-de74d2d56c961950",
+      "sourceFile": "js/questions_bank.js",
+      "domainId": "assessment",
+      "prompt": "A T-score of 70 on a standardized personality measure corresponds to:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "missing_reference"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-assessment-3",
+      "legacyId": "legacy-b06a147b54e69e4f",
+      "sourceFile": "js/questions_bank.js",
+      "domainId": "assessment",
+      "prompt": "Which Wechsler subtest is most sensitive to intellectual decline in older adults?",
+      "answerIndex": 2,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "missing_reference"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-assessment-5",
+      "legacyId": "legacy-3e1b95855a635b8d",
+      "sourceFile": "js/questions_bank.js",
+      "domainId": "assessment",
+      "prompt": "A test with a sensitivity of 95% means that:",
+      "answerIndex": 0,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "missing_reference"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-assessment-4",
+      "legacyId": "legacy-fd3fd2491b317db4",
+      "sourceFile": "js/questions_bank.js",
+      "domainId": "assessment",
+      "prompt": "The Beck Depression Inventory-II (BDI-II) is classified as:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "missing_reference"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b028-assessment-3",
+      "legacyId": "legacy-efde168ab4e235db",
+      "sourceFile": "js/questions_bank.js",
+      "domainId": "assessment",
+      "prompt": "A psychological test has high face validity when:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "missing_reference"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b022-assessment-4",
       "legacyId": "legacy-86e6f8ba006e57c0",
       "sourceFile": "js/questions_bank.js",
@@ -5349,378 +5495,6 @@
       "status": "qa-passed",
       "sourceReadiness": "qa-passed",
       "requiredWork": []
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-a39d2337b2c2ed58",
-      "sourceFile": "js/data_batch8.js",
-      "domainId": "assessment",
-      "prompt": "The PAI (Personality Assessment Inventory) differs from the MMPI-2 in that it:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-308d5279bb705870",
-      "sourceFile": "js/data_batch18.js",
-      "domainId": "assessment",
-      "prompt": "Face validity refers to:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-06ef41728d634ee4",
-      "sourceFile": "js/data_batch45.js",
-      "domainId": "assessment",
-      "prompt": "The MMPI-2 validity scales include:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-bd7d79fcf5227361",
-      "sourceFile": "js/data_batch46.js",
-      "domainId": "assessment",
-      "prompt": "The Vineland Adaptive Behavior Scales measure:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-fbeef9d4cb91a7de",
-      "sourceFile": "js/data_batch24.js",
-      "domainId": "assessment",
-      "prompt": "Norm-referenced tests compare an individual's performance to:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "correct_answer_length_clue",
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-1069a3c0a1de509e",
-      "sourceFile": "js/data_batch24.js",
-      "domainId": "assessment",
-      "prompt": "Criterion-referenced tests measure:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "time_sensitive_claim",
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1111/j.1745-3992.1994.tb00566.x"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "current-policy-or-guidance-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-43ed1b2d6fdfdcef",
-      "sourceFile": "js/data_batch26.js",
-      "domainId": "assessment",
-      "prompt": "Base rate in diagnostic assessment refers to:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "time_sensitive_claim",
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1037/h0048070"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "current-policy-or-guidance-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-f97bc750d1117ece",
-      "sourceFile": "js/data.js",
-      "domainId": "assessment",
-      "prompt": "Which MMPI-2 validity scale detects over-reporting of symptoms?",
-      "answerIndex": 2,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "missing_reference"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "source-missing",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-1643be06a2a757a7",
-      "sourceFile": "js/data.js",
-      "domainId": "assessment",
-      "prompt": "The Rorschach is classified as a:",
-      "answerIndex": 2,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "missing_reference"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "source-missing",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-887bd5d18283fa5a",
-      "sourceFile": "js/data.js",
-      "domainId": "assessment",
-      "prompt": "A test's ability to predict future job performance is an example of:",
-      "answerIndex": 2,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "missing_reference"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "source-missing",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-21d529b3da0ce6b5",
-      "sourceFile": "js/questions_bank.js",
-      "domainId": "assessment",
-      "prompt": "A test with high sensitivity will:",
-      "answerIndex": 0,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "missing_reference"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "source-missing",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-b45801324ee58907",
-      "sourceFile": "js/questions_bank.js",
-      "domainId": "assessment",
-      "prompt": "Malingering should be suspected when:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "missing_reference"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "source-missing",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-de74d2d56c961950",
-      "sourceFile": "js/questions_bank.js",
-      "domainId": "assessment",
-      "prompt": "A T-score of 70 on a standardized personality measure corresponds to:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "missing_reference"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "source-missing",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-b06a147b54e69e4f",
-      "sourceFile": "js/questions_bank.js",
-      "domainId": "assessment",
-      "prompt": "Which Wechsler subtest is most sensitive to intellectual decline in older adults?",
-      "answerIndex": 2,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "missing_reference"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "source-missing",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-3e1b95855a635b8d",
-      "sourceFile": "js/questions_bank.js",
-      "domainId": "assessment",
-      "prompt": "A test with a sensitivity of 95% means that:",
-      "answerIndex": 0,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "missing_reference"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "source-missing",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-fd3fd2491b317db4",
-      "sourceFile": "js/questions_bank.js",
-      "domainId": "assessment",
-      "prompt": "The Beck Depression Inventory-II (BDI-II) is classified as:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "missing_reference"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "source-missing",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-efde168ab4e235db",
-      "sourceFile": "js/questions_bank.js",
-      "domainId": "assessment",
-      "prompt": "A psychological test has high face validity when:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "missing_reference"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "source-missing",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
     },
     {
       "slotType": "native-original",
@@ -6145,6 +5919,25 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-intervention-1",
+      "legacyId": "legacy-1cd7634433394338",
+      "sourceFile": "js/data_batch52.js",
+      "domainId": "intervention",
+      "prompt": "The working alliance (Bordin) consists of:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1037/h0085885"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b010-intervention-2",
       "legacyId": "legacy-3e662a0291a86667",
       "sourceFile": "js/questions_bank.js",
@@ -6457,6 +6250,23 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-intervention-2",
+      "legacyId": "legacy-0ee2c588d5841d20",
+      "sourceFile": "js/data_batch19.js",
+      "domainId": "intervention",
+      "prompt": "Unconditional positive regard (Rogers) means:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b020-intervention-1",
       "legacyId": "legacy-bbf977295fceb274",
       "sourceFile": "js/data_batch19.js",
@@ -6508,6 +6318,23 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b028-intervention-1",
+      "legacyId": "legacy-91ca53981249deb3",
+      "sourceFile": "js/data_batch21.js",
+      "domainId": "intervention",
+      "prompt": "Harm reduction approaches:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b019-intervention-1",
       "legacyId": "legacy-e4d924cf2e4a126f",
       "sourceFile": "js/data_batch21.js",
@@ -6530,6 +6357,40 @@
       "sourceFile": "js/data_batch22.js",
       "domainId": "intervention",
       "prompt": "Rational emotive behavior therapy (REBT, Ellis) uses the ABCDE model where:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-intervention-1",
+      "legacyId": "legacy-3c9e0390a35af212",
+      "sourceFile": "js/data_batch22.js",
+      "domainId": "intervention",
+      "prompt": "Therapeutic factors unique to GROUP therapy (Yalom) include:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-intervention-3",
+      "legacyId": "legacy-b98e097f59465709",
+      "sourceFile": "js/data_batch22.js",
+      "domainId": "intervention",
+      "prompt": "Narrative therapy (White & Epston) helps clients:",
       "answerIndex": 1,
       "automatedPriority": "medium",
       "automatedFlags": [
@@ -6644,6 +6505,108 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-intervention-2",
+      "legacyId": "legacy-5062394fd5fab400",
+      "sourceFile": "js/data_batch24.js",
+      "domainId": "intervention",
+      "prompt": "Token economy is a behavior modification system that:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-intervention-1",
+      "legacyId": "legacy-05c1e4073e278500",
+      "sourceFile": "js/data_batch24.js",
+      "domainId": "intervention",
+      "prompt": "Brief psychodynamic therapy differs from traditional psychoanalysis by:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-intervention-3",
+      "legacyId": "legacy-d5baccc4b9b6dd62",
+      "sourceFile": "js/data_batch24.js",
+      "domainId": "intervention",
+      "prompt": "EMDR (Eye Movement Desensitization and Reprocessing) for PTSD involves:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-intervention-2",
+      "legacyId": "legacy-e86b73ce3223f132",
+      "sourceFile": "js/data_batch25.js",
+      "domainId": "intervention",
+      "prompt": "The transference neurosis in psychoanalysis occurs when:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-intervention-4",
+      "legacyId": "legacy-8175a0f403e2e7aa",
+      "sourceFile": "js/data_batch25.js",
+      "domainId": "intervention",
+      "prompt": "Cognitive defusion in ACT involves:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-intervention-4",
+      "legacyId": "legacy-5d1c0de021d4bc5c",
+      "sourceFile": "js/data_batch26.js",
+      "domainId": "intervention",
+      "prompt": "Solution-focused brief therapy (SFBT) assumes:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b022-intervention-4",
       "legacyId": "legacy-01f98a1a18401a24",
       "sourceFile": "js/data_batch26.js",
@@ -6712,11 +6675,45 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b028-intervention-2",
+      "legacyId": "legacy-9d15c4eed8950d5f",
+      "sourceFile": "js/data_batch14.js",
+      "domainId": "intervention",
+      "prompt": "Exposure and response prevention (ERP) is the gold-standard treatment for:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b024-intervention-3",
       "legacyId": "legacy-9d0e9998477c89c1",
       "sourceFile": "js/data_batch14.js",
       "domainId": "intervention",
       "prompt": "Interpersonal therapy (IPT) focuses on:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-intervention-3",
+      "legacyId": "legacy-e031a8eecc8809d4",
+      "sourceFile": "js/data_batch20.js",
+      "domainId": "intervention",
+      "prompt": "Paradoxical intention (Frankl) involves:",
       "answerIndex": 1,
       "automatedPriority": "high",
       "automatedFlags": [
@@ -6764,294 +6761,7 @@
     },
     {
       "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-1cd7634433394338",
-      "sourceFile": "js/data_batch52.js",
-      "domainId": "intervention",
-      "prompt": "The working alliance (Bordin) consists of:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1037/h0085885"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-0ee2c588d5841d20",
-      "sourceFile": "js/data_batch19.js",
-      "domainId": "intervention",
-      "prompt": "Unconditional positive regard (Rogers) means:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-91ca53981249deb3",
-      "sourceFile": "js/data_batch21.js",
-      "domainId": "intervention",
-      "prompt": "Harm reduction approaches:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-3c9e0390a35af212",
-      "sourceFile": "js/data_batch22.js",
-      "domainId": "intervention",
-      "prompt": "Therapeutic factors unique to GROUP therapy (Yalom) include:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-b98e097f59465709",
-      "sourceFile": "js/data_batch22.js",
-      "domainId": "intervention",
-      "prompt": "Narrative therapy (White & Epston) helps clients:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-5062394fd5fab400",
-      "sourceFile": "js/data_batch24.js",
-      "domainId": "intervention",
-      "prompt": "Token economy is a behavior modification system that:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-05c1e4073e278500",
-      "sourceFile": "js/data_batch24.js",
-      "domainId": "intervention",
-      "prompt": "Brief psychodynamic therapy differs from traditional psychoanalysis by:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-d5baccc4b9b6dd62",
-      "sourceFile": "js/data_batch24.js",
-      "domainId": "intervention",
-      "prompt": "EMDR (Eye Movement Desensitization and Reprocessing) for PTSD involves:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-e86b73ce3223f132",
-      "sourceFile": "js/data_batch25.js",
-      "domainId": "intervention",
-      "prompt": "The transference neurosis in psychoanalysis occurs when:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-8175a0f403e2e7aa",
-      "sourceFile": "js/data_batch25.js",
-      "domainId": "intervention",
-      "prompt": "Cognitive defusion in ACT involves:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-5d1c0de021d4bc5c",
-      "sourceFile": "js/data_batch26.js",
-      "domainId": "intervention",
-      "prompt": "Solution-focused brief therapy (SFBT) assumes:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-9d15c4eed8950d5f",
-      "sourceFile": "js/data_batch14.js",
-      "domainId": "intervention",
-      "prompt": "Exposure and response prevention (ERP) is the gold-standard treatment for:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-e031a8eecc8809d4",
-      "sourceFile": "js/data_batch20.js",
-      "domainId": "intervention",
-      "prompt": "Paradoxical intention (Frankl) involves:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
+      "nativeItemId": "eppp-b028-intervention-3",
       "legacyId": "legacy-55a30769120cf678",
       "sourceFile": "js/data_batch12.js",
       "domainId": "intervention",
@@ -7063,19 +6773,13 @@
         "duplicate_prompt"
       ],
       "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
     },
     {
       "slotType": "legacy-source",
-      "nativeItemId": null,
+      "nativeItemId": "eppp-b025-intervention-4",
       "legacyId": "legacy-b337d0b047ced23d",
       "sourceFile": "js/data_batch17.js",
       "domainId": "intervention",
@@ -7087,15 +6791,9 @@
         "duplicate_prompt"
       ],
       "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
     },
     {
       "slotType": "native-original",
@@ -8380,6 +8078,23 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-professional-1",
+      "legacyId": "legacy-b48bc91e32131476",
+      "sourceFile": "js/data_batch17.js",
+      "domainId": "professional",
+      "prompt": "Cultural competence in psychology requires:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b018-professional-2",
       "legacyId": "legacy-7f54e06e57f61285",
       "sourceFile": "js/data_batch15.js",
@@ -8437,6 +8152,25 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-professional-1",
+      "legacyId": "legacy-10e4b870ea241391",
+      "sourceFile": "js/data_batch20.js",
+      "domainId": "professional",
+      "prompt": "Bartering (accepting goods/services instead of payment) is:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "time_sensitive_claim"
+      ],
+      "extractedSourceUrls": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b023-professional-1",
       "legacyId": "legacy-0631938c34f448ed",
       "sourceFile": "js/data_batch20.js",
@@ -8468,6 +8202,26 @@
       ],
       "extractedSourceUrls": [
         "https://doi.org/10.1037/0735-7028.37.2.215"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-professional-1",
+      "legacyId": "legacy-62602a85aef2f294",
+      "sourceFile": "js/data_batch17.js",
+      "domainId": "professional",
+      "prompt": "Abandonment of a client occurs when a psychologist:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "time_sensitive_claim",
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://www.apa.org/ethics/code"
       ],
       "status": "qa-passed",
       "sourceReadiness": "qa-passed",
@@ -8736,6 +8490,26 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-professional-2",
+      "legacyId": "legacy-7a6da861b15c8de6",
+      "sourceFile": "js/data_batch26.js",
+      "domainId": "professional",
+      "prompt": "The HIPAA Privacy Rule requires:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "time_sensitive_claim",
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://www.hhs.gov/hipaa/for-professionals/privacy/laws-regulations/index.html"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b024-professional-1",
       "legacyId": "legacy-aef5661ecf4f5289",
       "sourceFile": "js/data_batch26.js",
@@ -8769,6 +8543,86 @@
       ],
       "extractedSourceUrls": [
         "https://www.apa.org/ethics/code"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-professional-2",
+      "legacyId": "legacy-b3621e76cafb083b",
+      "sourceFile": "js/data_batch27.js",
+      "domainId": "professional",
+      "prompt": "Telepsychology ethics require psychologists to:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "time_sensitive_claim",
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://doi.org/10.1037/a0035001"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-professional-3",
+      "legacyId": "legacy-ad60945909c58c66",
+      "sourceFile": "js/data_batch27.js",
+      "domainId": "professional",
+      "prompt": "An ethics complaint against a psychologist:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "time_sensitive_claim",
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [
+        "https://www.apa.org/ethics/code/committee"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-professional-5",
+      "legacyId": "legacy-898ff90cd25f7741",
+      "sourceFile": "js/questions_bank.js",
+      "domainId": "professional",
+      "prompt": "HIPAA's 'minimum necessary' standard requires:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "time_sensitive_claim",
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [
+        "https://www.hhs.gov/hipaa/for-professionals/privacy/laws-regulations/index.html"
+      ],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b026-professional-4",
+      "legacyId": "legacy-5fa4d4d3259d962b",
+      "sourceFile": "js/data_batch15.js",
+      "domainId": "professional",
+      "prompt": "Tarasoff v. Regents of the University of California established:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "time_sensitive_claim",
+        "duplicate_prompt"
+      ],
+      "extractedSourceUrls": [
+        "https://law.justia.com/cases/california/supreme-court/3d/17/425.html"
       ],
       "status": "qa-passed",
       "sourceReadiness": "qa-passed",
@@ -8830,12 +8684,47 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-professional-2",
+      "legacyId": "legacy-2e6610e1b2408be3",
+      "sourceFile": "js/data_batch15.js",
+      "domainId": "professional",
+      "prompt": "The insanity defense (M'Naghten standard) requires demonstrating that:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "time_sensitive_claim"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b023-professional-3",
       "legacyId": "legacy-5b0d3f507a211123",
       "sourceFile": "js/data_batch17.js",
       "domainId": "professional",
       "prompt": "Confidentiality can be broken without client authorization when:",
       "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "time_sensitive_claim",
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b028-professional-1",
+      "legacyId": "legacy-9bcf806e4add3647",
+      "sourceFile": "js/data_batch21.js",
+      "domainId": "professional",
+      "prompt": "The duty to warn third parties was FIRST established in:",
+      "answerIndex": 0,
       "automatedPriority": "high",
       "automatedFlags": [
         "time_sensitive_claim",
@@ -8866,6 +8755,126 @@
     },
     {
       "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-professional-3",
+      "legacyId": "legacy-b7554a86108142c6",
+      "sourceFile": "js/data_batch25.js",
+      "domainId": "professional",
+      "prompt": "Psychologists who become aware of a child abuse situation are:",
+      "answerIndex": 1,
+      "automatedPriority": "high",
+      "automatedFlags": [
+        "time_sensitive_claim",
+        "correct_answer_length_clue"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-professional-3",
+      "legacyId": "legacy-088a041d7f5d0a04",
+      "sourceFile": "js/data.js",
+      "domainId": "professional",
+      "prompt": "Informed consent requires all EXCEPT:",
+      "answerIndex": 2,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "missing_reference"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b028-professional-2",
+      "legacyId": "legacy-09a5c8d3ffec91d9",
+      "sourceFile": "js/data.js",
+      "domainId": "professional",
+      "prompt": "The Dusky standard relates to:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "missing_reference"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b028-professional-3",
+      "legacyId": "legacy-7c943b01c7807f8e",
+      "sourceFile": "js/data.js",
+      "domainId": "professional",
+      "prompt": "A psychologist sees a current therapy client for a forensic evaluation. This is problematic because:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "missing_reference"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b028-professional-4",
+      "legacyId": "legacy-223f5d6386f185de",
+      "sourceFile": "js/questions_bank.js",
+      "domainId": "professional",
+      "prompt": "A psychologist's primary ethical obligation is to:",
+      "answerIndex": 2,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "missing_reference"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b027-professional-4",
+      "legacyId": "legacy-56818a83fef8e147",
+      "sourceFile": "js/questions_bank.js",
+      "domainId": "professional",
+      "prompt": "A forensic psychologist conducting a child custody evaluation should:",
+      "answerIndex": 1,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "missing_reference"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
+      "nativeItemId": "eppp-b025-professional-4",
+      "legacyId": "legacy-1607887a140d1adb",
+      "sourceFile": "js/questions_bank.js",
+      "domainId": "professional",
+      "prompt": "Telepractice (telehealth) in psychology requires all EXCEPT:",
+      "answerIndex": 2,
+      "automatedPriority": "medium",
+      "automatedFlags": [
+        "missing_reference"
+      ],
+      "extractedSourceUrls": [],
+      "status": "qa-passed",
+      "sourceReadiness": "qa-passed",
+      "requiredWork": []
+    },
+    {
+      "slotType": "legacy-source",
       "nativeItemId": "eppp-b020-professional-2",
       "legacyId": "legacy-611428bd9c1423a5",
       "sourceFile": "js/questions_bank.js",
@@ -8880,397 +8889,6 @@
       "status": "qa-passed",
       "sourceReadiness": "qa-passed",
       "requiredWork": []
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-b48bc91e32131476",
-      "sourceFile": "js/data_batch17.js",
-      "domainId": "professional",
-      "prompt": "Cultural competence in psychology requires:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "diversify-duplicate-concept",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-10e4b870ea241391",
-      "sourceFile": "js/data_batch20.js",
-      "domainId": "professional",
-      "prompt": "Bartering (accepting goods/services instead of payment) is:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "time_sensitive_claim"
-      ],
-      "extractedSourceUrls": [
-        "https://www.apa.org/ethics/code"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "current-policy-or-guidance-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-62602a85aef2f294",
-      "sourceFile": "js/data_batch17.js",
-      "domainId": "professional",
-      "prompt": "Abandonment of a client occurs when a psychologist:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "time_sensitive_claim",
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://www.apa.org/ethics/code"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "current-policy-or-guidance-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-7a6da861b15c8de6",
-      "sourceFile": "js/data_batch26.js",
-      "domainId": "professional",
-      "prompt": "The HIPAA Privacy Rule requires:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "time_sensitive_claim",
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://www.hhs.gov/hipaa/for-professionals/privacy/laws-regulations/index.html"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "current-policy-or-guidance-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-b3621e76cafb083b",
-      "sourceFile": "js/data_batch27.js",
-      "domainId": "professional",
-      "prompt": "Telepsychology ethics require psychologists to:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "time_sensitive_claim",
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://doi.org/10.1037/a0035001"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "current-policy-or-guidance-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-ad60945909c58c66",
-      "sourceFile": "js/data_batch27.js",
-      "domainId": "professional",
-      "prompt": "An ethics complaint against a psychologist:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "time_sensitive_claim",
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [
-        "https://www.apa.org/ethics/code/committee"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "repair-answer-length-clue",
-        "current-policy-or-guidance-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-898ff90cd25f7741",
-      "sourceFile": "js/questions_bank.js",
-      "domainId": "professional",
-      "prompt": "HIPAA's 'minimum necessary' standard requires:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "time_sensitive_claim",
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [
-        "https://www.hhs.gov/hipaa/for-professionals/privacy/laws-regulations/index.html"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "diversify-duplicate-concept",
-        "current-policy-or-guidance-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-5fa4d4d3259d962b",
-      "sourceFile": "js/data_batch15.js",
-      "domainId": "professional",
-      "prompt": "Tarasoff v. Regents of the University of California established:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "time_sensitive_claim",
-        "duplicate_prompt"
-      ],
-      "extractedSourceUrls": [
-        "https://law.justia.com/cases/california/supreme-court/3d/17/425.html"
-      ],
-      "status": "curation-selected",
-      "sourceReadiness": "web-source-present-needs-verification",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "diversify-duplicate-concept",
-        "current-policy-or-guidance-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-2e6610e1b2408be3",
-      "sourceFile": "js/data_batch15.js",
-      "domainId": "professional",
-      "prompt": "The insanity defense (M'Naghten standard) requires demonstrating that:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "time_sensitive_claim"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "current-policy-or-guidance-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-9bcf806e4add3647",
-      "sourceFile": "js/data_batch21.js",
-      "domainId": "professional",
-      "prompt": "The duty to warn third parties was FIRST established in:",
-      "answerIndex": 0,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "time_sensitive_claim",
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "current-policy-or-guidance-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-b7554a86108142c6",
-      "sourceFile": "js/data_batch25.js",
-      "domainId": "professional",
-      "prompt": "Psychologists who become aware of a child abuse situation are:",
-      "answerIndex": 1,
-      "automatedPriority": "high",
-      "automatedFlags": [
-        "time_sensitive_claim",
-        "correct_answer_length_clue"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "bibliographic-source-needs-resolution",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "repair-answer-length-clue",
-        "current-policy-or-guidance-review",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-088a041d7f5d0a04",
-      "sourceFile": "js/data.js",
-      "domainId": "professional",
-      "prompt": "Informed consent requires all EXCEPT:",
-      "answerIndex": 2,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "missing_reference"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "source-missing",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-09a5c8d3ffec91d9",
-      "sourceFile": "js/data.js",
-      "domainId": "professional",
-      "prompt": "The Dusky standard relates to:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "missing_reference"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "source-missing",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-7c943b01c7807f8e",
-      "sourceFile": "js/data.js",
-      "domainId": "professional",
-      "prompt": "A psychologist sees a current therapy client for a forensic evaluation. This is problematic because:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "missing_reference"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "source-missing",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-223f5d6386f185de",
-      "sourceFile": "js/questions_bank.js",
-      "domainId": "professional",
-      "prompt": "A psychologist's primary ethical obligation is to:",
-      "answerIndex": 2,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "missing_reference"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "source-missing",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-56818a83fef8e147",
-      "sourceFile": "js/questions_bank.js",
-      "domainId": "professional",
-      "prompt": "A forensic psychologist conducting a child custody evaluation should:",
-      "answerIndex": 1,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "missing_reference"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "source-missing",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
-    },
-    {
-      "slotType": "legacy-source",
-      "nativeItemId": null,
-      "legacyId": "legacy-1607887a140d1adb",
-      "sourceFile": "js/questions_bank.js",
-      "domainId": "professional",
-      "prompt": "Telepractice (telehealth) in psychology requires all EXCEPT:",
-      "answerIndex": 2,
-      "automatedPriority": "medium",
-      "automatedFlags": [
-        "missing_reference"
-      ],
-      "extractedSourceUrls": [],
-      "status": "curation-selected",
-      "sourceReadiness": "source-missing",
-      "requiredWork": [
-        "re-author-and-one-best-answer-review",
-        "resolve-authoritative-web-source",
-        "accessibility-and-bias-review"
-      ]
     }
   ]
 }

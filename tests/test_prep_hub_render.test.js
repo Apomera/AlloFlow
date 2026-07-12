@@ -32,9 +32,11 @@ beforeAll(() => {
   originalFetch = global.fetch;
   const auditFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/content_audit.json'), 'utf8'));
   const inventoryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/content_inventory.json'), 'utf8'));
+  const libraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_learning_library.json'), 'utf8'));
   const reportFetch = async (url) => {
     if (String(url).includes('content_audit.json')) return { ok: true, json: async () => auditFixture };
     if (String(url).includes('content_inventory.json')) return { ok: true, json: async () => inventoryFixture };
+    if (String(url).includes('eppp_learning_library.json')) return { ok: true, json: async () => libraryFixture };
     return { ok: false, json: async () => ({}) };
   };
   global.fetch = window.fetch = reportFetch;
@@ -119,14 +121,60 @@ describe('Test Prep Hub render flow', () => {
     await expectNoAxeViolations('practice result');
   });
 
+  it('browses, filters, and opens the native EPPP learning catalog', async () => {
+    await mount();
+    const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
+    await act(async () => { openButtons[1].click(); });
+    await clickButton('Learning library');
+    await act(async () => { await Promise.resolve(); });
+
+    expect(host.textContent).toContain('EPPP learning library');
+    expect(host.textContent).toContain('Showing 49 of 49 chapters');
+    expect(host.textContent).toContain('415');
+    expect(host.textContent).toContain('255');
+    expect(host.querySelector('input[type="search"]')).toBeTruthy();
+    expect(host.querySelector('select')).toBeTruthy();
+    const chapterCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Behavioral Assessment & Functional Analysis'));
+    expect(chapterCard).toBeTruthy();
+    await expectNoAxeViolations('learning library catalog');
+    await act(async () => { chapterCard.querySelector('button').click(); });
+    const frame = host.querySelector('iframe[title="Selected EPPP chapter workspace"]');
+    expect(frame).toBeTruthy();
+    expect(frame.getAttribute('src')).toContain('page=textbook#ch-4');
+  });
+
+  it('studies flashcards and memory aids with persistent accessible controls', async () => {
+    await mount();
+    const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
+    await act(async () => { openButtons[1].click(); });
+    await clickButton('Learning library');
+    await act(async () => { await Promise.resolve(); });
+
+    await clickButton('Flashcards');
+    expect(host.textContent).toContain('Flashcard study');
+    expect(host.textContent).toContain('1 of 415 matching cards');
+    await clickButton('Reveal answer');
+    expect(host.textContent).toContain('Answer:');
+    await clickButton('Know it');
+    const saved = JSON.parse(localStorage.getItem('alloflow_eppp_flashcard_progress_v1'));
+    expect(Object.values(saved)).toContain('know');
+    await expectNoAxeViolations('flashcard study mode');
+
+    await clickButton('Memory aids');
+    expect(host.textContent).toContain('Memory-aid library');
+    expect(host.textContent).toContain('Showing 255 of 255 memory aids');
+    await clickButton('Show aid');
+    expect(findButton('Hide aid')).toBeTruthy();
+  });
+
   it('opens the native EPPP pilot and the complete guarded legacy workspace', async () => {
     await mount();
     const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
     expect(openButtons).toHaveLength(2);
     await act(async () => { openButtons[1].click(); });
 
-    expect(host.textContent).toContain('Question 1 of 416');
-    expect(host.textContent).toContain('416/416 native items passed content QA');
+    expect(host.textContent).toContain('Question 1 of 500');
+    expect(host.textContent).toContain('500/500 native items passed content QA');
     expect(host.textContent).toContain('Legacy source item');
     expect(host.textContent).toContain('QA passed');
     expect(host.textContent).toContain('Expert validated');
@@ -141,7 +189,7 @@ describe('Test Prep Hub render flow', () => {
     expect(host.textContent).toContain('415');
     expect(host.textContent).toContain('255');
     expect(host.textContent).toContain('1,583');
-    expect(host.textContent).toContain('408 / 2,933 legacy items');
+    expect(host.textContent).toContain('492 / 2,933 legacy items');
     expect(host.textContent).toContain('All 2,933 legacy questions are in the review universe');
     expect(host.querySelector('a[href*="content_inventory.md"]')).toBeTruthy();
     expect(host.querySelector('a[href*="review_ledger.md"]')).toBeTruthy();
@@ -164,7 +212,7 @@ describe('Test Prep Hub render flow', () => {
       await clickButton('Check answer');
       await clickButton('Next question');
     }
-    expect(host.textContent).toContain('Question 9 of 416');
+    expect(host.textContent).toContain('Question 9 of 500');
     const migratedRadios = Array.from(host.querySelectorAll('input[type="radio"]'));
     await act(async () => { migratedRadios[eppp.items[8].answerIndex].click(); });
     await clickButton('Check answer');

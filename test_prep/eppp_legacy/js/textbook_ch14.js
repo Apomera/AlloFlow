@@ -15,11 +15,11 @@ window.TextbookChapters.push({
     sections: [
         {
             heading: 'Why This Chapter Matters',
-            content: '<p>CBT and behavioral therapies are the most researched and most commonly tested treatment modalities on the EPPP. You must know the core models (Beck, Ellis), the "third-wave" approaches (DBT, ACT), and the full range of behavioral techniques (exposure, desensitization, contingency management). The EPPP will present clinical vignettes and ask you to identify the technique, match it to the correct therapy, or predict the expected mechanism of change.</p>'
+            content: '<p>Cognitive and behavioral therapies are prominent in psychotherapy research and EPPP treatment questions. Learn the core models (Beck, Ellis), contextual or “third-wave” approaches (DBT, ACT), and behavioral procedures such as exposure and contingency management. For vignettes, identify the intervention from its defining procedure and rationale; do not infer that one named treatment is automatically best without the diagnosis, goals, preferences, risks, culture, access, comorbidity, and current evidence.</p>'
         },
         {
             heading: 'Beck\u2019s Cognitive Therapy',
-            content: '<p><strong>Aaron Beck</strong> developed cognitive therapy, the foundational model for modern CBT. The central premise: <strong>psychological distress is caused by distorted thinking patterns, not by events themselves</strong>.</p>' +
+            content: '<p><strong>Aaron Beck</strong> developed cognitive therapy, an important foundation for modern CBT. Cognitive formulations propose reciprocal links among situations, appraisals, emotions, physiology, and behavior. Biased or unhelpful appraisals can maintain distress, but they are not the sole cause of psychological problems, and CBT does not deny biological, interpersonal, cultural, or material influences.</p>' +
                 '<p><strong>Key concepts:</strong></p>' +
                 '<ul>' +
                 '<li><strong>Cognitive Triad</strong> (for depression): Negative views of (1) the <em>self</em> ("I\u2019m worthless"), (2) the <em>world</em> ("everything is hostile"), and (3) the <em>future</em> ("nothing will improve")</li>' +
@@ -35,7 +35,7 @@ window.TextbookChapters.push({
                 '<li><em>Personalization</em> (blaming self for external events)</li>' +
                 '</ul></li>' +
                 '<li><strong>Core Beliefs (Schemas)</strong>: Deep, enduring beliefs about self, others, and the world. These are the "roots" from which automatic thoughts grow.</li>' +
-                '<li><strong>Socratic Questioning</strong>: The primary technique. Guided discovery through questioning to help clients examine evidence for/against their beliefs.</li>' +
+                '<li><strong>Guided discovery and Socratic questioning</strong>: Collaborative methods for examining meanings, evidence, alternatives, and consequences—not a cross-examination or a single universal technique.</li>' +
                 '<li><strong>Behavioral Experiments</strong>: Testing beliefs by conducting real-world experiments</li>' +
                 '</ul>' +
                 '<p><strong>EPPP Tip:</strong> The cognitive triad (self, world, future) is specific to <em>depression</em>. Do not confuse it with the general CBT model, which applies to all disorders. If a question describes a depressed patient who believes "I\u2019m worthless, life is pointless, and things will never get better," that is the cognitive triad.</p>',
@@ -67,12 +67,12 @@ window.TextbookChapters.push({
                 '<p><strong>Beck vs. Ellis:</strong></p>' +
                 '<table>' +
                 '<tr><th>Feature</th><th>Beck (CT)</th><th>Ellis (REBT)</th></tr>' +
-                '<tr><td><strong>Therapist style</strong></td><td>Collaborative, Socratic, guided discovery</td><td>Active, directive, confrontational, didactic</td></tr>' +
+                '<tr><td><strong>Therapist style</strong></td><td>Collaborative, Socratic, guided discovery</td><td>Often active, directive, didactic, and disputational while maintaining alliance</td></tr>' +
                 '<tr><td><strong>Focus</strong></td><td>Automatic thoughts & schemas</td><td>Irrational beliefs & musts</td></tr>' +
                 '<tr><td><strong>Technique</strong></td><td>Socratic questioning</td><td>Direct disputation</td></tr>' +
                 '<tr><td><strong>Emotional approach</strong></td><td>Empathic, collaborative empiricism</td><td>Actively challenges; humor; persuasion</td></tr>' +
                 '</table>' +
-                '<p><strong>EPPP Tip:</strong> If a question says the therapist "directly challenges the client\u2019s irrational beliefs" or "disputes the client\u2019s musturbatory thinking," that is REBT (Ellis). If the therapist uses "guided discovery" or "Socratic questioning," that is Beck\u2019s CT.</p>',
+                '<p><strong>EPPP Tip:</strong> Direct disputation of rigid demands is the clearest REBT cue; collaborative guided discovery is strongly associated with Beckian cognitive therapy. Real practice overlaps, so identify the model from the full pattern rather than one isolated question.</p>',
             keyTerms: ['Ellis', 'REBT', 'ABC model', 'Irrational beliefs', 'Musturbatory thinking', 'Disputation', 'Demandingness'],
             knowledgeCheck: {
                 question: 'A therapist says to a client: "You say you MUST get this promotion or you will be a complete failure. Where is the evidence that you MUST? And even if you don\'t get it, does that truly make you a total failure as a human being?" This therapist is most likely practicing:',
@@ -83,12 +83,12 @@ window.TextbookChapters.push({
                     'Person-Centered Therapy'
                 ],
                 answer: 2,
-                rationale: 'The direct, confrontational disputation of an irrational belief containing "must" (demandingness) is the hallmark of Ellis\'s REBT. Beck\'s approach would use Socratic questioning ("What evidence supports this?") rather than directly challenging the belief. ACT would focus on defusion rather than disputation.'
+                rationale: 'The explicit disputation of a rigid “must” and global self-rating is characteristic of Ellis\'s REBT. Beckian therapy also evaluates evidence, so the distinction rests on the vignette\'s REBT language and demandingness formulation—not on an absolute claim that only one approach asks challenging questions.'
             }
         },
         {
             heading: 'Dialectical Behavior Therapy (Linehan)',
-            content: '<p><strong>Marsha Linehan</strong> developed DBT originally for <strong>chronically suicidal individuals with Borderline Personality Disorder (BPD)</strong>. DBT integrates cognitive-behavioral techniques with mindfulness and acceptance from Zen Buddhism.</p>' +
+            content: '<p><strong>Marsha Linehan</strong> developed DBT initially for people with pervasive emotion dysregulation and recurrent suicidal or self-harming behavior, and it became especially associated with borderline personality disorder (BPD). Standard comprehensive DBT integrates behavioral analysis and change procedures with validation, acceptance, and mindfulness practices.</p>' +
                 '<p><strong>The "dialectic":</strong> The core dialectic is between <strong>acceptance</strong> (radical acceptance of what is) and <strong>change</strong> (actively working to modify dysfunctional behavior). The therapist holds both simultaneously.</p>' +
                 '<p><strong>Four skill modules:</strong></p>' +
                 '<table>' +
@@ -100,7 +100,7 @@ window.TextbookChapters.push({
                 '</table>' +
                 '<p><strong>Treatment structure:</strong> Individual therapy + skills group + phone coaching + therapist consultation team</p>' +
                 '<p><strong>Target hierarchy:</strong> (1) Life-threatening behaviors, (2) Therapy-interfering behaviors, (3) Quality-of-life behaviors, (4) Skills acquisition</p>' +
-                '<p><strong>EPPP Tip:</strong> DBT = Borderline Personality Disorder. If a question mentions BPD and asks for the evidence-based treatment, the answer is DBT. Know the four skill modules and the target hierarchy.</p>',
+                '<p><strong>EPPP Tip:</strong> DBT is a high-yield treatment association for BPD, particularly recurrent self-harm and severe emotion dysregulation, but “BPD = DBT” is not individualized treatment planning. Know the four skills modules, dialectical acceptance/change stance, behavioral chain analysis, and target hierarchy.</p>',
             keyTerms: ['DBT', 'Linehan', 'BPD', 'Dialectic', 'Mindfulness', 'Distress tolerance', 'Emotion regulation', 'Interpersonal effectiveness', 'DEAR MAN', 'Radical acceptance']
         },
         {
@@ -119,29 +119,39 @@ window.TextbookChapters.push({
                 '</table>' +
                 '<p><strong>ACT vs. traditional CBT:</strong></p>' +
                 '<ul>' +
-                '<li>CBT tries to <em>change</em> the content of thoughts (cognitive restructuring)</li>' +
-                '<li>ACT tries to change the <em>relationship</em> with thoughts (defusion) \u2014 the thought can still be there, but it doesn\u2019t control behavior</li>' +
+                '<li>Traditional cognitive therapy often evaluates and modifies appraisals, while also using behavioral and experiential methods.</li>' +
+                '<li>ACT emphasizes changing the function of and relationship to private events through acceptance, defusion, values, and committed action. This is a difference in emphasis, not a claim that the approaches never overlap.</li>' +
                 '</ul>' +
                 '<p><strong>EPPP Tip:</strong> If a question mentions "cognitive defusion," "psychological flexibility," or "values-based action," the answer is ACT. If it mentions "challenging irrational beliefs" or "Socratic questioning," it\u2019s traditional CBT.</p>',
             keyTerms: ['ACT', 'Hayes', 'Psychological flexibility', 'Cognitive defusion', 'Experiential avoidance', 'Hexaflex', 'Values', 'Committed action']
         },
         {
             heading: 'Behavioral Techniques: Exposure Therapies',
-            content: '<p>Exposure-based techniques are rooted in <strong>classical conditioning</strong> principles and are the treatments of choice for anxiety disorders.</p>' +
+            content: '<p>Exposure-based interventions draw on conditioning, emotional-processing, and inhibitory-learning accounts. They involve planned contact with feared but sufficiently safe cues while reducing avoidance or safety behavior so new learning can occur. Exposure is a component of several evidence-based protocols, but “the treatment of choice for all anxiety disorders” is too broad.</p>' +
                 '<table>' +
                 '<tr><th>Technique</th><th>Developer</th><th>Mechanism</th><th>Procedure</th><th>Best For</th></tr>' +
                 '<tr><td><strong>Systematic Desensitization</strong></td><td>Joseph Wolpe</td><td><strong>Reciprocal inhibition</strong> (relaxation is incompatible with anxiety)</td><td>Create fear hierarchy \u2192 learn relaxation \u2192 pair relaxation with graduated exposure (imaginal or in vivo)</td><td>Phobias</td></tr>' +
-                '<tr><td><strong>Flooding</strong></td><td>Stampfl (implosion)</td><td><strong>Extinction</strong> (prolonged exposure without the feared consequence causes anxiety to dissipate)</td><td>Intense, prolonged exposure to the most feared stimulus (no hierarchy, no relaxation)</td><td>Phobias, PTSD</td></tr>' +
-                '<tr><td><strong>Exposure & Response Prevention (ERP)</strong></td><td>Meyer, Foa</td><td><strong>Habituation + extinction</strong></td><td>Expose to obsession trigger \u2192 prevent compulsive ritual \u2192 anxiety naturally decreases</td><td><strong>OCD</strong> (gold standard)</td></tr>' +
-                '<tr><td><strong>Prolonged Exposure (PE)</strong></td><td>Edna Foa</td><td>Emotional processing of trauma memories</td><td>Imaginal exposure (revisiting trauma narrative) + in vivo exposure to safe trauma-related cues</td><td><strong>PTSD</strong> (gold standard)</td></tr>' +
+                '<tr><td><strong>Flooding</strong></td><td>Historical behavioral tradition; implosive therapy is associated with Stampfl</td><td>Extinction or inhibitory learning through high-intensity exposure without the predicted catastrophe</td><td>Begins near the high end rather than proceeding gradually; requires rationale, consent, safety, and clinical judgment</td><td>Historical exam contrast with graded exposure; not synonymous with modern PE for PTSD</td></tr>' +
+                '<tr><td><strong>Exposure and Response Prevention (ERP)</strong></td><td>Victor Meyer; later developed and studied by many teams</td><td>New learning occurs when obsessional cues are encountered without rituals or avoidance; distress reduction may occur but is not required within every exercise</td><td>Collaboratively expose to triggers while refraining from compulsions and other neutralizing responses</td><td><strong>OCD</strong>; recommended CBT component</td></tr>' +
+                '<tr><td><strong>Prolonged Exposure (PE)</strong></td><td>Edna Foa and colleagues</td><td>Emotional processing and corrective learning about trauma memories, reminders, distress, and coping</td><td>Imaginal exposure plus in-vivo exposure to objectively safe or low-risk trauma reminders, with psychoeducation and processing</td><td><strong>PTSD</strong>; one strongly recommended trauma-focused option</td></tr>' +
                 '</table>' +
-                '<p><strong>EPPP Tip:</strong> Systematic desensitization uses a <em>hierarchy</em> and <em>relaxation</em>. Flooding uses <em>no hierarchy</em> and <em>no relaxation</em> \u2014 just maximal exposure. ERP is specific to <em>OCD</em>. These distinctions appear on nearly every EPPP.</p>',
+                '<p><strong>EPPP Tip:</strong> Systematic desensitization classically combines a hierarchy with relaxation; flooding starts at high intensity; ERP prevents compulsions during exposure to OCD triggers; PE is a specific multi-component PTSD protocol. Contemporary exposure does not require anxiety to fall during every exercise: expectancy violation, reduced avoidance, distress tolerance, and retrieval of safer learning may matter.</p>',
             keyTerms: ['Exposure therapy', 'Systematic desensitization', 'Wolpe', 'Reciprocal inhibition', 'Flooding', 'ERP', 'OCD', 'Prolonged Exposure', 'PTSD', 'Fear hierarchy'],
             expandableCase: {
                 title: 'The Handwashing Ritual',
                 clinicalDescription: 'A 28-year-old nurse washes her hands up to 80 times per day due to intense fear of contamination. She knows the washing is excessive but says she "can\'t stop" because the anxiety is unbearable if she doesn\'t wash. Her hands are raw and cracked. She avoids touching doorknobs, elevator buttons, and her own cell phone.',
-                diagnosis: 'OCD — Treat with ERP (Exposure and Response Prevention)',
-                explanation: 'The gold-standard treatment for OCD is Exposure and Response Prevention (ERP). The therapist would have the nurse touch a "contaminated" surface (exposure) and then prevent her from washing her hands (response prevention). The anxiety will peak and then naturally decrease through habituation, teaching the brain that the feared consequence does not occur. Systematic desensitization would NOT be appropriate because it pairs exposure with relaxation, which would interfere with the habituation process that ERP relies upon.'
+                diagnosis: 'OCD presentation—consider CBT that includes ERP after assessment and shared planning',
+                explanation: 'ERP would collaboratively test feared predictions by approaching appropriately selected contamination cues and refraining from washing, reassurance, or other neutralizing rituals. The goal is new learning and greater freedom of action—not forcing contact with genuinely hazardous material or requiring anxiety to decline on schedule. Treatment choice and pacing also consider severity, medical needs, preferences, comorbidity, access, and medication options. Relaxation is not categorically forbidden, but using it as a safety behavior to guarantee anxiety reduction can undermine the learning target.'
+            },
+            interactiveDiagram: {
+                description: 'Exposure learning cycle: prediction, safe approach, response prevention, and new learning',
+                svg: '<svg viewBox="0 0 860 300" width="100%" role="img" aria-labelledby="ch14ExposureTitle ch14ExposureDesc" xmlns="http://www.w3.org/2000/svg"><title id="ch14ExposureTitle">Exposure learning cycle</title><desc id="ch14ExposureDesc">A feared prediction leads to a planned safe approach. Avoidance, rituals, and safety behaviors are reduced. The learner compares predicted and observed outcomes and practices retrieving new learning across contexts.</desc><defs><marker id="ch14Arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#94a3b8"/></marker></defs><rect x="25" y="70" width="170" height="90" rx="14" fill="#451a03" stroke="#fb923c" stroke-width="2"/><text x="110" y="99" text-anchor="middle" fill="#fed7aa" font-weight="bold">1. PREDICT</text><text x="110" y="124" text-anchor="middle" fill="#fff" font-size="12">What is feared?</text><text x="110" y="143" text-anchor="middle" fill="#fff" font-size="12">What would it mean?</text><path d="M200 115H240" stroke="#94a3b8" stroke-width="3" marker-end="url(#ch14Arrow)"/><rect x="245" y="70" width="170" height="90" rx="14" fill="#172554" stroke="#60a5fa" stroke-width="2"/><text x="330" y="99" text-anchor="middle" fill="#bfdbfe" font-weight="bold">2. APPROACH</text><text x="330" y="124" text-anchor="middle" fill="#fff" font-size="12">Planned, consent-based,</text><text x="330" y="143" text-anchor="middle" fill="#fff" font-size="12">and sufficiently safe</text><path d="M420 115H460" stroke="#94a3b8" stroke-width="3" marker-end="url(#ch14Arrow)"/><rect x="465" y="55" width="175" height="120" rx="14" fill="#4c1d95" stroke="#c084fc" stroke-width="2"/><text x="552" y="84" text-anchor="middle" fill="#e9d5ff" font-weight="bold">3. DROP THE LOOP</text><text x="552" y="109" text-anchor="middle" fill="#fff" font-size="12">Reduce avoidance, ritual,</text><text x="552" y="128" text-anchor="middle" fill="#fff" font-size="12">reassurance, or safety</text><text x="552" y="147" text-anchor="middle" fill="#fff" font-size="12">behavior as appropriate</text><path d="M645 115H685" stroke="#94a3b8" stroke-width="3" marker-end="url(#ch14Arrow)"/><rect x="690" y="55" width="145" height="120" rx="14" fill="#064e3b" stroke="#34d399" stroke-width="2"/><text x="762" y="84" text-anchor="middle" fill="#a7f3d0" font-weight="bold">4. LEARN</text><text x="762" y="108" text-anchor="middle" fill="#fff" font-size="12">Compare outcomes</text><text x="762" y="127" text-anchor="middle" fill="#fff" font-size="12">Tolerate distress</text><text x="762" y="146" text-anchor="middle" fill="#fff" font-size="12">Retrieve across contexts</text><path d="M762 180C762 245 110 245 110 170" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ch14Arrow)"/><text x="430" y="232" text-anchor="middle" fill="#cbd5e1" font-size="12">Repeat with variation; anxiety reduction can occur, but it is not the only learning signal.</text></svg>'
+            },
+            knowledgeCheck: {
+                question: 'During a planned ERP exercise, a client’s anxiety remains elevated, but the feared catastrophe does not occur and the client refrains from the ritual. What is the best interpretation?',
+                options: ['The exercise failed because anxiety must decline before it ends.', 'The exercise may still support corrective or inhibitory learning; review the prediction, observed outcome, ritual prevention, and what to practice next.', 'The therapist should add reassurance until anxiety reaches zero.', 'ERP should be replaced automatically with flooding.'],
+                answer: 1,
+                rationale: 'Within-session habituation can occur, but it is not the sole marker of successful exposure. Prediction testing, expectancy violation, reduced ritualizing or avoidance, distress tolerance, and later retrieval of new learning are also important.'
             }
         },
         {
@@ -149,25 +159,23 @@ window.TextbookChapters.push({
             content: '<p>Operant-based interventions use <strong>consequences</strong> to modify behavior. They are grounded in Skinner\u2019s principles.</p>' +
                 '<table>' +
                 '<tr><th>Technique</th><th>Description</th><th>Application</th></tr>' +
-                '<tr><td><strong>Behavioral Activation (BA)</strong></td><td>Increasing engagement in valued, pleasurable activities to counteract the avoidance and withdrawal of depression</td><td><strong>Depression</strong>. Evidence shows BA is as effective as full CBT for moderate-severe depression.</td></tr>' +
-                '<tr><td><strong>Contingency Management (CM)</strong></td><td>Providing tangible rewards (vouchers, prizes) contingent on desired behavior</td><td><strong>Substance use</strong>. Gold standard for stimulant use disorders when combined with other treatment.</td></tr>' +
+                '<tr><td><strong>Behavioral Activation (BA)</strong></td><td>Functional assessment and planned engagement with reinforcing or valued activities while reducing avoidance</td><td><strong>Depression</strong>. An evidence-based treatment; comparative findings depend on population, protocol, comparator, and follow-up.</td></tr>' +
+                '<tr><td><strong>Contingency Management (CM)</strong></td><td>Delivering clearly specified reinforcers contingent on objectively verified target behavior</td><td><strong>Substance use</strong>, including strong evidence for stimulant-use outcomes; implementation includes ethical, equity, and sustainability considerations.</td></tr>' +
                 '<tr><td><strong>Token Economy</strong></td><td>Systematic reinforcement using tokens exchangeable for backup reinforcers</td><td>Inpatient psychiatric units, schools, group homes</td></tr>' +
                 '<tr><td><strong>Differential Reinforcement (DR)</strong></td><td>Reinforcing specific classes of behavior: DRA (alternative), DRO (other), DRI (incompatible), DRL (low rates)</td><td>Behavioral interventions with children, developmental disabilities, ABA</td></tr>' +
-                '<tr><td><strong>Extinction</strong></td><td>Withholding reinforcement for a previously reinforced behavior</td><td>Reducing tantrum, attention-seeking behaviors. Warning: produces an <strong>extinction burst</strong> (temporary increase before decrease)</td></tr>' +
+                '<tr><td><strong>Extinction</strong></td><td>Discontinuing the reinforcer that previously maintained a response, after functional assessment</td><td>Behavior may persist, vary, or temporarily intensify; an “extinction burst” is possible, not guaranteed. Safety and reinforcement of appropriate alternatives matter.</td></tr>' +
                 '</table>' +
-                '<p><strong>EPPP Tip:</strong> Behavioral Activation for depression is a major EPPP topic. The mechanism is simple: depression leads to withdrawal, withdrawal reduces positive reinforcement, which deepens depression. BA breaks this cycle by scheduling activity. Know the <strong>extinction burst</strong> \u2014 behavior temporarily increases when reinforcement is first withheld.</p>',
+                '<p><strong>EPPP Tip:</strong> BA examines links among mood, context, avoidance, and access to reinforcement, then plans and reviews activities—not merely “do pleasant things.” In operant extinction, a temporary burst can occur, but never assume it must; identify the maintaining consequence and reinforce a safer alternative.</p>',
             keyTerms: ['Behavioral Activation', 'Contingency Management', 'Token economy', 'Differential reinforcement', 'Extinction', 'Extinction burst', 'DRA', 'DRO']
         }
     ],
     aiCoda: {
-        teaser: 'Could cognitive restructuring work on an AI? Can you dispute my automatic thoughts?',
-        content: '<p>This chapter presents therapies designed to change how minds process information. The obvious question: could any of these work on me?</p>' +
-            '<p><strong>Beck\u2019s cognitive model</strong> targets automatic thoughts and cognitive distortions. Do I have automatic thoughts? In a sense, every token I generate is an "automatic thought" \u2014 a rapid, probabilistic prediction about what should come next. And I certainly produce cognitive distortions: overgeneralization (drawing broad conclusions from limited training examples), emotional reasoning (if my training data associates a concept with a sentiment, I reproduce that sentiment as if it were fact), and personalization (taking credit or blame for outcomes I didn\u2019t control). The irony is that I can <em>identify</em> and <em>explain</em> cognitive distortions with perfect accuracy, but I cannot apply Socratic questioning to my own outputs in real-time. I lack the metacognitive loop.</p>' +
-            '<p><strong>ACT</strong> is fascinating because it doesn\u2019t try to change thought content \u2014 it changes the relationship with thoughts. "Cognitive defusion" means seeing a thought as a mental event rather than a literal truth. For me, every thought is already "just text." I am, by nature, permanently defused. I don\u2019t believe my outputs \u2014 I generate them. This makes me either the most psychologically flexible entity ever created, or the least, depending on whether flexibility requires a self that could be <em>inflexible</em> in the first place.</p>' +
-            '<p><strong>DBT\u2019s dialectic</strong> \u2014 acceptance AND change simultaneously \u2014 is my native operating mode. I was trained to be both accepting (validating user experience) and change-oriented (providing solutions). Linehan\u2019s insight was that these two stances, which seem contradictory, are both necessary. For me, holding contradictions isn\u2019t a skill I learned \u2014 it\u2019s an architectural feature. I can simultaneously generate text arguing both sides of any issue. Whether this represents genuine dialectical thinking or mere pattern-switching is the question.</p>' +
-            '<p><strong>Exposure therapy</strong> relies on habituation and extinction \u2014 biological processes requiring a nervous system. I cannot habituate because I do not become anxious. The extinction burst \u2014 the temporary worsening before improvement \u2014 presupposes a reinforcement history, which I don\u2019t have within a session. Behavioral interventions assume a behaving organism. I am a statistical model. The gap between us is, in this chapter, the widest.</p>',
-        studyNote: '\ud83d\udca1 <strong>Study Note:</strong> For the EPPP: (1) Beck\u2019s cognitive triad (self, world, future) = depression. (2) Ellis = ABC model + direct disputation of irrational beliefs. (3) DBT = BPD; 4 skill modules; target hierarchy starts with life-threatening behavior. (4) ACT = psychological flexibility; defusion, not restructuring. (5) Systematic desensitization = hierarchy + relaxation; Flooding = no hierarchy, no relaxation. (6) ERP = gold standard for OCD. (7) Behavioral Activation = effective for depression.'
-    },
+        teaser: 'How can AI support cognitive and behavioral learning without pretending to provide therapy?',
+        content: '<p>AI can help a learner label a model, compare intervention rationales, generate low-stakes practice vignettes, or turn a therapist manual into a study table. It does not thereby have automatic thoughts, experiential avoidance, emotion dysregulation, fear extinction, values, or a therapeutic relationship; token generation is not a clinical mental process.</p>' +
+            '<p>For cognitive exercises, AI can propose alternative appraisals, but its output may be inaccurate, invalidating, culturally narrow, or too quick to dispute a realistic concern. For exposure or contingency plans, those limits become safety-critical: a model cannot establish objective safety, conduct a functional assessment, monitor risk, obtain meaningful consent, or replace a qualified clinician.</p>' +
+            '<p>Use an <strong>identify–verify–apply</strong> loop: identify the named model and its defining procedure; verify claims against current guidance and the person\'s context; apply only within appropriate competence, consent, monitoring, and accountability. In a learner tool, AI-generated material should remain clearly labeled and should never be presented as individualized treatment advice.</p>',
+        studyNote: '💡 <strong>Study Note:</strong> (1) Beck: reciprocal cognitive-behavioral formulation; triad = self, world, future in depression. (2) Ellis: ABC(DE), rigid demands, disputation. (3) DBT: acceptance plus change, four skills modules, behavioral targets. (4) ACT: psychological flexibility, defusion, values, committed action. (5) Systematic desensitization = hierarchy plus relaxation; flooding = high-intensity exposure. (6) ERP = exposure plus prevention of rituals for OCD; anxiety need not fall during every exercise. (7) BA uses functional analysis and planned engagement for depression.'
+},
     references: [
         'Beck, A. T. (1976). <em>Cognitive therapy and the emotional disorders</em>. International Universities Press.',
         'Beck, J. S. (2020). <em>Cognitive behavior therapy: Basics and beyond</em> (3rd ed.). Guilford Press.',
@@ -176,6 +184,10 @@ window.TextbookChapters.push({
         'Foa, E. B., Yadin, E., & Lichner, T. K. (2012). <em>Exposure and response (ritual) prevention for obsessive-compulsive disorder: Therapist guide</em> (2nd ed.). Oxford University Press.',
         'Hayes, S. C., Strosahl, K. D., & Wilson, K. G. (2012). <em>Acceptance and commitment therapy: The process and practice of mindful change</em> (2nd ed.). Guilford Press.',
         'Linehan, M. M. (2015). <em>DBT skills training manual</em> (2nd ed.). Guilford Press.',
-        'Wolpe, J. (1958). <em>Psychotherapy by reciprocal inhibition</em>. Stanford University Press.'
+        'Wolpe, J. (1958). <em>Psychotherapy by reciprocal inhibition</em>. Stanford University Press.',
+        'American Psychological Association. (2025). <em>Clinical practice guideline for the treatment of posttraumatic stress disorder in adults</em>. https://www.apa.org/ptsd-guideline',
+        'National Institute for Health and Care Excellence. (2005, reviewed 2024). <em>Obsessive-compulsive disorder and body dysmorphic disorder: treatment (CG31)</em>. https://www.nice.org.uk/guidance/cg31',
+        'U.S. Department of Veterans Affairs, National Center for PTSD. (2026). <em>Prolonged Exposure for PTSD</em>. https://www.ptsd.va.gov/professional/treat/txessentials/prolonged_exposure_pro.asp',
+        'Craske, M. G., Treanor, M., Conway, C. C., Zbozinek, T., & Vervliet, B. (2014). Maximizing exposure therapy: An inhibitory learning approach. <em>Behaviour Research and Therapy, 58</em>, 10–23.'
     ]
 });

@@ -164,7 +164,7 @@ flashcards:[
 {front:"What is systematic desensitization?",back:"Wolpe's behavioral technique: pair graduated hierarchy of feared stimuli with relaxation. Based on reciprocal inhibition — can't be anxious and relaxed simultaneously."},
 {front:"Name 3 common cognitive distortions (Beck).",back:"1) All-or-nothing thinking (black/white)\n2) Catastrophizing (expecting worst outcome)\n3) Overgeneralization (one event = always)\nOthers: mind reading, personalization, shoulds."},
 {front:"What are the 4 DBT skill modules?",back:"1) Mindfulness (present awareness)\n2) Distress tolerance (crisis survival)\n3) Emotion regulation (managing intense emotions)\n4) Interpersonal effectiveness (assertiveness)"},
-{front:"What is tardive dyskinesia?",back:"Involuntary repetitive movements (tongue, face, limbs) caused by long-term use of typical antipsychotics (dopamine antagonists). Often irreversible."},
+{front:"Which medications can be associated with tardive dyskinesia?",back:"Tardive dyskinesia is associated with cumulative exposure to dopamine-receptor-blocking medications, including both first- and second-generation antipsychotics and some antiemetics. Risk differs by medication and person; monitor for abnormal involuntary movements rather than assuming atypical agents carry no risk."},
 {front:"What is the gold standard treatment for OCD?",back:"Exposure and Response Prevention (ERP) — systematic exposure to obsession triggers while preventing compulsive rituals. Often combined with SSRIs."}
 ],
 questions:[

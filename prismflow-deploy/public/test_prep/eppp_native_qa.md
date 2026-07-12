@@ -1,8 +1,8 @@
 # EPPP native pack QA report
 
-Generated: 2026-07-11T05:14:42.207Z
+Generated: 2026-07-11T19:57:23.069Z
 
-Pack: EPPP Part 1 — Source-Reviewed Pilot v0.27.0
+Pack: EPPP Part 1 — Source-Reviewed Pilot v1.0.0
 
 ## What “QA passed” means
 
@@ -14,11 +14,11 @@ QA pass confirms cited answer support, one-best-answer structure, plausible dist
 
 | Metric | Result |
 | --- | ---: |
-| Native questions | 416 |
-| QA-passed questions | 416 |
+| Native questions | 500 |
+| QA-passed questions | 500 |
 | Questions requiring review | 0 |
 | Domains | 8 |
-| Answer keys | A 104 · B 104 · C 104 · D 104 |
+| Answer keys | A 125 · B 125 · C 125 · D 125 |
 | Overall status | PASS |
 
 ## Item matrix
@@ -441,3 +441,87 @@ QA pass confirms cited answer support, one-best-answer structure, plausible dist
 | eppp-b024-professional-2 | professional | legacy-seeded-re-authored | pass | 1 |
 | eppp-b024-professional-3 | professional | legacy-seeded-re-authored | pass | 1 |
 | eppp-b024-professional-4 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-biological-1 | biological | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-cognitive-1 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-cognitive-2 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-social-1 | social-cultural | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-social-2 | social-cultural | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-lifespan-1 | lifespan | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-lifespan-2 | lifespan | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-assessment-1 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-assessment-2 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-assessment-3 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-assessment-4 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-assessment-5 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-intervention-1 | intervention | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-intervention-2 | intervention | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-intervention-3 | intervention | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-intervention-4 | intervention | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-professional-1 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-professional-2 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-professional-3 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b025-professional-4 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-biological-1 | biological | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-biological-2 | biological | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-cognitive-1 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-cognitive-2 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-cognitive-3 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-social-1 | social-cultural | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-social-2 | social-cultural | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-lifespan-1 | lifespan | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-lifespan-2 | lifespan | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-lifespan-3 | lifespan | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-assessment-1 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-assessment-2 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-assessment-3 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-assessment-4 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-assessment-5 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-intervention-1 | intervention | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-intervention-2 | intervention | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-intervention-3 | intervention | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-intervention-4 | intervention | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-professional-1 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-professional-2 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-professional-3 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-professional-4 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b026-professional-5 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-biological-1 | biological | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-cognitive-1 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-cognitive-2 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-cognitive-3 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-social-1 | social-cultural | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-social-2 | social-cultural | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-lifespan-1 | lifespan | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-lifespan-2 | lifespan | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-assessment-1 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-assessment-2 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-assessment-3 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-assessment-4 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-intervention-1 | intervention | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-intervention-2 | intervention | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-intervention-3 | intervention | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-intervention-4 | intervention | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-professional-1 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-professional-2 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-professional-3 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b027-professional-4 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-biological-1 | biological | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-biological-2 | biological | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-cognitive-1 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-cognitive-2 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-cognitive-3 | cognitive-affective | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-social-1 | social-cultural | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-social-2 | social-cultural | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-lifespan-1 | lifespan | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-lifespan-2 | lifespan | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-lifespan-3 | lifespan | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-assessment-1 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-assessment-2 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-assessment-3 | assessment | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-intervention-1 | intervention | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-intervention-2 | intervention | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-intervention-3 | intervention | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-professional-1 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-professional-2 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-professional-3 | professional | legacy-seeded-re-authored | pass | 1 |
+| eppp-b028-professional-4 | professional | legacy-seeded-re-authored | pass | 1 |
