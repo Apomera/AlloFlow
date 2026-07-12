@@ -704,13 +704,38 @@
         var sideMm = Math.sqrt(d.crossSectionMm2);
         var I_mm4 = (sideMm * sideMm * sideMm * sideMm) / 12;
         var E_MPa = mat.modulusGPa * 1000;
-        var L_top_mm = (d.span / d.nBays) * 1000; // top chord member length
-        var P_cr_top_kN = (Math.PI * Math.PI * E_MPa * I_mm4) / (L_top_mm * L_top_mm) / 1000;
-        var bucklingMargin = P_cr_top_kN / Math.max(0.001, analysis.maxChord);
+        var compressionCases = [];
+        if (moj.ok && spec) {
+          var jointByIdBuckling = {};
+          spec.joints.forEach(function(joint) { jointByIdBuckling[joint.id] = joint; });
+          spec.members.forEach(function(member) {
+            var forceKN = moj.memberForces[member.id];
+            if (!(forceKN < -0.001)) return;
+            var j1 = jointByIdBuckling[member.j1];
+            var j2 = jointByIdBuckling[member.j2];
+            if (!j1 || !j2) return;
+            var dx = j2.x - j1.x;
+            var dy = j2.y - j1.y;
+            compressionCases.push({ id: member.id, forceKN: Math.abs(forceKN), lengthMm: Math.sqrt(dx * dx + dy * dy) * 1000 });
+          });
+        }
+        if (!compressionCases.length) {
+          compressionCases.push({ id: 'top chord (approx.)', forceKN: Math.max(0.001, analysis.maxChord), lengthMm: (d.span / d.nBays) * 1000 });
+        }
+        var governingCompression = null;
+        compressionCases.forEach(function(memberCase) {
+          var pcr = (Math.PI * Math.PI * E_MPa * I_mm4) / (memberCase.lengthMm * memberCase.lengthMm) / 1000;
+          var margin = pcr / Math.max(0.001, memberCase.forceKN);
+          if (!governingCompression || margin < governingCompression.margin) {
+            governingCompression = { id: memberCase.id, forceKN: memberCase.forceKN, lengthMm: memberCase.lengthMm, pcrKN: pcr, margin: margin };
+          }
+        });
+        var P_cr_top_kN = governingCompression.pcrKN;
+        var bucklingMargin = governingCompression.margin;
         var buckles = bucklingMargin < 1;
         var bucklingMarginal = bucklingMargin >= 1 && bucklingMargin < 2;
-        var slenderness = L_top_mm / (sideMm / Math.sqrt(12));
-
+        var governingLengthMm = governingCompression.lengthMm;
+        var slenderness = governingLengthMm / (sideMm / Math.sqrt(12));
         // Status combines yield + buckling
         var yieldStatus = safetyFactor >= 2 ? 'safe' : safetyFactor >= 1 ? 'marginal' : 'failed';
         var bucklingStatus = !buckles && !bucklingMarginal ? 'safe' : bucklingMarginal ? 'marginal' : 'failed';
@@ -1084,7 +1109,7 @@
           ),
 
           // Analysis results — combined yield + buckling
-          h('div', { style: { padding: 14, borderRadius: 12, background: status === 'safe' ? 'rgba(34,197,94,0.10)' : status === 'marginal' ? 'rgba(245,158,11,0.15)' : 'rgba(220,38,38,0.15)', border: '1px solid ' + (status === 'safe' ? 'rgba(34,197,94,0.4)' : status === 'marginal' ? 'rgba(245,158,11,0.4)' : 'rgba(220,38,38,0.4)'), borderLeft: '4px solid ' + (status === 'safe' ? '#22c55e' : status === 'marginal' ? '#f59e0b' : '#dc2626'), marginBottom: 12 } },
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 14, borderRadius: 12, background: status === 'safe' ? 'rgba(34,197,94,0.10)' : status === 'marginal' ? 'rgba(245,158,11,0.15)' : 'rgba(220,38,38,0.15)', border: '1px solid ' + (status === 'safe' ? 'rgba(34,197,94,0.4)' : status === 'marginal' ? 'rgba(245,158,11,0.4)' : 'rgba(220,38,38,0.4)'), borderLeft: '4px solid ' + (status === 'safe' ? '#22c55e' : status === 'marginal' ? '#f59e0b' : '#dc2626'), marginBottom: 12 } },
             h('div', { style: { fontSize: 16, fontWeight: 900, color: status === 'safe' ? '#86efac' : status === 'marginal' ? '#fbbf24' : '#fca5a5', marginBottom: 10 } },
               status === 'safe' ? '✓ SAFE — passes both yield and buckling checks' :
               status === 'marginal' ? '⚠ MARGINAL — passes but below code-recommended safety factor (2.0)' :
@@ -1102,10 +1127,10 @@
               h('strong', { style: { color: bucklingStatus === 'safe' ? '#86efac' : bucklingStatus === 'marginal' ? '#fbbf24' : '#fca5a5', minWidth: 110 } },
                 bucklingStatus === 'safe' ? '✓ Buckling' : bucklingStatus === 'marginal' ? '⚠ Buckling' : '✗ Buckling'
               ),
-              h('span', null, 'P_cr ' + P_cr_top_kN.toFixed(0) + ' kN vs chord ' + analysis.maxChord.toFixed(0) + ' kN · slenderness ratio ' + slenderness.toFixed(0))
+              h('span', null, 'Governing member ' + governingCompression.id + ': P_cr ' + P_cr_top_kN.toFixed(0) + ' kN vs compression ' + governingCompression.forceKN.toFixed(0) + ' kN; length ' + (governingLengthMm / 1000).toFixed(1) + ' m; slenderness ' + slenderness.toFixed(0) + ' (pinned ends K=1; solid square section)')
             ),
             h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-              buckles ? 'BUCKLING FAILURE: the top chord (longest compression member) will buckle before reaching yield. Long, thin compression members buckle at loads much lower than their crushing strength. Either thicken the cross-section (raises I quadratically), shorten the bay (more bays), or use bracing.' :
+              buckles ? 'BUCKLING FAILURE: member ' + governingCompression.id + ' reaches its Euler buckling load before material yield. Long, thin compression members can buckle far below crushing strength. Thicken the section, shorten the unbraced length, add bracing, or revise the geometry.' :
               bucklingMarginal ? 'Buckling margin is thin. A real engineer would add lateral bracing or thicken the chord. Buckling sneaks up on long slender members and is the failure mode that brought down the Quebec Bridge in 1907.' :
               yieldStatus !== 'safe' ? 'The top chord buckles fine, but stress exceeds yield. Increase cross-section, decrease load, increase truss height, or pick a stronger material.' :
               'Both yield and buckling have adequate margin. Code typically requires safety factor 2-4 for buildings and 2-6 for bridges. Brooklyn Bridge was designed with 6x for yield.'
@@ -1117,7 +1142,8 @@
             statBox('Max diagonal force', analysis.maxDiag.toFixed(0) + ' kN', '#2563eb'),
             statBox('Max stress', maxStress.toFixed(0) + ' MPa', '#f59e0b'),
             statBox('Material yield', mat.yieldMPa + ' MPa', '#94a3b8'),
-            statBox('Euler P_cr (top chord)', P_cr_top_kN.toFixed(0) + ' kN', '#a78bfa'),
+            statBox('Governing Euler P_cr', P_cr_top_kN.toFixed(0) + ' kN', '#a78bfa'),
+            statBox('Governing compression member', governingCompression.id, '#a78bfa'),
             statBox('Slenderness ratio (L/r)', slenderness.toFixed(0), '#a78bfa'),
             statBox('Reaction at each support', analysis.reactions.toFixed(0) + ' kN', '#94a3b8'),
             statBox('Diagonal angle', analysis.diagAngleDeg.toFixed(0) + '°', '#94a3b8'),
@@ -1156,13 +1182,17 @@
                   // Compute peak chord force using current MOJ or approximation. We'll re-use analysis but
                   // just substitute cross-section + material for the safety calc.
                   var stress = analysis.maxChord * 1000 / crossMm2; // MPa
-                  // Buckling
+                  // Buckling: evaluate every compressed member with its own force and length.
                   var side = Math.sqrt(crossMm2);
                   var I = (side * side * side * side) / 12;
-                  var L_mm = (d.span / d.nBays) * 1000;
-                  var Pcr = (Math.PI * Math.PI * matCandidate.modulusGPa * 1000 * I) / (L_mm * L_mm) / 1000;
                   var sfYield = matCandidate.yieldMPa / stress;
-                  var sfBuck = Pcr / Math.max(0.001, analysis.maxChord);
+                  var sfBuck = Infinity;
+                  compressionCases.forEach(function(memberCase) {
+                    var pcrCandidate = (Math.PI * Math.PI * matCandidate.modulusGPa * 1000 * I) /
+                      (memberCase.lengthMm * memberCase.lengthMm) / 1000;
+                    var memberSF = pcrCandidate / Math.max(0.001, memberCase.forceKN);
+                    if (memberSF < sfBuck) sfBuck = memberSF;
+                  });
                   var sfMin = Math.min(sfYield, sfBuck);
                   if (sfMin >= targetSF) {
                     var areaM2 = crossMm2 / 1e6;
