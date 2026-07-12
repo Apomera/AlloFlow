@@ -44,6 +44,7 @@ This report evaluates the current local desktop command center and the bundled A
 - Enlarged immersive-reader focus, background, and text color controls to at least 24 by 24 CSS pixels (WCAG 2.5.8).
 - Enlarged teacher-roster group colors and remove-student actions to at least 24 by 24 CSS pixels (WCAG 2.5.8).
 - Replaced mouse-only cast-lobby name, role, and appearance editors with named keyboard-operable buttons, preserved name heading structure, and enlarged the remove-character target to 24 by 24 CSS pixels (WCAG 2.1.1, 2.4.7, 2.5.8, 4.1.2).
+- Added a named modal dialog, initial focus, focus containment and return, Escape dismissal, keyboard-operable ARIA tabs, and a 24 by 24 animation control to Visual Supports (WCAG 2.1.1, 2.4.3, 2.4.7, 2.5.8, 4.1.2).
 
 ## Resolved finding
 
