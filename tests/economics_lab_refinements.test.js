@@ -200,6 +200,43 @@ describe('Economics Lab refinements', () => {
     expect(source).toContain("'DWL'");
   });
 
+  it('gives every tab its own hero (inquiry no longer borrows Supply & Demand) plus a Try-this task', () => {
+    const inquiryHtml = renderEconomicsLab({ econTab: 'inquiry' });
+    expect(inquiryHtml).toContain('no answer key');
+    expect(inquiryHtml).not.toContain('price-discovery engine');
+
+    const sdHtml = renderEconomicsLab({ econTab: 'supplyDemand' });
+    expect(sdHtml).toContain('🧪');
+    expect(sdHtml).toContain('Predict first');
+  });
+
+  it('itemizes last year\'s money flow in the life sim', () => {
+    const html = renderEconomicsLab({
+      econTab: 'personalFinance',
+      pfLastYear: { event: 'Job offer', choice: 'Accept', eventCash: 3000, housing: 12000, invested: 5000, growth: 400, debtInterest: 250, net: -14000 },
+    });
+
+    expect(html).toContain('money flow');
+    expect(html).toContain('Net cash change');
+    expect(html).toContain('Moved into investments');
+    expect(html).toContain('Debt interest added');
+  });
+
+  it('celebrates finishing the scenario deck and pins the visual-bug fixes', () => {
+    const html = renderEconomicsLab({ showScenarioChallenge: true, econScenarioTotal: 10, econScenarioScore: 7, econBestStreak: 4 });
+    expect(html).toContain('Full deck answered');
+
+    const source = readFileSync(resolve(process.cwd(), FILE), 'utf8');
+    // Mojibake em dash must never come back to the user-visible macro header.
+    expect(source).not.toContain('National Economy â€');
+    // Canvas fillStyle can't resolve CSS var() — the pie slice must use a literal.
+    // (var() in React style objects is fine; only canvas-fed colors are the bug.)
+    expect(source).not.toContain("val: remaining, color: 'var(");
+    // Soft Landing achievement exists and the header count matches 21.
+    expect(source).toContain('Soft Landing');
+    expect(source).toContain("'/21)'");
+  });
+
   it('counts investments and home equity toward net-worth achievements', () => {
     const html = renderEconomicsLab({ econTab: 'personalFinance', pfCash: 500000, pfEquity: 300000, pfInvested: 300000 });
 

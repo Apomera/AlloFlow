@@ -318,6 +318,10 @@ var d = labToolData || {};
 
           if (macroUnemployment <= 2) econAchievements.push({ icon: '\uD83D\uDCAA', title: t('stem.economicslab.full_employment', 'Full Employment'), desc: t('stem.economicslab.unemployment_2', 'Unemployment <2%') });
 
+          var lastMacroYr = (d.macroHistory || [])[(d.macroHistory || []).length - 1];
+
+          if ((d.macroHistory || []).length >= 3 && lastMacroYr && lastMacroYr.gdp >= 2 && lastMacroYr.gdp <= 4 && lastMacroYr.inflation >= 1 && lastMacroYr.inflation <= 3 && lastMacroYr.unemployment < 5) econAchievements.push({ icon: '\uD83D\uDEEC', title: t('stem.economicslab.soft_landing', 'Soft Landing'), desc: t('stem.economicslab.soft_landing_desc', '3+ years in: growth 2\u20134%, inflation 1\u20133%, unemployment <5%') });
+
           var conceptsLearned = (d.econGlossary || []).length;
 
           // Economic Literacy Score (0-100)
@@ -644,7 +648,11 @@ var d = labToolData || {};
 
               ctx.restore(); ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 24px Inter, system-ui';
 
-              ctx.fillText('D' + (sdDemandShift !== 0 ? '\'' : ''), gx + gw - 34, Math.max(gy + 24, Math.min(gy + gh - 10, gy + 30 - sdDemandShift * 25)));
+              // Label sits at the demand curve's RIGHT END (price = 10 + 5*shift
+              // at q=100) — it used to float at the top of the plot, which is
+              // where the SUPPLY curve ends, so D and S read as swapped.
+
+              ctx.fillText('D' + (sdDemandShift !== 0 ? '\'' : ''), gx + gw - 34, Math.max(gy + 24, Math.min(gy + gh - 10, gy + (100 - (10 + sdDemandShift * 5)) / 100 * gh - 12)));
 
 
 
@@ -668,7 +676,7 @@ var d = labToolData || {};
 
               ctx.restore(); ctx.fillStyle = '#ef4444';
 
-              ctx.fillText('S' + (sdSupplyShift !== 0 ? '\'' : ''), gx + gw - 34, Math.max(gy + 24, Math.min(gy + gh - 10, gy + gh - 30 - sdSupplyShift * 25)));
+              ctx.fillText('S' + (sdSupplyShift !== 0 ? '\'' : ''), gx + gw - 34, Math.max(gy + 24, Math.min(gy + gh - 10, gy + (100 - (90 + sdSupplyShift * 5)) / 100 * gh - 12)));
 
 
 
@@ -905,7 +913,12 @@ var d = labToolData || {};
 
               var remaining = Math.max(0, pfIncome - totalExp);
 
-              if (remaining > 0) expenses.push({ name: t('stem.economicslab.remaining', 'Remaining'), val: remaining, color: 'var(--allo-stem-text-soft, #94a3b8)' });
+              // Literal color — canvas fillStyle can't resolve CSS var(); the
+              // var() string was silently ignored, leaving the previous fill
+              // (the white slice-label color) so this slice painted WHITE and
+              // its white label disappeared into it.
+
+              if (remaining > 0) expenses.push({ name: t('stem.economicslab.remaining', 'Remaining'), val: remaining, color: '#64748b' });
 
               var total = expenses.reduce(function (s, e) { return s + e.val; }, 0);
 
@@ -1238,7 +1251,7 @@ var d = labToolData || {};
 
               ctx.font = 'bold 28px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
-              ctx.fillText('\uD83C\uDFDB\uFE0F National Economy â€” Year ' + macroYear, 30, 35);
+              ctx.fillText('\uD83C\uDFDB\uFE0F National Economy — Year ' + macroYear, 30, 35);
 
               // Indicator gauges
 
@@ -1282,7 +1295,10 @@ var d = labToolData || {};
 
                 ctx.fillText(ind.label, gx2 + 6, 82);
 
-                ctx.font = 'bold 24px Inter, system-ui'; ctx.fillStyle = ind.color;
+                // White, not ind.color — the value text starts INSIDE the value
+                // bar, so color-matched text (green on green) was invisible.
+
+                ctx.font = 'bold 24px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
 
                 ctx.fillText((ind.val >= 0 ? '+' : '') + ind.val.toFixed(1) + ind.unit, gx2 + 6, 106);
 
@@ -1662,6 +1678,8 @@ var d = labToolData || {};
 
               React.createElement('span', {
 
+                title: t('stem.economicslab.literacy_tooltip', 'Economic literacy grows with concepts learned, years simulated across the sims, quiz accuracy, and achievements earned'),
+
                 className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border ' +
 
                   (econLiteracyScore >= 80 ? 'text-green-700 bg-green-50 border-green-200' :
@@ -1791,6 +1809,17 @@ var d = labToolData || {};
                 entrepreneur:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFEA', title: t('stem.economicslab.business_sim_you_re_the_founder', 'Business Sim \u2014 you\u2019re the founder'),           hint: t('stem.economicslab.revenue_costs_profit_break_even_point_', 'Revenue \u2212 costs = profit. Break-even point is when fixed costs are covered. Most small businesses fail in year 5; the survivors found product-market fit. Customer acquisition cost (CAC) vs lifetime value (LTV) is the founder\u2019s daily math.') },
                 macro:           { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFDB', title: t('stem.economicslab.national_economy_gdp_inflation_unemplo', 'National Economy \u2014 GDP, inflation, unemployment'),  hint: t('stem.economicslab.gdp_measures_total_output_cpi_measures', 'GDP measures total output; CPI measures inflation; unemployment U-3 is the headline rate. The Fed sets interest rates to balance growth vs inflation \u2014 the dual mandate Congress gave it in 1977.') }
               };
+              // The inquiry tab used to fall back to the Supply & Demand hero.
+              TAB_META.inquiry = { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)', icon: '🔬', title: t('stem.economicslab.policy_inquiry_hero', 'Policy Inquiry — no answer key'), hint: t('stem.economicslab.policy_inquiry_hero_hint', 'Move the levers, predict the macro state BEFORE reading it, and defend your reasoning. Real economists genuinely disagree about these signs and magnitudes.') };
+              // One concrete predict-then-test task per tab.
+              var TAB_TRY = {
+                supplyDemand: t('stem.economicslab.try_supply_demand', 'Try: set a Price Ceiling of $30 (rent control). Predict first — how many units short will the market run?'),
+                personalFinance: t('stem.economicslab.try_personal_finance', 'Try: invest 15% in Balanced and choose the Roommate housing. Watch net worth vs cash over 5 years.'),
+                stockMarket: t('stem.economicslab.try_stock_market', 'Try: trade for 5 days, then compare your return to the buy-and-hold Index tile. Who is winning?'),
+                entrepreneur: t('stem.economicslab.try_entrepreneur', 'Try: find your break-even before opening, then test a price 50% higher for one day. What happened to profit?'),
+                macro: t('stem.economicslab.try_macro', 'Try: pick "Cool inflation" as your goal, raise the interest rate 2 points, and advance one year.'),
+                inquiry: t('stem.economicslab.try_inquiry', 'Try: produce stagflation (high inflation + falling GDP) with the fewest lever moves you can.')
+              };
               var meta = TAB_META[econTab] || TAB_META.supplyDemand;
               return React.createElement('div', {
                 className: 'economicslab-topic-card',
@@ -1811,7 +1840,8 @@ var d = labToolData || {};
                 React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 React.createElement('div', { style: { flex: 1, minWidth: 220 } },
                   React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                  React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint),
+                  TAB_TRY[econTab] && React.createElement('p', { style: { margin: '5px 0 0', color: meta.accent, fontSize: 11, lineHeight: 1.4, fontWeight: 700 } }, '🧪 ' + TAB_TRY[econTab])
                 )
               );
             })(),
@@ -1853,7 +1883,7 @@ var d = labToolData || {};
 
               React.createElement('div', { className: 'flex justify-between items-center mb-3' },
 
-                React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC6 Achievements (' + econAchievements.length + '/20)'),
+                React.createElement('h4', { className: 'text-sm font-bold text-amber-800' }, '\uD83C\uDFC6 Achievements (' + econAchievements.length + '/21)'),
 
                 React.createElement('button', { onClick: function () { upd('showAchievements', false); }, className: 'text-amber-400 hover:text-amber-600 text-xs' }, '\u2715')
 
@@ -2171,6 +2201,8 @@ var d = labToolData || {};
                   '\uD83D\uDD25 ' + econStreak + ' streak!' + (econStreak >= 5 ? ' AMAZING!' : econStreak >= 3 ? ' On fire!' : '')) : null,
                 React.createElement('span', { className: 'text-[11px] text-slate-600' }, 'Score: ' + econScenarioScore + '/' + econScenarioTotal + ' | Best: ' + econBestStreak)
               ),
+              econScenarioTotal >= ECON_SCENARIOS.length && React.createElement('div', { className: 'text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5 mb-2 text-center' },
+                t('stem.economicslab.scenario_complete', '🏁 Full deck answered! ') + econScenarioScore + '/' + econScenarioTotal + t('stem.economicslab.scenario_complete_2', ' correct, best streak ') + econBestStreak + t('stem.economicslab.scenario_complete_3', '. Scenarios repeat — can you beat your streak?')),
               (function() {
                 var sc = ECON_SCENARIOS[econScenarioIdx];
                 if (!sc) return null;
@@ -3257,6 +3289,8 @@ var d = labToolData || {};
 
                         var investAmt = 0;
 
+                        var investGrowth = 0;
+
                         if ((d.pfInvestPct || 0) > 0 && d.pfInvestType) {
 
                           investAmt = Math.round((d.pfSalary || 35000) * (d.pfInvestPct || 0) / 100);
@@ -3265,9 +3299,9 @@ var d = labToolData || {};
 
                           var returnRate = returns[d.pfInvestType] || 0;
 
-                          var growth = Math.round((d.pfInvested || 0) * returnRate);
+                          investGrowth = Math.round((d.pfInvested || 0) * returnRate);
 
-                          upd('pfInvested', Math.max(0, (d.pfInvested || 0) + growth + investAmt));
+                          upd('pfInvested', Math.max(0, (d.pfInvested || 0) + investGrowth + investAmt));
 
                         }
 
@@ -3290,6 +3324,11 @@ var d = labToolData || {};
                         if (typeof addXP === 'function') addXP(15, 'Life Sim: Made a financial decision');
 
                         var netChange = finalCash - startCash;
+
+                        // Itemized flows for the "Last year's money flow" card \u2014
+                        // students should SEE where every dollar went.
+
+                        upd('pfLastYear', { event: d.lifeEvent.title || 'Life event', choice: choice.label || '', eventCash: (eff.cash || 0), housing: hCost, invested: investAmt, growth: investGrowth, debtInterest: debtInterest, net: netChange });
 
                         if (addToast) addToast((netChange >= 0 ? '\uD83D\uDCB0 +$' : '\uD83D\uDCC9 -$') + Math.abs(netChange).toLocaleString() + ' net this year (after housing' + (investAmt > 0 ? ' + investing' : '') + ') | ' + choice.label, netChange >= 0 ? 'success' : 'warning');
 
@@ -3378,6 +3417,27 @@ var d = labToolData || {};
                 var runwayCls = runway >= 6 ? 'text-green-700 bg-green-50 border-green-200' : runway >= 3 ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-red-700 bg-red-50 border-red-200';
                 return React.createElement('div', { className: 'text-[11px] text-center rounded-lg border px-3 py-1.5 mb-2 ' + runwayCls },
                   t('stem.economicslab.emergency_fund', '\uD83D\uDEDF Emergency fund: ') + runway.toFixed(1) + ' ' + t('stem.economicslab.months_of_expenses', 'months of expenses in cash') + ' \u2014 ' + t('stem.economicslab.emergency_fund_target', 'advisors suggest keeping 3\u20136 months'));
+              })(),
+
+              // Itemized "where did the money go" card for the last simulated year
+              d.pfLastYear && (function () {
+                var ly = d.pfLastYear;
+                var rows = [[ly.event + ' \u2192 ' + ly.choice, ly.eventCash, false]];
+                rows.push([t('stem.economicslab.flow_housing', 'Housing'), -ly.housing, false]);
+                if (ly.invested > 0) rows.push([t('stem.economicslab.flow_invested', 'Moved into investments (still yours!)'), -ly.invested, false]);
+                if (ly.growth > 0) rows.push([t('stem.economicslab.flow_growth', 'Portfolio growth (inside investments)'), ly.growth, true]);
+                if (ly.debtInterest > 0) rows.push([t('stem.economicslab.flow_debt_interest', 'Debt interest added (10% APR)'), -ly.debtInterest, true]);
+                return React.createElement('div', { className: 'bg-white rounded-xl border border-slate-400 p-3 mb-2' },
+                  React.createElement('h4', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-1' }, t('stem.economicslab.last_year_flow', '\uD83E\uDDFE Last year\'s money flow')),
+                  rows.map(function (r, ri) {
+                    return React.createElement('div', { key: ri, className: 'flex justify-between text-[11px] py-0.5 border-b border-slate-50' },
+                      React.createElement('span', { className: 'text-slate-600 flex-1 pr-2' }, r[0] + (r[2] ? ' *' : '')),
+                      React.createElement('span', { className: (r[1] >= 0 ? 'text-green-600' : 'text-red-500') + ' font-bold' }, (r[1] >= 0 ? '+' : '\u2212') + '$' + Math.abs(r[1]).toLocaleString()));
+                  }),
+                  React.createElement('div', { className: 'flex justify-between text-[11px] pt-1 font-bold' },
+                    React.createElement('span', { className: 'text-slate-700' }, t('stem.economicslab.flow_net', 'Net cash change')),
+                    React.createElement('span', { className: ly.net >= 0 ? 'text-green-700' : 'text-red-600' }, (ly.net >= 0 ? '+' : '\u2212') + '$' + Math.abs(ly.net).toLocaleString())),
+                  React.createElement('p', { className: 'text-[10px] text-slate-500 italic mt-1 m-0' }, t('stem.economicslab.flow_footnote', '* not part of cash \u2014 growth compounds inside your portfolio; interest compounds inside your debt.')));
               })(),
 
               // Next Year / Generate Event button
@@ -3570,7 +3630,7 @@ var d = labToolData || {};
 
               React.createElement('button', {
 
-                onClick: function () { upd('pfAge', 22); upd('pfCash', 2000); upd('pfDebt', 0); upd('pfSalary', 35000); upd('pfHappiness', 70); upd('pfCredit', 650); upd('pfCareer', null); upd('pfInsurance', false); upd('pfHistory', []); upd('lifeEvent', null); upd('pfEquity', 0); upd('pfInvested', 0); upd('pfHousing', 'renting'); upd('pfInvestPct', 0); upd('pfInvestType', null); if (addToast) addToast('\u267B Starting over at age 22!', 'info'); },
+                onClick: function () { upd('pfAge', 22); upd('pfCash', 2000); upd('pfDebt', 0); upd('pfSalary', 35000); upd('pfHappiness', 70); upd('pfCredit', 650); upd('pfCareer', null); upd('pfInsurance', false); upd('pfHistory', []); upd('lifeEvent', null); upd('pfEquity', 0); upd('pfInvested', 0); upd('pfHousing', 'renting'); upd('pfInvestPct', 0); upd('pfInvestType', null); upd('pfLastYear', null); if (addToast) addToast('\u267B Starting over at age 22!', 'info'); },
 
                 className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-400'
 
