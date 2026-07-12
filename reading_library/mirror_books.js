@@ -391,7 +391,9 @@ function indexEntryFromBook(book, file) {
     license: book.license,
     licenseUrl: book.licenseUrl,
     source: book.source || null,
-    cover: book.cover && book.cover.card,
+    // StoryWeaver covers are {card,large} objects; open-catalog covers
+    // (Gutendex thumbnails) are plain URL strings. Accept both.
+    cover: typeof book.cover === 'string' ? book.cover : (book.cover && book.cover.card) || null,
     authors: book.authors,
     illustrators: book.illustrators,
     publisher: book.publisher,

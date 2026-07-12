@@ -165,6 +165,52 @@ describe('browse view', () => {
     expect(btns.some((t) => t.includes('Find more books'))).toBe(false);
   });
 
+  it('search matches MARC subjects and cards show subject chips', async () => {
+    // Catalog-card descriptions are one generic boilerplate line, so topic
+    // search must work through the subjects field. Pick a card whose first
+    // subject has a token that appears in NO title/author/description — the
+    // only way the card can match is via subjects.
+    const cards = index.books.filter((b) => b.contentType === 'public-domain-catalog-card');
+    let fixture = null, term = '';
+    outer: for (const c of cards) {
+      for (const s of c.subjects || []) {
+        const token = (String(s).split(' -- ')[0].match(/[A-Za-z-]{7,}/g) || [])[0];
+        if (!token) continue;
+        const t = token.toLowerCase();
+        const hitsElsewhere = (b) => (b.title + ' ' + (b.authors || []).join(' ') + ' ' + (b.description || '')).toLowerCase().includes(t);
+        if (!hitsElsewhere(c) && !index.books.some(hitsElsewhere)) { fixture = c; term = token; break outer; }
+      }
+    }
+    expect(fixture).toBeTruthy();
+    await mount();
+    await chooseCollection('History & primary sources');
+    const search = host.querySelector('input[aria-label="Search"]');
+    setInputValue(search, term);
+    await flush();
+    expect(textOf(host)).toContain(fixture.title);
+    // the matching card renders its subject-head chips
+    const head = String(fixture.subjects[0]).split(' -- ')[0].trim().slice(0, 40);
+    expect(textOf(host)).toContain(head);
+  });
+
+  it('the "Readable in app" toggle hides link-out source cards', async () => {
+    await mount();
+    await chooseCollection('History & primary sources');
+    selectLang(''); await flush();
+    const history = index.books.filter((b) => ['wikisource', 'loc', 'gutenberg'].includes(b.sourceId));
+    const readable = history.filter((b) => !/card/.test(b.contentType));
+    expect(textOf(host)).toContain(history.length + ' ');
+    clickByText(host, 'button', 'Readable in app');
+    await flush();
+    expect(textOf(host)).toContain(readable.length + ' ');
+    // Stories shelf has no cards, so the toggle stays hidden there
+    clickByText(host, 'button', 'Collections');
+    await flush();
+    await chooseStories();
+    const btns = Array.from(host.querySelectorAll('button')).map(textOf);
+    expect(btns.some((t) => t.includes('Readable in app'))).toBe(false);
+  });
+
   it('teacher searches Project Gutenberg (Gutendex) and queues an import request', async () => {
     try { window.localStorage.clear(); } catch (_) {}
     const realFetch = window.fetch;

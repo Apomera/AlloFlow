@@ -29,7 +29,7 @@
     "name": "Project Gutenberg",
     "url": "https://www.gutenberg.org/ebooks/20"
   },
-  "cover": null,
+  "cover": "https://www.gutenberg.org/cache/epub/20/pg20.cover.medium.jpg",
   "audio": null,
   "pages": [
     {

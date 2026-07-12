@@ -3798,10 +3798,6 @@
       "file": "books/gutenberg-ebook-22621-the-new-england-magazine-volume-1-no-1-january-1886-bay-state-mo.json"
     },
     {
-      "slug": "gutenberg-ebook-26590-a-vindication-of-the-rights-of-woman",
-      "file": "books/gutenberg-ebook-26590-a-vindication-of-the-rights-of-woman.json"
-    },
-    {
       "slug": "gutenberg-ebook-43427-encyclopaedia-britannica-11th-edition-lord-chamberlain-to-luqman",
       "file": "books/gutenberg-ebook-43427-encyclopaedia-britannica-11th-edition-lord-chamberlain-to-luqman.json"
     },
@@ -4768,6 +4764,10 @@
     {
       "slug": "gutenberg-ebook-3825-pygmalion",
       "file": "books/gutenberg-ebook-3825-pygmalion.json"
+    },
+    {
+      "slug": "gutenberg-ebook-2088-life-and-letters-of-charles-darwin-volume-2",
+      "file": "books/gutenberg-ebook-2088-life-and-letters-of-charles-darwin-volume-2.json"
     }
   ]
 }

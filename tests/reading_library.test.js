@@ -377,7 +377,10 @@ describe('mirrored data contract (reading_library/)', () => {
         langCode: book.langCode, isRtl: book.isRtl, level: book.level, sourceId,
         contentType: book.contentType || 'story', subjects: book.subjects || [],
         license: book.license, licenseUrl: book.licenseUrl, source: book.source || null,
-        cover: book.cover && book.cover.card, authors: book.authors,
+        // StoryWeaver covers are {card,large} objects; Gutendex covers are
+        // plain URL strings (mirror_books.js accepts both).
+        cover: typeof book.cover === 'string' ? book.cover : (book.cover && book.cover.card) || null,
+        authors: book.authors,
         illustrators: book.illustrators, publisher: book.publisher,
         hasAudio: !!book.audio, pageCount: book.stats && book.stats.pages,
         wordCount: book.stats && book.stats.words,
@@ -401,6 +404,31 @@ describe('mirrored data contract (reading_library/)', () => {
     });
 
     expect(errors).toEqual([]);
+  });
+
+  it('mirrored Gutenberg full texts carry no print-era markup artifacts', () => {
+    // The importer strips [Illustration…] blocks, bracketed/boxed transcriber
+    // notes, and _underscore_ emphasis (they render raw and TTS reads them
+    // aloud). Guards both future imports and the 2026-07-12 cleanup pass.
+    const offenders = [];
+    index.books.filter((b) => b.contentType === 'public-domain-full-text').forEach((entry) => {
+      const book = JSON.parse(fs.readFileSync(path.join(LIB_DIR, entry.file), 'utf8'));
+      const joined = book.pages.map((p) => p.text || '').join('\n');
+      // Markup form only ("[Illustration]" / "[Illustration: …"): prose can
+      // legitimately contain the word after a bracket (Twain quotes an ad
+      // with "[Illustrations of it thoughtlessly omitted…]").
+      if (/\[Illustration(?::|\])/i.test(joined)) offenders.push(entry.slug + ': [Illustration block');
+      if (/\[Transcriber'?s? Note/i.test(joined)) offenders.push(entry.slug + ': transcriber note');
+      // Same guards as the importer's stripEmphasisUnderscores: underscores
+      // used as table blank-fills (space-anchored) or in ASCII diagrams
+      // (| / \ etc.) are legitimate content and stay.
+      const emphasis = (joined.match(/_[^_\n]{1,100}?_/g) || []).filter((m) => {
+        const inner = m.slice(1, -1);
+        return /^\S(?:[\s\S]*\S)?$/.test(inner) && !/[|\/\\{}<>=+~]/.test(inner);
+      });
+      if (emphasis.length) offenders.push(entry.slug + ': ' + emphasis.length + ' underscore pairs e.g. ' + emphasis[0]);
+    });
+    expect(offenders).toEqual([]);
   });
 
   it('prefers the bundled catalog and provides a path beyond the first render batch', () => {

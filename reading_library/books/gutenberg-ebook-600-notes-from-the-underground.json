@@ -28,7 +28,7 @@
     "name": "Project Gutenberg",
     "url": "https://www.gutenberg.org/ebooks/600"
   },
-  "cover": null,
+  "cover": "https://www.gutenberg.org/cache/epub/600/pg600.cover.medium.jpg",
   "audio": null,
   "pages": [
     {

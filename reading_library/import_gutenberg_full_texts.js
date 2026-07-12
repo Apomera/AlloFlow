@@ -32,6 +32,7 @@ const OBSOLETE_GUTENBERG_CARD_IDS = new Set([
   17405, // Duplicate catalog card; curated Art of War full text is #132.
   57037, // Duplicate catalog card; curated Prince full text is #1232.
   22788, // LibriVox/readme record for The Federalist Papers; full text is #18.
+  26590, // Duplicate Vindication of the Rights of Woman card; full text is #3420.
 ]);
 
 const DEFAULT_IMPORTS = [
@@ -686,6 +687,12 @@ const DEFAULT_IMPORTS = [
   { id: 2542, subjects: ['Drama', "Women's history", 'World literature'], description: 'A full in-app public-domain copy of Ibsen\'s A Doll\'s House for older-student drama study.' },
   { id: 844, subjects: ['Drama', 'Comedy', 'British literature'], description: 'A full in-app public-domain copy of The Importance of Being Earnest for older-student drama study.' },
   { id: 3825, subjects: ['Drama', 'Social class', 'British literature'], description: 'A full in-app public-domain copy of Shaw\'s Pygmalion for older-student drama study.' },
+  // ---- 2026-07-12 batch: complete the multi-volume works whose Volume 1 we
+  //  already mirror in full (their Volume 2s were sitting as catalog-card
+  //  stubs — the importer replaces a matching card in place).
+  { id: 12410, subjects: ['World history', 'Travel writing', 'Primary sources'], description: 'A full in-app public-domain copy of The Travels of Marco Polo, Volume 2, for older-student world history study.' },
+  { id: 816, subjects: ['Civics', 'Political science', 'United States history'], description: 'A full in-app public-domain copy of Democracy in America, Volume 2, for civics and political-science study.' },
+  { id: 2088, subjects: ['Biology', 'History of science', 'Biography'], description: 'A full in-app public-domain copy of Life and Letters of Charles Darwin, Volume 2, for older-student science-history study.' },
 ];
 
 const dryRun = process.argv.includes('--dry-run');
@@ -794,6 +801,59 @@ function fetchPlainText(source) {
   return new TextDecoder(charset).decode(curlBytes(url, 'text/plain'));
 }
 
+// Plain-text Gutenberg files carry print-era markup that reads badly in the
+// app (and worse aloud — TTS speaks every marker): "[Illustration: caption]"
+// blocks for engravings that are not mirrored, "_word_" underscores for
+// italics, and bracketed transcriber notes. Strip those. Footnote apparatus
+// ("[1]" refs and "[Footnote 1: …]" bodies) is left alone on purpose:
+// removing the refs would orphan the note text and mangle scholarly editions.
+//
+// Bracket blocks are stripped on the RAW text (they span hard line wraps);
+// underscore emphasis is stripped AFTER paragraphs are joined, because a pair
+// like "_two\nwords_" only becomes same-line once the wrap is removed.
+function stripBlockArtifacts(text) {
+  return String(text || '')
+    // Bracketed transcriber notes ([Transcriber's Note: …]); captions/notes
+    // may span lines (no ] appears inside in practice).
+    .replace(/\[Transcriber'?s? Note:?[^\]]*\]/gi, '')
+    // Illustration markers: "[Illustration]" or "[Illustration: caption]".
+    // The colon/bracket must follow immediately — prose like Twain's
+    // "[Illustrations of it thoughtlessly omitted…]" is quoted content.
+    .replace(/\[Illustration(?::[^\]]*)?\]/gi, '');
+}
+
+// Underscore emphasis: keep the words, drop the underscores. Guarded so only
+// emphasis is touched — NOT underscores used as blank-fills in tables
+// ("_ miles from the Point _", inner space-anchored) and NOT ASCII-art
+// diagrams (Flatland's figures mix underscores with | / \\). Loops because
+// consuming one pair can expose another ("__word__").
+function stripEmphasisUnderscores(text) {
+  var out = String(text || '');
+  for (var pass = 0; pass < 4; pass++) {
+    var next = out.replace(/_([^_\n]{1,100}?)_/g, function (match, inner) {
+      if (!/^\S(?:[\s\S]*\S)?$/.test(inner)) return match; // blank-fill, not emphasis
+      if (/[|\/\\{}<>=+~]/.test(inner)) return match; // diagram/table art
+      return inner;
+    });
+    if (next === out) break;
+    out = next;
+  }
+  return out;
+}
+
+// Back-compat composition (also what one-off cleanup passes use per page).
+function stripInlineArtifacts(text) {
+  return stripEmphasisUnderscores(stripBlockArtifacts(text));
+}
+
+// Boxed transcriber notes (+----+ / | … | ASCII frames) survive as their own
+// "verse/table" paragraph — drop the whole block when it is one.
+function isTranscriberNoteBlock(paragraph) {
+  var p = String(paragraph || '');
+  if (!/transcriber'?s? note/i.test(p)) return false;
+  return /^[+|\[]/.test(p.trim()) || /^\s*[+|]/m.test(p);
+}
+
 function stripGutenbergBoilerplate(raw) {
   let text = String(raw || '').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
   const startPatterns = [
@@ -836,7 +896,7 @@ function normalizeParagraphs(text) {
       if (looksLikeVerseOrTable(lines)) return lines.join('\n');
       return lines.join(' ').replace(/\s+/g, ' ').trim();
     })
-    .filter((p) => p && !/^(_|\*|-){3,}$/.test(p));
+    .filter((p) => p && !/^(_|\*|-){3,}$/.test(p) && !isTranscriberNoteBlock(p));
 }
 
 function splitLongParagraph(paragraph) {
@@ -935,8 +995,8 @@ function makeBook(metadata, textSource, curation, catalogItem) {
     .slice(0, 8);
   const slug = catalogItem ? catalogItem.slug : 'gutenberg-ebook-' + metadata.id + '-' + slugify(title);
   const textUrl = textSource.url;
-  const body = stripGutenbergBoilerplate(fetchPlainText(textSource));
-  const paragraphs = normalizeParagraphs(body);
+  const body = stripBlockArtifacts(stripGutenbergBoilerplate(fetchPlainText(textSource)));
+  const paragraphs = normalizeParagraphs(body).map(stripEmphasisUnderscores);
   const bodyWords = words(paragraphs.join(' '));
   if (bodyWords < 300) throw new Error('Text for #' + metadata.id + ' was too short after cleaning (' + bodyWords + ' words).');
   const note = [
@@ -974,7 +1034,9 @@ function makeBook(metadata, textSource, curation, catalogItem) {
       url: 'https://www.gutenberg.org/ebooks/' + metadata.id,
       textUrl,
     },
-    cover: null,
+    // Gutendex records include a generated cover thumbnail for most books;
+    // stored as a plain URL string (StoryWeaver books use {card,large}).
+    cover: (metadata.formats && (metadata.formats['image/jpeg'] || metadata.formats['image/png'])) || null,
     audio: null,
     pages,
     stats: {
@@ -1029,9 +1091,22 @@ async function main() {
   if (skipped.length) console.log('Skipped: ' + JSON.stringify(skipped, null, 2));
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((err) => {
-    console.error(err && err.stack ? err.stack : err);
-    process.exit(1);
-  });
+if (require.main === module) {
+  main()
+    .then(() => process.exit(0))
+    .catch((err) => {
+      console.error(err && err.stack ? err.stack : err);
+      process.exit(1);
+    });
+}
+
+// Shared with maintenance scripts (e.g. one-off cleanup passes) so the
+// cleaning rules live in exactly one place.
+module.exports = {
+  stripInlineArtifacts,
+  stripBlockArtifacts,
+  stripEmphasisUnderscores,
+  isTranscriberNoteBlock,
+  compact,
+  words,
+};

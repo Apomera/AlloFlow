@@ -1451,7 +1451,7 @@
         language: book.language,
         langCode: book.langCode,
         level: book.level,
-        cover: (book.cover && book.cover.card) || null,
+        cover: typeof book.cover === 'string' ? book.cover : (book.cover && book.cover.card) || null,
         hasAudio: !!book.audio,
         pageCount: (book.pages || []).length,
         description: book.description || '',
@@ -2009,6 +2009,15 @@
     var busy = !!props.busy;
     var timeLabel = readingTimeLabel(b);
     var resumePage = props.resumePage || 0; // 1-based page to resume at, if any
+    // Gutendex cover thumbnails are generated files that can 404; fall back
+    // to the placeholder tile instead of a broken-image icon.
+    var _cf = useState(false);
+    var coverFailed = _cf[0], setCoverFailed = _cf[1];
+    // MARC subjects carry " -- " qualifiers ("Epic poetry -- History and
+    // criticism"); the head noun is what a browsing teacher needs.
+    var subjectChips = (b.subjects || []).map(function (s) { return String(s).split(' -- ')[0].trim().slice(0, 40); })
+      .filter(function (s, i, arr) { return s && arr.indexOf(s) === i; })
+      .slice(0, 3);
     return e('button', {
       className: 'relative text-left bg-white border border-slate-200 rounded-2xl p-3 hover:border-indigo-300 hover:shadow-md transition-shadow flex flex-col gap-2 ' +
         (busy ? 'opacity-70 pointer-events-none' : ''),
@@ -2016,8 +2025,9 @@
       disabled: busy,
       'aria-busy': busy,
     },
-      b.cover ? e('img', {
+      (b.cover && !coverFailed) ? e('img', {
         src: b.cover, alt: '', loading: 'lazy',
+        onError: function () { setCoverFailed(true); },
         className: 'w-full h-36 object-cover rounded-xl bg-slate-100',
       }) : e('div', { className: 'w-full h-36 rounded-xl bg-indigo-50 flex items-center justify-center text-4xl' }, '📖'),
       busy ? e('div', { className: 'absolute inset-0 rounded-2xl bg-white/60 flex items-center justify-center' },
@@ -2041,6 +2051,10 @@
           title: tr('readinglib_card_badge_hint', 'A short overview that links out to the full text at the source'),
         }, '🔗 ' + tr('readinglib_card_badge', 'Source card')) : null
       ),
+      subjectChips.length ? e('div', { className: 'flex flex-wrap gap-1' },
+        subjectChips.map(function (s, i) {
+          return e('span', { key: 'subj-' + i, className: 'px-2 py-0.5 rounded-full bg-slate-50 border border-slate-200 text-slate-500 text-[10px]' }, s);
+        })) : null,
       b.authors && b.authors.length ? e('div', { className: 'text-[11px] text-slate-500' }, b.authors.join(', ')) : null
     );
   }
@@ -2474,7 +2488,7 @@
 
     var _idx = useState({ status: 'loading', data: null, base: null, error: null });
     var index = _idx[0]; var setIndex = _idx[1];
-    var _f = useState({ language: 'English', level: '', search: '', audio: false, sort: 'level', source: '', searchAll: false });
+    var _f = useState({ language: 'English', level: '', search: '', audio: false, fullOnly: false, sort: 'level', source: '', searchAll: false });
     var filters = _f[0]; var setFilters = _f[1];
     var _open = useState(null); var openBook = _open[0]; var setOpenBook = _open[1];
     var _loadingBook = useState(null); var loadingBook = _loadingBook[0]; var setLoadingBook = _loadingBook[1];
@@ -2538,8 +2552,12 @@
         if (filters.language && b.language !== filters.language) return false;
         if (filters.level && String(b.level) !== filters.level) return false;
         if (filters.audio && !b.hasAudio) return false;
+        if (filters.fullOnly && isCardContent(b)) return false;
         if (q) {
-          var hay = (b.title + ' ' + (b.authors || []).join(' ') + ' ' + (b.description || '')).toLowerCase();
+          // Subjects matter most for Gutenberg catalog cards: their
+          // descriptions are one generic boilerplate line, so topic searches
+          // ("astronomy", "naval history") only work via the MARC subjects.
+          var hay = (b.title + ' ' + (b.authors || []).join(' ') + ' ' + (b.description || '') + ' ' + (b.subjects || []).join(' ')).toLowerCase();
           if (hay.indexOf(q) === -1) return false;
         }
         return true;
@@ -2548,7 +2566,11 @@
       // narration top-up, which reads as jumbled. Sort for a predictable
       // browse: by level (easiest→hardest) unless the teacher picks otherwise.
       var byTitle = function (a, b) { return String(a.title).localeCompare(String(b.title)); };
-      var byLevel = function (a, b) { return (Number(a.level) - Number(b.level)) || byTitle(a, b); };
+      // Within a level, readable-in-app texts come before link-out source
+      // cards — on the History shelf cards outnumber full texts ~5:1, and a
+      // wall of stubs buried the readable books.
+      var byCard = function (a, b) { return (isCardContent(a) ? 1 : 0) - (isCardContent(b) ? 1 : 0); };
+      var byLevel = function (a, b) { return (Number(a.level) - Number(b.level)) || byCard(a, b) || byTitle(a, b); };
       var sorters = {
         level: byLevel,
         title: byTitle,
@@ -2588,6 +2610,13 @@
       return ['1', '2', '3', '4', '5', '6'].filter(function (lv) { return present[lv]; });
     }, [collectionBooks]);
 
+    // Only shelves that mix link-out source cards with readable texts need
+    // the "Readable in app" toggle (Stories is all readable; on History the
+    // cards outnumber full texts ~5:1).
+    var hasCards = useMemo(function () {
+      return collectionBooks.some(isCardContent);
+    }, [collectionBooks]);
+
     // "Continue reading" — books with a saved position. Re-read localStorage
     // whenever we're back on the browse (openBook toggles), so a book just
     // closed shows up immediately. Only long-form texts persist a position.
@@ -2607,6 +2636,7 @@
         level: '',
         search: '',
         audio: false,
+        fullOnly: false,
         sort: 'level',
         source: '',
         searchAll: false,
@@ -2788,7 +2818,7 @@
           ),
           e('input', {
             className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',
-            placeholder: tr('readinglib_search_ph', 'Search titles and authors…'),
+            placeholder: tr('readinglib_search_ph', 'Search titles, authors, topics…'),
             value: filters.search,
             onChange: function (ev) { setFilters(Object.assign({}, filters, { search: ev.target.value })); },
             'aria-label': tr('readinglib_search', 'Search'),
@@ -2799,6 +2829,14 @@
             onClick: function () { setFilters(Object.assign({}, filters, { audio: !filters.audio })); },
             'aria-pressed': filters.audio,
           }, '🔊 ' + tr('readinglib_narrated_only', 'Narrated only')),
+          // Hide link-out source cards so only in-app readable texts remain.
+          hasCards ? e('button', {
+            className: 'rounded-lg border px-3 py-2 text-sm font-semibold text-left ' +
+              (filters.fullOnly ? 'bg-sky-600 text-white border-sky-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
+            onClick: function () { setFilters(Object.assign({}, filters, { fullOnly: !filters.fullOnly })); },
+            'aria-pressed': filters.fullOnly,
+            title: tr('readinglib_full_only_hint', 'Hide source cards that link out to other sites; show only texts you can read inside AlloFlow'),
+          }, '📖 ' + tr('readinglib_full_only', 'Readable in app')) : null,
           // Widen a search to the whole library (books on other shelves are
           // otherwise invisible from inside one collection).
           e('button', {

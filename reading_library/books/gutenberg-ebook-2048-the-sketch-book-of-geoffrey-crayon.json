@@ -31,7 +31,7 @@
     "name": "Project Gutenberg",
     "url": "https://www.gutenberg.org/ebooks/2048"
   },
-  "cover": null,
+  "cover": "https://www.gutenberg.org/cache/epub/2048/pg2048.cover.medium.jpg",
   "audio": null,
   "pages": [
     {
