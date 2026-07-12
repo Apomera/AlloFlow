@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-07-12T14:25:05.987Z",
+  "generated": "2026-07-12T14:28:31.412Z",
   "count": 63,
   "total_keys_expected": 9307,
   "available": [
@@ -406,8 +406,8 @@
     {
       "slug": "tigrinya",
       "display": "Tigrinya",
-      "keys": 18631,
-      "bytes": 1951530,
+      "keys": 18796,
+      "bytes": 1982764,
       "updated": "2026-07-12"
     },
     {
