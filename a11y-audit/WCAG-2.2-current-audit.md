@@ -41,6 +41,7 @@ This report evaluates the current local desktop command center and the bundled A
 - Added bounded arrow-key positioning, Shift-modified larger steps, shared instructions, and live movement announcements to visual labels and leader-line anchors (WCAG 2.5.7).
 - Enlarged visual-panel drawing colors, animation playback, frame deletion, duplication, and reordering controls to at least 24 by 24 CSS pixels (WCAG 2.5.8).
 - Enlarged annotation deletion, color, line-width, clear, and template controls to at least 24 by 24 CSS pixels (WCAG 2.5.8).
+- Enlarged immersive-reader focus, background, and text color controls to at least 24 by 24 CSS pixels (WCAG 2.5.8).
 
 ## Resolved finding
 

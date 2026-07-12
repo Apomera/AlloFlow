@@ -244,7 +244,7 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                                         key={opt.value}
                                         onClick={() => setFocusColor(opt.value)}
                                         aria-label={`Focus color ${opt.name}`}
-                                        className={`w-5 h-5 rounded-full border-2 transition-transform hover:scale-110 ${focusColor === opt.value ? 'scale-110' : 'border-transparent'}`}
+                                        className={`w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${focusColor === opt.value ? 'scale-110' : 'border-transparent'}`}
                                         style={{ backgroundColor: opt.value, borderColor: focusColor === opt.value ? c.strong : 'transparent' }}
                                         title={opt.name}
                                     />
@@ -618,9 +618,9 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             </select>
             <div className="flex items-center gap-1.5">
               <label className="text-[11px] text-slate-600">{safeT(t, 'immersive.bg', 'Bg')}</label>
-              <input type="color" value={settings.bgColor || '#fdfbf7'} onChange={(e) => setSettings(prev => ({...prev, bgColor: e.target.value}))} className="w-5 h-5 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.bgColor}} aria-label={safeT(t, 'immersive.bg_color', 'Background color')}/>
+              <input type="color" value={settings.bgColor || '#fdfbf7'} onChange={(e) => setSettings(prev => ({...prev, bgColor: e.target.value}))} className="w-6 h-6 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.bgColor}} aria-label={safeT(t, 'immersive.bg_color', 'Background color')}/>
               <label className="text-[11px] text-slate-600">{safeT(t, 'immersive.text', 'Text')}</label>
-              <input type="color" value={settings.fontColor || '#1e293b'} onChange={(e) => setSettings(prev => ({...prev, fontColor: e.target.value}))} className="w-5 h-5 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.fontColor}} aria-label={safeT(t, 'immersive.text_color', 'Text color')}/>
+              <input type="color" value={settings.fontColor || '#1e293b'} onChange={(e) => setSettings(prev => ({...prev, fontColor: e.target.value}))} className="w-6 h-6 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.fontColor}} aria-label={safeT(t, 'immersive.text_color', 'Text color')}/>
             </div>
         </div>
       </div>
