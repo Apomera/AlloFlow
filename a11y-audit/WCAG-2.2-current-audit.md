@@ -54,6 +54,7 @@ This report evaluates the current local desktop command center and the bundled A
 - Added initial focus, Tab containment, Escape dismissal, and trigger focus return to the named Hints dialog (WCAG 2.1.1, 2.4.3, 2.4.7, 4.1.2).
 - Removed full-screen button semantics from the Info/About backdrop; named the dialog; added initial focus, Tab containment, Escape dismissal, and focus return; and exposed its five-section selector as an arrow-key-operable ARIA tablist (WCAG 2.1.1, 2.4.3, 2.4.7, 4.1.2).
 - Added initial focus, Tab containment, Escape dismissal, and focus return to the XP dialog, and exposed its visual level meter as a named progressbar with programmatic bounds and current value (WCAG 1.3.1, 2.1.1, 2.4.3, 2.4.7, 4.1.2).
+- Replaced nested Study Timer dialogs with one named modal and a presentation-only backdrop; added initial focus, Tab containment, Escape dismissal, and focus return; and exposed remaining time and completion percentage programmatically (WCAG 1.3.1, 2.1.1, 2.4.3, 2.4.7, 4.1.2).
 
 ## Resolved finding
 
