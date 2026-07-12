@@ -599,28 +599,45 @@ window.StemLab = window.StemLab || {
           var hasOpenSwitch = mode === 'series' && components.some(function(c) { return c.type === 'switch' && !c.closed; });
 
           var totalR;
-          // Ideal meters (voltmeter ~∞Ω, ammeter ~0Ω) are PROBES, not loads — they don't change the
-          // network (the explainer says as much). Excluding them prevents two shipped wrong answers:
-          // a voltmeter in series falsely choking the current to ~0, and an ammeter parallel branch
-          // (R≈0.001) falsely tripping a SHORT CIRCUIT. The network is built from real loads only.
-          var loadComps = components.filter(function(c) { return c.type !== 'ammeter' && c.type !== 'voltmeter'; });
-          var noLoadPath = loadComps.length === 0; // only meters on the canvas → no current path
-          // An empty canvas is an OPEN circuit (no path): I = 0, R = infinite. Without this it fell
-          // through to the 0.001-ohm floor and reported ~9000 A / 81000 W on first open.
-          if (hasOpenSwitch || components.length === 0 || noLoadPath) {
+          // Ideal meters are part of the network: an ammeter has nearly zero
+          // resistance and belongs in series; a voltmeter has extremely high
+          // resistance and belongs in parallel. Wrong placement must change the
+          // circuit so learners can observe the open/short consequence.
+          var networkComps = components.slice();
+          var noLoadPath = networkComps.length === 0;
+          if (noLoadPath) {
             totalR = 1e9;
           } else if (mode === 'series') {
-            totalR = loadComps.reduce(function(s, c) { return s + getCompR(c); }, 0) || 0.001;
+            totalR = networkComps.reduce(function(sum, comp) {
+              return sum + getCompR(comp);
+            }, 0) || 0.001;
           } else {
-            var invSum = loadComps.reduce(function(s, c) { return s + 1 / (getCompR(c) || 1); }, 0);
-            totalR = invSum > 0 ? 1 / invSum : 0.001;
+            var invSum = networkComps.reduce(function(sum, comp) {
+              return sum + 1 / getCompR(comp);
+            }, 0);
+            totalR = invSum > 0 ? 1 / invSum : 1e9;
           }
 
-          var current = (hasOpenSwitch || components.length === 0 || noLoadPath) ? 0 : voltage / totalR;
+          var current = noLoadPath ? 0 : voltage / totalR;
           var power = voltage * current;
-          var isShort = !noLoadPath && loadComps.length > 0 && totalR < 1 && !hasOpenSwitch;
-          var isOpen = hasOpenSwitch;
-
+          var isShort = !noLoadPath && totalR < 1;
+          var isOpen = noLoadPath || totalR >= 1e8;
+          var hasAmmeter = components.some(function(comp) { return comp.type === 'ammeter'; });
+          var hasVoltmeter = components.some(function(comp) { return comp.type === 'voltmeter'; });
+          var meterIssue = mode === 'parallel' && hasAmmeter ? 'ammeter-short' :
+            mode === 'series' && hasVoltmeter ? 'voltmeter-open' : '';
+          var meterStatus = meterIssue === 'ammeter-short' ? 'Unsafe placement: short-circuit path' :
+            meterIssue === 'voltmeter-open' ? 'Incorrect placement: circuit is nearly open' :
+            hasAmmeter || hasVoltmeter ? 'Measurement placement is correct' : '';
+          var meterGuidance = meterIssue === 'ammeter-short'
+            ? 'An ammeter has nearly zero resistance. Across parallel nodes it bypasses the load and draws extremely high current. Move it into the series path.'
+            : meterIssue === 'voltmeter-open'
+            ? 'A voltmeter has extremely high resistance. In series it nearly stops current. Connect it across the component whose voltage difference you want.'
+            : hasAmmeter
+            ? 'The ammeter is in series, so circuit current passes through it.'
+            : hasVoltmeter
+            ? 'The voltmeter is in parallel, so it compares electric potential across the branch while drawing negligible current.'
+            : '';
           // Check short circuit badge
           if (isShort && !shortTriggered) {
             updMulti({ shortTriggered: true });
@@ -1558,6 +1575,35 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'text-sm font-black font-mono ' + (isSh ? 'text-red-300' : m.valCls) }, m.val)
                 );
               })
+            ),
+
+            (hasAmmeter || hasVoltmeter) && h('section', {
+              className: 'mt-3 rounded-xl border p-3 ' + (meterIssue ? 'bg-red-950/20 border-red-500/40' : 'bg-emerald-950/20 border-emerald-500/30'),
+              'aria-labelledby': 'circuitMeterCoachTitle',
+              'data-circuit-meter-coach': meterIssue || 'correct'
+            },
+              h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-bold uppercase tracking-wider ' + (meterIssue ? 'text-red-400' : 'text-emerald-400') }, 'Meter Safety Coach'),
+                  h('h4', { id: 'circuitMeterCoachTitle', className: 'text-sm font-black ' + (meterIssue ? 'text-red-200' : 'text-emerald-200') }, meterStatus)
+                ),
+                h('span', {
+                  className: 'px-2 py-1 rounded text-[10px] font-bold border ' + (meterIssue ? 'text-red-200 border-red-500/40' : 'text-emerald-200 border-emerald-500/40'),
+                  role: 'status',
+                  'aria-live': 'polite'
+                }, meterIssue ? 'Fix placement' : 'Connected correctly')
+              ),
+              h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, meterGuidance),
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 text-[10px]' },
+                h('div', { className: 'border-l-2 border-cyan-500 pl-2' },
+                  h('strong', { className: 'block text-cyan-300' }, 'Ammeter rule'),
+                  h('span', { className: 'text-slate-400' }, 'Series connection; very low internal resistance.')
+                ),
+                h('div', { className: 'border-l-2 border-yellow-500 pl-2' },
+                  h('strong', { className: 'block text-yellow-300' }, 'Voltmeter rule'),
+                  h('span', { className: 'text-slate-400' }, 'Parallel connection; very high internal resistance.')
+                )
+              )
             ),
 
             // Ohm's-law I-V characteristic — current vs voltage is a line through the origin (slope 1/R).
