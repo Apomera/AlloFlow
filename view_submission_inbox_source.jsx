@@ -83,6 +83,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   const [anchors, setAnchors] = useState([]);
   const [anchorsPanelOpen, setAnchorsPanelOpen] = useState(false);
   const [pendingAnchor, setPendingAnchor] = useState(null);  // {submissionIdx, responseKey, responseText}
+  const [confirmation, setConfirmation] = useState(null);
   // Phase 3 v2.1 (May 12 2026): one global rubric the teacher sets at the
   // top of the inbox, used by both the per-row Grade button (as default)
   // and the new "Grade entire queue" bulk action.
@@ -126,6 +127,9 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   const closeButtonRef = useRef(null);
   const anchorDialogRef = useRef(null);
   const anchorCancelRef = useRef(null);
+  const confirmationDialogRef = useRef(null);
+  const confirmationCancelRef = useRef(null);
+  const confirmationResolveRef = useRef(null);
 
   const containDialogFocus = (event, container) => {
     if (event.key === 'Escape') {
@@ -157,6 +161,27 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
     const timer = setTimeout(() => anchorCancelRef.current?.focus(), 0);
     return () => { clearTimeout(timer); if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus(); };
   }, [!!pendingAnchor]);
+
+  const requestConfirmation = (options) => new Promise(resolve => {
+    confirmationResolveRef.current = resolve;
+    setConfirmation(options);
+  });
+  const finishConfirmation = (accepted) => {
+    const resolve = confirmationResolveRef.current;
+    confirmationResolveRef.current = null;
+    setConfirmation(null);
+    if (resolve) resolve(accepted);
+  };
+
+  React.useEffect(() => {
+    if (!confirmation) return undefined;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => confirmationCancelRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+    };
+  }, [!!confirmation]);
 
   const tx = t || ((k, fallback) => fallback || k);
 
@@ -308,12 +333,14 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
       const conflicts = Object.keys(incoming).filter(k => rubricPresets[k]);
       let overwriteAll = false;
       if (conflicts.length > 0) {
-        overwriteAll = confirm(
-          conflicts.length + ' preset' + (conflicts.length === 1 ? '' : 's') + ' already exist with the same name: ' +
-          conflicts.slice(0, 5).map(k => '"' + incoming[k].name + '"').join(', ') +
-          (conflicts.length > 5 ? ', …' : '') +
-          '.\n\nClick OK to overwrite, Cancel to skip existing presets.'
-        );
+        overwriteAll = await requestConfirmation({
+          title: tr('Overwrite existing presets?'),
+          message: conflicts.length + ' preset' + (conflicts.length === 1 ? '' : 's') + ' already exist with the same name: ' +
+            conflicts.slice(0, 5).map(k => '"' + incoming[k].name + '"').join(', ') +
+            (conflicts.length > 5 ? ', …' : '') + '. Choose overwrite to replace them, or skip to keep the existing presets.',
+          confirmLabel: tr('Overwrite existing'),
+          cancelLabel: tr('Skip existing')
+        });
       }
       const next = { ...rubricPresets };
       let added = 0, skipped = 0, overwritten = 0;
@@ -1104,7 +1131,16 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                           )
                         ),
                         /*#__PURE__*/React.createElement('button', {
-                          type: 'button', onClick: (e) => { e.stopPropagation(); if (confirm('Delete preset "' + p.name + '"?')) deletePreset(key); },
+                          type: 'button', onClick: async (e) => {
+                            e.stopPropagation();
+                            const accepted = await requestConfirmation({
+                              title: tr('Delete preset?'),
+                              message: 'Delete preset "' + p.name + '"? This cannot be undone.',
+                              confirmLabel: tr('Delete preset'),
+                              cancelLabel: tr('Keep preset')
+                            });
+                            if (accepted) deletePreset(key);
+                          },
                           title: tr('Delete this preset'),
                           style: { padding: '2px 8px', background: 'transparent', color: '#475569', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.7rem', cursor: 'pointer' }
                         }, '✗')
@@ -1581,6 +1617,36 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
               type: 'button', onClick: confirmPendingAnchor,
               style: { padding: '8px 16px', background: '#f59e0b', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem' }
             }, tr('📌 Add anchor'))
+          )
+        )
+      ),
+      confirmation && /*#__PURE__*/React.createElement('div', {
+        role: 'presentation',
+        style: { position: 'absolute', inset: 0, background: 'rgba(15,23,42,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, zIndex: 20 }
+      },
+        /*#__PURE__*/React.createElement('div', {
+          ref: confirmationDialogRef,
+          role: 'alertdialog', 'aria-modal': 'true',
+          'aria-labelledby': 'submission-confirm-title', 'aria-describedby': 'submission-confirm-message',
+          tabIndex: -1,
+          onKeyDown: event => {
+            event.stopPropagation();
+            if (event.key === 'Escape') { event.preventDefault(); finishConfirmation(false); return; }
+            containDialogFocus(event, confirmationDialogRef.current);
+          },
+          style: { background: 'white', borderRadius: 14, boxShadow: '0 12px 40px rgba(0,0,0,0.3)', maxWidth: 480, width: '100%', padding: '22px 24px', border: '2px solid #fecaca' }
+        },
+          /*#__PURE__*/React.createElement('h3', { id: 'submission-confirm-title', style: { margin: '0 0 8px', color: '#991b1b', fontSize: '1.05rem' } }, confirmation.title),
+          /*#__PURE__*/React.createElement('p', { id: 'submission-confirm-message', style: { margin: '0 0 18px', color: '#334155', lineHeight: 1.5 } }, confirmation.message),
+          /*#__PURE__*/React.createElement('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' } },
+            /*#__PURE__*/React.createElement('button', {
+              ref: confirmationCancelRef, type: 'button', onClick: () => finishConfirmation(false),
+              style: { padding: '8px 14px', background: '#f8fafc', color: '#334155', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }
+            }, confirmation.cancelLabel || tr('Cancel')),
+            /*#__PURE__*/React.createElement('button', {
+              type: 'button', onClick: () => finishConfirmation(true),
+              style: { padding: '8px 14px', background: '#b91c1c', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }
+            }, confirmation.confirmLabel || tr('Confirm'))
           )
         )
       )

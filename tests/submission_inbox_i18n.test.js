@@ -9,6 +9,7 @@
 import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
 import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
@@ -92,4 +93,14 @@ describe('Submission Inbox UI localization', () => {
       dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     });
     expect(closeCount).toBe(1);
+  });
+  it('uses an accessible asynchronous alert dialog for destructive preset decisions', () => {
+    const source = readFileSync(resolve(process.cwd(), 'view_submission_inbox_source.jsx'), 'utf8');
+    expect(source).not.toMatch(/\bconfirm\s*\(/);
+    expect(source).toContain("role: 'alertdialog'");
+    expect(source).toContain("'aria-labelledby': 'submission-confirm-title'");
+    expect(source).toContain("'aria-describedby': 'submission-confirm-message'");
+    expect(source).toContain('confirmationCancelRef.current?.focus()');
+    expect(source).toContain("if (event.key === 'Escape') { event.preventDefault(); finishConfirmation(false);");
+    expect(source.match(/await requestConfirmation\(/g)).toHaveLength(2);
   });});
