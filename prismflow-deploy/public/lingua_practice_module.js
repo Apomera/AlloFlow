@@ -8,7 +8,7 @@
   if (!React) { console.error('[LinguaPractice] React missing'); return; }
   var e = React.createElement, useState = React.useState, useEffect = React.useEffect;
   var useMemo = React.useMemo, useRef = React.useRef;
-  var PROFILE_KEY = 'allo_lingua_profile_v1', PROGRESS_KEY = 'allo_lingua_progress_v1', RECENT_KEY = 'allo_lingua_recent_v1', CHAT_KEY = 'allo_lingua_chat_v1', SLOW_KEY = 'allo_lingua_slow_v1';
+  var PROFILE_KEY = 'allo_lingua_profile_v1', PROGRESS_KEY = 'allo_lingua_progress_v1', RECENT_KEY = 'allo_lingua_recent_v1', CHAT_KEY = 'allo_lingua_chat_v1', SLOW_KEY = 'allo_lingua_slow_v1', PIC_QUIZ_KEY = 'allo_lingua_picquiz_v1';
   var SLOW_RATE = 0.65;
   // ── Self-contained UI localization ─────────────────────────────────────────
   // Lingua's own chrome is translated by the learner's KNOWN language (what they
@@ -96,7 +96,9 @@
       picture_describe_label:'Your description in {lang}', picture_desc_placeholder:'Describe what you see in {lang}…',
       picture_speak_desc:'Speak your description', picture_check:'Get feedback', picture_checking:'Checking…',
       picture_feedback_strength:'You described the scene in the target language.',
-      picture_feedback_tip:'Add one more detail about the people or objects you see.'
+      picture_feedback_tip:'Add one more detail about the people or objects you see.',
+      pic_quiz:'Picture only',
+      pic_quiz_help:'Recall from the picture alone. The meaning appears after you reveal the answer.'
     },
     Spanish: {
       nav_setup:'Configuración', nav_vocabulary:'Vocabulario', nav_speak:'Hablar', nav_conversation:'Conversación', nav_chat:'Chat en vivo', nav_progress:'Progreso', nav_review:'Repaso', nav_saved:'Palabras guardadas',
@@ -177,7 +179,9 @@
       picture_describe_label:'Tu descripción en {lang}', picture_desc_placeholder:'Describe lo que ves en {lang}…',
       picture_speak_desc:'Di tu descripción', picture_check:'Recibir comentarios', picture_checking:'Revisando…',
       picture_feedback_strength:'Describiste la escena en el idioma meta.',
-      picture_feedback_tip:'Agrega un detalle más sobre las personas o los objetos que ves.'
+      picture_feedback_tip:'Agrega un detalle más sobre las personas o los objetos que ves.',
+      pic_quiz:'Solo imagen',
+      pic_quiz_help:'Recuerda solo con la imagen. El significado aparece al revelar la respuesta.'
     },
     French: {
       nav_setup:'Configuration', nav_vocabulary:'Vocabulaire', nav_speak:'Parler', nav_conversation:'Conversation', nav_chat:'Chat en direct', nav_progress:'Progrès', nav_review:'Révision', nav_saved:'Mots enregistrés',
@@ -258,7 +262,9 @@
       picture_describe_label:'Ta description en {lang}', picture_desc_placeholder:'Décris ce que tu vois en {lang}…',
       picture_speak_desc:'Dis ta description', picture_check:'Recevoir des commentaires', picture_checking:'Vérification…',
       picture_feedback_strength:'Tu as décrit la scène dans la langue cible.',
-      picture_feedback_tip:'Ajoute un détail de plus sur les personnes ou les objets que tu vois.'
+      picture_feedback_tip:'Ajoute un détail de plus sur les personnes ou les objets que tu vois.',
+      pic_quiz:'Image seule',
+      pic_quiz_help:'Rappelle-toi avec l’image seulement. Le sens apparaît après avoir révélé la réponse.'
     },
     Portuguese: {
       nav_setup:'Configuração', nav_vocabulary:'Vocabulário', nav_speak:'Falar', nav_conversation:'Conversa', nav_chat:'Chat ao vivo', nav_progress:'Progresso', nav_review:'Revisão', nav_saved:'Palavras salvas',
@@ -339,7 +345,9 @@
       picture_describe_label:'Sua descrição em {lang}', picture_desc_placeholder:'Descreva o que você vê em {lang}…',
       picture_speak_desc:'Diga sua descrição', picture_check:'Receber comentários', picture_checking:'Verificando…',
       picture_feedback_strength:'Você descreveu a cena no idioma alvo.',
-      picture_feedback_tip:'Adicione mais um detalhe sobre as pessoas ou os objetos que você vê.'
+      picture_feedback_tip:'Adicione mais um detalhe sobre as pessoas ou os objetos que você vê.',
+      pic_quiz:'Somente imagem',
+      pic_quiz_help:'Lembre apenas com a imagem. O significado aparece ao revelar a resposta.'
     }
   };
   function interpolate(s, params) {
@@ -671,6 +679,12 @@
     });
   }
   function idbGetImage(key) {
+    // Test/preview override: a plain object on window supplies images where
+    // IndexedDB is unavailable (jsdom) or pre-seeding is easier.
+    try {
+      var o = typeof window !== 'undefined' && window.__alloLinguaImages;
+      if (o && typeof o[key] === 'string') return Promise.resolve(o[key]);
+    } catch (_) {}
     return idbOpen().then(function (db) {
       if (!db) return null;
       return new Promise(function (res) {
@@ -714,13 +728,21 @@
     return typeof window !== 'undefined' && typeof window.callGeminiImageEdit === 'function';
   }
   function isImageUrl(url) { return typeof url === 'string' && url.indexOf('data:image') === 0; }
+  function dataUrlBase64(url) {
+    var s = String(url || ''), i = s.indexOf('base64,');
+    return i >= 0 ? s.slice(i + 7) : '';
+  }
   // "STRICTLY NO TEXT" matters: image models render garbled lettering, and a
   // wrong-language caption on a vocabulary card would teach the wrong thing.
-  function termImagePrompt(item, targetName) {
+  // With styleRef, the call also attaches an earlier card's image (the
+  // referenceBase64 channel adventure mode uses for portrait consistency) so
+  // one practice set reads as one coherent visual family.
+  function termImagePrompt(item, targetName, styleRef) {
     return 'Icon-style illustration of the ' + targetName + ' word "' + String(item.term || '').slice(0, 80) +
       '" meaning "' + String(item.meaning || '').slice(0, 120) + '"' +
       (item.example ? ' (context: ' + String(item.example).slice(0, 140) + ')' : '') +
-      '. Simple, clear, flat vector art, white background, age-neutral, culturally respectful. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.';
+      '. Simple, clear, flat vector art, white background, age-neutral, culturally respectful. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.' +
+      (styleRef ? ' Match the art style, color palette, and rendering of the reference image, but depict THIS word’s meaning.' : '');
   }
   function sceneImagePrompt(lesson, profile) {
     var scene = lesson && lesson.scenario ? String(lesson.scenario).slice(0, 220) : String(profile.topic || 'everyday life').slice(0, 160);
@@ -1101,6 +1123,7 @@
     var pfbs=useState(null), pictureFeedback=pfbs[0], setPictureFeedback=pfbs[1];
     var pbss=useState(false), pictureBusy=pbss[0], setPictureBusy=pbss[1];
     var rims=useState(null), reviewImage=rims[0], setReviewImage=rims[1];
+    var pqs=useState(function(){try{return localStorage.getItem(PIC_QUIZ_KEY)==='1';}catch(_){return false;}}), picQuiz=pqs[0], setPicQuiz=pqs[1];
     var voiceRef=useRef(null), dialogRef=useRef(null), sectionHeadingRef=useRef(null), lastTabRef=useRef(null);
     var phraseRef=useRef(null), conversationPromptRef=useRef(null), reviewRegionRef=useRef(null), reviewAnswerRef=useRef(null);
     var previousIndexRef=useRef(0), previousTurnRef=useRef(0), reviewFocusPendingRef=useRef(false), captureCompletedRef=useRef(false);
@@ -1266,6 +1289,9 @@
         list=has?list.filter(function(x){return x.id!==id;}):list.concat([Object.assign({id:id,language:profile.target,reviewStage:0,nextReviewAt:0,reviews:0},item)]);
         return Object.assign({},old,{saved:list});});
     }
+    function togglePicQuiz(){
+      setPicQuiz(function(old){var next=!old;try{localStorage.setItem(PIC_QUIZ_KEY,next?'1':'0');}catch(_){}return next;});
+    }
     function revealReview(){
       reviewFocusPendingRef.current=true;
       setReviewStatus(tr('answer_revealed'));
@@ -1366,18 +1392,32 @@
       imgWarnedRef.current=true;
       notify(props,tr('pictures_unavailable'),'info');
     }
+    // First image (cached or newly generated) becomes the style reference for
+    // the rest of the set, so all cards share one visual family.
+    function setStyleReference(excludeTerm){
+      var ref=null;
+      if(lesson)lesson.vocabulary.some(function(it){
+        if(excludeTerm&&it.term===excludeTerm)return false;
+        var u=vocabImages[it.term];
+        if(u){ref=dataUrlBase64(u);return true;}
+        return false;
+      });
+      return ref||null;
+    }
     async function generateTermImages(){
       if(!lesson||!imageGenAvailable()||picGen)return;
       var req=imageReqRef.current;
       var pending=lesson.vocabulary.filter(function(item){return !vocabImages[item.term];});
       if(!pending.length)return;
+      var refB64=setStyleReference(null);
       for(var i=0;i<pending.length;i++){
         if(req!==imageReqRef.current)return;
         setPicGen({n:i+1,total:pending.length});
         var url=null;
-        try{url=await window.callGeminiImageEdit(termImagePrompt(pending[i],profile.target),null,360,0.75);}catch(_){url=null;}
+        try{url=await window.callGeminiImageEdit(termImagePrompt(pending[i],profile.target,!!refB64),null,360,0.75,refB64);}catch(_){url=null;}
         if(req!==imageReqRef.current)return;
         if(!isImageUrl(url)){imageUnavailableNotice();break;}
+        if(!refB64)refB64=dataUrlBase64(url);
         (function(term,u){
           setVocabImages(function(old){var next=Object.assign({},old);next[term]=u;return next;});
           idbPutImage(profile.target+'::term::'+term,u);
@@ -1388,9 +1428,10 @@
     async function regenTermImage(item){
       if(!imageGenAvailable()||picGen)return;
       var req=imageReqRef.current;
+      var refB64=setStyleReference(item.term);
       setPicGen({n:1,total:1});
       var url=null;
-      try{url=await window.callGeminiImageEdit(termImagePrompt(item,profile.target),null,360,0.75);}catch(_){url=null;}
+      try{url=await window.callGeminiImageEdit(termImagePrompt(item,profile.target,!!refB64),null,360,0.75,refB64);}catch(_){url=null;}
       if(req!==imageReqRef.current)return;
       setPicGen(null);
       if(!isImageUrl(url)){imageUnavailableNotice();return;}
@@ -1657,16 +1698,24 @@
             tab==='review'&&e('div',{ref:reviewRegionRef,tabIndex:-1,className:'max-w-3xl mx-auto p-5 sm:p-8'+focusTargetClass},
               e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},tr('spaced_review')),
               sectionTitle(tr('review_lang',{lang:profile.target})),
-              e('p',{className:'text-sm text-slate-600 mt-2 mb-7'},tr('review_intro')),
+              e('p',{className:'text-sm text-slate-600 mt-2 mb-4'},tr('review_intro')),
               e('p',{className:'sr-only',role:'status','aria-live':'polite','aria-atomic':'true'},reviewStatus),
+              reviewItem&&reviewImage?e('div',{className:'mb-4'},
+                e('button',{type:'button',onClick:togglePicQuiz,'aria-pressed':picQuiz,title:tr('pic_quiz_help'),
+                  className:'inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-xs font-bold transition-colors '+(picQuiz?'border-emerald-300 bg-emerald-50 text-emerald-800':'border-slate-300 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-700')+focusClass},
+                  navIcon('Image'),tr('pic_quiz'))
+              ):null,
               !(progress.saved||[]).some(function(item){return item.language===profile.target;})?
                 e(EmptyState,{icon:'☆',title:tr('no_words_title',{lang:profile.target}),sub:tr('no_words_sub_review')}):
               !reviewItem?
                 e(EmptyState,{icon:'✓',tone:'positive',title:tr('caught_up'),sub:tr('caught_up_sub')}):
               e('section',{className:'lingua-panel px-6 py-10 text-center'},
                 e('p',{className:'text-xs font-bold uppercase text-slate-500'},tr('recall_word',{lang:profile.target})),
-                reviewImage?e('img',{src:reviewImage,alt:'','aria-hidden':'true',className:'mx-auto mt-4 max-h-40 rounded-lg border border-slate-100'}):null,
-                e('p',{className:'text-2xl font-bold text-slate-900 mt-3',dir:known.rtl?'rtl':'ltr',lang:known.code},reviewItem.meaning),
+                // In picture-only mode the image IS the pre-reveal cue, so it takes
+                // the meaning as alt text (screen-reader users keep an equivalent
+                // cue); otherwise it stays decorative beside the visible meaning.
+                reviewImage?e('img',{src:reviewImage,alt:picQuiz&&!reviewRevealed?reviewItem.meaning:'','aria-hidden':picQuiz&&!reviewRevealed?undefined:'true',className:'mx-auto mt-4 max-h-40 rounded-lg border border-slate-100'}):null,
+                (!picQuiz||!reviewImage||reviewRevealed)?e('p',{className:'text-2xl font-bold text-slate-900 mt-3',dir:known.rtl?'rtl':'ltr',lang:known.code},reviewItem.meaning):null,
                 !reviewRevealed?
                   e('button',{type:'button',onClick:revealReview,className:primaryClass+' mt-7'},tr('reveal_answer')):
                   e(React.Fragment,null,
@@ -1709,6 +1758,7 @@
   LinguaPractice._wordBankCsv=wordBankCsv;
   LinguaPractice._uiStrings=UI_STRINGS;
   LinguaPractice._termImagePrompt=termImagePrompt;
+  LinguaPractice._dataUrlBase64=dataUrlBase64;
   LinguaPractice._sceneImagePrompt=sceneImagePrompt;
   LinguaPractice._pictureFeedbackPrompt=pictureFeedbackPrompt;
   LinguaPractice._scheduleReview=scheduleReview;

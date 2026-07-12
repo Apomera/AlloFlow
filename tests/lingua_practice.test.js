@@ -395,6 +395,21 @@ describe('Lingua Practice illustration prompts', () => {
     expect(prompt).toContain('culturally respectful');
   });
 
+  it('adds a style-match clause only when a reference image accompanies the call', () => {
+    const item = { term: 'lápiz', meaning: 'pencil' };
+    expect(Lingua._termImagePrompt(item, 'Spanish', false)).not.toContain('reference image');
+    const styled = Lingua._termImagePrompt(item, 'Spanish', true);
+    expect(styled).toContain('Match the art style');
+    expect(styled).toContain('THIS word’s meaning'); // style match must not clone the subject
+  });
+
+  it('extracts base64 payloads from data URLs safely', () => {
+    expect(Lingua._dataUrlBase64('data:image/png;base64,QUFB')).toBe('QUFB');
+    expect(Lingua._dataUrlBase64('data:image/jpeg;base64,')).toBe('');
+    expect(Lingua._dataUrlBase64('not a data url')).toBe('');
+    expect(Lingua._dataUrlBase64(null)).toBe('');
+  });
+
   it('builds the scene prompt from the lesson scenario, falling back to the topic', () => {
     const withScenario = Lingua._sceneImagePrompt({ scenario: 'You are at a small cafe.' }, { topic: 'ignored' });
     expect(withScenario).toContain('small cafe');

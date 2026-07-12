@@ -442,9 +442,9 @@ describe('Lingua Practice AI illustrations', () => {
 
   it('illustrates the vocabulary set on demand with text-free icon prompts', async () => {
     const imageCalls = [];
-    window.callGeminiImageEdit = async (prompt, base64) => {
-      imageCalls.push({ prompt, base64 });
-      return 'data:image/png;base64,QUFB';
+    window.callGeminiImageEdit = async (prompt, base64, w, q, ref) => {
+      imageCalls.push({ prompt, base64, ref });
+      return 'data:image/png;base64,IMG' + imageCalls.length;
     };
     await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, addToast: () => {}, callGemini: async () => JSON.stringify(lesson) }));
     await act(async () => { button('Build practice set').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); await Promise.resolve(); });
@@ -461,11 +461,27 @@ describe('Lingua Practice AI illustrations', () => {
     expect(imageCalls[0].prompt).toContain('lápiz');
     expect(imageCalls[0].prompt).toContain('pencil');
     expect(imageCalls[0].prompt).toContain('NO TEXT');
+    // Style consistency: the first image has no reference; every later call
+    // attaches the first image's base64 and asks to match its style.
+    expect(imageCalls[0].ref).toBe(null);
+    expect(imageCalls[0].prompt).not.toContain('reference image');
+    expect(imageCalls[1].ref).toBe('IMG1');
+    expect(imageCalls[1].prompt).toContain('Match the art style');
     expect(host.querySelector('img[alt="Illustration of lápiz"]')).toBeTruthy();
     expect(host.querySelector('img[alt="Illustration of ayuda"]')).toBeTruthy();
     expect(host.textContent).toContain('AI-generated illustrations');
-    // Per-card regenerate appears once a card has an image.
-    expect(host.querySelector('button[aria-label="New illustration of lápiz"]')).toBeTruthy();
+    // Per-card regenerate appears once a card has an image, and regenerating
+    // one card keeps it in the family of ANOTHER card's image.
+    const regen = host.querySelector('button[aria-label="New illustration of ayuda"]');
+    expect(regen).toBeTruthy();
+    await act(async () => {
+      regen.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await new Promise((r) => setTimeout(r, 0));
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(imageCalls).toHaveLength(3);
+    expect(imageCalls[2].ref).toBe('IMG1'); // lápiz's image, not ayuda's own
+    expect(imageCalls[2].prompt).toContain('Match the art style');
   });
 
   it('hides picture features entirely when image generation is unavailable', async () => {
@@ -512,6 +528,60 @@ describe('Lingua Practice AI illustrations', () => {
     expect(host.textContent).toContain('Nice detail on the pencil.');
     expect(host.textContent).toContain('Mention the teacher too.');
     expect(host.textContent).toContain('La maestra sonríe.');
+  });
+});
+
+describe('Lingua Practice picture-only recall', () => {
+  afterEach(() => { delete window.__alloLinguaImages; });
+
+  it('hides the meaning behind the picture until reveal, with a screen-reader-equivalent cue', async () => {
+    window.__alloLinguaImages = { 'Spanish::term::hola': 'data:image/png;base64,SE9MQQ==' };
+    localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({
+      sessions: 0, spokenAttempts: 0,
+      saved: [{ id: 'Spanish::hola', language: 'Spanish', term: 'hola', meaning: 'hello', example: 'Hola, Ana.', translation: 'Hello, Ana.', reviewStage: 0, nextReviewAt: 0, reviews: 0 }],
+    }));
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {} }));
+    await act(async () => { button('Review (1)').dispatchEvent(new MouseEvent('click', { bubbles: true })); await new Promise((r) => setTimeout(r, 0)); });
+
+    // Default mode: meaning visible, image decorative.
+    let img = host.querySelector('section img');
+    expect(img).toBeTruthy();
+    expect(img.getAttribute('aria-hidden')).toBe('true');
+    expect(host.textContent).toContain('hello');
+
+    const toggle = button('Picture only');
+    expect(toggle.getAttribute('aria-pressed')).toBe('false');
+    await act(async () => { toggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+
+    // Picture-only: visible meaning gone, image carries it as alt text.
+    expect(button('Picture only').getAttribute('aria-pressed')).toBe('true');
+    expect(localStorage.getItem('allo_lingua_picquiz_v1')).toBe('1');
+    img = host.querySelector('section img');
+    expect(img.getAttribute('alt')).toBe('hello');
+    expect(img.getAttribute('aria-hidden')).toBe(null);
+    const meaningVisible = Array.from(host.querySelectorAll('p')).some((n) => n.textContent === 'hello');
+    expect(meaningVisible).toBe(false);
+
+    // Reveal restores the meaning and returns the image to decorative.
+    await act(async () => { button('Reveal answer').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.textContent).toContain('hello');
+    expect(host.textContent).toContain('Hola, Ana.');
+    img = host.querySelector('section img');
+    expect(img.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('falls back to the meaning cue when the due word has no cached picture', async () => {
+    localStorage.setItem('allo_lingua_picquiz_v1', '1'); // mode persisted ON
+    localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({
+      sessions: 0, spokenAttempts: 0,
+      saved: [{ id: 'Spanish::adiós', language: 'Spanish', term: 'adiós', meaning: 'goodbye', reviewStage: 0, nextReviewAt: 0, reviews: 0 }],
+    }));
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {} }));
+    await act(async () => { button('Review (1)').dispatchEvent(new MouseEvent('click', { bubbles: true })); await new Promise((r) => setTimeout(r, 0)); });
+
+    expect(host.querySelector('section img')).toBe(null);
+    expect(button('Picture only')).toBeUndefined(); // toggle only offered with a picture
+    expect(host.textContent).toContain('goodbye'); // meaning cue still shown
   });
 });
 
