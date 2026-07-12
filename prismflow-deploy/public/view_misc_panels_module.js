@@ -1418,8 +1418,56 @@ function TourOverlay(props) {
     tourSteps,
     compactTour = false
   } = props;
+  const tourDialogRef = React.useRef(null);
+  const closeTourOverlay = () => {
+    if (spotlightMessage) {
+      setRunTour(false);
+      setIsSpotlightMode(false);
+      setSpotlightMessage("");
+    } else {
+      handleSetRunTourToFalse();
+    }
+  };
+  const containTourFocus = (event) => {
+    if (!event || !tourDialogRef.current) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeTourOverlay();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = Array.from(tourDialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter((el) => !el.hidden && el.getAttribute("aria-hidden") !== "true");
+    if (!focusable.length) {
+      event.preventDefault();
+      tourDialogRef.current.focus();
+      return;
+    }
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+  React.useEffect(() => {
+    if (!(runTour && tourRect)) return void 0;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => {
+      const firstAction = tourDialogRef.current?.querySelector("button:not([disabled])");
+      if (firstAction) firstAction.focus();
+      else tourDialogRef.current?.focus();
+    }, 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === "function") previouslyFocused.focus();
+    };
+  }, [runTour, !!tourRect]);
   if (!(runTour && tourRect)) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9999] pointer-events-auto font-sans" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 transition-all duration-500" }, /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: 0, left: 0, right: 0, height: tourRect.top, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, left: 0, width: tourRect.left, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, right: 0, left: tourRect.right, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.bottom, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } })), isSpotlightMode && botSpotlightPos && /* @__PURE__ */ React.createElement("svg", { className: "absolute inset-0 pointer-events-none z-[10000]", style: { overflow: "visible" }, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement(
+  const tourAccessibleTitle = spotlightMessage ? spotlightMessage.title || t("tour.spotlight_title") : tourSteps[tourStep].title;
+  const tourAccessibleText = spotlightMessage ? spotlightMessage.text || spotlightMessage || "" : tourSteps[tourStep].text || "";
+  return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[9999] pointer-events-auto font-sans" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 transition-all duration-500" }, /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: 0, left: 0, right: 0, height: tourRect.top, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, left: 0, width: tourRect.left, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, right: 0, left: tourRect.right, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.bottom, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } })), isSpotlightMode && botSpotlightPos && /* @__PURE__ */ React.createElement("svg", { className: "absolute inset-0 pointer-events-none z-[10000]", style: { overflow: "visible" }, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement(
     "radialGradient",
     {
       id: "beamGradient",
@@ -1445,7 +1493,7 @@ function TourOverlay(props) {
                         `,
       fill: "url(#beamGradient)",
       style: { mixBlendMode: "screen", filter: "url(#glow)" },
-      className: "animate-in fade-in duration-500"
+      className: "animate-in fade-in duration-500 motion-reduce:animate-none motion-reduce:transition-none"
     }
   ), /* @__PURE__ */ React.createElement(
     "rect",
@@ -1458,9 +1506,9 @@ function TourOverlay(props) {
       fill: "none",
       stroke: "rgba(250, 204, 21, 0.4)",
       strokeWidth: "3",
-      className: "animate-pulse"
+      className: "animate-pulse motion-reduce:animate-none"
     }
-  )), !isSpotlightMode && /* @__PURE__ */ React.createElement("div", { className: "animate-pulse", style: {
+  )), !isSpotlightMode && /* @__PURE__ */ React.createElement("div", { className: "animate-pulse motion-reduce:animate-none", style: {
     position: "absolute",
     top: tourRect.top - 4,
     left: tourRect.left - 4,
@@ -1473,15 +1521,22 @@ function TourOverlay(props) {
   } }), /* @__PURE__ */ React.createElement(
     "div",
     {
+      ref: tourDialogRef,
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-label": tourAccessibleTitle,
+      tabIndex: -1,
+      onKeyDown: containTourFocus,
       className: compactTour ? (
         // Compact placement for modal-context tours (2026-06-10,
         // maintainer feedback): the full-height 500px drawer covered
         // the pipeline modal it was narrating. A centered horizontal
         // strip docks on whichever edge the TARGET is NOT — target in
         // the lower half → card on top, and vice versa.
-        `fixed left-1/2 -translate-x-1/2 w-[min(680px,94vw)] bg-white p-5 pt-4 shadow-2xl max-h-[40vh] overflow-y-auto flex flex-col gap-3 animate-in duration-500 z-[11000] border-4 border-amber-300 rounded-3xl ${tourRect && tourRect.top + tourRect.height / 2 > window.innerHeight / 2 ? "top-3 slide-in-from-top" : "bottom-3 slide-in-from-bottom"}`
-      ) : `fixed top-4 bottom-4 bg-white p-8 pt-6 shadow-2xl w-[500px] max-h-[calc(100vh-2rem)] overflow-y-auto flex flex-col gap-6 animate-in duration-500 z-[11000] border-amber-300 ${tourRect && tourRect.left > window.innerWidth / 2 ? "left-0 border-r-4 rounded-r-3xl slide-in-from-left" : "right-0 border-l-4 rounded-l-3xl slide-in-from-right"}`
+        `fixed left-1/2 -translate-x-1/2 w-[min(680px,94vw)] bg-white p-5 pt-4 shadow-2xl max-h-[40vh] overflow-y-auto flex flex-col gap-3 animate-in duration-500 motion-reduce:animate-none motion-reduce:transition-none z-[11000] border-4 border-amber-300 rounded-3xl ${tourRect && tourRect.top + tourRect.height / 2 > window.innerHeight / 2 ? "top-3 slide-in-from-top" : "bottom-3 slide-in-from-bottom"}`
+      ) : `fixed top-4 bottom-4 bg-white p-8 pt-6 shadow-2xl w-[500px] max-h-[calc(100vh-2rem)] overflow-y-auto flex flex-col gap-6 animate-in duration-500 motion-reduce:animate-none motion-reduce:transition-none z-[11000] border-amber-300 ${tourRect && tourRect.left > window.innerWidth / 2 ? "left-0 border-r-4 rounded-r-3xl slide-in-from-left" : "right-0 border-l-4 rounded-l-3xl slide-in-from-right"}`
     },
+    /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, tourAccessibleTitle, ". ", tourAccessibleText),
     spotlightMessage ? /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 text-lg flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 18, className: "text-yellow-500 fill-current" }), " ", spotlightMessage.title || t("tour.spotlight_title")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 mt-2" }, (spotlightMessage.text || spotlightMessage || "").split(/\r?\n/).map((line, i) => {
       const cleanLine = line.trim();
       if (!cleanLine) return /* @__PURE__ */ React.createElement("div", { key: i, className: "h-3" });
@@ -1555,9 +1610,7 @@ function TourOverlay(props) {
         style: { pointerEvents: "all", zIndex: 9999 },
         onClick: (e) => {
           e.stopPropagation();
-          setRunTour(false);
-          setIsSpotlightMode(false);
-          setSpotlightMessage("");
+          closeTourOverlay();
         },
         className: "bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm w-full"
       },

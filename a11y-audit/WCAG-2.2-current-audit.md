@@ -73,6 +73,7 @@ This report evaluates the current local desktop command center and the bundled A
 - Added initial focus, Tab containment, Escape dismissal, nested-dialog isolation, and focus return to the PDF Diff Viewer; replaced both character-performance and rejection-reset browser confirmations with awaited named/described alert dialogs that default to the non-destructive choice (WCAG 2.1.1, 2.4.3, 2.4.7, 3.3.4, 4.1.2).
 - Added a named/described focus-managed Group Session dialog with initial Close focus, Tab containment, Escape dismissal, focus return, and reduced-motion entry; added visible, resource-named Move earlier/later buttons as a keyboard and single-pointer alternative to drag reordering (WCAG 2.1.1, 2.3.3, 2.4.3, 2.4.7, 2.5.7, 4.1.2).
 - Added visible keyboard/single-pointer Left, Right, Up, and Down controls as alternatives to dragging the Volume Builder visualization; retained named zoom controls, announced tilt/turn/zoom changes politely, and exposed a dynamic image description with shape, dimensions, and volume (WCAG 1.1.1, 2.1.1, 2.5.7, 4.1.2, 4.1.3).
+- Made the Tour Overlay card a named focus-managed dialog with initial actionable focus, Tab containment, Escape dismissal, and focus return; announced step title/text changes atomically and politely; and added reduced-motion fallbacks to the spotlight pulse, beam, and card entry animations (WCAG 2.1.1, 2.3.3, 2.4.3, 2.4.7, 4.1.2, 4.1.3).
 
 ## Resolved finding
 

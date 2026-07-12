@@ -57,4 +57,13 @@ describe('Misc Panels dialog accessibility', () => {
     expect(source).toContain('role="group" aria-label="Rotate 3D volume"');
     expect(source).toContain('role="img"');
     expect(source).toContain('aria-live="polite">Tilt {Math.round(cubeRotation.x)} degrees');
+  });
+  it('focus-manages and announces Tour Overlay steps', () => {
+    expect(source).toContain('ref={tourDialogRef}');
+    expect(source).toContain('role="dialog"');
+    expect(source).toContain('aria-label={tourAccessibleTitle}');
+    expect(source).toContain('onKeyDown={containTourFocus}');
+    expect(source).toContain("if (event.key === 'Escape') { event.preventDefault(); closeTourOverlay();");
+    expect(source).toContain('role="status" aria-live="polite" aria-atomic="true">{tourAccessibleTitle}. {tourAccessibleText}');
+    expect(source).toContain('motion-reduce:animate-none motion-reduce:transition-none');
   });});
