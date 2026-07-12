@@ -56,6 +56,56 @@ function PdfDiffViewer(props) {
     warnLog
   } = props;
   const theme = ['light', 'dark', 'contrast'].includes(props.theme) ? props.theme : 'light';
+  const diffDialogRef = React.useRef(null);
+  const diffCloseRef = React.useRef(null);
+  const diffConfirmRef = React.useRef(null);
+  const diffConfirmCancelRef = React.useRef(null);
+  const diffConfirmResolveRef = React.useRef(null);
+  const [diffConfirmation, setDiffConfirmation] = React.useState(null);
+  const requestDiffConfirmation = (options) => new Promise(resolve => {
+    diffConfirmResolveRef.current = resolve;
+    setDiffConfirmation(options);
+  });
+  const finishDiffConfirmation = (accepted) => {
+    const resolve = diffConfirmResolveRef.current;
+    diffConfirmResolveRef.current = null;
+    setDiffConfirmation(null);
+    if (resolve) resolve(accepted);
+  };
+  const containDiffFocus = (event, container, onEscape) => {
+    if (!event || !container) return;
+    const nestedDialog = event.target?.closest?.('[role="alertdialog"]');
+    if (nestedDialog && nestedDialog !== container) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      if (typeof onEscape === 'function') onEscape();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const focusable = Array.from(container.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(el => !el.hidden && el.getAttribute('aria-hidden') !== 'true');
+    if (!focusable.length) { event.preventDefault(); container.focus(); return; }
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  };
+  React.useEffect(() => {
+    if (!(diffViewOpen && pdfFixResult)) return undefined;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => diffCloseRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+    };
+  }, [diffViewOpen, !!pdfFixResult]);
+  React.useEffect(() => {
+    if (!diffConfirmation) return undefined;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => diffConfirmCancelRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+    };
+  }, [!!diffConfirmation]);
   if (!(diffViewOpen && pdfFixResult)) return null;
   return ReactDOM.createPortal((() => {
         // When opened via "See what changed" after an Expert Workbench command, diff that COMMAND's
@@ -145,18 +195,29 @@ function PdfDiffViewer(props) {
             }
           });
         }
-        const _onTryGranularityChange = (g) => {
+        const _onTryGranularityChange = async (g) => {
           if (g === 'chars') {
             const combined = (_src.length || 0) + (_fin.length || 0);
             const CHARS_GUARD_THRESHOLD = 20000; // ~8-10 PDF pages
             if (combined > CHARS_GUARD_THRESHOLD) {
               const approxSec = Math.round((combined * combined) / 1e9);
-              const warn = `Character-level diff on this document (${combined.toLocaleString()} chars total) is very slow and may freeze the browser for ~${Math.max(5, approxSec)}s or more.\n\nConsider Words or Sentences granularity instead.\n\nContinue with Chars anyway?`;
-              if (!window.confirm(warn)) return;
+              const accepted = await requestDiffConfirmation({
+                title: 'Use character-level comparison?',
+                message: `This document contains ${combined.toLocaleString()} characters. Character comparison may freeze the browser for about ${Math.max(5, approxSec)} seconds or longer. Words or Sentences will be faster.`,
+                confirmLabel: 'Use characters',
+                cancelLabel: 'Keep current view'
+              });
+              if (!accepted) return;
             }
           }
           if (_chunks && _chunks.some(c => c.rejected)) {
-            if (!window.confirm('Changing granularity will reset your rejections. Continue?')) return;
+            const accepted = await requestDiffConfirmation({
+              title: 'Reset rejected changes?',
+              message: 'Changing comparison granularity will reset every rejected change in this diff.',
+              confirmLabel: 'Change and reset',
+              cancelLabel: 'Keep rejections'
+            });
+            if (!accepted) return;
           }
           setDiffGranularity(g);
           setDiffSelection(null);
@@ -365,9 +426,12 @@ function PdfDiffViewer(props) {
         };
         return (
           <div
+            ref={diffDialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="allo-diff-title"
+            tabIndex={-1}
+            onKeyDown={(event) => containDiffFocus(event, diffDialogRef.current, _closeDiff)}
             className={`fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 theme-${theme}`}
             onClick={(e) => { if (e.target === e.currentTarget) _closeDiff(); }}
           >
@@ -379,6 +443,8 @@ function PdfDiffViewer(props) {
                   <p className="text-[11px] text-slate-600">{_ov ? (t('diff_view.cmd_subtitle') || 'Before → after for your last Expert Workbench command. Reject a span to undo just that part, then Apply.') : (t('diff_view.subtitle') || 'Click any colored span to reject the change. Drag-select across spans to batch-reject. Del→Add paraphrase pairs toggle together.')}</p>
                 </div>
                 <button
+                  ref={diffCloseRef}
+                  type="button"
                   onClick={_closeDiff}
                   className="shrink-0 w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-600 flex items-center justify-center"
                   aria-label={t('diff_view.close_aria') || 'Close diff view'}
@@ -600,6 +666,24 @@ function PdfDiffViewer(props) {
                 )}
               </div>
             </div>
+            {diffConfirmation && (
+              <div role="presentation" className="fixed inset-0 z-[320] bg-slate-950/70 flex items-center justify-center p-4">
+                <div ref={diffConfirmRef} role="alertdialog" aria-modal="true" aria-labelledby="allo-diff-confirm-title" aria-describedby="allo-diff-confirm-message" tabIndex={-1}
+                  onKeyDown={(event) => {
+                    event.stopPropagation();
+                    if (event.key === 'Escape') { event.preventDefault(); finishDiffConfirmation(false); return; }
+                    containDiffFocus(event, diffConfirmRef.current, () => finishDiffConfirmation(false));
+                  }}
+                  className="w-full max-w-md rounded-2xl border-2 border-amber-300 bg-white p-5 shadow-2xl">
+                  <h3 id="allo-diff-confirm-title" className="text-lg font-black text-slate-900">{diffConfirmation.title}</h3>
+                  <p id="allo-diff-confirm-message" className="mt-2 text-sm leading-relaxed text-slate-700">{diffConfirmation.message}</p>
+                  <div className="mt-5 flex flex-wrap justify-end gap-2">
+                    <button ref={diffConfirmCancelRef} type="button" onClick={() => finishDiffConfirmation(false)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">{diffConfirmation.cancelLabel || 'Cancel'}</button>
+                    <button type="button" onClick={() => finishDiffConfirmation(true)} className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700">{diffConfirmation.confirmLabel || 'Continue'}</button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
   })(), document.body);
