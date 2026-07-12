@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-07-12T13:53:35.838Z",
+  "generated": "2026-07-12T14:05:08.840Z",
   "count": 63,
   "total_keys_expected": 9307,
   "available": [
@@ -35,8 +35,8 @@
     {
       "slug": "burmese",
       "display": "Burmese",
-      "keys": 18631,
-      "bytes": 2964486,
+      "keys": 18796,
+      "bytes": 2999904,
       "updated": "2026-07-12"
     },
     {
@@ -196,8 +196,8 @@
     {
       "slug": "kannada",
       "display": "Kannada",
-      "keys": 18483,
-      "bytes": 3641967,
+      "keys": 18648,
+      "bytes": 3676247,
       "updated": "2026-07-12"
     },
     {
@@ -210,8 +210,8 @@
     {
       "slug": "khmer",
       "display": "Khmer",
-      "keys": 18637,
-      "bytes": 2616602,
+      "keys": 18802,
+      "bytes": 2650621,
       "updated": "2026-07-12"
     },
     {
@@ -266,8 +266,8 @@
     {
       "slug": "malayalam",
       "display": "Malayalam",
-      "keys": 18483,
-      "bytes": 3943399,
+      "keys": 18648,
+      "bytes": 3978970,
       "updated": "2026-07-12"
     },
     {
