@@ -153,6 +153,53 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   const keyInputRef = useRef(null);
   const subInputRef = useRef(null);
   const presetImportRef = useRef(null);
+  const dialogRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  const anchorDialogRef = useRef(null);
+  const anchorCancelRef = useRef(null);
+  const containDialogFocus = (event, container) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onClose();
+      return;
+    }
+    if (event.key !== "Tab" || !container) return;
+    const focusable = Array.from(container.querySelectorAll(
+      'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+    )).filter((node) => !node.hidden && node.getAttribute("aria-hidden") !== "true");
+    if (!focusable.length) {
+      event.preventDefault();
+      container.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+  React.useEffect(() => {
+    if (!isOpen) return void 0;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => closeButtonRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === "function") previouslyFocused.focus();
+    };
+  }, [isOpen]);
+  React.useEffect(() => {
+    if (!pendingAnchor) return void 0;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => anchorCancelRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === "function") previouslyFocused.focus();
+    };
+  }, [!!pendingAnchor]);
   const tx = t || ((k, fallback) => fallback || k);
   React.useEffect(() => {
     if (!isOpen || sessionLoadedRef.current) return;
@@ -843,9 +890,6 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   return /* @__PURE__ */ React.createElement(
     "div",
     {
-      role: "dialog",
-      "aria-modal": "true",
-      "aria-label": tr("Submission inbox"),
       style: {
         position: "fixed",
         inset: 0,
@@ -861,6 +905,13 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
     /* @__PURE__ */ React.createElement(
       "div",
       {
+        ref: dialogRef,
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-labelledby": "submission-inbox-title",
+        "aria-describedby": "submission-inbox-description",
+        tabIndex: -1,
+        onKeyDown: (event) => containDialogFocus(event, dialogRef.current),
         style: {
           background: "white",
           borderRadius: 16,
@@ -884,16 +935,17 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
           null,
           /* @__PURE__ */ React.createElement(
             "h2",
-            { style: { margin: 0, fontSize: "1.2rem", fontWeight: 900, color: "#1e293b", display: "flex", alignItems: "center", gap: 8 } },
+            { id: "submission-inbox-title", style: { margin: 0, fontSize: "1.2rem", fontWeight: 900, color: "#1e293b", display: "flex", alignItems: "center", gap: 8 } },
             tr("\u{1F4E5} Import student submissions")
           ),
           /* @__PURE__ */ React.createElement(
             "p",
-            { style: { margin: "4px 0 0 0", fontSize: "0.85rem", color: "#64748b" } },
+            { id: "submission-inbox-description", style: { margin: "4px 0 0 0", fontSize: "0.85rem", color: "#64748b" } },
             tr("Load your class key, then drop in the encrypted .alloflow.html files students sent you.")
           )
         ),
         /* @__PURE__ */ React.createElement("button", {
+          ref: closeButtonRef,
           type: "button",
           onClick: onClose,
           style: { padding: "6px 10px", border: "none", background: "transparent", color: "#475569", cursor: "pointer", fontSize: "1.4rem", lineHeight: 1, borderRadius: 6 },
@@ -1077,6 +1129,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                 /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.78rem", fontWeight: 700, color: "#3730a3", marginRight: 4 } }, tr("\u{1F4CB} Presets:")),
                 /* @__PURE__ */ React.createElement("input", {
                   type: "text",
+                  "aria-label": tr("Preset name"),
                   value: presetNameInput,
                   onChange: (e) => setPresetNameInput(e.target.value),
                   onKeyDown: (e) => {
@@ -1260,11 +1313,11 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                     /* @__PURE__ */ React.createElement(
                       "tr",
                       { style: { background: "#f0fdf4", borderBottom: "1px solid #bbf7d0" } },
-                      /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "8px 12px", fontWeight: 700, color: "#166534", fontSize: "0.74rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, gradebookGroupBy === "student" ? "Student" : "Nickname"),
-                      /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "8px 12px", fontWeight: 700, color: "#166534", fontSize: "0.74rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, gradebookGroupBy === "student" ? "Submissions" : "Document"),
-                      /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "8px 12px", fontWeight: 700, color: "#166534", fontSize: "0.74rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, gradebookGroupBy === "student" ? tr("Avg of avgs") : "Avg"),
-                      /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "8px 12px", fontWeight: 700, color: "#166534", fontSize: "0.74rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, gradebookGroupBy === "student" ? tr("Last graded") : "Graded"),
-                      /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "8px 12px" } }, "")
+                      /* @__PURE__ */ React.createElement("th", { scope: "col", style: { textAlign: "left", padding: "8px 12px", fontWeight: 700, color: "#166534", fontSize: "0.74rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, gradebookGroupBy === "student" ? "Student" : "Nickname"),
+                      /* @__PURE__ */ React.createElement("th", { scope: "col", style: { textAlign: "left", padding: "8px 12px", fontWeight: 700, color: "#166534", fontSize: "0.74rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, gradebookGroupBy === "student" ? "Submissions" : "Document"),
+                      /* @__PURE__ */ React.createElement("th", { scope: "col", style: { textAlign: "left", padding: "8px 12px", fontWeight: 700, color: "#166534", fontSize: "0.74rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, gradebookGroupBy === "student" ? tr("Avg of avgs") : "Avg"),
+                      /* @__PURE__ */ React.createElement("th", { scope: "col", style: { textAlign: "left", padding: "8px 12px", fontWeight: 700, color: "#166534", fontSize: "0.74rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, gradebookGroupBy === "student" ? tr("Last graded") : "Graded"),
+                      /* @__PURE__ */ React.createElement("th", { scope: "col", "aria-label": tr("Actions"), style: { textAlign: "right", padding: "8px 12px" } }, "")
                     )
                   ),
                   /* @__PURE__ */ React.createElement(
@@ -1522,10 +1575,10 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
               /* @__PURE__ */ React.createElement(
                 "tr",
                 { style: { background: "#f8fafc", borderBottom: "1px solid #e2e8f0" } },
-                /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, tr("Nickname")),
-                /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, tr("Document")),
-                /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, tr("Status")),
-                /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, "")
+                /* @__PURE__ */ React.createElement("th", { scope: "col", style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, tr("Nickname")),
+                /* @__PURE__ */ React.createElement("th", { scope: "col", style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, tr("Document")),
+                /* @__PURE__ */ React.createElement("th", { scope: "col", style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, tr("Status")),
+                /* @__PURE__ */ React.createElement("th", { scope: "col", "aria-label": tr("Actions"), style: { textAlign: "right", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, "")
               )
             ),
             /* @__PURE__ */ React.createElement(
@@ -1646,6 +1699,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                           (globalRubric.rubric || "").trim() && !(rubrics[idx] && rubrics[idx].rubric || "").trim() ? /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 400, color: "#475569", marginLeft: 6, fontSize: "0.72rem" } }, tr("\u2014 using class rubric above (override here for this submission only)")) : null
                         ),
                         /* @__PURE__ */ React.createElement("textarea", {
+                          "aria-label": tr("Rubric for this submission"),
                           value: rubrics[idx] && rubrics[idx].rubric || "",
                           onChange: (e) => updateRubric(idx, { rubric: e.target.value }),
                           placeholder: (globalRubric.rubric || "").trim() ? globalRubric.rubric : tr('e.g., "Explains the main idea in their own words, cites at least one detail from the text, uses complete sentences."'),
@@ -1655,6 +1709,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                         /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: "0.78rem", color: "#475569", fontWeight: 600, marginBottom: 4 } }, tr("Assignment context (optional)")),
                         /* @__PURE__ */ React.createElement("input", {
                           type: "text",
+                          "aria-label": tr("Assignment context for this submission"),
                           value: rubrics[idx] && rubrics[idx].context || "",
                           onChange: (e) => updateRubric(idx, { context: e.target.value }),
                           placeholder: tr('e.g., "Reading response to chapter 3"'),
@@ -1671,6 +1726,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                           )
                         ),
                         /* @__PURE__ */ React.createElement("textarea", {
+                          "aria-label": tr("Quick exemplar for this submission"),
                           value: rubrics[idx] && rubrics[idx].exemplar || "",
                           onChange: (e) => updateRubric(idx, { exemplar: e.target.value }),
                           placeholder: tr("Paste an example of a 95/100 response so the AI matches your scoring."),
@@ -1729,18 +1785,24 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
       pendingAnchor && /* @__PURE__ */ React.createElement(
         "div",
         {
-          role: "dialog",
-          "aria-modal": "true",
-          "aria-label": tr("Score this response as a calibration anchor"),
+          role: "presentation",
           style: { position: "absolute", inset: 0, background: "rgba(15,23,42,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, zIndex: 10 }
         },
         /* @__PURE__ */ React.createElement(
           "div",
-          { style: { background: "white", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.25)", maxWidth: 540, width: "100%", padding: "20px 24px", border: "2px solid #fde68a" } },
-          /* @__PURE__ */ React.createElement("h3", { style: { margin: "0 0 8px 0", fontSize: "1.05rem", fontWeight: 800, color: "#92400e" } }, tr("\u{1F4CC} Anchor this response")),
+          { ref: anchorDialogRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "anchor-dialog-title", "aria-describedby": "anchor-dialog-description", tabIndex: -1, onKeyDown: (event) => {
+            event.stopPropagation();
+            if (event.key === "Escape") {
+              event.preventDefault();
+              cancelPendingAnchor();
+              return;
+            }
+            containDialogFocus(event, anchorDialogRef.current);
+          }, style: { background: "white", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.25)", maxWidth: 540, width: "100%", padding: "20px 24px", border: "2px solid #fde68a" } },
+          /* @__PURE__ */ React.createElement("h3", { id: "anchor-dialog-title", style: { margin: "0 0 8px 0", fontSize: "1.05rem", fontWeight: 800, color: "#92400e" } }, tr("\u{1F4CC} Anchor this response")),
           /* @__PURE__ */ React.createElement(
             "p",
-            { style: { margin: "0 0 12px 0", fontSize: "0.85rem", color: "#64748b" } },
+            { id: "anchor-dialog-description", style: { margin: "0 0 12px 0", fontSize: "0.85rem", color: "#64748b" } },
             tr("Give this response a score. The AI will use it as a calibration example when grading every other response.")
           ),
           /* @__PURE__ */ React.createElement(
@@ -1758,6 +1820,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
               min: 0,
               max: 100,
               step: 5,
+              "aria-label": tr("Anchor score slider"),
               value: pendingAnchor.score,
               onChange: (e) => setPendingAnchor({ ...pendingAnchor, score: e.target.value }),
               style: { flex: 1 }
@@ -1766,6 +1829,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
               type: "number",
               min: 0,
               max: 100,
+              "aria-label": tr("Anchor score"),
               value: pendingAnchor.score,
               onChange: (e) => setPendingAnchor({ ...pendingAnchor, score: e.target.value }),
               style: { width: 70, padding: "4px 8px", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: "0.9rem", textAlign: "center" }
@@ -1773,6 +1837,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
           ),
           /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: "0.8rem", fontWeight: 700, color: "#475569", marginBottom: 4 } }, tr("Note (optional \u2014 tells the AI why this got that score)")),
           /* @__PURE__ */ React.createElement("textarea", {
+            "aria-label": tr("Anchor note"),
             value: pendingAnchor.feedback,
             onChange: (e) => setPendingAnchor({ ...pendingAnchor, feedback: e.target.value }),
             placeholder: tr('e.g., "Clear evidence + reasoning, but missed the counter-argument."'),
@@ -1783,6 +1848,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
             "div",
             { style: { display: "flex", gap: 8, justifyContent: "flex-end" } },
             /* @__PURE__ */ React.createElement("button", {
+              ref: anchorCancelRef,
               type: "button",
               onClick: cancelPendingAnchor,
               style: { padding: "8px 16px", background: "#f1f5f9", color: "#475569", border: "1px solid #cbd5e1", borderRadius: 8, fontWeight: 600, cursor: "pointer", fontSize: "0.88rem" }

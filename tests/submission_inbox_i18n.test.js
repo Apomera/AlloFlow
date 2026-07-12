@@ -33,12 +33,12 @@ afterEach(() => {
   delete window.callGemini;
 });
 
-async function mount() {
+async function mount(onClose = () => {}) {
   host = document.createElement('div'); document.body.appendChild(host);
   root = ReactDOMClient.createRoot(host);
   await act(async () => {
     root.render(React.createElement(SubmissionInbox, {
-      isOpen: true, onClose: () => {}, rosterKey: 'test', t: (k, a) => (typeof a === 'string' ? a : undefined), addToast: () => {},
+      isOpen: true, onClose, rosterKey: 'test', t: (k, a) => (typeof a === 'string' ? a : undefined), addToast: () => {},
     }));
   });
 }
@@ -76,4 +76,20 @@ describe('Submission Inbox UI localization', () => {
     const [enKey, esVal] = Object.entries(cache.Spanish)[0]; // English IS the key
     expect(esVal).toBe('ES·' + enKey);
   });
-});
+
+  it('exposes a named focus-managed dialog with keyboard dismissal', async () => {
+    let closeCount = 0;
+    await mount(() => { closeCount += 1; });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
+
+    const dialog = host.querySelector('[role="dialog"]');
+    expect(dialog).toBeTruthy();
+    expect(dialog.getAttribute('aria-labelledby')).toBe('submission-inbox-title');
+    expect(dialog.getAttribute('aria-describedby')).toBe('submission-inbox-description');
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Close');
+
+    await act(async () => {
+      dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+    expect(closeCount).toBe(1);
+  });});
