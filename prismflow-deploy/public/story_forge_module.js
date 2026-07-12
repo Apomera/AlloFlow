@@ -1632,6 +1632,53 @@ const StoryForge = React.memo(({
   };
   const [isDirty, setIsDirty] = useState(false);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [exportConsent, setExportConsent] = useState(null);
+  const exportConsentDialogRef = useRef(null);
+  const exportConsentCancelRef = useRef(null);
+  const exportConsentResolveRef = useRef(null);
+  const requestExportConsent = (options) => new Promise((resolve) => {
+    exportConsentResolveRef.current = resolve;
+    setExportConsent(options);
+  });
+  const finishExportConsent = (accepted) => {
+    const resolve = exportConsentResolveRef.current;
+    exportConsentResolveRef.current = null;
+    setExportConsent(null);
+    if (resolve) resolve(accepted);
+  };
+  const handleExportConsentKeyDown = (event) => {
+    if (!event || !exportConsentDialogRef.current) return;
+    event.stopPropagation();
+    if (event.key === "Escape") {
+      event.preventDefault();
+      finishExportConsent(false);
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = Array.from(exportConsentDialogRef.current.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter((el) => !el.hidden && el.getAttribute("aria-hidden") !== "true");
+    if (!focusable.length) {
+      event.preventDefault();
+      exportConsentDialogRef.current.focus();
+      return;
+    }
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+  useEffect(() => {
+    if (!exportConsent) return void 0;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => exportConsentCancelRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === "function") previouslyFocused.focus();
+    };
+  }, [!!exportConsent]);
   const safeClose = () => {
     if (isDirty && paragraphs.some((p) => p.text.trim().length > 0)) {
       setShowCloseConfirm(true);
@@ -1832,7 +1879,8 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
   useEffect(() => {
     const handler = (e) => {
       if (e.key === "Escape" && isOpen) {
-        safeClose();
+        if (exportConsent) finishExportConsent(false);
+        else safeClose();
         e.preventDefault();
       }
       if ((e.ctrlKey || e.metaKey) && e.key === "s" && isOpen) {
@@ -1849,7 +1897,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isOpen, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
+  }, [isOpen, exportConsent, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
   useEffect(() => {
     if (!isOpen) return void 0;
     const root = modalRootRef.current;
@@ -4191,12 +4239,8 @@ Return ONLY JSON:
     }
     return null;
   };
-  const exportStorybook = () => {
-    if (!window.confirm(`Export this storybook as a file?
-
-The file is de-identified \xE2\u20AC\u201D it uses the codename, not a real name \xE2\u20AC\u201D but it contains the student's complete story and any voice narration they recorded. Save it to a school-approved location and handle it per your district's student-records policy.
-
-Continue?`)) return;
+  const exportStorybook = async () => {
+    if (!await requestExportConsent({ title: "Export storybook?", message: "This de-identified file uses the student codename, but it contains the complete story and any recorded voice narration. Save it only to a school-approved location and follow district student-records policy.", confirmLabel: "Export storybook" })) return;
     const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || "My Story");
     const author = escapeHtml(authorName || "A Creative Student");
     const date = (/* @__PURE__ */ new Date()).toLocaleDateString();
@@ -4439,13 +4483,9 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
       if (addToast) addToast(t("toasts.export_failed_2"), "error");
     }
   };
-  const exportComicScript = () => {
+  const exportComicScript = async () => {
     if (layoutMode !== "comic") return;
-    if (!window.confirm(`Export this comic script as a file?
-
-The script is de-identified \xE2\u20AC\u201D it uses the codename, not a real name \xE2\u20AC\u201D but it contains the student's full panel captions and dialogue. Save it to a school-approved location and handle it per your district's student-records policy.
-
-Continue?`)) return;
+    if (!await requestExportConsent({ title: "Export comic script?", message: "This de-identified file uses the student codename, but it contains all panel captions and dialogue. Save it only to a school-approved location and follow district student-records policy.", confirmLabel: "Export comic script" })) return;
     const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || "My Comic");
     const author = escapeHtml(authorName || "A Creative Student");
     const comicLayout = COMIC_PAGE_LAYOUTS[comicPageLayout] ? comicPageLayout : "grid";
@@ -4527,13 +4567,9 @@ ${panelsHtml}
       if (addToast) addToast(t("toasts.export_failed_2"), "error");
     }
   };
-  const exportComicProductionPack = () => {
+  const exportComicProductionPack = async () => {
     if (layoutMode !== "comic") return;
-    if (!window.confirm(`Export this comic production pack as a file?
-
-The pack is de-identified, but it contains the student's full comic captions, bubbles, art prompts, continuity notes, and production status. Save it to a school-approved location and handle it per your district's student-records policy.
-
-Continue?`)) return;
+    if (!await requestExportConsent({ title: "Export production pack?", message: "This de-identified file contains the full comic, bubbles, art prompts, continuity notes, and production status. Save it only to a school-approved location and follow district student-records policy.", confirmLabel: "Export production pack" })) return;
     const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || "My Comic");
     const author = escapeHtml(authorName || "A Creative Student");
     const comicLayout = COMIC_PAGE_LAYOUTS[comicPageLayout] ? comicPageLayout : "grid";
@@ -4853,12 +4889,8 @@ show();
       if (addToast) addToast(t("toasts.failed_share_try_again"), "error");
     }
   };
-  const exportDraftJSON = () => {
-    if (!window.confirm(`Export this student's full draft as a file?
-
-The file is de-identified \xE2\u20AC\u201D it uses the codename, not a real name \xE2\u20AC\u201D but it contains the student's complete writing, the AI feedback/grade, and progress analytics. Save it to a school-approved location and handle it per your district's student-records policy.
-
-Continue?`)) return;
+  const exportDraftJSON = async () => {
+    if (!await requestExportConsent({ title: "Export full draft?", message: "This de-identified file uses the student codename, but it contains complete writing, AI feedback or grades, and progress analytics. Save it only to a school-approved location and follow district student-records policy.", confirmLabel: "Export full draft" })) return;
     const draft = {
       _storyForgeVersion: 2,
       // â”€â”€ Story content â”€â”€
@@ -4935,6 +4967,7 @@ Continue?`)) return;
   const importDraftJSON = () => {
     const input = document.createElement("input");
     input.type = "file";
+    input.setAttribute("aria-label", "Import Story Forge draft file");
     input.accept = ".json";
     input.onchange = (e) => {
       const file = e.target.files?.[0];
@@ -5147,7 +5180,7 @@ Continue?`)) return;
     } catch (e) {
     }
     onClose();
-  }, className: "px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors" }, t("ui_common.close_anyway"))))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-rose-600 to-pink-600 p-4 text-white flex justify-between items-center shadow-lg shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 24 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-xl font-black" }, t("headings.story_forge")), /* @__PURE__ */ React.createElement("p", { className: "text-rose-200 text-xs font-medium" }, t("ui_common.creative_writing_studio")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2", title: `${xpData.totalXP} XP \xC2\xB7 ${currentLevel.name}${xpData.streak > 1 ? ` \xC2\xB7 ${xpData.streak}-day streak` : ""}` }, /* @__PURE__ */ React.createElement("span", null, currentLevel.emoji, " ", currentLevel.name), /* @__PURE__ */ React.createElement("span", { className: "text-rose-200" }, xpData.totalXP, " XP"), xpData.streak > 1 && /* @__PURE__ */ React.createElement("span", { className: "text-amber-700" }, "\xF0\u0178\u201D\xA5", xpData.streak), nextLevel && /* @__PURE__ */ React.createElement("div", { className: "w-12 h-1.5 bg-white/20 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-amber-300 rounded-full transition-all", style: { width: `${Math.min(100, (xpData.totalXP - currentLevel.min) / (nextLevel.min - currentLevel.min) * 100)}%` } }))), totalWords > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", null, totalWords, " words"), /* @__PURE__ */ React.createElement("span", null, "\xC2\xB7"), /* @__PURE__ */ React.createElement("span", null, vocabUsedCount, "/", vocabTerms.length, " terms"), readingLevel && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, "\xC2\xB7"), /* @__PURE__ */ React.createElement("span", null, "Grade ", readingLevel.grade))), /* @__PURE__ */ React.createElement(
+  }, className: "px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors" }, t("ui_common.close_anyway"))))), exportConsent && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[230] bg-black/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { ref: exportConsentDialogRef, role: "alertdialog", "aria-modal": "true", "aria-labelledby": "sf-export-consent-title", "aria-describedby": "sf-export-consent-message", tabIndex: -1, onKeyDown: handleExportConsentKeyDown, className: "sf-dialog-card w-full max-w-lg rounded-2xl border-2 border-cyan-300 bg-white p-6 shadow-2xl" }, /* @__PURE__ */ React.createElement("h3", { id: "sf-export-consent-title", className: "text-lg font-black text-slate-900" }, exportConsent.title), /* @__PURE__ */ React.createElement("p", { id: "sf-export-consent-message", className: "mt-2 text-sm leading-relaxed text-slate-700" }, exportConsent.message), /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex flex-wrap justify-end gap-3" }, /* @__PURE__ */ React.createElement("button", { ref: exportConsentCancelRef, type: "button", "data-sf-focusable": true, onClick: () => finishExportConsent(false), className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishExportConsent(true), className: "rounded-lg bg-cyan-700 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-800" }, exportConsent.confirmLabel || "Export file")))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-rose-600 to-pink-600 p-4 text-white flex justify-between items-center shadow-lg shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 24 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-xl font-black" }, t("headings.story_forge")), /* @__PURE__ */ React.createElement("p", { className: "text-rose-200 text-xs font-medium" }, t("ui_common.creative_writing_studio")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2", title: `${xpData.totalXP} XP \xC2\xB7 ${currentLevel.name}${xpData.streak > 1 ? ` \xC2\xB7 ${xpData.streak}-day streak` : ""}` }, /* @__PURE__ */ React.createElement("span", null, currentLevel.emoji, " ", currentLevel.name), /* @__PURE__ */ React.createElement("span", { className: "text-rose-200" }, xpData.totalXP, " XP"), xpData.streak > 1 && /* @__PURE__ */ React.createElement("span", { className: "text-amber-700" }, "\xF0\u0178\u201D\xA5", xpData.streak), nextLevel && /* @__PURE__ */ React.createElement("div", { className: "w-12 h-1.5 bg-white/20 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-amber-300 rounded-full transition-all", style: { width: `${Math.min(100, (xpData.totalXP - currentLevel.min) / (nextLevel.min - currentLevel.min) * 100)}%` } }))), totalWords > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", null, totalWords, " words"), /* @__PURE__ */ React.createElement("span", null, "\xC2\xB7"), /* @__PURE__ */ React.createElement("span", null, vocabUsedCount, "/", vocabTerms.length, " terms"), readingLevel && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, "\xC2\xB7"), /* @__PURE__ */ React.createElement("span", null, "Grade ", readingLevel.grade))), /* @__PURE__ */ React.createElement(
     "button",
     {
       "data-sf-focusable": true,

@@ -1708,6 +1708,40 @@ const StoryForge = React.memo(({
   // â”€â”€ Unsaved changes guard â”€â”€
   const [isDirty, setIsDirty] = useState(false);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [exportConsent, setExportConsent] = useState(null);
+  const exportConsentDialogRef = useRef(null);
+  const exportConsentCancelRef = useRef(null);
+  const exportConsentResolveRef = useRef(null);
+  const requestExportConsent = (options) => new Promise(resolve => {
+    exportConsentResolveRef.current = resolve;
+    setExportConsent(options);
+  });
+  const finishExportConsent = (accepted) => {
+    const resolve = exportConsentResolveRef.current;
+    exportConsentResolveRef.current = null;
+    setExportConsent(null);
+    if (resolve) resolve(accepted);
+  };
+  const handleExportConsentKeyDown = (event) => {
+    if (!event || !exportConsentDialogRef.current) return;
+    event.stopPropagation();
+    if (event.key === 'Escape') { event.preventDefault(); finishExportConsent(false); return; }
+    if (event.key !== 'Tab') return;
+    const focusable = Array.from(exportConsentDialogRef.current.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(el => !el.hidden && el.getAttribute('aria-hidden') !== 'true');
+    if (!focusable.length) { event.preventDefault(); exportConsentDialogRef.current.focus(); return; }
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  };
+  useEffect(() => {
+    if (!exportConsent) return undefined;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => exportConsentCancelRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+    };
+  }, [!!exportConsent]);
 
   const safeClose = () => {
     if (isDirty && paragraphs.some(p => p.text.trim().length > 0)) {
@@ -1957,7 +1991,11 @@ const StoryForge = React.memo(({
   // â”€â”€ Keyboard shortcuts â”€â”€
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === 'Escape' && isOpen) { safeClose(); e.preventDefault(); }
+      if (e.key === 'Escape' && isOpen) {
+        if (exportConsent) finishExportConsent(false);
+        else safeClose();
+        e.preventDefault();
+      }
       if ((e.ctrlKey || e.metaKey) && e.key === 's' && isOpen) {
         e.preventDefault();
         try {
@@ -1972,7 +2010,7 @@ const StoryForge = React.memo(({
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [isOpen, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
+  }, [isOpen, exportConsent, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
 
   // â”€â”€ Focus management: move focus into the dialog on open, trap Tab inside it, and
   //    restore focus to the trigger on close (WCAG 2.4.3 Focus Order / 2.1.2 No Keyboard Trap escape). â”€â”€
@@ -4374,12 +4412,12 @@ Return ONLY JSON:
   // EXPORT PHASE FUNCTIONS
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-  const exportStorybook = () => {
+  const exportStorybook = async () => {
     // FERPA reminder: the storybook is de-identified (codename, never a real name), but it
     // bundles the student's full story and â€” if they recorded it â€” their VOICE narration in a
     // single downloadable file, so a local download is a confirmed, informed action (mirrors
     // the exportDraftJSON gate below).
-    if (!window.confirm(`Export this storybook as a file?\n\nThe file is de-identified â€” it uses the codename, not a real name â€” but it contains the student's complete story and any voice narration they recorded. Save it to a school-approved location and handle it per your district's student-records policy.\n\nContinue?`)) return;
+    if (!(await requestExportConsent({ title: 'Export storybook?', message: 'This de-identified file uses the student codename, but it contains the complete story and any recorded voice narration. Save it only to a school-approved location and follow district student-records policy.', confirmLabel: 'Export storybook' }))) return;
     const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || 'My Story');
     const author = escapeHtml(authorName || 'A Creative Student');
     const date = new Date().toLocaleDateString();
@@ -4632,9 +4670,9 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
   // SLIDESHOW EXPORT
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-  const exportComicScript = () => {
+  const exportComicScript = async () => {
     if (layoutMode !== 'comic') return;
-    if (!window.confirm(`Export this comic script as a file?\n\nThe script is de-identified â€” it uses the codename, not a real name â€” but it contains the student's full panel captions and dialogue. Save it to a school-approved location and handle it per your district's student-records policy.\n\nContinue?`)) return;
+    if (!(await requestExportConsent({ title: 'Export comic script?', message: 'This de-identified file uses the student codename, but it contains all panel captions and dialogue. Save it only to a school-approved location and follow district student-records policy.', confirmLabel: 'Export comic script' }))) return;
     const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || 'My Comic');
     const author = escapeHtml(authorName || 'A Creative Student');
     const comicLayout = COMIC_PAGE_LAYOUTS[comicPageLayout] ? comicPageLayout : 'grid';
@@ -4717,9 +4755,9 @@ ${panelsHtml}
     }
   };
 
-  const exportComicProductionPack = () => {
+  const exportComicProductionPack = async () => {
     if (layoutMode !== 'comic') return;
-    if (!window.confirm(`Export this comic production pack as a file?\n\nThe pack is de-identified, but it contains the student's full comic captions, bubbles, art prompts, continuity notes, and production status. Save it to a school-approved location and handle it per your district's student-records policy.\n\nContinue?`)) return;
+    if (!(await requestExportConsent({ title: 'Export production pack?', message: 'This de-identified file contains the full comic, bubbles, art prompts, continuity notes, and production status. Save it only to a school-approved location and follow district student-records policy.', confirmLabel: 'Export production pack' }))) return;
     const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || 'My Comic');
     const author = escapeHtml(authorName || 'A Creative Student');
     const comicLayout = COMIC_PAGE_LAYOUTS[comicPageLayout] ? comicPageLayout : 'grid';
@@ -5060,11 +5098,11 @@ show();
   // COLLABORATIVE JSON SAVE / LOAD ("Pass the Torch")
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-  const exportDraftJSON = () => {
+  const exportDraftJSON = async () => {
     // FERPA reminder: this draft is de-identified (codename, never a real name), but it still
     // carries the student's full writing, the AI feedback/grade, and progress analytics â€” so a
     // local download is a confirmed, informed action. (Network egress stays gated in shareToSession.)
-    if (!window.confirm(`Export this student's full draft as a file?\n\nThe file is de-identified â€” it uses the codename, not a real name â€” but it contains the student's complete writing, the AI feedback/grade, and progress analytics. Save it to a school-approved location and handle it per your district's student-records policy.\n\nContinue?`)) return;
+    if (!(await requestExportConsent({ title: 'Export full draft?', message: 'This de-identified file uses the student codename, but it contains complete writing, AI feedback or grades, and progress analytics. Save it only to a school-approved location and follow district student-records policy.', confirmLabel: 'Export full draft' }))) return;
     const draft = {
       _storyForgeVersion: 2,
       // â”€â”€ Story content â”€â”€
@@ -5129,6 +5167,7 @@ show();
   const importDraftJSON = () => {
     const input = document.createElement('input');
     input.type = 'file';
+    input.setAttribute('aria-label', 'Import Story Forge draft file');
     input.accept = '.json';
     input.onchange = (e) => {
       const file = e.target.files?.[0];
@@ -5454,6 +5493,19 @@ show();
         </div>
       )}
 
+      {/* Accessible export consent */}
+      {exportConsent && (
+        <div role="presentation" className="fixed inset-0 z-[230] bg-black/70 flex items-center justify-center p-4">
+          <div ref={exportConsentDialogRef} role="alertdialog" aria-modal="true" aria-labelledby="sf-export-consent-title" aria-describedby="sf-export-consent-message" tabIndex={-1} onKeyDown={handleExportConsentKeyDown} className="sf-dialog-card w-full max-w-lg rounded-2xl border-2 border-cyan-300 bg-white p-6 shadow-2xl">
+            <h3 id="sf-export-consent-title" className="text-lg font-black text-slate-900">{exportConsent.title}</h3>
+            <p id="sf-export-consent-message" className="mt-2 text-sm leading-relaxed text-slate-700">{exportConsent.message}</p>
+            <div className="mt-5 flex flex-wrap justify-end gap-3">
+              <button ref={exportConsentCancelRef} type="button" data-sf-focusable onClick={() => finishExportConsent(false)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">Cancel</button>
+              <button type="button" data-sf-focusable onClick={() => finishExportConsent(true)} className="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-800">{exportConsent.confirmLabel || 'Export file'}</button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* â”€â”€ Header â”€â”€ */}
       <div className="bg-gradient-to-r from-rose-600 to-pink-600 p-4 text-white flex justify-between items-center shadow-lg shrink-0">
         <div className="flex items-center gap-3">
