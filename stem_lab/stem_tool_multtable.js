@@ -968,20 +968,61 @@ window.StemLab = window.StemLab || {
       // ═══ RENDER ═══
       // ═══════════════════════════════
 
-      return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
+      var multTabLabel = { practice: 'Practice', visual: 'Visual model', patterns: 'Patterns' }[mtTab] || 'Practice';
+      var multNext = mtTab === 'visual'
+        ? 'Build the fact as rows and columns, then rotate it to show commutativity.'
+        : mtTab === 'patterns'
+          ? 'Highlight one pattern and use its rule to predict an unfamiliar product.'
+          : (_ext.totalCorrect || 0) === 0
+            ? 'Choose a fact family, predict the answer, then verify it with a visual strategy.'
+            : 'Use an easy fact to derive one harder neighboring fact.';
+
+      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200' },
 
         // ── Header ──
-        h('div', { className: 'flex items-center gap-3 mb-2' },
-          h('button', {
-            onClick: function() {
-              setStemLabTool(null);
-              if (_mt.active) { _mtUpd({ active: false }); if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval); }
-            },
-            className: 'p-1.5 hover:bg-slate-100 rounded-lg transition-colors',
-            'aria-label': t('stem.multtable.back_to_tools', 'Back to tools')
-          }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-          h('h3', { className: 'text-lg font-bold text-pink-800' }, t('stem.multtable.multiplication_table', '\uD83D\uDD22 Multiplication Table')),
-          h('div', { role: 'tablist', 'aria-expanded': String(multTableHidden), className: 'flex items-center gap-2 ml-2' },
+        h('section', { 'data-multtable-command': 'true', className: 'overflow-hidden rounded-2xl border border-pink-300/40 bg-gradient-to-br from-slate-950 via-pink-950 to-violet-950 text-white shadow-xl' },
+          h('div', { className: 'p-4 sm:p-5' },
+            h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
+              h('div', { className: 'min-w-0' },
+                h('div', { className: 'flex items-center gap-2' },
+                  h('button', { onClick: function() { setStemLabTool(null); if (_mt.active) { _mtUpd({ active: false }); if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval); } }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-pink-300', 'aria-label': t('stem.multtable.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
+                  h('span', { className: 'rounded-full bg-pink-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-pink-100 ring-1 ring-pink-200/30' }, 'Fact strategy studio')
+                ),
+                h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, t('stem.multtable.multiplication_table', '\uD83D\uDD22 Multiplication Table')),
+                h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-pink-100' }, 'Use arrays, patterns, and fact families to reason toward fluent multiplication and division.'),
+                h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-pink-200' }, 'Recommended next move'),
+                  h('p', { className: 'mt-1 text-sm font-semibold text-white' }, multNext)
+                )
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
+                [
+                  { label: 'Focus', value: multTabLabel },
+                  { label: 'Correct', value: String(_ext.totalCorrect || 0) },
+                  { label: 'Streak', value: String(_mt.streak || 0) }
+                ].map(function(metric) {
+                  return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
+                    h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
+                    h('div', { className: 'mt-1 text-[9px] font-bold uppercase tracking-wider text-pink-200' }, metric.label)
+                  );
+                })
+              )
+            ),
+            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Multiplication reasoning pathway' },
+              [
+                { n: '1', title: 'Observe', detail: 'See the fact as an array or pattern.' },
+                { n: '2', title: 'Predict', detail: 'Use a known relationship.' },
+                { n: '3', title: 'Explain', detail: 'Connect the strategy to an equation.' }
+              ].map(function(step) {
+                return h('li', { key: step.n, className: 'flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5' },
+                  h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-pink-300 font-black text-slate-950' }, step.n),
+                  h('span', null, h('strong', { className: 'block text-white' }, step.title), h('span', { className: 'text-pink-200' }, step.detail))
+                );
+              })
+            )
+          )
+        ),
+        h('div', { className: 'flex flex-wrap items-center gap-2 rounded-xl border border-pink-100 bg-white/80 p-2', 'aria-expanded': String(multTableHidden) },
             h('button', { 'aria-expanded': String(multTableHidden), 'aria-label': t('stem.multtable.toggle_hidden_mode_h', 'Toggle hidden mode (H)'),
               onClick: function() { setMultTableHidden(!multTableHidden); setMultTableRevealed(new Set()); },
               className: 'text-[11px] font-bold px-2.5 py-0.5 rounded-full border transition-all ' +
@@ -1032,11 +1073,10 @@ window.StemLab = window.StemLab || {
               title: t('stem.multtable.reset_all', 'Reset all'),
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-all'
             }, t('stem.multtable.reset_2', '\u21BA Reset'))
-          )
         ),
 
         // Tab bar (v3)
-        h('div', { className: 'flex gap-1 bg-pink-50 rounded-xl p-1 border border-pink-200', role: 'tablist', 'aria-label': t('stem.multtable.multiplication_table_sections', 'Multiplication Table sections') },
+        h('div', { className: 'flex gap-1 overflow-x-auto bg-pink-50 rounded-xl p-1 border border-pink-200', role: 'tablist', 'aria-label': t('stem.multtable.multiplication_table_sections', 'Multiplication Table sections') },
           [
             { id: 'practice', icon: '\uD83C\uDFAF', label: t('stem.multtable.practice', 'Practice') },
             { id: 'visual',   icon: '\uD83D\uDFE9', label: t('stem.multtable.visual', 'Visual') },
@@ -1046,7 +1086,7 @@ window.StemLab = window.StemLab || {
             return h('button', { key: 'mtt-' + tb.id,
               onClick: function() { playSound('default'); extUpd({ mtTab: tb.id }); },
               role: 'tab', 'aria-selected': active,
-              className: 'flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all ' +
+              className: 'min-h-[2.5rem] min-w-max flex-1 whitespace-nowrap py-2 px-3 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-pink-400 ' +
                 (active ? 'bg-white text-pink-800 shadow-sm' : 'text-pink-600 hover:text-pink-800')
             }, tb.icon + ' ' + tb.label);
           })

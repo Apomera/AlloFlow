@@ -111,6 +111,7 @@ const EXPECTED_MARKERS = [
   { id: 'protractor', file: 'stem_tool_angles.js', marker: 'data-protractor-command', label: 'Angle investigation studio' },
   { id: 'volume', file: 'stem_tool_volume.js', marker: 'data-volume-command', label: 'Volume design brief' },
   { id: 'base10', file: 'stem_tool_manipulatives.js', marker: 'data-manipulatives-command', label: 'Math representation studio' },
+  { id: 'multtable', file: 'stem_tool_multtable.js', marker: 'data-multtable-command', label: 'Multiplication fact strategy studio' },
   { id: 'numberline', file: 'stem_tool_numberline.js', marker: 'data-numberline-focus', label: 'Number Line workspace' },
   { id: 'moneyMath', file: 'stem_tool_money.js', marker: 'data-moneymath-focus', label: 'Money Math studio' },
   { id: 'logicLab', file: 'stem_tool_logiclab.js', marker: 'data-logiclab-focus', label: 'Logic Lab reasoning studio' },
