@@ -23,7 +23,7 @@ This report evaluates the current local desktop command center and the bundled A
 | Desktop command center, initial App pane | 1280 x 800 | 0 violations; 44 passes | 72 focusable elements; 0 custom violations |
 | Bundled AlloFlow application shell, initial state | 1280 x 800 | 0 violations; 46 passes | 104 focusable elements; 0 custom violations |
 | Bundled application, reflow probe | 640 x 800 | 0 violations | No document overflow and no off-screen interactive controls |
-| Bundled application, narrow reflow probe | 320 x 800 | 0 violations | No document scrollbar, but header controls render off-screen; see open finding |
+| Bundled application, narrow reflow probe | 320 x 800 | 0 violations | No document overflow and no off-screen interactive controls after remediation |
 
 ## Remediation completed in this audit
 
@@ -35,23 +35,23 @@ This report evaluates the current local desktop command center and the bundled A
 - Added non-empty accessible-name fallbacks for the global mute control.
 - Placed application heading, AlloBot, and save/sync status content within appropriate landmarks or live regions.
 
-## Open finding
+## Resolved finding
 
-### A11Y-REFLOW-001 ? Header controls render off-screen at 320 CSS pixels
+### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
 
 **WCAG:** 1.4.10 Reflow (Level AA)
 **Severity:** High
-**Status:** Open; canonical header source was under active parallel modification during this audit.
+**Status:** Resolved and rendered-verified July 11, 2026.
 
-At a 320 CSS-pixel viewport, the header settings cluster (approximately 426px wide) and utility cluster (approximately 397px wide) extend past the left viewport edge. Several controls therefore become visually and pointer inaccessible even though the document itself reports no horizontal scrollbar. The affected source is the header cluster around `tour-header-settings` and `tour-header-utils` in `view_header_source.jsx`.
+The header settings, utility, language, and action clusters now use constrained, wrapping layouts below the small breakpoint. The Source panel action row also wraps its Upload, Load Project, Link, Generate, and Books controls instead of allowing its nested flex rows to exceed the panel width. Required functionality remains visible.
 
-Expected remediation: at the narrow breakpoint, stack or collapse the clusters into a viewport-contained menu; do not merely hide required functionality. Re-test at 320px with keyboard navigation and 200%/400% browser zoom.
+Verification at 320 x 800 CSS pixels found 0 axe WCAG A/AA violations, a 320px document scroll width, and 0 visible interactive controls outside the viewport. The 640px and 1280px checks also remain clean.
 
 ## Manual verification still required
 
 - Complete keyboard-only walkthroughs of every major workflow and modal, including focus return and focus-not-obscured checks.
 - NVDA + Chrome/Edge and VoiceOver + Safari testing across representative teacher and student workflows.
-- 320px/400% reflow after A11Y-REFLOW-001 is fixed, plus text-spacing overrides.
+- Browser-native 400% zoom confirmation and WCAG text-spacing overrides across representative complex tools.
 - Dragging alternatives for every drag-and-drop interaction (WCAG 2.5.7).
 - Authentication flows and third-party identity providers (WCAG 3.3.8).
 - Consistent help placement across multi-step processes (WCAG 3.2.6).
@@ -59,4 +59,4 @@ Expected remediation: at the narrow breakpoint, stack or collapse the clusters i
 
 ## Conformance statement
 
-The tested initial states have no automated WCAG A/AA violations after remediation. Full WCAG 2.2 AA conformance is **not claimed** because one reflow defect remains open and the manual verification matrix is incomplete.
+The tested initial states have no automated WCAG A/AA violations after remediation. Full WCAG 2.2 AA conformance is **not claimed** because the manual assistive-technology and representative-workflow verification matrix is incomplete.

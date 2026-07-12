@@ -260,7 +260,7 @@ async function main() {
     await page.setViewport(VIEWPORT);
 
     console.log(`Navigating to ${url}...`);
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
     console.log(`Waiting for the application shell (up to ${APP_READY_TIMEOUT_MS}ms)...`);
     await new Promise(r => setTimeout(r, WAIT_MS));
     await page.waitForFunction(() => {

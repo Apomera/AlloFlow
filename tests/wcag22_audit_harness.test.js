@@ -15,6 +15,7 @@ describe('WCAG 2.2 audit harness', () => {
     const source = read('a11y-audit/runtime-audit.js');
     expect(source).toContain("document.querySelector('#alloflow-loader')");
     expect(source).toContain('APP_READY_TIMEOUT_MS');
+    expect(source).toContain("waitUntil: 'domcontentloaded', timeout: 60000");
   });
   it('checks the actual focused state rather than unfocused outlines', () => {
     const source = read('a11y-audit/runtime-audit.js');

@@ -32760,8 +32760,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               <h2 className="font-semibold text-slate-700 flex items-center gap-2 text-sm">
                 <FileText size={16} /> {t('tools.source')}
               </h2>
-              <div className="flex items-center gap-2">
-                 <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+              <div className="flex flex-wrap items-center justify-end gap-2 max-w-full min-w-0">
+                 <div className="flex flex-wrap items-center justify-end gap-2 max-w-full min-w-0" onClick={(e) => e.stopPropagation()}>
                      <input aria-label={t('common.upload_file')}
                         type="file"
                         ref={fileInputRef}

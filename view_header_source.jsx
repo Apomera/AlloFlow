@@ -170,7 +170,7 @@ function HeaderBar(props) {
   const canUseKokoroVoicePicker = _isCanvasEnv || isDesktopBundledApp;
 
   return (
-      <header aria-label={t('common.main_application_header')} className={`p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 w-full min-w-max ${theme === 'contrast' ? 'bg-black border-b-4 border-yellow-400' : 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white'}`}>
+      <header aria-label={t('common.main_application_header')} className={`p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 w-full min-w-0 overflow-x-clip ${theme === 'contrast' ? 'bg-black border-b-4 border-yellow-400' : 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white'}`}>
         <div className="w-full max-w-[98%] mx-auto relative">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div>
@@ -208,8 +208,8 @@ function HeaderBar(props) {
                 </span>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-4 w-full lg:w-auto">
-                <div className="flex items-center gap-4 flex-wrap justify-end relative">
+            <div className="flex flex-col items-stretch sm:items-end gap-4 w-full lg:w-auto min-w-0">
+                <div className="w-full flex items-center gap-2 sm:gap-4 flex-wrap justify-start sm:justify-end relative min-w-0">
                     <button
                         onClick={handleSetShowXPModalToTrue}
                         data-help-key="xp_modal_trigger"
@@ -233,7 +233,7 @@ function HeaderBar(props) {
                              </div>
                         </div>
                     </button>
-                    <div id="tour-header-settings" className={`relative z-[60] flex items-center gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
+                    <div id="tour-header-settings" className={`relative z-[60] w-full sm:w-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
                         <GlobalMuteButton className={`px-3 py-2 rounded-xl transition-colors ${theme === 'light' ? 'bg-white/10 hover:bg-white/20 text-white' : theme === 'contrast' ? 'bg-black border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold' : 'hover:bg-white/10 text-white'}`} />
                         <button
                             onClick={() => setShowReadThisPage(prev => !prev)}
@@ -639,7 +639,7 @@ function HeaderBar(props) {
                             </>
                         )}
                     </div>
-                    <div id="tour-header-utils" className={`relative z-[100] flex items-center gap-3 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
+                    <div id="tour-header-utils" className={`relative z-[100] w-full sm:w-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 sm:gap-3 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
                         {isTeacherMode && (
                             <button
                                 onClick={handleSetShowHintsModalToTrue}
@@ -731,13 +731,13 @@ function HeaderBar(props) {
                         </button>
                     </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-3 justify-end relative z-10 mt-2">
-                    <div id="tour-header-actions" className={`flex items-center gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
-                        <div className="flex flex-col items-end sm:flex-row sm:items-center gap-1.5 px-1 sm:pr-2 sm:border-r sm:border-white/10">
+                <div className="w-full flex flex-wrap items-center gap-2 sm:gap-3 justify-start sm:justify-end relative z-10 mt-2 min-w-0">
+                    <div id="tour-header-actions" className={`w-full flex flex-wrap items-center justify-start gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
+                        <div className="w-full sm:w-auto flex flex-col items-start sm:flex-row sm:items-center gap-1.5 px-1 sm:pr-2 sm:border-r sm:border-white/10">
                             <span className="text-[11px] font-bold text-indigo-100/70 uppercase tracking-wider hidden md:block text-right leading-tight">
                                 {t('header.app_language')}
                             </span>
-                            <div className="scale-90 origin-right sm:origin-center" data-help-key="header_language">
+                            <div className="max-w-full scale-90 origin-left sm:origin-center" data-help-key="header_language">
                                 <UiLanguageSelector />
                             </div>
                         </div>
