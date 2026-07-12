@@ -32,6 +32,7 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
     const [refiningPanelIdx, setRefiningPanelIdx] = React.useState(null);
     const [userLabels, setUserLabels] = React.useState(initialAnnotations?.userLabels || {});
     const [draggingLabel, setDraggingLabel] = React.useState(null);
+    const [labelMoveStatus, setLabelMoveStatus] = React.useState('');
     const [aiLabelPositions, setAiLabelPositions] = React.useState(initialAnnotations?.aiLabelPositions || {});
     const [aiLabelAnchors, setAiLabelAnchors] = React.useState(() => {
         const saved = initialAnnotations?.aiLabelAnchors || {};
@@ -431,6 +432,59 @@ Return ONLY valid JSON:
         };
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
+    };
+    const getKeyboardMovement = (e) => ({
+        ArrowLeft: { x: -1, y: 0, label: 'left' },
+        ArrowRight: { x: 1, y: 0, label: 'right' },
+        ArrowUp: { x: 0, y: -1, label: 'up' },
+        ArrowDown: { x: 0, y: 1, label: 'down' }
+    })[e.key];
+    const announceLabelMove = (movement, isLarge, target) => {
+        setLabelMoveStatus(target + ' moved ' + movement.label + (isLarge ? ' by a larger step' : '') + '.');
+    };
+    const handleUserLabelKeyDown = (panelIdx, labelId, e) => {
+        const movement = getKeyboardMovement(e);
+        if (!movement) return;
+        e.preventDefault(); e.stopPropagation();
+        const step = e.shiftKey ? 5 : 1;
+        pushVisualSnapshot();
+        setUserLabels(prev => ({ ...prev, [panelIdx]: (prev[panelIdx] || []).map(label => label.id === labelId ? {
+            ...label,
+            x: Math.max(0, Math.min(90, label.x + movement.x * step)),
+            y: Math.max(0, Math.min(90, label.y + movement.y * step))
+        } : label) }));
+        announceLabelMove(movement, e.shiftKey, 'Label');
+    };
+    const handleAiLabelKeyDown = (panelIdx, labelIdx, e) => {
+        const movement = getKeyboardMovement(e);
+        if (!movement) return;
+        e.preventDefault(); e.stopPropagation();
+        const container = e.currentTarget.parentElement;
+        if (!container) return;
+        const containerRect = container.getBoundingClientRect();
+        const rect = e.currentTarget.getBoundingClientRect();
+        const key = panelIdx + '-' + labelIdx;
+        const current = aiLabelPositions[key];
+        const left = current ? parseFloat(current.left) : ((rect.left - containerRect.left) / containerRect.width) * 100;
+        const top = current ? parseFloat(current.top) : ((rect.top - containerRect.top) / containerRect.height) * 100;
+        const step = e.shiftKey ? 5 : 1;
+        pushVisualSnapshot();
+        setAiLabelPositions(prev => ({ ...prev, [key]: {
+            left: Math.max(0, Math.min(90, left + movement.x * step)) + '%',
+            top: Math.max(0, Math.min(90, top + movement.y * step)) + '%'
+        } }));
+        announceLabelMove(movement, e.shiftKey, 'Label');
+    };
+    const handleAnchorKeyDown = (panelIdx, labelKey, labelType, currentX, currentY, e) => {
+        const movement = getKeyboardMovement(e);
+        if (!movement) return;
+        e.preventDefault(); e.stopPropagation();
+        const step = e.shiftKey ? 5 : 1;
+        const x = Math.max(0, Math.min(100, currentX + movement.x * step));
+        const y = Math.max(0, Math.min(100, currentY + movement.y * step));
+        if (labelType === 'ai') setAiLabelAnchors(prev => ({ ...prev, [panelIdx + '-' + labelKey]: { x, y } }));
+        else setUserLabels(prev => ({ ...prev, [panelIdx]: (prev[panelIdx] || []).map(label => label.id === labelKey ? { ...label, anchorX: x, anchorY: y } : label) }));
+        announceLabelMove(movement, e.shiftKey, 'Leader line anchor');
     };
     const handleCaptionTTS = (panelIdx) => {
         const panels = visualPlan.panels || [];
@@ -848,7 +902,7 @@ Return ONLY valid JSON:
         const allPoints = [...aiLabels, ...teacherLabels];
         if (allPoints.length === 0) return null;
         return (
-            <svg className="visual-leader-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 2 }}>
+            <svg className="visual-leader-line" viewBox="0 0 100 100" preserveAspectRatio="none" role="group" aria-label="Movable label leader-line anchors" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 2 }}>
                 {allPoints.map((pt, idx) => {
                     const tx = pt.anchorX !== null && pt.anchorX !== undefined ? pt.anchorX : 50;
                     const ty = pt.anchorY !== null && pt.anchorY !== undefined ? pt.anchorY : 50;
@@ -862,6 +916,8 @@ Return ONLY valid JSON:
                                     fill="#6366f1" stroke="white" strokeWidth="0.4" opacity="0"
                                     style={{ cursor: 'grab', pointerEvents: 'all', transition: 'opacity 0.2s, r 0.15s' }}
                                     onMouseDown={(e) => handleAnchorMouseDown(panelIdx, pt.key, pt.type, e)}
+                                    onKeyDown={(e) => handleAnchorKeyDown(panelIdx, pt.key, pt.type, tx, ty, e)}
+                                    tabIndex="0" role="button" aria-label="Move leader-line anchor with arrow keys; hold Shift for a larger step"
                                     onMouseEnter={(e) => { e.target.setAttribute('opacity', '0.9'); e.target.setAttribute('r', '2.2'); }}
                                     onMouseLeave={(e) => { e.target.setAttribute('opacity', '0'); e.target.setAttribute('r', '1.8'); }}
                             />
@@ -901,6 +957,8 @@ Return ONLY valid JSON:
     }, [panelOrder, visualPlan.panels]);
     return (
         <div>
+            <p id="visual-label-move-instructions" className="sr-only">Use arrow keys to move labels and leader-line anchors. Hold Shift for a larger step.</p>
+            <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{labelMoveStatus}</div>
             <div className="visual-grid-controls" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', padding: '8px 12px', background: 'linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%)', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '8px', alignItems: 'center' }}>
                 {!isStudentChallenge && (
                 <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
@@ -1129,12 +1187,14 @@ Return ONLY valid JSON:
                                         className="visual-label"
                                         style={{...pos, display: (labelsHidden || (isStudentChallenge && !isFillBlank)) ? 'none' : 'flex', alignItems: 'center', gap: '4px', background: (isStudentChallenge && isFillBlank) ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.92)', backdropFilter: 'blur(8px)', padding: '6px 14px', borderRadius: '8px', border: (isStudentChallenge && isFillBlank) ? '2px solid #86efac' : '2px solid rgba(99,102,241,0.5)', boxShadow: (isStudentChallenge && isFillBlank) ? '0 2px 12px rgba(22,163,74,0.2)' : '0 2px 12px rgba(99,102,241,0.2)', fontWeight: 800, fontSize: '13px', color: '#1e1b4b', cursor: (isStudentChallenge && isFillBlank) ? 'text' : 'grab', userSelect: 'none', touchAction: 'none', fontFamily: "'Inter','Segoe UI',system-ui,sans-serif"}}
                                         onMouseDown={(e) => { if (e.target.tagName === 'INPUT') return; if (!(isStudentChallenge && isFillBlank)) handleAiLabelMouseDown(panelIdx, labelIdx, e); }}
+                                        onKeyDown={(e) => { if (isStudentChallenge && isFillBlank || e.target.tagName === 'INPUT') return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleLabelClick(panelIdx, labelIdx); } else handleAiLabelKeyDown(panelIdx, labelIdx, e); }}
                                         onDoubleClick={() => { if (!(isStudentChallenge && isFillBlank)) handleLabelClick(panelIdx, labelIdx); }}
                                         onMouseEnter={() => setHoveredLabelKey(labelKey)}
                                         onMouseLeave={() => setHoveredLabelKey(null)}
                                         title={(isStudentChallenge && isFillBlank) ? "Type the correct label" : "Drag to move • Double-click to edit"}
-                                        role="note"
+                                        role={(isStudentChallenge && isFillBlank) ? "note" : "button"}
                                         tabIndex={0}
+                                        aria-describedby="visual-label-move-instructions"
                                         aria-label={(isStudentChallenge && isFillBlank) ? `Blank label ${labelIdx + 1} — type your answer` : `Label: ${label.text || label}`}
                                     >
                                         {(isStudentChallenge && isFillBlank) ? (
@@ -1175,11 +1235,12 @@ Return ONLY valid JSON:
                                     key={`user-${uLabel.id}`}
                                     className="visual-label"
                                     onMouseDown={(e) => { if (e.target.tagName === 'INPUT') return; if (!isUserFillBlank) handleLabelMouseDown(panelIdx, uLabel.id, e); }}
+                                    onKeyDown={(e) => { if (isUserFillBlank || e.target.tagName === 'INPUT') return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditingLabel({ panelIdx, labelIdx: `user-${uLabel.id}` }); } else handleUserLabelKeyDown(panelIdx, uLabel.id, e); }}
                                     onDoubleClick={() => { if (!isUserFillBlank) setEditingLabel({ panelIdx, labelIdx: `user-${uLabel.id}` }); }}
                                     onMouseEnter={() => setHoveredLabelKey('user-' + panelIdx + '-' + uLabel.id)}
                                     onMouseLeave={() => setHoveredLabelKey(null)}
                                     style={{ position: 'absolute', display: (labelsHidden || (isStudentChallenge && !isFillBlank)) ? 'none' : 'flex', alignItems: 'center', gap: '4px', left: `${uLabel.x}%`, top: `${uLabel.y}%`, borderColor: isUserFillBlank ? '#86efac' : '#8b5cf6', background: isUserFillBlank ? 'rgba(255,255,255,0.95)' : 'rgba(245,243,255,0.95)', zIndex: 4, padding: '4px 10px', borderRadius: '8px', border: isUserFillBlank ? '2px solid #86efac' : '2px solid rgba(139,92,246,0.5)', boxShadow: isUserFillBlank ? '0 2px 12px rgba(22,163,74,0.2)' : '0 2px 8px rgba(139,92,246,0.15)', fontSize: '13px', fontWeight: 700, color: '#1e1b4b', cursor: isUserFillBlank ? 'text' : 'grab', userSelect: 'none', touchAction: 'none' }}
-                                    role="note" tabIndex={0} aria-label={isUserFillBlank ? 'Fill in this label' : uLabel.text}
+                                    role={isUserFillBlank ? "note" : "button"} tabIndex={0} aria-describedby="visual-label-move-instructions" aria-label={isUserFillBlank ? 'Fill in this label' : uLabel.text + '. Use arrow keys to move; hold Shift for a larger step.'}
                                     title={isUserFillBlank ? "Type the correct label" : "Drag to move • Double-click to edit"}
                                 >
                                     {isUserFillBlank ? (
