@@ -418,6 +418,76 @@ function GlossaryView(props) {
   var flashcardEditButtonRef = React.useRef(null);
   var flashcardEditDrawerRef = React.useRef(null);
   var flashcardEditFirstFieldRef = React.useRef(null);
+  var flashcardDialogRef = React.useRef(null);
+  var flashcardCloseRef = React.useRef(null);
+  var phonicsDialogRef = React.useRef(null);
+  var phonicsCloseRef = React.useRef(null);
+  var screenerDialogRef = React.useRef(null);
+  function containModalFocus(e, container, onEscape) {
+    if (!e) return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      if (typeof onEscape === 'function') onEscape(e);
+      return;
+    }
+    if (e.key !== 'Tab' || !container || typeof container.querySelectorAll !== 'function') return;
+    var focusable = Array.prototype.slice.call(container.querySelectorAll('button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(function (el) {
+      return el && !el.hidden && el.getAttribute('aria-hidden') !== 'true';
+    });
+    if (!focusable.length) {
+      e.preventDefault();
+      container.focus();
+      return;
+    }
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+  React.useEffect(function () {
+    if (!isInteractiveFlashcards) return undefined;
+    var previouslyFocused = document.activeElement;
+    var timer = setTimeout(function () {
+      if (flashcardCloseRef.current) flashcardCloseRef.current.focus();
+    }, 0);
+    return function () {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+    };
+  }, [isInteractiveFlashcards]);
+  React.useEffect(function () {
+    if (!phonicsData || activeView !== 'glossary') return undefined;
+    var previouslyFocused = document.activeElement;
+    var timer = setTimeout(function () {
+      if (phonicsCloseRef.current) phonicsCloseRef.current.focus();
+    }, 0);
+    return function () {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+    };
+  }, [!!phonicsData, activeView]);
+  function closeScreenerResults(e) {
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    setScreenerSession(null);
+    setRosterQueue([]);
+  }
+  React.useEffect(function () {
+    if (!screenerSession || screenerSession.status !== 'complete') return undefined;
+    var previouslyFocused = document.activeElement;
+    var timer = setTimeout(function () {
+      var firstAction = screenerDialogRef.current && screenerDialogRef.current.querySelector('button:not([disabled])');
+      if (firstAction) firstAction.focus();
+    }, 0);
+    return function () {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+    };
+  }, [screenerSession && screenerSession.status]);
   var flashcardDeck = Array.isArray(generatedContent?.data) ? generatedContent.data : [];
   function getFlashcardReviewKey(item, idx) {
     return String(item && item.term ? item.term : idx);
@@ -564,6 +634,7 @@ function GlossaryView(props) {
   }
   function handleFlashcardEditDrawerKeyDown(e) {
     if (!e) return;
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
     if (e.key === 'Escape') {
       handleCloseFlashcardEditDrawer(e);
       return;
@@ -1024,8 +1095,15 @@ function GlossaryView(props) {
     size: 14,
     className: "animate-spin"
   }) : /*#__PURE__*/React.createElement("span", null, "📊"), isRunningHealthCheck ? 'Analyzing...' : glossaryHealthCheck ? 'Re-run Health Check' : 'Health Check')))), isInteractiveFlashcards && Array.isArray(generatedContent?.data) && generatedContent.data.length > 0 && /*#__PURE__*/React.createElement("div", {
+    ref: flashcardDialogRef,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-label": t('flashcards.deck_standard') || 'Interactive flashcards',
+    tabIndex: -1,
+    onKeyDown: e => containModalFocus(e, flashcardDialogRef.current, closeInteractiveFlashcards),
     className: "fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-start pt-20 sm:pt-24 p-4 animate-in fade-in duration-300 motion-reduce:animate-none motion-reduce:transition-none overflow-auto"
   }, /*#__PURE__*/React.createElement("button", {
+    ref: flashcardCloseRef,
     type: "button",
     onClick: closeInteractiveFlashcards,
     className: "absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors z-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
@@ -1476,8 +1554,13 @@ function GlossaryView(props) {
     playSound: playSound,
     onScoreUpdate: handleGameScoreUpdate
   })), screenerSession && screenerSession.status === 'interstitial' && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[250] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+    role: "presentation",
+    className: "fixed inset-0 z-[250] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    "aria-label": "Screening subtest progress",
     className: "bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-emerald-100"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-emerald-200"
@@ -1490,17 +1573,29 @@ function GlossaryView(props) {
   }, "Next up:"), /*#__PURE__*/React.createElement("p", {
     className: "text-2xl font-black text-emerald-600 mb-6"
   }, screenerSession.subtests[screenerSession.currentIndex]?.replace(/^./, c => c.toUpperCase())), /*#__PURE__*/React.createElement("div", {
-    className: "w-full bg-slate-100 rounded-full h-2 mb-4"
+    className: "w-full bg-slate-100 rounded-full h-2 mb-4",
+    role: "progressbar",
+    "aria-label": "Completed screening subtests",
+    "aria-valuemin": 0,
+    "aria-valuemax": screenerSession.subtests.length,
+    "aria-valuenow": screenerSession.currentIndex
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-emerald-500 h-2 rounded-full transition-all duration-500",
+    className: "bg-emerald-500 h-2 rounded-full transition-all duration-500 motion-reduce:transition-none",
     style: {
       width: `${Math.round(screenerSession.currentIndex / screenerSession.subtests.length * 100)}%`
     }
   })), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600"
   }, screenerSession.currentIndex, " of ", screenerSession.subtests.length, " subtests complete"))), screenerSession && screenerSession.status === 'complete' && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[250] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+    role: "presentation",
+    className: "fixed inset-0 z-[250] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("div", {
+    ref: screenerDialogRef,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-labelledby": "glossary-screener-results-title",
+    tabIndex: -1,
+    onKeyDown: e => containModalFocus(e, screenerDialogRef.current, closeScreenerResults),
     className: "bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full border-4 border-violet-100"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-center mb-6"
@@ -1509,6 +1604,7 @@ function GlossaryView(props) {
   }, /*#__PURE__*/React.createElement(Award, {
     size: 32
   })), /*#__PURE__*/React.createElement("h3", {
+    id: "glossary-screener-results-title",
     className: "text-2xl font-black text-slate-800"
   }, t('common.screening_complete')), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600 text-sm mt-1"
@@ -1561,10 +1657,7 @@ function GlossaryView(props) {
     onClick: advanceRoster,
     className: "flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition-colors"
   }, "▶ Next Student (", rosterQueue[0], ")"), /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      setScreenerSession(null);
-      setRosterQueue([]);
-    },
+    onClick: closeScreenerResults,
     className: `${rosterQueue.length > 0 ? 'flex-1' : 'w-full'} py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-lg transition-colors`
   }, rosterQueue.length > 0 ? 'Skip / Done' : 'Done')), /*#__PURE__*/React.createElement("button", {
     onClick: exportScreeningCSV,
@@ -2736,20 +2829,17 @@ function GlossaryView(props) {
   // and only when the active view is glossary so it doesn't double-render
   // alongside the simplified-view copy if both views were ever to coexist.
   phonicsData && activeView === 'glossary' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    role: "button",
-    tabIndex: 0,
-    onKeyDown: function (e) {
-      if (e.key === 'Escape') {
-        e.currentTarget.click();
-      }
-    },
+    "aria-hidden": "true",
     className: "fixed inset-0 z-[90]",
     onClick: closePhonics
   }), /*#__PURE__*/React.createElement("div", {
+    ref: phonicsDialogRef,
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "glossary-phonics-popup-title",
-    className: "fixed z-[100] bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in zoom-in-95 duration-200",
+    tabIndex: -1,
+    onKeyDown: e => containModalFocus(e, phonicsDialogRef.current, closePhonics),
+    className: "fixed z-[100] bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none",
     style: {
       top: Math.min(window.innerHeight - 300, (phonicsData.y || 100) + 10) + 'px',
       left: Math.min(window.innerWidth - 300, (phonicsData.x || 100) - 20) + 'px'
@@ -2760,6 +2850,8 @@ function GlossaryView(props) {
     id: "glossary-phonics-popup-title",
     className: "font-black text-emerald-900 text-2xl capitalize tracking-tight"
   }, phonicsData.word), /*#__PURE__*/React.createElement("button", {
+    ref: phonicsCloseRef,
+    type: "button",
     onClick: closePhonics,
     className: "text-slate-600 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full p-1",
     "aria-label": t('common.close')
@@ -2769,7 +2861,8 @@ function GlossaryView(props) {
     className: "flex flex-col items-center justify-center py-6 gap-2 text-emerald-600"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 24,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none",
+    "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold uppercase tracking-wider"
   }, t('glossary.popups.analyzing'))) : phonicsData.data ? /*#__PURE__*/React.createElement("div", {
