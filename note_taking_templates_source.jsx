@@ -1413,24 +1413,53 @@ Generate 2-4 patterns. Quality over quantity — one really specific pattern is 
 `.trim();
 }
 
+function _useNoteDialogFocus(isOpen, dialogRef, onClose) {
+  const closeRef = React.useRef(onClose);
+  closeRef.current = onClose;
+  React.useEffect(() => {
+    if (!isOpen) return undefined;
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    const previousFocus = document.activeElement;
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    (getFocusable()[0] || dialog).focus();
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); closeRef.current(); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return () => {
+      dialog.removeEventListener('keydown', onKeyDown);
+      if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
+    };
+  }, [isOpen, dialogRef]);
+}
+
 const _NoteInsightsModal = ({ isOpen, onClose, insights, isLoading, t }) => {
+  const dialogRef = React.useRef(null);
+  _useNoteDialogFocus(isOpen, dialogRef, onClose);
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="note-insights-modal-title">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4" role="presentation">
       <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200">
+      <div ref={dialogRef} tabIndex={-1} className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="note-insights-modal-title" aria-describedby="note-insights-modal-subtitle">
         <div className="flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-violet-50">
           <div>
             <div className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Note-Taking Insights</div>
-            <h2 id="note-insights-modal-title" className="text-2xl font-black text-slate-800 mt-0.5">📊 {t('note_insights.title') || 'Your note-taking patterns'}</h2>
-            <p className="text-xs text-slate-600 mt-1 leading-snug">{t('note_insights.subtitle') || 'Growth-focused observations across your saved entries. Not a grade — a mirror.'}</p>
+            <h2 id="note-insights-modal-title" className="text-2xl font-black text-slate-800 mt-0.5"><span aria-hidden="true">📊</span> {t('note_insights.title') || 'Your note-taking patterns'}</h2>
+            <p id="note-insights-modal-subtitle" className="text-xs text-slate-600 mt-1 leading-snug">{t('note_insights.subtitle') || 'Growth-focused observations across your saved entries. Not a grade — a mirror.'}</p>
           </div>
           <button onClick={onClose} className="text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100" aria-label={t('note_insights.close_aria') || 'Close insights'}>✕</button>
         </div>
         <div className="flex-1 overflow-y-auto p-5 bg-slate-50 space-y-3">
           {isLoading ? (
-            <div className="text-center py-12">
-              <div className="text-5xl mb-3 animate-pulse">📓</div>
+            <div className="text-center py-12" role="status" aria-live="polite" aria-atomic="true">
+              <div className="text-5xl mb-3 animate-pulse" aria-hidden="true">📓</div>
               <p className="text-slate-600 font-bold">{t('note_insights.loading') || 'Looking across your notebook...'}</p>
               <p className="text-xs text-slate-500 mt-1">{t('note_insights.loading_hint') || 'This takes a few seconds — patterns need a careful read.'}</p>
             </div>
@@ -1482,6 +1511,8 @@ const NotebookOverlay = React.memo((props) => {
   const [insightsOpen, setInsightsOpen] = React.useState(false);
   const [insights, setInsights] = React.useState(null);
   const [insightsLoading, setInsightsLoading] = React.useState(false);
+  const notebookDialogRef = React.useRef(null);
+  _useNoteDialogFocus(isOpen, notebookDialogRef, onClose);
 
   const noteEntries = history.filter(h => h && h.type === 'note-taking');
 
@@ -1511,12 +1542,6 @@ const NotebookOverlay = React.memo((props) => {
     }
   }, [callGemini, noteEntries, addToast, t]);
 
-  React.useEffect(() => {
-    if (!isOpen) return;
-    const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -1560,21 +1585,19 @@ const NotebookOverlay = React.memo((props) => {
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 nt-no-print"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Notebook — all your saved entries"
+      role="presentation"
     >
       <div
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200">
+      <div ref={notebookDialogRef} tabIndex={-1} className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="notebook-dialog-title" aria-describedby="notebook-dialog-description" inert={insightsOpen ? true : undefined} aria-hidden={insightsOpen ? 'true' : undefined}>
         <div className="flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-sky-50 to-violet-50">
           <div>
             <div className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">My Notebook</div>
-            <h2 className="text-2xl font-black text-slate-800 mt-0.5">📓 Notebook</h2>
-            <p className="text-xs text-slate-600 mt-1 leading-snug">Everything you've saved across sessions — Cornell Notes, Lab Reports, Reading Responses, Double-Entry Journals, Guided Notes, Q&amp;A sets, and Anchor Charts.</p>
+            <h2 id="notebook-dialog-title" className="text-2xl font-black text-slate-800 mt-0.5"><span aria-hidden="true">📓</span> Notebook</h2>
+            <p id="notebook-dialog-description" className="text-xs text-slate-600 mt-1 leading-snug">Everything you've saved across sessions — Cornell Notes, Lab Reports, Reading Responses, Double-Entry Journals, Guided Notes, Q&amp;A sets, and Anchor Charts.</p>
           </div>
           <button
             onClick={onClose}
@@ -1617,6 +1640,7 @@ const NotebookOverlay = React.memo((props) => {
             >🖨️ Print / PDF</button>
           </div>
         </div>
+        <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{filtered.length} notebook entries shown.</p>
         <div className="flex-1 overflow-y-auto px-5 py-4 bg-slate-50">
           {filtered.length === 0 ? (
             <div className="text-center py-12">
@@ -1674,7 +1698,7 @@ const NotebookOverlay = React.memo((props) => {
             </ul>
           )}
         </div>
-        <div className="px-5 py-3 border-t border-slate-200 bg-white text-[11px] text-slate-500 flex items-center justify-between">
+        <div className="px-5 py-3 border-t border-slate-200 bg-white text-[11px] text-slate-500 flex flex-wrap items-center justify-between gap-2">
           <span>Click any entry to open it. Your notebook stays with you across sessions.</span>
           <span className="font-mono">{sortedEntries.length} total</span>
         </div>

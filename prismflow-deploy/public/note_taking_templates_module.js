@@ -1145,9 +1145,50 @@ Return ONLY JSON:
 Generate 2-4 patterns. Quality over quantity \u2014 one really specific pattern is worth more than three generic ones.
 `.trim();
 }
+function _useNoteDialogFocus(isOpen, dialogRef, onClose) {
+  const closeRef = React.useRef(onClose);
+  closeRef.current = onClose;
+  React.useEffect(() => {
+    if (!isOpen) return void 0;
+    const dialog = dialogRef.current;
+    if (!dialog) return void 0;
+    const previousFocus = document.activeElement;
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    (getFocusable()[0] || dialog).focus();
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeRef.current();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    dialog.addEventListener("keydown", onKeyDown);
+    return () => {
+      dialog.removeEventListener("keydown", onKeyDown);
+      if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
+    };
+  }, [isOpen, dialogRef]);
+}
 const _NoteInsightsModal = ({ isOpen, onClose, insights, isLoading, t }) => {
+  const dialogRef = React.useRef(null);
+  _useNoteDialogFocus(isOpen, dialogRef, onClose);
   if (!isOpen) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[110] flex items-center justify-center p-4", role: "dialog", "aria-modal": "true", "aria-labelledby": "note-insights-modal-title" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-slate-900/70 backdrop-blur-sm", onClick: onClose, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: "relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-violet-50" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-700 uppercase tracking-wider" }, "Note-Taking Insights"), /* @__PURE__ */ React.createElement("h2", { id: "note-insights-modal-title", className: "text-2xl font-black text-slate-800 mt-0.5" }, "\u{1F4CA} ", t("note_insights.title") || "Your note-taking patterns"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1 leading-snug" }, t("note_insights.subtitle") || "Growth-focused observations across your saved entries. Not a grade \u2014 a mirror.")), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100", "aria-label": t("note_insights.close_aria") || "Close insights" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-5 bg-slate-50 space-y-3" }, isLoading ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3 animate-pulse" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold" }, t("note_insights.loading") || "Looking across your notebook..."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-1" }, t("note_insights.loading_hint") || "This takes a few seconds \u2014 patterns need a careful read.")) : !insights ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-500 text-sm" }, t("note_insights.no_data") || "No insights yet.") : /* @__PURE__ */ React.createElement(React.Fragment, null, insights.summary ? /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1" }, t("note_insights.overview_label") || "Overview"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.summary)) : null, Array.isArray(insights.patterns) && insights.patterns.map((p, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white border-l-4 border-violet-400 rounded-r-xl p-4 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-violet-800 mb-1" }, p.title), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed mb-2" }, p.observation), /* @__PURE__ */ React.createElement("div", { className: "text-xs bg-violet-50 border border-violet-200 rounded p-2 text-violet-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("note_insights.try_next_label") || "Try next:"), " ", p.tryNext))), insights.celebration ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 mt-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1" }, "\u{1F331} ", t("note_insights.celebration_label") || "Keep doing this"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.celebration)) : null)), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-3 border-t border-slate-200 bg-white text-[11px] text-slate-500 italic" }, t("note_insights.footer") || "These observations are a mirror, not a grade. Use what's useful, set aside what isn't.")));
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[110] flex items-center justify-center p-4", role: "presentation" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-slate-900/70 backdrop-blur-sm", onClick: onClose, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:outline-none", role: "dialog", "aria-modal": "true", "aria-labelledby": "note-insights-modal-title", "aria-describedby": "note-insights-modal-subtitle" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-violet-50" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-700 uppercase tracking-wider" }, "Note-Taking Insights"), /* @__PURE__ */ React.createElement("h2", { id: "note-insights-modal-title", className: "text-2xl font-black text-slate-800 mt-0.5" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4CA}"), " ", t("note_insights.title") || "Your note-taking patterns"), /* @__PURE__ */ React.createElement("p", { id: "note-insights-modal-subtitle", className: "text-xs text-slate-600 mt-1 leading-snug" }, t("note_insights.subtitle") || "Growth-focused observations across your saved entries. Not a grade \u2014 a mirror.")), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100", "aria-label": t("note_insights.close_aria") || "Close insights" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-5 bg-slate-50 space-y-3" }, isLoading ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12", role: "status", "aria-live": "polite", "aria-atomic": "true" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3 animate-pulse", "aria-hidden": "true" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold" }, t("note_insights.loading") || "Looking across your notebook..."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-1" }, t("note_insights.loading_hint") || "This takes a few seconds \u2014 patterns need a careful read.")) : !insights ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-500 text-sm" }, t("note_insights.no_data") || "No insights yet.") : /* @__PURE__ */ React.createElement(React.Fragment, null, insights.summary ? /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1" }, t("note_insights.overview_label") || "Overview"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.summary)) : null, Array.isArray(insights.patterns) && insights.patterns.map((p, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white border-l-4 border-violet-400 rounded-r-xl p-4 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-violet-800 mb-1" }, p.title), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed mb-2" }, p.observation), /* @__PURE__ */ React.createElement("div", { className: "text-xs bg-violet-50 border border-violet-200 rounded p-2 text-violet-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("note_insights.try_next_label") || "Try next:"), " ", p.tryNext))), insights.celebration ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4 mt-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-emerald-800 uppercase tracking-wider mb-1" }, "\u{1F331} ", t("note_insights.celebration_label") || "Keep doing this"), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-slate-700 leading-relaxed" }, insights.celebration)) : null)), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-3 border-t border-slate-200 bg-white text-[11px] text-slate-500 italic" }, t("note_insights.footer") || "These observations are a mirror, not a grade. Use what's useful, set aside what isn't.")));
 };
 const NotebookOverlay = React.memo((props) => {
   const isOpen = !!props.isOpen;
@@ -1164,6 +1205,8 @@ const NotebookOverlay = React.memo((props) => {
   const [insightsOpen, setInsightsOpen] = React.useState(false);
   const [insights, setInsights] = React.useState(null);
   const [insightsLoading, setInsightsLoading] = React.useState(false);
+  const notebookDialogRef = React.useRef(null);
+  _useNoteDialogFocus(isOpen, notebookDialogRef, onClose);
   const noteEntries = history.filter((h) => h && h.type === "note-taking");
   const handleGenerateInsights = React.useCallback(async () => {
     if (typeof callGemini !== "function") {
@@ -1190,14 +1233,6 @@ const NotebookOverlay = React.memo((props) => {
       setInsightsLoading(false);
     }
   }, [callGemini, noteEntries, addToast, t]);
-  React.useEffect(() => {
-    if (!isOpen) return;
-    const handleKey = (e) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [isOpen, onClose]);
   if (!isOpen) return null;
   const notebookEntries = history.filter((h) => h && (h.type === "note-taking" || h.type === "anchor-chart"));
   const sortedEntries = notebookEntries.slice().sort((a, b) => {
@@ -1239,9 +1274,7 @@ const NotebookOverlay = React.memo((props) => {
     "div",
     {
       className: "fixed inset-0 z-[100] flex items-center justify-center p-4 nt-no-print",
-      role: "dialog",
-      "aria-modal": "true",
-      "aria-label": "Notebook \u2014 all your saved entries"
+      role: "presentation"
     },
     /* @__PURE__ */ React.createElement(
       "div",
@@ -1251,7 +1284,7 @@ const NotebookOverlay = React.memo((props) => {
         "aria-hidden": "true"
       }
     ),
-    /* @__PURE__ */ React.createElement("div", { className: "relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-sky-50 to-violet-50" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-700 uppercase tracking-wider" }, "My Notebook"), /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black text-slate-800 mt-0.5" }, "\u{1F4D3} Notebook"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1 leading-snug" }, "Everything you've saved across sessions \u2014 Cornell Notes, Lab Reports, Reading Responses, Double-Entry Journals, Guided Notes, Q&A sets, and Anchor Charts.")), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { ref: notebookDialogRef, tabIndex: -1, className: "relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 focus:outline-none", role: "dialog", "aria-modal": "true", "aria-labelledby": "notebook-dialog-title", "aria-describedby": "notebook-dialog-description", inert: insightsOpen ? true : void 0, "aria-hidden": insightsOpen ? "true" : void 0 }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-sky-50 to-violet-50" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-700 uppercase tracking-wider" }, "My Notebook"), /* @__PURE__ */ React.createElement("h2", { id: "notebook-dialog-title", className: "text-2xl font-black text-slate-800 mt-0.5" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4D3}"), " Notebook"), /* @__PURE__ */ React.createElement("p", { id: "notebook-dialog-description", className: "text-xs text-slate-600 mt-1 leading-snug" }, "Everything you've saved across sessions \u2014 Cornell Notes, Lab Reports, Reading Responses, Double-Entry Journals, Guided Notes, Q&A sets, and Anchor Charts.")), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: onClose,
@@ -1297,7 +1330,7 @@ const NotebookOverlay = React.memo((props) => {
         title: "Print or save as PDF"
       },
       "\u{1F5A8}\uFE0F Print / PDF"
-    ))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto px-5 py-4 bg-slate-50" }, filtered.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3 opacity-50" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold mb-1" }, sortedEntries.length === 0 ? "Your notebook is empty." : "No entries match this filter."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 max-w-sm mx-auto leading-relaxed" }, sortedEntries.length === 0 ? "Open Note-Taking or Anchor Chart from the sidebar to start saving. Each finished entry lands here." : "Switch filters above to see other entry types.")) : /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, filtered.map((entry) => {
+    ))), /* @__PURE__ */ React.createElement("p", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, filtered.length, " notebook entries shown."), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto px-5 py-4 bg-slate-50" }, filtered.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3 opacity-50" }, "\u{1F4D3}"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold mb-1" }, sortedEntries.length === 0 ? "Your notebook is empty." : "No entries match this filter."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 max-w-sm mx-auto leading-relaxed" }, sortedEntries.length === 0 ? "Open Note-Taking or Anchor Chart from the sidebar to start saving. Each finished entry lands here." : "Switch filters above to see other entry types.")) : /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, filtered.map((entry) => {
       const kind = _entryKind(entry) || "cornell-notes";
       const meta = NOTEBOOK_TEMPLATE_META[kind] || NOTEBOOK_TEMPLATE_META["cornell-notes"];
       const title = _entryTitle(entry);
@@ -1319,7 +1352,7 @@ const NotebookOverlay = React.memo((props) => {
         },
         /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `w-1 self-stretch rounded-full ${_accentClasses(meta.accent, "bar")}`, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${_accentClasses(meta.accent, "badge")}` }, meta.icon, " ", meta.short), when ? /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, when) : null), /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-800 text-sm truncate group-hover:text-indigo-700" }, title), previewTruncated ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500 mt-1 leading-snug line-clamp-2" }, previewTruncated) : /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic mt-1" }, "No notes yet \u2014 open to start writing.")))
       ));
-    }))), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-3 border-t border-slate-200 bg-white text-[11px] text-slate-500 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Click any entry to open it. Your notebook stays with you across sessions."), /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, sortedEntries.length, " total"))),
+    }))), /* @__PURE__ */ React.createElement("div", { className: "px-5 py-3 border-t border-slate-200 bg-white text-[11px] text-slate-500 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", null, "Click any entry to open it. Your notebook stays with you across sessions."), /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, sortedEntries.length, " total"))),
     /* @__PURE__ */ React.createElement(
       _NoteInsightsModal,
       {
