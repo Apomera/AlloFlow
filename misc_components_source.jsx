@@ -180,6 +180,43 @@ const WordSoundsReviewPanel = ({
     const [regeneratingOptions, setRegeneratingOptions] = React.useState({});
     const [playingAudioKey, setPlayingAudioKey] = React.useState(null);
     const [audioProgress, setAudioProgress] = React.useState({ ready: 0, total: 0 });
+    const [showProbeEndConfirm, setShowProbeEndConfirm] = React.useState(false);
+    const reviewDialogRef = React.useRef(null);
+    const reviewBackRef = React.useRef(null);
+    const probeConfirmRef = React.useRef(null);
+    const probeCancelRef = React.useRef(null);
+    const finishBackToSetup = () => (onBackToSetup || onClose)?.();
+    const requestBackToSetup = () => {
+        if (isProbeMode) setShowProbeEndConfirm(true);
+        else finishBackToSetup();
+    };
+    const trapReviewFocus = (event, container, onEscape) => {
+        if (!event || !container) return;
+        if (event.key === 'Escape') { event.preventDefault(); if (onEscape) onEscape(); return; }
+        if (event.key !== 'Tab') return;
+        const focusable = Array.from(container.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(el => !el.hidden && el.getAttribute('aria-hidden') !== 'true');
+        if (!focusable.length) { event.preventDefault(); container.focus(); return; }
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    React.useEffect(() => {
+        const previouslyFocused = document.activeElement;
+        const timer = setTimeout(() => reviewBackRef.current?.focus(), 0);
+        return () => {
+            clearTimeout(timer);
+            if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+        };
+    }, []);
+    React.useEffect(() => {
+        if (!showProbeEndConfirm) return undefined;
+        const previouslyFocused = document.activeElement;
+        const timer = setTimeout(() => probeCancelRef.current?.focus(), 0);
+        return () => {
+            clearTimeout(timer);
+            if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+        };
+    }, [showProbeEndConfirm]);
     React.useEffect(() => {
         if (!preloadedWords || preloadedWords.length === 0) return;
         // A word is audio-ready when the portable pack carries its clip or a
@@ -347,10 +384,10 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
         setExpandedIndex(null);
     };
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300">
-            <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div role="presentation" className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300 motion-reduce:animate-none">
+            <div ref={reviewDialogRef} role="dialog" aria-modal="true" aria-labelledby="word-sounds-review-title" aria-describedby="word-sounds-review-description" tabIndex={-1} onKeyDown={(event) => { const nested = event.target?.closest?.('[role="alertdialog"]'); if (nested) return; trapReviewFocus(event, reviewDialogRef.current, requestBackToSetup); }} className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
                 <div className="p-6 border-b bg-gradient-to-r from-pink-500 to-violet-500 text-white flex-shrink-0">
-                    <h2 className="text-2xl font-black flex items-center gap-2">{t('word_sounds.pre_activity_review') || '📋 Pre-Activity Review'}
+                    <h2 id="word-sounds-review-title" className="text-2xl font-black flex items-center gap-2">{t('word_sounds.pre_activity_review') || '📋 Pre-Activity Review'}
                         <span className="relative group ml-2">
                             <span className="cursor-help text-white/70 hover:text-white text-base">ℹ️</span>
                             <div className="absolute left-0 top-8 w-72 p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 pointer-events-none">
@@ -360,7 +397,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                             </div>
                         </span>
                     </h2>
-                    <p className="text-sm opacity-80 mt-1 flex items-center gap-2 flex-wrap">
+                    <p id="word-sounds-review-description" className="text-sm opacity-80 mt-1 flex items-center gap-2 flex-wrap">
                         <span>{t('word_sounds.review_and_edit_words') || 'Review and edit words'} • {preloadedWords.length} {t('word_sounds.words_ready') || 'words ready'}</span>
                         {isLoading && <span className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse"><div className="w-2 h-2 bg-white rounded-full animate-bounce"/> {t('word_sounds.generating_more') || 'Generating more...'}</span>}
                         {!isLoading && preloadedWords.some(w => w && w._ttsFailed) && (
@@ -1155,8 +1192,10 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                 </div>
                 <div className="p-4 border-t bg-slate-50 flex justify-between items-center flex-shrink-0">
                     <button
+                        ref={reviewBackRef}
+                        type="button"
                         aria-label={t('common.previous')}
-                        onClick={() => { if (isProbeMode && !window.confirm("End probe early? Progress will be lost.")) return; (onBackToSetup || onClose)?.(); }}
+                        onClick={requestBackToSetup}
                         data-help-key="word_sounds_review_back" className="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium flex items-center gap-2 hover:bg-slate-100 rounded-lg transition-colors"
                     >
                         <ChevronLeft size={18} />
@@ -1173,6 +1212,18 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                     </div>
                 </div>
             </div>
+            {showProbeEndConfirm && (
+                <div role="presentation" className="fixed inset-0 z-[220] bg-black/70 flex items-center justify-center p-4">
+                    <div ref={probeConfirmRef} role="alertdialog" aria-modal="true" aria-labelledby="probe-end-title" aria-describedby="probe-end-message" tabIndex={-1} onKeyDown={(event) => { event.stopPropagation(); trapReviewFocus(event, probeConfirmRef.current, () => setShowProbeEndConfirm(false)); }} className="w-full max-w-sm rounded-2xl border-2 border-amber-300 bg-white p-6 shadow-2xl">
+                        <h3 id="probe-end-title" className="text-lg font-black text-slate-900">End probe early?</h3>
+                        <p id="probe-end-message" className="mt-2 text-sm text-slate-700">Current probe progress will be lost.</p>
+                        <div className="mt-5 flex justify-end gap-2">
+                            <button ref={probeCancelRef} type="button" onClick={() => setShowProbeEndConfirm(false)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">Continue probe</button>
+                            <button type="button" onClick={() => { setShowProbeEndConfirm(false); finishBackToSetup(); }} className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700">End probe</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
