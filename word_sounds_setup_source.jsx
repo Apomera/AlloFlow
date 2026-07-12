@@ -357,6 +357,26 @@
         const audioElRef = React.useRef(null); // the one preview clip currently playing
         const modalRootRef = React.useRef(null); // dialog root, for the focus trap
         const previouslyFocusedRef = React.useRef(null); // element to restore focus to on close
+        const [showDeletePackConfirm, setShowDeletePackConfirm] = React.useState(false);
+        const deletePackDialogRef = React.useRef(null);
+        const deletePackCancelRef = React.useRef(null);
+        const handleDeletePackDialogKeyDown = (event) => {
+            if (!event || !deletePackDialogRef.current) return;
+            event.stopPropagation();
+            if (event.key === 'Escape') { event.preventDefault(); setShowDeletePackConfirm(false); return; }
+            if (event.key !== 'Tab') return;
+            const focusable = Array.from(deletePackDialogRef.current.querySelectorAll('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')).filter(el => !el.hidden);
+            if (!focusable.length) { event.preventDefault(); deletePackDialogRef.current.focus(); return; }
+            const first = focusable[0], last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        };
+        React.useEffect(() => {
+            if (!showDeletePackConfirm) return undefined;
+            const previouslyFocused = document.activeElement;
+            const timer = setTimeout(() => deletePackCancelRef.current?.focus(), 0);
+            return () => { clearTimeout(timer); if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus(); };
+        }, [showDeletePackConfirm]);
         // Focus management (WCAG 2.4.3 / 2.1.2): move focus into the dialog on open,
         // trap Tab inside it, close on Escape, and restore focus to the trigger on close.
         React.useEffect(() => {
@@ -416,15 +436,19 @@
             setStatus(target ? T('word_sounds.voice_pack_msg_switched', 'Switched to "{name}". This voice is active now.', { name: (target.name || 'pack') }) : '');
         };
         const newPack = () => { const id = genPhonemePackId(); setLib((prev) => Object.assign({}, prev, { activeId: id, packs: prev.packs.concat([normalizePhonemePack({ id, name: 'New Pack' })]) })); setChecks({}); setSelfChecks({}); setStatus(T('word_sounds.voice_pack_msg_new', 'New pack created. Name it, pick Teacher or Student, then record.')); setView('record'); };
-        const deletePack = () => {
+        const performDeletePack = () => {
+            setShowDeletePackConfirm(false);
             if (lib.packs.length <= 1) { setStatus(T('word_sounds.voice_pack_msg_keep_one', 'Keep at least one pack. Clear individual sounds with 🗑️ instead.')); return; }
-            if (typeof window !== 'undefined' && !window.confirm(T('word_sounds.voice_pack_confirm_delete', 'Delete pack "{name}"? Its recordings and progress log will be gone.', { name: (pack.name || '') }))) return;
             setLib((prev) => {
                 const rest = prev.packs.filter((p) => p.id !== prev.activeId);
                 const packs = rest.length ? rest : [normalizePhonemePack({ id: genPhonemePackId(), name: 'My Voice Pack' })];
                 return { activeId: packs[0].id, packs };
             });
             setChecks({}); setSelfChecks({}); setStatus('');
+        };
+        const deletePack = () => {
+            if (lib.packs.length <= 1) { setStatus(T('word_sounds.voice_pack_msg_keep_one', 'Keep at least one pack. Clear individual sounds instead.')); return; }
+            setShowDeletePackConfirm(true);
         };
         // Longitudinal practice log: one lightweight dated entry per recording
         // (metadata only — no extra audio), capped to the last 20 attempts/sound.
@@ -781,6 +805,18 @@
                         <input ref={fileInputRef} type="file" accept="application/json,.json" onChange={importPack} className="hidden" aria-hidden="true" />
                     </div>
                 </div>
+                {showDeletePackConfirm && (
+                    <div role="presentation" className="fixed inset-0 z-[420] bg-black/70 flex items-center justify-center p-4">
+                        <div ref={deletePackDialogRef} role="alertdialog" aria-modal="true" aria-labelledby="voice-pack-delete-title" aria-describedby="voice-pack-delete-message" tabIndex={-1} onKeyDownCapture={handleDeletePackDialogKeyDown} className="w-full max-w-sm rounded-2xl border-2 border-rose-300 bg-white p-6 shadow-2xl">
+                            <h3 id="voice-pack-delete-title" className="text-lg font-black text-slate-900">Delete voice pack?</h3>
+                            <p id="voice-pack-delete-message" className="mt-2 text-sm text-slate-700">Delete "{pack.name || 'Untitled'}"? Its recordings and progress log will be permanently removed.</p>
+                            <div className="mt-5 flex justify-end gap-2">
+                                <button ref={deletePackCancelRef} type="button" onClick={() => setShowDeletePackConfirm(false)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">Keep pack</button>
+                                <button type="button" onClick={performDeletePack} className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-bold text-white hover:bg-rose-700">Delete pack</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         );
     };

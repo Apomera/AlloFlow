@@ -493,6 +493,42 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
   const audioElRef = React.useRef(null);
   const modalRootRef = React.useRef(null);
   const previouslyFocusedRef = React.useRef(null);
+  const [showDeletePackConfirm, setShowDeletePackConfirm] = React.useState(false);
+  const deletePackDialogRef = React.useRef(null);
+  const deletePackCancelRef = React.useRef(null);
+  const handleDeletePackDialogKeyDown = (event) => {
+    if (!event || !deletePackDialogRef.current) return;
+    event.stopPropagation();
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setShowDeletePackConfirm(false);
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = Array.from(deletePackDialogRef.current.querySelectorAll('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')).filter((el) => !el.hidden);
+    if (!focusable.length) {
+      event.preventDefault();
+      deletePackDialogRef.current.focus();
+      return;
+    }
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+  React.useEffect(() => {
+    if (!showDeletePackConfirm) return void 0;
+    const previouslyFocused = document.activeElement;
+    const timer = setTimeout(() => deletePackCancelRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      if (previouslyFocused && typeof previouslyFocused.focus === "function") previouslyFocused.focus();
+    };
+  }, [showDeletePackConfirm]);
   React.useEffect(() => {
     const root = modalRootRef.current;
     if (!root || typeof document === "undefined") return void 0;
@@ -594,12 +630,12 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
     setStatus(T("word_sounds.voice_pack_msg_new", "New pack created. Name it, pick Teacher or Student, then record."));
     setView("record");
   };
-  const deletePack = () => {
+  const performDeletePack = () => {
+    setShowDeletePackConfirm(false);
     if (lib.packs.length <= 1) {
       setStatus(T("word_sounds.voice_pack_msg_keep_one", "Keep at least one pack. Clear individual sounds with \u{1F5D1}\uFE0F instead."));
       return;
     }
-    if (typeof window !== "undefined" && !window.confirm(T("word_sounds.voice_pack_confirm_delete", 'Delete pack "{name}"? Its recordings and progress log will be gone.', { name: pack.name || "" }))) return;
     setLib((prev) => {
       const rest = prev.packs.filter((p) => p.id !== prev.activeId);
       const packs = rest.length ? rest : [normalizePhonemePack({ id: genPhonemePackId(), name: "My Voice Pack" })];
@@ -608,6 +644,13 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
     setChecks({});
     setSelfChecks({});
     setStatus("");
+  };
+  const deletePack = () => {
+    if (lib.packs.length <= 1) {
+      setStatus(T("word_sounds.voice_pack_msg_keep_one", "Keep at least one pack. Clear individual sounds instead."));
+      return;
+    }
+    setShowDeletePackConfirm(true);
   };
   const logAttempt = (key, packId) => {
     const writer = packId ? ((u) => setPackById(packId, u)) : setPack;
@@ -932,7 +975,7 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
     const recI = recordingKey === slot.id;
     const hasRefI = !!instrReferenceClip(slot.id);
     return /* @__PURE__ */ React.createElement("div", { key: slot.id, className: `flex items-center gap-1.5 rounded-xl border-2 px-2 py-1.5 ${hasI ? "border-emerald-300 bg-emerald-50" : "border-slate-200 bg-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-800 text-sm leading-tight" }, slot.label, " ", hasI && /* @__PURE__ */ React.createElement("span", { className: "text-emerald-600" }, "\u2713")), slot.hint ? /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 leading-snug" }, slot.hint) : null), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playInstrReference(slot.id), disabled: !hasRefI, "aria-label": T("word_sounds.voice_pack_hear_default_for", "Hear the default for {label}", { label: slot.label }), title: T("word_sounds.voice_pack_hear_default", "Hear the default"), className: `w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasRefI ? "bg-amber-100 text-amber-700 hover:bg-amber-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, "\u{1F442}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => startRecording(slot.id, { instr: true, label: slot.label }), disabled: !consentOk, "aria-label": recI ? T("word_sounds.voice_pack_stop_recording", "Stop recording {label}", { label: slot.label }) : T("word_sounds.voice_pack_record", "Record {label}", { label: slot.label }), className: `w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors ${recI ? "bg-red-500 text-white animate-pulse" : consentOk ? "bg-violet-100 text-violet-700 hover:bg-violet-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, recI ? "\u23F9" : "\u{1F399}\uFE0F"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playInstrClip(slot.id), disabled: !hasI, "aria-label": T("word_sounds.voice_pack_play_recording", "Play your recording of {label}", { label: slot.label }), className: `w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasI ? "bg-slate-100 text-slate-700 hover:bg-slate-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, "\u{1F50A}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => clearInstrClip(slot.id), disabled: !hasI, "aria-label": T("word_sounds.voice_pack_clear", "Clear {label}", { label: slot.label }), className: `w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors ${hasI ? "text-rose-500 hover:bg-rose-50" : "text-slate-200 cursor-not-allowed"}` }, "\u{1F5D1}\uFE0F"));
-  })))), status ? /* @__PURE__ */ React.createElement("div", { className: "px-5 py-2 text-xs font-semibold text-violet-700 bg-violet-50 border-t border-violet-100", role: "status", "aria-live": "polite" }, status) : null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-5 py-3 border-t border-slate-200 flex-wrap" }, /* @__PURE__ */ React.createElement("input", { type: "text", value: pack.name, onChange: (e) => setPack((prev) => Object.assign({}, prev, { name: e.target.value })), "aria-label": T("word_sounds.voice_pack_name_label", "Pack name"), className: "flex-1 min-w-[120px] border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-semibold", placeholder: T("word_sounds.voice_pack_name_label", "Pack name") }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePack, className: "px-4 py-1.5 rounded-lg bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 transition-colors" }, T("word_sounds.voice_pack_save", "Save & Use")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: exportPack, className: "px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-sm hover:bg-emerald-100 transition-colors" }, "\u2B07\uFE0F ", T("word_sounds.voice_pack_export", "Export")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => fileInputRef.current && fileInputRef.current.click(), className: "px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 font-bold text-sm hover:bg-slate-100 transition-colors" }, "\u{1F4E5} ", T("word_sounds.voice_pack_import", "Import")), /* @__PURE__ */ React.createElement("input", { ref: fileInputRef, type: "file", accept: "application/json,.json", onChange: importPack, className: "hidden", "aria-hidden": "true" }))));
+  })))), status ? /* @__PURE__ */ React.createElement("div", { className: "px-5 py-2 text-xs font-semibold text-violet-700 bg-violet-50 border-t border-violet-100", role: "status", "aria-live": "polite" }, status) : null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-5 py-3 border-t border-slate-200 flex-wrap" }, /* @__PURE__ */ React.createElement("input", { type: "text", value: pack.name, onChange: (e) => setPack((prev) => Object.assign({}, prev, { name: e.target.value })), "aria-label": T("word_sounds.voice_pack_name_label", "Pack name"), className: "flex-1 min-w-[120px] border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-semibold", placeholder: T("word_sounds.voice_pack_name_label", "Pack name") }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePack, className: "px-4 py-1.5 rounded-lg bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 transition-colors" }, T("word_sounds.voice_pack_save", "Save & Use")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: exportPack, className: "px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-sm hover:bg-emerald-100 transition-colors" }, "\u2B07\uFE0F ", T("word_sounds.voice_pack_export", "Export")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => fileInputRef.current && fileInputRef.current.click(), className: "px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 font-bold text-sm hover:bg-slate-100 transition-colors" }, "\u{1F4E5} ", T("word_sounds.voice_pack_import", "Import")), /* @__PURE__ */ React.createElement("input", { ref: fileInputRef, type: "file", accept: "application/json,.json", onChange: importPack, className: "hidden", "aria-hidden": "true" }))), showDeletePackConfirm && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[420] bg-black/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { ref: deletePackDialogRef, role: "alertdialog", "aria-modal": "true", "aria-labelledby": "voice-pack-delete-title", "aria-describedby": "voice-pack-delete-message", tabIndex: -1, onKeyDownCapture: handleDeletePackDialogKeyDown, className: "w-full max-w-sm rounded-2xl border-2 border-rose-300 bg-white p-6 shadow-2xl" }, /* @__PURE__ */ React.createElement("h3", { id: "voice-pack-delete-title", className: "text-lg font-black text-slate-900" }, "Delete voice pack?"), /* @__PURE__ */ React.createElement("p", { id: "voice-pack-delete-message", className: "mt-2 text-sm text-slate-700" }, 'Delete "', pack.name || "Untitled", '"? Its recordings and progress log will be permanently removed.'), /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex justify-end gap-2" }, /* @__PURE__ */ React.createElement("button", { ref: deletePackCancelRef, type: "button", onClick: () => setShowDeletePackConfirm(false), className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" }, "Keep pack"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: performDeletePack, className: "rounded-lg bg-rose-600 px-4 py-2 text-sm font-bold text-white hover:bg-rose-700" }, "Delete pack")))));
 };
 const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview, onMinimize, onExpand, isProbeMode, probeActivity, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage }) => {
   const t = tProp || ((key, params) => getWordSoundsString((k) => k, key, params || {}));

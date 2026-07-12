@@ -19,4 +19,19 @@ describe('Word Sounds source selector keyboard behavior', () => {
     expect(fs.readFileSync('prismflow-deploy/public/word_sounds_setup_module.js', 'utf8')).toBe(fs.readFileSync('word_sounds_setup_module.js', 'utf8'));
     expect(fs.readFileSync('_build_word_sounds_setup_module.js', 'utf8')).toContain('// WCAG 2.2 AA: Accessibility CSS');
   });
-});
+
+  it('uses a safe-default accessible dialog for voice-pack deletion', () => {
+    expect(source).not.toContain("window.confirm(T('word_sounds.voice_pack_confirm_delete'");
+    expect(source).toContain('role="alertdialog"');
+    expect(source).toContain('aria-labelledby="voice-pack-delete-title" aria-describedby="voice-pack-delete-message"');
+    expect(source).toContain('ref={deletePackCancelRef}');
+    expect(source).toContain('deletePackCancelRef.current?.focus()');
+    expect(source).toContain('onKeyDownCapture={handleDeletePackDialogKeyDown}');
+  });
+
+  it('keeps deletion separate from requesting consent', () => {
+    expect(source).toContain('const performDeletePack = () => {');
+    expect(source).toContain('const deletePack = () => {');
+    expect(source).toContain('setShowDeletePackConfirm(true)');
+    expect(source).toContain('onClick={performDeletePack}');
+  });});
