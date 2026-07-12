@@ -1,5 +1,5 @@
 /**
- * AlloFlow — Hints Modal Module
+ * AlloFlow â€” Hints Modal Module
  *
  * Modal showing accumulated AI hints + a "Generate Lesson Ideas" CTA.
  * Each hint can be applied (yellow brainstorm hint) or saved to history
@@ -8,15 +8,15 @@
  * Extracted from AlloFlowANTI.txt lines 21632-21694 (May 2026).
  *
  * Required props:
- *   handleApplyHint                — apply a brainstorm hint
- *   handleGenerateLessonIdeas      — generate new extension ideas
- *   handleSaveExtensionToHistory   — save an extension hint to history
- *   handleSetShowHintsModalToFalse — close the modal
- *   hintHistory                    — array of hint objects
- *   history                        — generation history (used to gate the CTA)
- *   isGeneratingExtension          — bool for spinner state
- *   renderFormattedText            — markdown/format renderer
- *   t                              — translation function
+ *   handleApplyHint                â€” apply a brainstorm hint
+ *   handleGenerateLessonIdeas      â€” generate new extension ideas
+ *   handleSaveExtensionToHistory   â€” save an extension hint to history
+ *   handleSetShowHintsModalToFalse â€” close the modal
+ *   hintHistory                    â€” array of hint objects
+ *   history                        â€” generation history (used to gate the CTA)
+ *   isGeneratingExtension          â€” bool for spinner state
+ *   renderFormattedText            â€” markdown/format renderer
+ *   t                              â€” translation function
  *
  * Icons (read from window globals): Lightbulb, RefreshCw, Save, Sparkles, X
  */
@@ -36,10 +36,34 @@ function HintsModal({
   const Save = window.Save || (() => null);
   const Sparkles = window.Sparkles || (() => null);
   const X = window.X || (() => null);
+  const dialogRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    const previousFocus = document.activeElement;
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    (getFocusable()[0] || dialog).focus();
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); handleSetShowHintsModalToFalse(); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return () => {
+      dialog.removeEventListener('keydown', onKeyDown);
+      if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+    };
+  }, [handleSetShowHintsModalToFalse]);
 
   return (
     <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowHintsModalToFalse} role="presentation">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] overflow-hidden relative" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="hints-modal-title">
+      <div ref={dialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] overflow-hidden relative focus:outline-none" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="hints-modal-title">
         <div className="bg-yellow-50 p-4 border-b border-yellow-100 flex justify-between items-center shrink-0">
           <h3 id="hints-modal-title" className="font-bold text-lg text-yellow-800 flex items-center gap-2">
             <Lightbulb size={20} className="fill-yellow-500 text-yellow-600"/> {t('hints.title')}
