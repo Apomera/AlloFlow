@@ -2086,7 +2086,15 @@ function VolumeBuilderView(props) {
                                         <button onClick={() => { setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }} className="ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100 transition-all" aria-label={t('volume_builder.reset_view_aria') || 'Reset view'}>↺</button>
                                     </div>
                                 </div>
-                                <p className="text-xs text-emerald-700/70">{t('volume_builder.help_caption') || 'Drag to rotate • Scroll to zoom • Build rectangular prisms or L-blocks with unit cubes (5.MD.3-5)'}</p>
+                                <div role="group" aria-label="Rotate 3D volume" className="flex flex-wrap items-center gap-1.5">
+                                    <span className="text-[11px] font-bold text-emerald-800 mr-1">Rotate:</span>
+                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, y: prev.y - 15 }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label="Rotate volume left">Left</button>
+                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, y: prev.y + 15 }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label="Rotate volume right">Right</button>
+                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, x: Math.max(-80, prev.x - 10) }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label="Tilt volume up">Up</button>
+                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, x: Math.min(10, prev.x + 10) }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label="Tilt volume down">Down</button>
+                                    <output className="ml-auto text-[11px] font-mono text-emerald-700" aria-live="polite">Tilt {Math.round(cubeRotation.x)} degrees, turn {Math.round(cubeRotation.y)} degrees, zoom {Math.round(cubeScale * 100)} percent</output>
+                                </div>
+                                <p className="text-xs text-emerald-700/70">{t('volume_builder.help_caption') || 'Use the rotate and zoom buttons, or drag and scroll, to inspect rectangular prisms and L-blocks (5.MD.3-5).'}</p>
                                 {/* Shape selector — toggle between a solid rectangular prism
                                     and an L-block (rectangular base with a corner notch carved
                                     out so volume becomes additive: V = L*W*H − notch_l*notch_w*notch_h). */}
@@ -2139,6 +2147,8 @@ function VolumeBuilderView(props) {
                                     </div>
                                 )}
                                 <div
+                                    role="img"
+                                    aria-label={`3D ${isLBlock ? 'L-block' : 'rectangular prism'}, ${cubeDims.l} by ${cubeDims.w} by ${cubeDims.h}, volume ${volume} cubic units`}
                                     className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl border-2 border-emerald-300/30 flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing select-none"
                                     style={{ minHeight: '400px', perspective: '900px' }}
                                     onMouseDown={(e) => { cubeDragRef.current = { x: e.clientX, y: e.clientY }; window.addEventListener('mousemove', handleCubeDrag); window.addEventListener('mouseup', handleCubeDragEnd); }}

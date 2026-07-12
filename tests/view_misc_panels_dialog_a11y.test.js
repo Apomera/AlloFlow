@@ -47,4 +47,14 @@ describe('Misc Panels dialog accessibility', () => {
     expect(source).toContain('onClick={() => moveResourceBy(res.id, 1)}');
     expect(source).toContain("aria-label={`Move ${res.title || 'resource'} earlier`}");
     expect(source).toContain("aria-label={`Move ${res.title || 'resource'} later`}");
+  });
+  it('provides button alternatives for 3D rotation and zoom gestures', () => {
+    for (const label of ['Rotate volume left', 'Rotate volume right', 'Tilt volume up', 'Tilt volume down']) {
+      expect(source).toContain(`aria-label="${label}"`);
+    }
+    expect(source).toContain("t('volume_builder.zoom_in_aria') || 'Zoom in'");
+    expect(source).toContain("t('volume_builder.zoom_out_aria') || 'Zoom out'");
+    expect(source).toContain('role="group" aria-label="Rotate 3D volume"');
+    expect(source).toContain('role="img"');
+    expect(source).toContain('aria-live="polite">Tilt {Math.round(cubeRotation.x)} degrees');
   });});
