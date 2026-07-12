@@ -1327,8 +1327,21 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
 const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, appId, t, addToast }) => {
   const escapeState = sessionData?.escapeRoomState;
   const [showEndConfirm, setShowEndConfirm] = useState(false);
+  const endGameDialogRef = useRef(null);
+  const endGameTriggerRef = useRef(null);
   useEffect(() => {
-    if (!escapeState?.isActive || !activeSessionCode || !appId) return;
+    if (!showEndConfirm) return;
+    endGameDialogRef.current?.querySelector('[data-safe-default="true"]')?.focus();
+  }, [showEndConfirm]);
+  const closeEndGameDialog = () => {
+    setShowEndConfirm(false);
+    window.setTimeout(() => endGameTriggerRef.current?.focus(), 0);
+  };
+  const requestEndGame = (event) => {
+    endGameTriggerRef.current = event.currentTarget;
+    setShowEndConfirm(true);
+  };
+  useEffect(() => {    if (!escapeState?.isActive || !activeSessionCode || !appId) return;
     if (escapeState.isPaused) return;
     if (escapeState.timeRemaining <= 0) return;
     const timer = setInterval(async () => {
@@ -1429,7 +1442,7 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
             {isPaused ? '▶️ ' + t('escape_room.resume') : '⏸️ ' + t('escape_room.pause')}
           </button>
           <button
-            onClick={() => setShowEndConfirm(true)}
+            onClick={requestEndGame}
             className="px-4 py-2 rounded-full font-bold text-sm bg-red-500 hover:bg-red-600 text-white transition-colors whitespace-nowrap"
           >
             {t('escape_room.end_game')}
@@ -1472,24 +1485,35 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
         </div>
       )}
       {showEndConfirm && (
-        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border-2 border-red-200">
-            <h4 className="text-lg font-bold text-red-600 mb-2 flex items-center gap-2">
-              <X className="text-red-500" size={20} />
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4" role="presentation">
+          <div
+            ref={endGameDialogRef}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="escape-room-end-game-title"
+            aria-describedby="escape-room-end-game-description"
+            onKeyDown={event => {
+              if (event.key === 'Escape') { event.preventDefault(); closeEndGameDialog(); return; }
+              if (event.key !== 'Tab') return;
+              const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+              if (!focusable.length) { event.preventDefault(); return; }
+              const first = focusable[0];
+              const last = focusable[focusable.length - 1];
+              if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+              else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+            }}
+            className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border-2 border-red-200"
+          >
+            <h4 id="escape-room-end-game-title" className="text-lg font-bold text-red-600 mb-2 flex items-center gap-2">
+              <X className="text-red-500" size={20} aria-hidden="true" />
               {t('escape_room.end_game')}
             </h4>
-            <p className="text-slate-600 mb-4">{t('escape_room.end_game_confirm')}</p>
+            <p id="escape-room-end-game-description" className="text-slate-600 mb-4">{t('escape_room.end_game_confirm')}</p>
             <div className="flex gap-3">
-              <button
-                onClick={() => setShowEndConfirm(false)}
-                className="flex-1 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-colors"
-              >
+              <button type="button" data-safe-default="true" onClick={closeEndGameDialog} className="flex-1 min-h-11 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 {t('cancel')}
               </button>
-              <button
-                onClick={handleEndGame}
-                className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors"
-              >
+              <button type="button" onClick={handleEndGame} className="flex-1 min-h-11 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                 {t('escape_room.end_game')}
               </button>
             </div>

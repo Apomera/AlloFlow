@@ -1081,6 +1081,20 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
 const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, appId: appId2, t, addToast: addToast2 }) => {
   const escapeState = sessionData?.escapeRoomState;
   const [showEndConfirm, setShowEndConfirm] = useState(false);
+  const endGameDialogRef = useRef(null);
+  const endGameTriggerRef = useRef(null);
+  useEffect(() => {
+    if (!showEndConfirm) return;
+    endGameDialogRef.current?.querySelector('[data-safe-default="true"]')?.focus();
+  }, [showEndConfirm]);
+  const closeEndGameDialog = () => {
+    setShowEndConfirm(false);
+    window.setTimeout(() => endGameTriggerRef.current?.focus(), 0);
+  };
+  const requestEndGame = (event) => {
+    endGameTriggerRef.current = event.currentTarget;
+    setShowEndConfirm(true);
+  };
   useEffect(() => {
     if (!escapeState?.isActive || !activeSessionCode || !appId2) return;
     if (escapeState.isPaused) return;
@@ -1158,7 +1172,7 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
-      onClick: () => setShowEndConfirm(true),
+      onClick: requestEndGame,
       className: "px-4 py-2 rounded-full font-bold text-sm bg-red-500 hover:bg-red-600 text-white transition-colors whitespace-nowrap"
     },
     t("escape_room.end_game")
@@ -1170,21 +1184,42 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
     const escaped = progress.isEscaped;
     const memberCount = Object.values(escapeState.teams || {}).filter((t2) => t2 === team).length;
     return /* @__PURE__ */ React.createElement("div", { key: team, className: `p-3 rounded-xl border-2 ${escaped ? "border-green-400 bg-green-50" : "border-slate-200 bg-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: `font-bold ${colors.text}` }, team), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, memberCount, " \u{1F464}")), /* @__PURE__ */ React.createElement("div", { className: "w-full h-3 bg-slate-200 rounded-full overflow-hidden mb-2" }, /* @__PURE__ */ React.createElement("div", { className: `h-full ${colors.bg} transition-all duration-500`, style: { width: `${percent}%` } })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, solved, "/", totalPuzzles), escaped && /* @__PURE__ */ React.createElement("span", { className: "text-green-600 font-bold" }, "\u{1F3C6} ", t("escape_room.escaped"))));
-  })), escapedTeams.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4 p-3 bg-green-100 rounded-xl border border-green-300 text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-green-800 font-bold" }, "\u{1F389} ", escapedTeams.length === 1 ? t("escape_room.first_escape") + ": " + escapedTeams[0] : t("escape_room.all_teams_done"))), showEndConfirm && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border-2 border-red-200" }, /* @__PURE__ */ React.createElement("h4", { className: "text-lg font-bold text-red-600 mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(X, { className: "text-red-500", size: 20 }), t("escape_room.end_game")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-4" }, t("escape_room.end_game_confirm")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3" }, /* @__PURE__ */ React.createElement(
-    "button",
+  })), escapedTeams.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4 p-3 bg-green-100 rounded-xl border border-green-300 text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-green-800 font-bold" }, "\u{1F389} ", escapedTeams.length === 1 ? t("escape_room.first_escape") + ": " + escapedTeams[0] : t("escape_room.all_teams_done"))), showEndConfirm && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4", role: "presentation" }, /* @__PURE__ */ React.createElement(
+    "div",
     {
-      onClick: () => setShowEndConfirm(false),
-      className: "flex-1 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-colors"
+      ref: endGameDialogRef,
+      role: "alertdialog",
+      "aria-modal": "true",
+      "aria-labelledby": "escape-room-end-game-title",
+      "aria-describedby": "escape-room-end-game-description",
+      onKeyDown: (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closeEndGameDialog();
+          return;
+        }
+        if (event.key !== "Tab") return;
+        const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+        if (!focusable.length) {
+          event.preventDefault();
+          return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      },
+      className: "bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border-2 border-red-200"
     },
-    t("cancel")
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: handleEndGame,
-      className: "flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors"
-    },
-    t("escape_room.end_game")
-  )))));
+    /* @__PURE__ */ React.createElement("h4", { id: "escape-room-end-game-title", className: "text-lg font-bold text-red-600 mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(X, { className: "text-red-500", size: 20, "aria-hidden": "true" }), t("escape_room.end_game")),
+    /* @__PURE__ */ React.createElement("p", { id: "escape-room-end-game-description", className: "text-slate-600 mb-4" }, t("escape_room.end_game_confirm")),
+    /* @__PURE__ */ React.createElement("div", { className: "flex gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-safe-default": "true", onClick: closeEndGameDialog, className: "flex-1 min-h-11 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" }, t("cancel")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleEndGame, className: "flex-1 min-h-11 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" }, t("escape_room.end_game")))
+  )));
 });
 const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId: appId2, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, isPushingResource = {}, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup, onUpdateQuestionRoutingRules, history = [] }) => {
   const { t } = useContext(LanguageContext);

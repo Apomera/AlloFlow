@@ -81,6 +81,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Replaced the teacher roster offline-submission key regeneration confirmation and setup-completion browser alert with a named/described alert dialog; defaulted destructive consent to Keep existing key, contained Tab, supported Escape dismissal, preserved the key-loss warning, and returned focus to the setup trigger (WCAG 2.1.1, 2.4.3, 2.4.7, 3.3.4, 4.1.2).
 
+- Made the Escape Room teacher End game confirmation a named/described alert dialog; moved initial focus to the safe Cancel action, contained Tab, supported Escape cancellation, restored focus to the End game trigger, hid its decorative icon, and maintained 44 CSS-pixel action targets (WCAG 1.1.1, 2.1.1, 2.4.3, 2.4.7, 2.5.8, 3.3.4, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
