@@ -11,11 +11,19 @@
  * The same espeak-ng phonemizer already ships inside the Piper TTS wasm.
  *
  * Exposes a fallback-safe entry point:
- *     window.AlloPhonics.toPhonemes(word, opts) -> Promise<{ ipa:[...], rawIpa:[...], count, ipaString } | null>
- * `ipa` is normalized to AlloFlow's phonics inventory (flap ɾ→t, r-colored ɚ→ɜr,
- * ɡ→g, ɹ→r, stress/length stripped); `rawIpa` keeps eSpeak's exact phonetics.
- * NULL on ANY problem (offline, load failure, empty output) — callers keep their
- * behaviour, so the worst case is exactly today's, never a regression.
+ *     window.AlloPhonics.toPhonemes(word, opts) -> Promise<{ ipa:[...], rawIpa:[...], count, ipaString, voice } | null>
+ * ENGLISH (`opts.lang` empty or en-*): `ipa` is normalized to AlloFlow's phonics
+ * inventory (flap ɾ→t, r-colored ɚ→ɜr, ɡ→g, ɹ→r, stress/length stripped) —
+ * byte-identical to the original English-only behavior.
+ * OTHER LANGUAGES (2026-07-12): `opts.lang` (a friendly name like "Spanish" or a
+ * BCP-47 code like "es-ES"/"zh-HK") resolves against the VERIFIED espeak-ng
+ * voice inventory; `ipa` is the raw stress/length-stripped IPA (the English
+ * normalizations would corrupt real phonemes elsewhere — Spanish "perro" has a
+ * genuine tap /ɾ/). Languages with NO espeak voice resolve to null — the caller
+ * keeps its Gemini phonemes; we never run English G2P on another language.
+ * NULL on ANY problem (offline, load failure, empty output, unsupported
+ * language) — callers keep their behaviour, so the worst case is exactly
+ * today's, never a regression. `voiceFor(lang)` exposes the capability probe.
  * opts: { lang }.
  *
  * Lazy: the ~18.5 MB eSpeak NG wasm loads on the first call, cached thereafter.
@@ -35,16 +43,78 @@
     'https://cdn.jsdelivr.net/npm/espeak-ng@1.0.2/dist/espeak-ng.js',
     'https://unpkg.com/espeak-ng@1.0.2/dist/espeak-ng.js'
   ];
-  var LANG_TO_VOICE = { english: 'en-us', spanish: 'es', french: 'fr-fr', german: 'de', italian: 'it', portuguese: 'pt', dutch: 'nl' };
+
+  // Voice ids VERIFIED against the actual espeak-ng@1.0.2 wasm build
+  // (enumerated via `--voices` + per-voice G2P probes, 2026-07-12). Routing to
+  // an id not in this set would make the wasm error out; routing an unmapped
+  // language to English G2P would be silently WRONG phonemes — both are
+  // handled by resolveVoice returning null (→ caller falls back to Gemini).
+  var ESPEAK_VOICES = {
+    af: 1, am: 1, an: 1, ar: 1, as: 1, az: 1, ba: 1, be: 1, bg: 1, bn: 1, bs: 1,
+    ca: 1, cmn: 1, cs: 1, cv: 1, cy: 1, da: 1, de: 1, el: 1,
+    'en-029': 1, 'en-gb': 1, 'en-us': 1, eo: 1, es: 1, 'es-419': 1, et: 1, eu: 1,
+    fa: 1, fi: 1, 'fr-be': 1, 'fr-ch': 1, 'fr-fr': 1, ga: 1, gd: 1, gn: 1, grc: 1,
+    gu: 1, hak: 1, haw: 1, he: 1, hi: 1, hr: 1, ht: 1, hu: 1, hy: 1, hyw: 1,
+    id: 1, is: 1, it: 1, ja: 1, ka: 1, kk: 1, kl: 1, kn: 1, ko: 1, kok: 1, ku: 1,
+    ky: 1, la: 1, lb: 1, lt: 1, lv: 1, mi: 1, mk: 1, ml: 1, mr: 1, ms: 1, mt: 1,
+    my: 1, nb: 1, ne: 1, nl: 1, nog: 1, om: 1, or: 1, pa: 1, pap: 1, pl: 1,
+    pt: 1, 'pt-br': 1, ro: 1, ru: 1, sd: 1, shn: 1, si: 1, sk: 1, sl: 1, smj: 1,
+    sq: 1, sr: 1, sv: 1, sw: 1, ta: 1, te: 1, th: 1, tk: 1, tn: 1, tr: 1, tt: 1,
+    ug: 1, uk: 1, ur: 1, uz: 1, vi: 1, yue: 1
+  };
+
+  // Friendly language names (AlloFlow's translation-language names arrive here
+  // via the Word Sounds selector) → verified voice, or null = eSpeak has no
+  // voice → Gemini-only path. Explicit nulls are deliberate: NEVER silently
+  // fall back to English G2P for another language.
+  var LANG_TO_VOICE = {
+    english: 'en-us', spanish: 'es', french: 'fr-fr', german: 'de', italian: 'it',
+    portuguese: 'pt-br', dutch: 'nl', arabic: 'ar', mandarin: 'cmn', chinese: 'cmn',
+    cantonese: 'yue', vietnamese: 'vi', russian: 'ru', japanese: 'ja', korean: 'ko',
+    hindi: 'hi', polish: 'pl', indonesian: 'id', turkish: 'tr', hebrew: 'he',
+    swedish: 'sv', danish: 'da', norwegian: 'nb', finnish: 'fi', greek: 'el',
+    thai: 'th', czech: 'cs', hungarian: 'hu', romanian: 'ro', ukrainian: 'uk',
+    bengali: 'bn', urdu: 'ur', malay: 'ms', swahili: 'sw', bulgarian: 'bg',
+    croatian: 'hr', serbian: 'sr', slovak: 'sk', persian: 'fa', farsi: 'fa',
+    dari: 'fa', tamil: 'ta', amharic: 'am', afrikaans: 'af', kurdish: 'ku',
+    'haitian creole': 'ht', haitian: 'ht', burmese: 'my', myanmar: 'my',
+    nepali: 'ne', marathi: 'mr', gujarati: 'gu', punjabi: 'pa', telugu: 'te',
+    kannada: 'kn', malayalam: 'ml', sinhala: 'si', oromo: 'om', esperanto: 'eo',
+    georgian: 'ka', armenian: 'hy', albanian: 'sq', macedonian: 'mk',
+    // No espeak-ng voice exists for these — Gemini-only (null, not en-us!):
+    tagalog: null, filipino: null, somali: null, khmer: null, cambodian: null,
+    lao: null, yoruba: null, igbo: null, hausa: null, kinyarwanda: null,
+    kirundi: null, lingala: null, tigrinya: null, mongolian: null, hmong: null,
+    pashto: null, pushto: null, acholi: null, karen: null, 'chin (hakha)': null,
+    'chin (falam)': null, 'maay maay': null, marshallese: null
+  };
+
+  // BCP-47 code aliases where the espeak voice id differs from the code
+  // (getSpeechLangCode emits codes like "zh-HK"; espeak's Cantonese is "yue").
+  var CODE_ALIASES = {
+    zh: 'cmn', 'zh-cn': 'cmn', 'zh-tw': 'cmn', 'zh-sg': 'cmn', 'zh-hk': 'yue',
+    no: 'nb', nn: 'nb', 'pt-pt': 'pt', prs: 'fa', iw: 'he',
+    fil: null, tl: null, ps: null, so: null, km: null, lo: null, yo: null,
+    ig: null, ha: null, rw: null, rn: null, ln: null, ti: null, mn: null,
+    hmn: null, ach: null, kar: null, cnh: null, cfm: null, ymm: null, mh: null
+  };
 
   var _factoryPromise = null;
 
+  // → verified espeak voice id, or NULL when the language has no voice.
+  // English callers (and legacy callers passing nothing) keep 'en-us' exactly
+  // as before; every en-* dialect routes to an English voice.
   function resolveVoice(lang) {
     if (!lang) return 'en-us';
     var s = String(lang).toLowerCase().trim();
-    if (LANG_TO_VOICE[s]) return LANG_TO_VOICE[s];
-    if (/^[a-z]{2}(-[a-z]{2,})?$/.test(s)) return s;
-    return 'en-us';
+    if (Object.prototype.hasOwnProperty.call(LANG_TO_VOICE, s)) return LANG_TO_VOICE[s];
+    if (Object.prototype.hasOwnProperty.call(CODE_ALIASES, s)) return CODE_ALIASES[s];
+    if (ESPEAK_VOICES[s]) return s;
+    var primary = s.split(/[-_]/)[0];
+    if (primary === 'en') return 'en-us';
+    if (Object.prototype.hasOwnProperty.call(CODE_ALIASES, primary)) return CODE_ALIASES[primary];
+    if (ESPEAK_VOICES[primary]) return primary;
+    return null;
   }
 
   // Map one eSpeak IPA token → AlloFlow's phonics inventory. eSpeak emits
@@ -110,7 +180,11 @@
   var _TRIGRAPHS = ['igh', 'tch', 'dge'];
   var _DIGRAPHS = ['sh', 'ch', 'th', 'wh', 'ph', 'ng', 'ck', 'qu', 'wr', 'kn', 'gn', 'gh', 'mb', 'ai', 'ay', 'ea', 'ee', 'oa', 'ow', 'oo', 'ou', 'oi', 'oy', 'ar', 'er', 'ir', 'or', 'ur', 'aw', 'au', 'ew'];
   function alignGraphemes(word, count) {
-    var w = String(word || '').toLowerCase().replace(/[^a-z']/g, '');
+    // Unicode letters kept (Spanish ñ, French é, Cyrillic, Devanagari…) — the
+    // old [^a-z'] filter silently DELETED accented letters ("niño" → "nio").
+    // English words contain only a-z' so the English output is unchanged; the
+    // digraph tables below only ever match a-z pairs.
+    var w = String(word || '').toLowerCase().replace(/[^\p{L}\p{M}']/gu, '');
     if (!w || !count || count < 1) return null;
     // greedy multi-letter pass
     var greedy = [];
@@ -138,11 +212,29 @@
     return chunks.length === count ? chunks : null;
   }
 
+  // Which phoneme sequence to hand back for a given voice. English voices get
+  // the phonics-normalized inventory (flap ɾ→t, ɚ→ɜr — the TAUGHT model,
+  // byte-identical to the pre-multilingual behavior). Every other language
+  // gets the raw stress/length-stripped IPA: the English normalizations are
+  // WRONG elsewhere (Spanish "perro" has a real tap /ɾ/ — mapping it to /t/
+  // would corrupt a genuine phoneme of the language).
+  function ipaFromParsed(parsed, voice) {
+    if (!parsed) return null;
+    var isEnglish = String(voice || '').indexOf('en') === 0;
+    var seq = isEnglish ? parsed.norm : parsed.raw;
+    return (seq && seq.length) ? seq : null;
+  }
+
   window.AlloPhonics = {
     ready: function () { return !!_factoryPromise; },
     // Exposed for unit tests + reuse (pure).
     _parse: parseIpaOutput,
     _normalizeToken: normalizeToken,
+    _resolveVoice: resolveVoice,
+    _ipaFromParsed: ipaFromParsed,
+    // Language support probe for UI/capability gating: 'en-us' | 'es' | … |
+    // null (no espeak voice → Gemini-only phonemes for that language).
+    voiceFor: resolveVoice,
     alignGraphemes: alignGraphemes,
     /**
      * Merge eSpeak's phoneme sequence (authoritative — deterministic, dict-
@@ -170,7 +262,7 @@
       }
       if (!graphemes) graphemes = alignGraphemes(word, ipa.length);
       if (!graphemes) { // last resort: spread the raw letters as evenly as we can
-        var letters = String(word || '').toLowerCase().replace(/[^a-z']/g, '').split('');
+        var letters = String(word || '').toLowerCase().replace(/[^\p{L}\p{M}']/gu, '').split('');
         graphemes = ipa.map(function (_, i) { return letters[i] || ''; });
       }
       var phonemes = ipa.map(function (sym, i) { return { ipa: sym, grapheme: graphemes[i] || '' }; });
@@ -197,6 +289,10 @@
       // Single tokens only (this seam never needs phrases/digits/symbols).
       if (/[^\p{L}\p{M}'’‑-]/u.test(w) || /\s/.test(w)) return Promise.resolve(null);
       var voice = resolveVoice(opts && (opts.lang || opts.language));
+      // No espeak voice for this language → null so the caller keeps its
+      // Gemini phonemes. Running the ENGLISH voice here instead would return
+      // confidently wrong sounds — worse than no answer.
+      if (!voice) return Promise.resolve(null);
       return loadFactory().then(function (ESpeakNg) {
         return ESpeakNg({
           arguments: ['--ipa', '--sep=_', '-q', '--phonout=/allo_ph.txt', '-v', voice, w]
@@ -204,8 +300,9 @@
           var out = '';
           try { out = inst.FS.readFile('/allo_ph.txt', { encoding: 'utf8' }); } catch (_) { out = ''; }
           var parsed = parseIpaOutput(out);
-          if (!parsed.norm.length) return null;
-          return { ipa: parsed.norm, rawIpa: parsed.raw, count: parsed.norm.length, ipaString: parsed.norm.join(' ') };
+          var seq = ipaFromParsed(parsed, voice);
+          if (!seq) return null;
+          return { ipa: seq, rawIpa: parsed.raw, count: seq.length, ipaString: seq.join(' '), voice: voice };
         });
       }).catch(function () { return null; });
     }
