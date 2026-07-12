@@ -237,6 +237,28 @@ describe('Economics Lab refinements', () => {
     expect(source).toContain("'/21)'");
   });
 
+  it('exposes the S&D curve probe with keyboard support and SR text', () => {
+    const html = renderEconomicsLab({ econTab: 'supplyDemand', sdProbe: 30 });
+
+    expect(html).toContain('Probe at quantity 30');
+    expect(html).toContain('probe buyer value vs producer cost');
+
+    const source = readFileSync(resolve(process.cwd(), FILE), 'utf8');
+    expect(source).toContain("upd('sdProbe'");
+    expect(source).toContain('worth producing');
+    // Keyboard path exists (arrow keys + Escape clears).
+    expect(source).toContain("e.key === 'Escape'");
+  });
+
+  it('offers tab-aware tutor suggestions', () => {
+    const macroHtml = renderEconomicsLab({ econTab: 'macro', showAdvisor: true });
+    expect(macroHtml).toContain('dual mandate');
+
+    const sdHtml = renderEconomicsLab({ econTab: 'supplyDemand', showAdvisor: true });
+    expect(sdHtml).toContain('What is deadweight loss?');
+    expect(sdHtml).not.toContain('dual mandate');
+  });
+
   it('counts investments and home equity toward net-worth achievements', () => {
     const html = renderEconomicsLab({ econTab: 'personalFinance', pfCash: 500000, pfEquity: 300000, pfInvested: 300000 });
 

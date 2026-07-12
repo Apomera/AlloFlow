@@ -883,6 +883,38 @@ var d = labToolData || {};
 
               }
 
+              // Curve probe: click the canvas (or focus it and use arrow keys)
+              // to read marginal value vs marginal cost at any quantity — the
+              // "should society produce this unit?" question made tangible.
+
+              if (d.sdProbe !== null && d.sdProbe !== undefined) {
+
+                var prQ = Math.max(0, Math.min(100, d.sdProbe));
+
+                var prPd = 90 - prQ * 0.8 + sdDemandShift * 5;
+
+                var prPs = 10 + prQ * 0.8 + sdSupplyShift * 5;
+
+                var prX = gx + prQ / 100 * gw;
+
+                var prPy = function (p) { return gy + (100 - Math.max(0, Math.min(100, p))) / 100 * gh; };
+
+                ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+
+                ctx.beginPath(); ctx.moveTo(prX, gy); ctx.lineTo(prX, gy + gh); ctx.stroke(); ctx.setLineDash([]);
+
+                ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(prX, prPy(prPd), 7, 0, Math.PI * 2); ctx.fill();
+
+                ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(prX, prPy(prPs), 7, 0, Math.PI * 2); ctx.fill();
+
+                ctx.font = 'bold 19px Inter, system-ui'; ctx.fillStyle = '#e2e8f0';
+
+                var prVerdict = prPd > prPs ? 'worth producing (value > cost)' : 'NOT worth producing (cost > value)';
+
+                ctx.fillText('Q=' + prQ + ': buyers value $' + Math.max(0, prPd).toFixed(0) + ', producer cost $' + Math.max(0, prPs).toFixed(0) + ' — ' + prVerdict, gx + 10, gy + gh - 44);
+
+              }
+
             }
 
 
@@ -1582,6 +1614,12 @@ var d = labToolData || {};
                 var sumQt = Math.max(0, eqQ - sdTax / 1.6);
                 sdSummary += ' ' + t('stem.economicslab.canvas_summary_tax', 'Per-unit tax of') + ' $' + sdTax + ' ' + t('stem.economicslab.canvas_summary_tax_2', 'cuts trades to about') + ' ' + sumQt.toFixed(0) + ' ' + t('stem.economicslab.units', 'units') + ' (' + t('stem.economicslab.deadweight_loss', 'deadweight loss') + ').';
               }
+              if (d.sdProbe !== null && d.sdProbe !== undefined) {
+                var sumPd = 90 - d.sdProbe * 0.8 + sdDemandShift * 5;
+                var sumPs = 10 + d.sdProbe * 0.8 + sdSupplyShift * 5;
+                sdSummary += ' ' + t('stem.economicslab.canvas_summary_probe', 'Probe at quantity') + ' ' + d.sdProbe + ': $' + Math.max(0, sumPd).toFixed(0) + ' / $' + Math.max(0, sumPs).toFixed(0) + '.';
+              }
+              sdSummary += ' ' + t('stem.economicslab.canvas_probe_hint', 'Click the graph — or focus it and use arrow keys — to probe buyer value vs producer cost at any quantity.');
               return sdSummary;
             }
             if (econTab === 'personalFinance') {
@@ -2171,7 +2209,16 @@ var d = labToolData || {};
 
               !d.advisorAnswer && React.createElement('div', { className: 'flex flex-wrap gap-1 mt-2' },
 
-                ['What is inflation?', 'How do interest rates work?', 'What causes a recession?', 'Why diversify investments?', 'What is GDP?', 'How do taxes work?'].map(function (q) {
+                // Suggestions follow the active tab so the tutor meets students
+                // where they are instead of offering the same six generic asks.
+                (({
+                  supplyDemand: ['Why do price ceilings cause shortages?', 'What shifts a demand curve?', 'What is deadweight loss?', 'Why do buyers AND sellers pay part of a tax?'],
+                  personalFinance: ['Why does compound interest matter more when young?', 'Good debt vs bad debt?', 'How does a credit score work?', 'How big should an emergency fund be?'],
+                  stockMarket: ['What is an index fund?', 'Why diversify investments?', 'What makes stock prices move?', 'Is timing the market a good idea?'],
+                  entrepreneur: ['What is break-even analysis?', 'How do I price a product?', 'Why do most small businesses fail?', 'Fixed vs variable costs?'],
+                  macro: ['How do interest rates fight inflation?', 'What causes a recession?', 'What is the Fed\'s dual mandate?', 'Why is some unemployment normal?'],
+                  inquiry: ['Why do economists disagree so much?', 'What is stagflation?', 'Do tax cuts pay for themselves?', 'What would flip this model\'s signs?']
+                })[econTab] || ['What is inflation?', 'How do interest rates work?', 'What causes a recession?', 'What is GDP?']).map(function (q) {
 
                   return React.createElement('button', {
 
@@ -2860,9 +2907,38 @@ var d = labToolData || {};
                 'aria-describedby': 'economicslab-canvas-summary',
                 tabIndex: 0,
 
+                // Supply & Demand curve probe: click a quantity, or focus the
+                // canvas and use arrow keys (Escape clears). Announced to SR.
+                onClick: function (e) {
+                  if (econTab !== 'supplyDemand') return;
+                  var el = e.currentTarget;
+                  var rect = el.getBoundingClientRect();
+                  var xInternal = (e.clientX - rect.left) * 2;
+                  var q = Math.round((xInternal - 76) / (el.offsetWidth * 2 - 140) * 100);
+                  if (q < 0 || q > 100) { upd('sdProbe', null); return; }
+                  upd('sdProbe', q);
+                  var pd0 = 90 - q * 0.8 + sdDemandShift * 5;
+                  var ps0 = 10 + q * 0.8 + sdSupplyShift * 5;
+                  if (announceToSR) announceToSR('Quantity ' + q + ': buyers value $' + Math.max(0, pd0).toFixed(0) + ', producer cost $' + Math.max(0, ps0).toFixed(0) + (pd0 > ps0 ? '. Worth producing.' : '. Not worth producing.'));
+                },
+                onKeyDown: function (e) {
+                  if (econTab !== 'supplyDemand') return;
+                  var cur = (d.sdProbe === null || d.sdProbe === undefined) ? 50 : d.sdProbe;
+                  var np = null;
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowUp') np = Math.min(100, cur + 2);
+                  else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') np = Math.max(0, cur - 2);
+                  else if (e.key === 'Escape') { e.preventDefault(); upd('sdProbe', null); return; }
+                  else return;
+                  e.preventDefault();
+                  upd('sdProbe', np);
+                  var pd1 = 90 - np * 0.8 + sdDemandShift * 5;
+                  var ps1 = 10 + np * 0.8 + sdSupplyShift * 5;
+                  if (announceToSR) announceToSR('Quantity ' + np + ': buyers value $' + Math.max(0, pd1).toFixed(0) + ', producer cost $' + Math.max(0, ps1).toFixed(0) + (pd1 > ps1 ? '. Worth producing.' : '. Not worth producing.'));
+                },
+
                 className: 'w-full rounded-xl border border-slate-400',
 
-                style: { height: '250px', background: 'var(--allo-stem-canvas, #0f172a)' }
+                style: { height: '250px', background: 'var(--allo-stem-canvas, #0f172a)', cursor: econTab === 'supplyDemand' ? 'crosshair' : 'default' }
 
               }),
 
