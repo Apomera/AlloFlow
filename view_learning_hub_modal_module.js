@@ -41,6 +41,44 @@ function LearningHubModal(props) {
     setIsReadingLibraryOpen,
     t
   } = props;
+  const dialogRef = React.useRef(null);
+  React.useEffect(function() {
+    const dialog = dialogRef.current;
+    if (!dialog) return void 0;
+    const previousFocus = document.activeElement;
+    const getFocusable = function() {
+      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    };
+    const first = getFocusable()[0];
+    (first || dialog).focus();
+    const onKeyDown = function(event) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setShowLearningHub(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === firstItem) {
+        event.preventDefault();
+        lastItem.focus();
+      } else if (!event.shiftKey && document.activeElement === lastItem) {
+        event.preventDefault();
+        firstItem.focus();
+      }
+    };
+    dialog.addEventListener("keydown", onKeyDown);
+    return function() {
+      dialog.removeEventListener("keydown", onKeyDown);
+      if (previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
+    };
+  }, [setShowLearningHub]);
   const tr = (key, fallback) => {
     try {
       const value = typeof t === "function" ? t(key) : "";
@@ -49,9 +87,7 @@ function LearningHubModal(props) {
       return fallback;
     }
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4", style: { zIndex: 260 }, onClick: () => setShowLearningHub(false), role: "button", tabIndex: 0, onKeyDown: (e) => {
-    if (e.key === "Escape") setShowLearningHub(false);
-  } }, /* @__PURE__ */ React.createElement("div", { className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-8", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-label": t("learning_hub.title") || "Learning Tools", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, "\u{1F9E9}", " ", t("learning_hub.title") || "Learning Tools"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mt-1" }, t("learning_hub.subtitle") || "Choose a tool to explore")), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowLearningHub(false), className: "p-2 -m-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl", "aria-label": t("learning_hub.close_aria") || "Close learning hub" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-4" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4", style: { zIndex: 260 }, onClick: () => setShowLearningHub(false) }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-8 focus:outline-none", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-label": t("learning_hub.title") || "Learning Tools", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, "\u{1F9E9}", " ", t("learning_hub.title") || "Learning Tools"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mt-1" }, t("learning_hub.subtitle") || "Choose a tool to explore")), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowLearningHub(false), className: "p-2 -m-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl", "aria-label": t("learning_hub.close_aria") || "Close learning hub" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-4" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setShowLearningHub(false);
     setShowStemLab(true);
     setStemLabTab("explore");

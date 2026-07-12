@@ -48,6 +48,7 @@ This report evaluates the current local desktop command center and the bundled A
 - Removed invalid image-wrapper and select dialog roles, removed a duplicate accessible name, exposed hidden image actions on focus, enlarged image/phoneme actions to 24 by 24 CSS pixels, and added named non-drag phoneme reorder buttons (WCAG 2.1.1, 2.4.7, 2.5.7, 2.5.8, 4.1.2).
 - Added Enter/Space operation and pressed-state exposure to all six Word Sounds source selectors, and removed the disabled lesson-plan selector from sequential focus (WCAG 2.1.1, 2.4.3, 4.1.2).
 - Replaced FAQ sentence audio spans with named native buttons and replaced the accordion row containing nested controls with a dedicated 32 by 32 expand/collapse button (WCAG 2.1.1, 2.4.3, 2.4.7, 2.5.8, 4.1.2).
+- Removed focusable button semantics from the Learning Hub and Educator Hub backdrops and added initial dialog focus, Tab containment, Escape dismissal, and trigger focus return (WCAG 2.1.1, 2.4.3, 2.4.7, 4.1.2).
 
 ## Resolved finding
 

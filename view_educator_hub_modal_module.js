@@ -72,6 +72,44 @@ function EducatorHubModal(props) {
     openWhiteboard = (() => {
     })
   } = props;
+  const dialogRef = React.useRef(null);
+  React.useEffect(function() {
+    const dialog = dialogRef.current;
+    if (!dialog) return void 0;
+    const previousFocus = document.activeElement;
+    const getFocusable = function() {
+      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    };
+    const first = getFocusable()[0];
+    (first || dialog).focus();
+    const onKeyDown = function(event) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setShowEducatorHub(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === firstItem) {
+        event.preventDefault();
+        lastItem.focus();
+      } else if (!event.shiftKey && document.activeElement === lastItem) {
+        event.preventDefault();
+        firstItem.focus();
+      }
+    };
+    dialog.addEventListener("keydown", onKeyDown);
+    return function() {
+      dialog.removeEventListener("keydown", onKeyDown);
+      if (previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
+    };
+  }, [setShowEducatorHub]);
   const [platProbe, setPlatProbe] = React.useState(null);
   const _runPlatformProbe = async () => {
     const rows = [];
@@ -252,9 +290,7 @@ function EducatorHubModal(props) {
     setPlatProbe({ when: (/* @__PURE__ */ new Date()).toLocaleString(), rows });
   };
   const _probeReportText = () => !platProbe ? "" : "AlloFlow Platform Check \u2014 " + platProbe.when + "\n" + (typeof navigator !== "undefined" ? navigator.userAgent : "") + "\n\n" + platProbe.rows.map((r) => "[" + r.status.toUpperCase() + "] " + r.name + " \u2014 " + r.detail).join("\n");
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4", style: { zIndex: 260 }, onClick: () => setShowEducatorHub(false), role: "button", tabIndex: 0, onKeyDown: (e) => {
-    if (e.key === "Escape") setShowEducatorHub(false);
-  } }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "educator_hub_modal_panel", className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-label": t("educator_hub.dialog_aria") || "Educator Tools", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, "\u{1F6E0}\uFE0F ", t("educator_hub.title") || "Educator Tools"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mt-1" }, t("educator_hub.subtitle") || "Professional tools for educators and clinicians")), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowEducatorHub(false), className: "p-2 -m-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl", "aria-label": t("educator_hub.close_aria") || "Close educator tools" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_behavior_lens_card", onClick: () => {
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4", style: { zIndex: 260 }, onClick: () => setShowEducatorHub(false) }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "educator_hub_modal_panel", className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-label": t("educator_hub.dialog_aria") || "Educator Tools", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, "\u{1F6E0}\uFE0F ", t("educator_hub.title") || "Educator Tools"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mt-1" }, t("educator_hub.subtitle") || "Professional tools for educators and clinicians")), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowEducatorHub(false), className: "p-2 -m-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl", "aria-label": t("educator_hub.close_aria") || "Close educator tools" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_behavior_lens_card", onClick: () => {
     setShowEducatorHub(false);
     setShowBehaviorLens(true);
   }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F9E0}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-800" }, t("educator_hub.behavior_lens_title") || "BehaviorLens"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-600 mt-1" }, t("educator_hub.behavior_lens_desc") || "FBA/BIP behavioral observation, ABC data collection, and 60+ clinical tools"))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_report_writer_card", onClick: () => {

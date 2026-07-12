@@ -45,6 +45,26 @@ function EducatorHubModal(props) {
     // AI assist). Optional default so a host that hasn't wired it still renders.
     openWhiteboard = (() => {}),
   } = props;
+  const dialogRef = React.useRef(null);
+  React.useEffect(function () {
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    const previousFocus = document.activeElement;
+    const getFocusable = function () { return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')); };
+    const first = getFocusable()[0];
+    (first || dialog).focus();
+    const onKeyDown = function (event) {
+      if (event.key === 'Escape') { event.preventDefault(); setShowEducatorHub(false); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) { event.preventDefault(); dialog.focus(); return; }
+      const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
+      else if (!event.shiftKey && document.activeElement === lastItem) { event.preventDefault(); firstItem.focus(); }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return function () { dialog.removeEventListener('keydown', onKeyDown); if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus(); };
+  }, [setShowEducatorHub]);
 
   // ── Platform Check (2026-06-12) ──
   // The app's primary surface is the Gemini Canvas sandboxed iframe, where
@@ -160,12 +180,12 @@ function EducatorHubModal(props) {
   const _probeReportText = () => !platProbe ? '' : ('AlloFlow Platform Check — ' + platProbe.when + '\n' + (typeof navigator !== 'undefined' ? navigator.userAgent : '') + '\n\n' + platProbe.rows.map((r) => '[' + r.status.toUpperCase() + '] ' + r.name + ' — ' + r.detail).join('\n'));
 
   return (
-        <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4" style={{ zIndex: 260 }} onClick={() => setShowEducatorHub(false)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowEducatorHub(false); }}>
+        <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4" style={{ zIndex: 260 }} onClick={() => setShowEducatorHub(false)}>
           {/* allo-docsuite: portal modal rendered OUTSIDE the .allo-docsuite content wrapper,
               so the theme-dark gradient/text remaps never reached its pastel cards. Opting into
               the scope class inherits the existing dark remap (from-*-50 -> dark, text -> light).
               No-op in light mode (all .allo-docsuite rules are .theme-dark / .theme-contrast). */}
-          <div data-help-key="educator_hub_modal_panel" className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-label={t('educator_hub.dialog_aria') || 'Educator Tools'} onClick={(e) => e.stopPropagation()}>
+          <div ref={dialogRef} tabIndex={-1} data-help-key="educator_hub_modal_panel" className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-label={t('educator_hub.dialog_aria') || 'Educator Tools'} onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">🛠️ {t('educator_hub.title') || 'Educator Tools'}</h2>
