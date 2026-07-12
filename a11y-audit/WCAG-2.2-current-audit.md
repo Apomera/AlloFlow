@@ -91,6 +91,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Implemented the WAI-ARIA tabs pattern for the Teacher Dashboard Students, Insights, Behavior, and STEM sections: added a named tablist, tab and tabpanel roles, selected state, bidirectional control/label relationships, roving tabindex, automatic activation, wrapping Arrow-key navigation, and Home/End support (WCAG 1.3.1, 2.1.1, 2.4.3, 2.4.6, 4.1.2).
 
+- Replaced Brand Profile deletion's native browser confirmation with a named/described alert dialog; separated the deletion request from execution, focused the safe Cancel action, contained Tab, supported Escape cancellation, restored focus to the originating Delete control or the editor Close fallback when the deleted row disappears, and provided 44 CSS-pixel dialog actions (WCAG 2.1.1, 2.4.3, 2.4.7, 2.5.8, 3.3.4, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

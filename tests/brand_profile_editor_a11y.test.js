@@ -32,6 +32,23 @@ describe('Brand Settings editor accessibility', () => {
     expect(source).toContain('truncate flex-1 min-h-6');
   });
 
+  it('uses a safe-default accessible dialog for profile deletion', () => {
+    expect(source).not.toContain('window.confirm');
+    expect(source).toContain('role="alertdialog"');
+    expect(source).toContain('aria-labelledby="brand-delete-dialog-title"');
+    expect(source).toContain('aria-describedby="brand-delete-dialog-description"');
+    expect(source).toContain('data-safe-default="true"');
+    expect(source).toContain("if (event.key === 'Escape')");
+    expect(source).toContain("if (event.key !== 'Tab') return");
+  });
+
+  it('restores focus safely after cancellation or deletion', () => {
+    expect(source).toContain('trigger.isConnected');
+    expect(source).toContain('closeButtonRef.current.focus()');
+    expect(source).toContain('requestRemove(event, p.id, p.name)');
+    expect(source).toContain('min-h-11 rounded-lg');
+  });
+
   it('synchronizes the deployable module', () => {
     expect(fs.readFileSync('prismflow-deploy/public/brand_profile_editor_module.js', 'utf8')).toBe(fs.readFileSync('brand_profile_editor_module.js', 'utf8'));
   });

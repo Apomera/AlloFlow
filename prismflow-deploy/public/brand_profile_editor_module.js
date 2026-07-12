@@ -108,6 +108,14 @@ function BrandProfileEditor(props) {
   const importInputRef = React.useRef(null);
   const dialogRef = React.useRef(null);
   const closeButtonRef = React.useRef(null);
+  const deleteDialogRef = React.useRef(null);
+  const deleteTriggerRef = React.useRef(null);
+  const [deleteRequest, setDeleteRequest] = React.useState(null);
+  React.useEffect(function () {
+    if (!deleteRequest) return;
+    const cancel = deleteDialogRef.current && deleteDialogRef.current.querySelector('[data-safe-default="true"]');
+    if (cancel) cancel.focus();
+  }, [deleteRequest]);
   React.useEffect(function () {
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
@@ -260,15 +268,29 @@ function BrandProfileEditor(props) {
       refresh();
     }
   }
-  function remove(id, name) {
-    if (!api) return;
-    const ok = typeof window !== 'undefined' && typeof window.confirm === 'function' ? window.confirm(t('brand.delete_confirm', 'Delete brand profile') + ' "' + name + '"?') : true;
-    if (!ok) return;
+  function requestRemove(event, id, name) {
+    deleteTriggerRef.current = event.currentTarget;
+    setDeleteRequest({
+      id: id,
+      name: name || t('brand.unnamed', 'unnamed profile')
+    });
+  }
+  function closeDeleteDialog() {
+    setDeleteRequest(null);
+    window.setTimeout(function () {
+      const trigger = deleteTriggerRef.current;
+      if (trigger && trigger.isConnected && typeof trigger.focus === 'function') trigger.focus();else if (closeButtonRef.current) closeButtonRef.current.focus();
+    }, 0);
+  }
+  function confirmRemove() {
+    if (!api || !deleteRequest) return;
+    const id = deleteRequest.id;
     if (api.deleteBrandProfile(id)) {
       addToast(t('brand.deleted', 'Brand profile deleted'), 'success');
       if (draft.id === id) newProfile();
       refresh();
     }
+    closeDeleteDialog();
   }
   function exportProfile(id) {
     if (!api) return;
@@ -444,8 +466,8 @@ function BrandProfileEditor(props) {
       },
       className: "inline-flex min-h-6 items-center text-[11px] text-slate-600 hover:underline"
     }, t('brand.export', 'Export')), /*#__PURE__*/React.createElement("button", {
-      onClick: function () {
-        remove(p.id, p.name);
+      onClick: function (event) {
+        requestRemove(event, p.id, p.name);
       },
       className: "inline-flex min-h-6 items-center text-[11px] text-red-600 hover:underline"
     }, t('brand.delete', 'Delete'))));
@@ -713,7 +735,60 @@ function BrandProfileEditor(props) {
       makeActive(draft.id);
     },
     className: "w-full px-3 py-1.5 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-colors"
-  }, t('brand.set_active', 'Set as active brand')))))));
+  }, t('brand.set_active', 'Set as active brand'))))), deleteRequest && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[110] bg-black/60 flex items-center justify-center p-4",
+    role: "presentation"
+  }, /*#__PURE__*/React.createElement("div", {
+    ref: deleteDialogRef,
+    role: "alertdialog",
+    "aria-modal": "true",
+    "aria-labelledby": "brand-delete-dialog-title",
+    "aria-describedby": "brand-delete-dialog-description",
+    onClick: function (event) {
+      event.stopPropagation();
+    },
+    onKeyDown: function (event) {
+      event.stopPropagation();
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeDeleteDialog();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+      if (!focusable.length) {
+        event.preventDefault();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    },
+    className: "w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+  }, /*#__PURE__*/React.createElement("h3", {
+    id: "brand-delete-dialog-title",
+    className: "text-lg font-bold text-slate-900"
+  }, t('brand.delete_title', 'Delete brand profile?')), /*#__PURE__*/React.createElement("p", {
+    id: "brand-delete-dialog-description",
+    className: "mt-3 text-sm text-slate-700"
+  }, t('brand.delete_confirm', 'Delete brand profile'), " \"", deleteRequest.name, "\"? ", t('brand.delete_permanent', 'This cannot be undone.')), /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 flex justify-end gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-safe-default": "true",
+    onClick: closeDeleteDialog,
+    className: "min-h-11 rounded-lg border border-slate-400 px-4 py-2 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+  }, t('common.cancel', 'Cancel')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: confirmRemove,
+    className: "min-h-11 rounded-lg bg-red-700 px-4 py-2 font-bold text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+  }, t('brand.delete', 'Delete')))))));
 }
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.BrandProfileEditor = BrandProfileEditor;
