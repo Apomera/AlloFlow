@@ -1816,6 +1816,44 @@ function pathStarts(key, root) {
   return key === root || key.indexOf(root + '.') === 0;
 }
 
+function validWsMetricNumber(value, max) {
+  return typeof value === 'number' && isFinite(value) && value >= 0 && value <= (max || 100000);
+}
+// Word Sounds live-progress / probe-result roster leaves: structured numbers +
+// an activity id from a fixed code-defined set. No free text by construction —
+// every string field is pattern-checked. Object values, exact-key allowlists.
+function validWsProgressValue(value) {
+  if (value === null) return true;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var allowed = { kind: 1, activity: 1, correct: 1, total: 1, goal: 1, done: 1, at: 1 };
+  var keys = Object.keys(value);
+  for (var i = 0; i < keys.length; i++) { if (!allowed[keys[i]]) return false; }
+  if (value.kind != null && value.kind !== 'practice' && value.kind !== 'probe') return false;
+  if (value.activity != null && !(typeof value.activity === 'string' && /^[a-z_]{1,32}$/.test(value.activity))) return false;
+  if (value.done != null && typeof value.done !== 'boolean') return false;
+  if (value.correct != null && !validWsMetricNumber(value.correct)) return false;
+  if (value.total != null && !validWsMetricNumber(value.total)) return false;
+  if (value.goal != null && !validWsMetricNumber(value.goal)) return false;
+  if (value.at != null && !validWsMetricNumber(value.at, 999999999999999)) return false;
+  return true;
+}
+function validWsProbeResultValue(value) {
+  if (value === null) return true;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var allowed = { activity: 1, correct: 1, total: 1, accuracy: 1, itemsPerMin: 1, elapsed: 1, grade: 1, form: 1, at: 1 };
+  var keys = Object.keys(value);
+  for (var i = 0; i < keys.length; i++) { if (!allowed[keys[i]]) return false; }
+  if (value.activity != null && !(typeof value.activity === 'string' && /^[a-z_]{1,32}$/.test(value.activity))) return false;
+  if (value.grade != null && !(typeof value.grade === 'string' && /^[A-Za-z0-9 -]{1,16}$/.test(value.grade))) return false;
+  if (value.form != null && !(typeof value.form === 'string' && /^[A-Za-z0-9-]{1,8}$/.test(value.form))) return false;
+  if (value.correct != null && !validWsMetricNumber(value.correct)) return false;
+  if (value.total != null && !validWsMetricNumber(value.total)) return false;
+  if (value.accuracy != null && !validWsMetricNumber(value.accuracy)) return false;
+  if (value.itemsPerMin != null && !validWsMetricNumber(value.itemsPerMin)) return false;
+  if (value.elapsed != null && !validWsMetricNumber(value.elapsed)) return false;
+  if (value.at != null && !validWsMetricNumber(value.at, 999999999999999)) return false;
+  return true;
+}
 function validParticipantRosterField(field, value, uid) {
   if (value && typeof value === 'object' && value.__op === 'deleteField') return field !== 'uid';
   if (field === 'uid') return value === uid;
@@ -1826,6 +1864,8 @@ function validParticipantRosterField(field, value, uid) {
   if (field === 'signal') return value === null || value === 'stuck' || value === 'slow' || value === 'repeat' || value === 'ready';
   if (field === 'signalAt' || field === 'viewingAt') return value === null || (typeof value === 'number' && isFinite(value) && value >= 0);
   if (field === 'viewingResourceId') return value === null || (typeof value === 'string' && value.length <= 100);
+  if (field === 'wsProgress') return validWsProgressValue(value);
+  if (field === 'wsProbeResult') return validWsProbeResultValue(value);
   return false;
 }
 function participantCanPatchSession(updates, uid) {
@@ -1833,7 +1873,8 @@ function participantCanPatchSession(updates, uid) {
   var rosterRoot = 'roster.' + uid;
   var rosterFields = {
     uid: 1, name: 1, joinedAt: 1, status: 1, xp: 1,
-    signal: 1, signalAt: 1, viewingResourceId: 1, viewingAt: 1
+    signal: 1, signalAt: 1, viewingResourceId: 1, viewingAt: 1,
+    wsProgress: 1, wsProbeResult: 1
   };
   var roots = [
     'quizState.allResponses.' + uid,
@@ -4995,6 +5036,23 @@ const SESSION_TIER1_LEAVES = new Set([
   // on a pushed resource. Resource ids are auto-generated, never student-typed;
   // no content travels on this channel. Tier-1 safe.
   'viewingResourceId', 'viewingAt',
+  // Word Sounds live practice progress (student-written): roster.{uid}.wsProgress
+  // = { kind, activity, correct, total, goal, done, at } — counts + an activity
+  // id from the fixed in-code set, shape-validated (validWsProgressValue). Same
+  // numbers-only class as roster.{uid}.xp; no item content, no free text; dies
+  // with the session doc at session end. Teacher's Live Session Center renders
+  // it as a per-student progress chip.
+  'wsProgress',
+  // Word Sounds probe-result handoff (student-written): roster.{uid}.wsProbeResult
+  // = { activity, correct, total, accuracy, itemsPerMin, elapsed, grade, form, at }
+  // — structured numbers + pattern-checked enum-ish strings only
+  // (validWsProbeResultValue). This is TRANSPORT, not storage: the teacher
+  // device banks it into its local probeHistory (localStorage / project file)
+  // the moment it arrives, and the session doc is deleted at session end —
+  // consistent with the near-empty-storage posture in
+  // docs/DATA_PRIVACY_POSTURE.md. Without this leaf, a probe pushed to a
+  // student device completed into a toast and was recorded NOWHERE.
+  'wsProbeResult',
 ]);
 // Help-signal vocabulary shared by the student sender and the teacher's Live
 // Session Center. Enum-only by design: keep free text out of this channel so
@@ -12669,6 +12727,88 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       }, 3000);
       return () => clearTimeout(timeoutId);
   }, [history, isCloudSyncEnabled, user, isTeacherMode]);
+  // ── Live Word Sounds progress (student → teacher dock) ──
+  // Counts + activity id only — same Tier-1 class as roster.{uid}.xp (see
+  // SESSION_TIER1_LEAVES justification). Debounced so an answer streak is one
+  // write, not five; signature-deduped so unchanged scores never re-write.
+  // Probe sessions are excluded here — probes report once, on completion,
+  // via the wsProbeResult leaf below.
+  const wsProgressSigRef = useRef(null);
+  useEffect(() => {
+      if (isTeacherMode || !activeSessionCode || !user || !user.uid) return;
+      if (!isWordSoundsMode || isProbeMode) return;
+      if (!wordSoundsScore || !wordSoundsScore.total) return;
+      const timer = setTimeout(() => {
+          const payload = {
+              kind: 'practice',
+              activity: typeof wordSoundsActivity === 'string' ? wordSoundsActivity.slice(0, 32) : null,
+              correct: wordSoundsScore.correct || 0,
+              total: wordSoundsScore.total || 0,
+              goal: wordSoundsSessionGoal || 0,
+              done: !!(wordSoundsSessionGoal && wordSoundsSessionProgress >= wordSoundsSessionGoal),
+              at: Date.now(),
+          };
+          const sig = [payload.activity, payload.correct, payload.total, payload.done].join('|');
+          if (wsProgressSigRef.current === sig) return;
+          wsProgressSigRef.current = sig;
+          try {
+              const progressRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
+              writeToSession(progressRef, { [`roster.${user.uid}.wsProgress`]: payload }).catch(() => {});
+          } catch (e) { /* a session write must never break practice */ }
+      }, 2000);
+      return () => clearTimeout(timer);
+  }, [isTeacherMode, activeSessionCode, user, isWordSoundsMode, isProbeMode, wordSoundsScore, wordSoundsActivity, wordSoundsSessionGoal, wordSoundsSessionProgress]);
+  // ── Teacher side: bank arriving Word Sounds probe results ──
+  // The roster leaf is transport, not storage — the durable record lands in
+  // the teacher's local probeHistory (localStorage + project file) the moment
+  // it arrives, keyed by the student's session codename. One functional
+  // setProbeHistory per snapshot batch: saveProbeResult's closure over
+  // probeHistory would drop all but the last student when several results
+  // arrive in the same snapshot.
+  const wsProbeBankedRef = useRef({});
+  useEffect(() => {
+      if (!isTeacherMode || !activeSessionCode) return;
+      const roster = (sessionData && sessionData.roster) || null;
+      if (!roster) return;
+      const additions = [];
+      Object.keys(roster).forEach((uid) => {
+          const entry = roster[uid] || {};
+          const r = entry.wsProbeResult;
+          if (!r || typeof r !== 'object' || !r.at || !r.total) return;
+          const seenKey = uid + '|' + r.at;
+          if (wsProbeBankedRef.current[seenKey]) return;
+          wsProbeBankedRef.current[seenKey] = true;
+          const studentName = entry.name || ('Student ' + String(uid).slice(0, 5));
+          additions.push({
+              studentName,
+              result: {
+                  correct: r.correct || 0,
+                  total: r.total || 0,
+                  accuracy: r.accuracy != null ? r.accuracy : (r.total ? Math.round(((r.correct || 0) / r.total) * 100) : 0),
+                  itemsPerMin: r.itemsPerMin != null ? r.itemsPerMin : null,
+                  elapsed: r.elapsed != null ? r.elapsed : null,
+                  activity: r.activity || null,
+                  grade: r.grade || null,
+                  form: r.form || null,
+                  date: new Date(r.at).toISOString(),
+                  student: studentName,
+                  source: 'live-session',
+              },
+          });
+      });
+      if (additions.length === 0) return;
+      setProbeHistory(prev => {
+          const updated = { ...prev };
+          additions.forEach(({ studentName, result }) => {
+              updated[studentName] = [...(updated[studentName] || []), result];
+          });
+          try { localStorage.setItem('alloflow_probe_history', JSON.stringify(updated)); } catch {}
+          return updated;
+      });
+      additions.forEach(({ studentName, result }) => {
+          addToast(t('toasts.ws_probe_banked', { name: studentName, correct: result.correct, total: result.total }) || `📊 ${studentName}: probe ${result.correct}/${result.total} saved to records`, 'success');
+      });
+  }, [isTeacherMode, activeSessionCode, sessionData]);
   // Live-session pushes previously set only generatedContent + activeView for
   // Word Sounds, so a pushed pack never hydrated wsPreloadedWords / the
   // activity sequence on the student device and the module fell back to weak
@@ -23758,10 +23898,16 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           } else {
               setIsWordSoundsMode(false);
               setWordSoundsAutoReview(false);
+              // Honor the saved lesson-plan sequence on student self-open
+              // (parity with the live-push hydration): start at sequence[0],
+              // not always 'counting', and hydrate wsActivitySequence so the
+              // modal can advance through the plan.
+              const _selfOpenSeq = Array.isArray(item.lessonPlanSequence) ? item.lessonPlanSequence : [];
+              if (_selfOpenSeq.length > 0) setWsActivitySequence(_selfOpenSeq);
               setTimeout(() => {
                   setIsWordSoundsMode(true);
                   setCurrentWordSoundsWord(null);
-                  setWordSoundsActivity('counting');
+                  setWordSoundsActivity(_selfOpenSeq.length > 0 ? _selfOpenSeq[0] : 'counting');
                   setWordSoundsAutoReview(false);
               }, 50);
           }
@@ -34067,6 +34213,30 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                     };
                                     setLatestProbeResult(fullResult);
                                     if (probeTargetStudent) saveProbeResult(probeTargetStudent, fullResult);
+                                    // Student device: bank under the student's own codename so the
+                                    // result rides project-file saves (probeHistory restores
+                                    // mode-agnostically), instead of dying in the toast below.
+                                    else if (!isTeacherMode && studentNickname) saveProbeResult(studentNickname, fullResult);
+                                    // Live session: hand the structured summary to the teacher
+                                    // device via the Tier-1 wsProbeResult leaf (numbers +
+                                    // pattern-checked strings only; see SESSION_TIER1_LEAVES).
+                                    // The teacher banks it into probeHistory on arrival.
+                                    if (!isTeacherMode && activeSessionCode && user && user.uid) {
+                                        try {
+                                            const liveProbeRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
+                                            writeToSession(liveProbeRef, { [`roster.${user.uid}.wsProbeResult`]: {
+                                                activity: typeof probeActivity === 'string' ? probeActivity.slice(0, 32) : null,
+                                                correct: results.correct || 0,
+                                                total: results.total || 0,
+                                                accuracy: results.total ? Math.round(((results.correct || 0) / results.total) * 100) : 0,
+                                                itemsPerMin: typeof results.itemsPerMin === 'number' && isFinite(results.itemsPerMin) ? results.itemsPerMin : null,
+                                                elapsed: typeof results.elapsed === 'number' && isFinite(results.elapsed) ? results.elapsed : null,
+                                                grade: probeGradeLevel != null ? String(probeGradeLevel).slice(0, 16) : null,
+                                                form: mathProbeForm != null ? String(mathProbeForm).slice(0, 8) : null,
+                                                at: Date.now(),
+                                            } }).catch(() => {});
+                                        } catch (e) { /* transport must never block completion UX */ }
+                                    }
                                     addToast(t('toasts.probe_complete', { correct: results.correct, total: results.total, accuracy: results.accuracy }) || `Probe complete: ${results.correct}/${results.total} (${results.accuracy}%)`, 'success');
                                     if (screenerSession && screenerSession.status === 'running') {
                                         const updatedResults = [...screenerSession.results, fullResult];
@@ -35198,6 +35368,18 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                               <span style={{color:'#64748b',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',flex:1}}>
                                 {statusDot.label}{viewingTitle ? ' · ' + viewingTitle : ''}
                               </span>
+                              {entry.wsProgress && entry.wsProgress.total ? (
+                                <span
+                                  title={(t('live_dock.ws_progress_title') || 'Word Sounds practice') + (entry.wsProgress.activity ? ' · ' + entry.wsProgress.activity : '')}
+                                  style={{whiteSpace:'nowrap',fontWeight:800,fontSize:'0.68rem',color: entry.wsProgress.done ? '#15803d' : '#6d28d9', background: entry.wsProgress.done ? '#dcfce7' : '#ede9fe', border:'1px solid ' + (entry.wsProgress.done ? '#86efac' : '#ddd6fe'), borderRadius:6, padding:'0.05rem 0.3rem'}}
+                                >🎵 {entry.wsProgress.correct}/{entry.wsProgress.total}{entry.wsProgress.done ? ' ✓' : ''}</span>
+                              ) : null}
+                              {entry.wsProbeResult && entry.wsProbeResult.total ? (
+                                <span
+                                  title={(t('live_dock.ws_probe_title') || 'Word Sounds probe result (saved to records)') + (entry.wsProbeResult.activity ? ' · ' + entry.wsProbeResult.activity : '')}
+                                  style={{whiteSpace:'nowrap',fontWeight:800,fontSize:'0.68rem',color:'#9a3412',background:'#ffedd5',border:'1px solid #fed7aa',borderRadius:6,padding:'0.05rem 0.3rem'}}
+                                >📊 {entry.wsProbeResult.correct}/{entry.wsProbeResult.total}</span>
+                              ) : null}
                               {entry.resourceId ? (
                                 <button
                                   onClick={() => handleSetStudentResource(uid, null)}
