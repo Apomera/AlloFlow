@@ -87,6 +87,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Made the student Escape Room puzzle layer a named focus-managed dialog; moved initial focus to its named 44 CSS-pixel Close control, contained Tab, supported Escape dismissal, returned focus to the exact puzzle object, routed successful completion through the same focus-aware close path, and hid the decorative Close icon (WCAG 1.1.1, 2.1.1, 2.4.3, 2.4.7, 2.5.8, 4.1.2).
 
+- Added programmatic names, state announcements, and focus transitions to student Escape Room full-screen states: waiting is a polite busy status, game over is an alert, escape success is a named status, the active room is a named region, pause is a named/described alert dialog, focus returns to the active room on resume, team escapes are polite atomic status messages, and confetti is hidden from assistive technology (WCAG 1.1.1, 2.4.3, 2.4.6, 3.2.2, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

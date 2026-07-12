@@ -671,7 +671,7 @@ const ConfettiEffect = ({ isActive }) => {
     duration: Math.random() * 2 + 2
   }));
   return (
-    <div className="fixed inset-0 pointer-events-none z-[10001] overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-[10001] overflow-hidden" aria-hidden="true">
       <style>{`
         @keyframes confetti-fall {
           0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
@@ -714,6 +714,10 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
   const [lastEscapedTeams, setLastEscapedTeams] = useState([]);
   const puzzleDialogRef = useRef(null);
   const puzzleTriggerRef = useRef(null);
+  const escapeStateScreenRef = useRef(null);
+  const escapeMainRef = useRef(null);
+  const pauseDialogRef = useRef(null);
+  const wasPausedRef = useRef(false);
   useEffect(() => {
     if (!selectedPuzzle) return;
     puzzleDialogRef.current?.querySelector('[data-initial-focus="true"]')?.focus();
@@ -750,6 +754,13 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
     All: { bg: 'bg-purple-500', text: 'text-purple-500', border: 'border-purple-500', light: 'bg-purple-100' }
   };
   const myTeamColors = teamColors[userTeam] || teamColors.Blue;
+  useEffect(() => {
+    const completedState = escapeState.isGameOver || teamEscaped;
+    if (!userTeam || completedState) escapeStateScreenRef.current?.focus();
+    else if (isPaused) pauseDialogRef.current?.focus();
+    else if (wasPausedRef.current) escapeMainRef.current?.focus();
+    wasPausedRef.current = isPaused;
+  }, [userTeam, escapeState.isGameOver, teamEscaped, isPaused]);
   useEffect(() => {
     const escapedTeams = allTeams.filter(team =>
       escapeState.teamProgress?.[team]?.isEscaped && team !== userTeam
@@ -850,9 +861,9 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
   };
   if (!userTeam) {
     return (
-      <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-900 flex items-center justify-center">
+      <div ref={escapeStateScreenRef} tabIndex={-1} role="status" aria-live="polite" aria-busy="true" className="fixed inset-0 z-[9999] bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-900 flex items-center justify-center focus:outline-none">
         <div className="text-center text-white">
-          <RefreshCw className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-700" />
+          <RefreshCw className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-700" aria-hidden="true" />
           <p className="text-xl font-bold">{t('escape_room.waiting_host')}</p>
         </div>
       </div>
@@ -860,11 +871,11 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
   }
   if (escapeState.isGameOver) {
     return (
-      <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justify-center">
+      <div ref={escapeStateScreenRef} tabIndex={-1} role="alert" aria-labelledby="escape-room-game-over-title" aria-describedby="escape-room-game-over-description" className="fixed inset-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justify-center focus:outline-none">
         <div className="text-center text-white animate-in zoom-in duration-500">
           <div className="text-9xl mb-6 animate-pulse">💀</div>
-          <h2 className="text-5xl font-black mb-4 text-red-600">{t('escape_room.game_over')}</h2>
-          <p className="text-2xl text-slate-600 mb-6">{t('escape_room.life_lost')}</p>
+          <h2 id="escape-room-game-over-title" className="text-5xl font-black mb-4 text-red-600">{t('escape_room.game_over')}</h2>
+          <p id="escape-room-game-over-description" className="text-2xl text-slate-300 mb-6">{t('escape_room.life_lost')}</p>
           <div className="flex gap-4 justify-center text-lg">
             <span className="px-4 py-2 bg-slate-800 rounded-lg">
               {t('escape_room.puzzles_remaining')}: {puzzles.length - solvedPuzzlesSet.size}
@@ -882,14 +893,14 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       escapeState.teamProgress?.[team]?.isEscaped
     ).length === 1;
     return (
-      <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center">
+      <div ref={escapeStateScreenRef} tabIndex={-1} role="status" aria-labelledby="escape-room-escaped-title" aria-describedby="escape-room-escaped-description" className="fixed inset-0 z-[9999] bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center focus:outline-none">
         <ConfettiEffect isActive={showConfetti} />
         <div className="text-center text-white animate-in zoom-in duration-500">
           <div className="text-9xl mb-6 animate-bounce">{isFirstToEscape ? '🏆' : '🎉'}</div>
-          <h2 className="text-5xl font-black mb-4">
+          <h2 id="escape-room-escaped-title" className="text-5xl font-black mb-4">
             {isCoopMode ? t('escape_room.class_escaped') : (isFirstToEscape ? t('escape_room.first_escape') : t('escape_room.escaped'))}
           </h2>
-          <p className="text-2xl text-green-200">
+          <p id="escape-room-escaped-description" className="text-2xl text-green-200">
             {isCoopMode ? t('escape_room.everyone_escaped') : t('escape_room.team_escaped', { team: userTeam })}
           </p>
           {!isCoopMode && (
@@ -903,12 +914,12 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
   }
   const currentPuzzle = selectedPuzzle ? puzzles.find(p => p.linkedObjectId === selectedPuzzle || p.id === selectedPuzzle) : null;
   return (
-    <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 overflow-auto">
+    <div ref={escapeMainRef} tabIndex={-1} role="region" aria-labelledby="escape-room-active-title" className="fixed inset-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 overflow-auto focus:outline-none">
       <div className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-sm border-b border-purple-500/30 p-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
             <DoorOpen className="text-purple-400" size={24} />
-            <span className="text-white font-bold text-lg">{escapeState.room?.theme || t('escape_room.title')}</span>
+            <h2 id="escape-room-active-title" className="text-white font-bold text-lg">{escapeState.room?.theme || t('escape_room.title')}</h2>
           </div>
           <div className="flex items-center gap-4">
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${myTeamColors.bg} text-white font-bold text-sm`} data-help-key="escape_room_team">
@@ -1331,16 +1342,16 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
         </div>
       )}
       {isPaused && (
-        <div className="fixed inset-0 z-[10001] bg-black/80 flex items-center justify-center backdrop-blur-sm">
+        <div ref={pauseDialogRef} tabIndex={-1} role="alertdialog" aria-modal="true" aria-labelledby="escape-room-paused-title" aria-describedby="escape-room-paused-description" className="fixed inset-0 z-[10001] bg-black/80 flex items-center justify-center backdrop-blur-sm focus:outline-none">
           <div className="text-center text-white animate-pulse">
             <div className="text-8xl mb-6">⏸️</div>
-            <h2 className="text-4xl font-black mb-3">{t('escape_room.game_paused')}</h2>
-            <p className="text-xl text-slate-400">{t('escape_room.waiting_resume')}</p>
+            <h2 id="escape-room-paused-title" className="text-4xl font-black mb-3">{t('escape_room.game_paused')}</h2>
+            <p id="escape-room-paused-description" className="text-xl text-slate-300">{t('escape_room.waiting_resume')}</p>
           </div>
         </div>
       )}
       {teamEscapeToast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in slide-in-from-bottom duration-300">
+        <div role="status" aria-live="polite" aria-atomic="true" className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in slide-in-from-bottom duration-300">
           <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border-2 ${teamColors[teamEscapeToast]?.border || 'border-purple-500'} bg-slate-900`}>
             <span className="text-3xl">🚪</span>
             <div>
