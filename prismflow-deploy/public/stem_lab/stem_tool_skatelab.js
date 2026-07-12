@@ -56,7 +56,7 @@ window.StemLab = window.StemLab || {
     var st = document.createElement('style');
     st.id = 'allo-skatelab-responsive-css';
     st.textContent = [
-      '.skatelab-shell{container-type:inline-size}.skatelab-shell button,.skatelab-shell input,.skatelab-shell summary{touch-action:manipulation}.skatelab-shell button[data-sk-focusable=true]{min-height:36px}.skatelab-shell button:focus-visible,.skatelab-shell input:focus-visible,.skatelab-shell summary:focus-visible{outline:3px solid #38bdf8;outline-offset:2px}',
+      '.skatelab-shell{container-type:inline-size}.skatelab-shell button,.skatelab-shell input,.skatelab-shell summary{touch-action:manipulation}.skatelab-shell button:disabled{cursor:not-allowed!important;opacity:.58}.skatelab-shell button[data-sk-focusable=true]{min-height:36px}.skatelab-shell button:focus-visible,.skatelab-shell input:focus-visible,.skatelab-shell summary:focus-visible{outline:3px solid #38bdf8;outline-offset:2px}',
       '.sk-run-focus-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(240px,.75fr);gap:12px}',
       '.sk-run-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
       '.sk-park-map{position:relative;min-height:112px;margin:10px 0;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(14,165,233,.14),rgba(168,85,247,.12) 48%,rgba(22,163,74,.18));border:1px solid rgba(251,191,36,.24)}',
@@ -2133,6 +2133,10 @@ window.StemLab = window.StemLab || {
         }
       }
       function loadScenario(scenarioId) {
+        if (d.running) {
+          skAnnounce('Finish the current attempt before changing scenarios.');
+          return;
+        }
         var sc = findAnyScenario(scenarioId);
         if (!sc) return;
         var p = sc.presets || {};
@@ -3152,6 +3156,44 @@ window.StemLab = window.StemLab || {
 
 
       // ── Render UI ───────────────────────────────────────────────
+      function _dialogKeyDown(e, closeDialog) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          closeDialog();
+          return;
+        }
+        if (e.key !== 'Tab') return;
+        var focusable = Array.prototype.slice.call(e.currentTarget.querySelectorAll(
+          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+        )).filter(function(el) { return el.offsetParent !== null; });
+        if (!focusable.length) return;
+        var first = focusable[0], last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+
+      function _radioKeyDown(e, ids, currentId, selectId, domPrefix) {
+        if (d.running) return;
+        var keys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+        if (keys.indexOf(e.key) === -1) return;
+        e.preventDefault();
+        var current = Math.max(0, ids.indexOf(currentId));
+        var next = e.key === 'Home' ? 0
+          : e.key === 'End' ? ids.length - 1
+          : (current + ((e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1) + ids.length) % ids.length;
+        var nextId = ids[next];
+        selectId(nextId);
+        setTimeout(function() {
+          var choice = document.getElementById(domPrefix + nextId);
+          if (choice) choice.focus();
+        }, 0);
+      }
+
       var modeOrder = ['halfpipe', 'gap'];
       var modeBtn = function(id, label, emoji) {
         var sel = d.mode === id;
@@ -3159,8 +3201,11 @@ window.StemLab = window.StemLab || {
           key: id,
           id: 'sk-mode-tab-' + id,
           role: 'tab',
-          onClick: function() { upd('mode', id); skAnnounce(label + ' mode'); },
+          onClick: function() { if (!d.running) { upd('mode', id); skAnnounce(label + ' mode'); } },
+          disabled: !!d.running,
+          'aria-disabled': !!d.running,
           onKeyDown: function(e) {
+            if (d.running) return;
             if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
             e.preventDefault();
             var current = modeOrder.indexOf(id);
@@ -3194,7 +3239,7 @@ window.StemLab = window.StemLab || {
         'aria-modal': 'true',
         'aria-label': scenarioIntro.label + ' — context',
         onClick: function(e) { if (e.target === e.currentTarget) setScenarioIntro(null); },
-        onKeyDown: function(e) { if (e.key === 'Escape') setScenarioIntro(null); },
+        onKeyDown: function(e) { _dialogKeyDown(e, function() { setScenarioIntro(null); }); },
         style: {
           position: 'fixed', inset: 0, zIndex: 9999,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -3335,6 +3380,7 @@ window.StemLab = window.StemLab || {
             ),
             !done && h('button', {
               onClick: function() { loadScenario(todayScene.id); },
+              disabled: !!d.running,
               'aria-label': 'Load today\'s challenge: ' + todayScene.label,
               'data-sk-focusable': 'true',
               title: todayScene.teach,
@@ -3377,6 +3423,7 @@ window.StemLab = window.StemLab || {
               return h('button', {
                 key: sc.id,
                 onClick: function() { loadScenario(sc.id); },
+                disabled: !!d.running,
                 'aria-pressed': active,
                 'aria-label': 'Load scenario: ' + sc.label + (isToday ? ' (today\'s challenge)' : ''),
                 'data-sk-focusable': 'true',
@@ -3406,6 +3453,7 @@ window.StemLab = window.StemLab || {
               },
                 h('button', {
                   onClick: function() { loadScenario(sc.id); },
+                  disabled: !!d.running,
                   'aria-pressed': active,
                   'aria-label': 'Load custom scenario: ' + sc.label,
                   'data-sk-focusable': 'true',
@@ -3453,9 +3501,19 @@ window.StemLab = window.StemLab || {
             var sel = (d.surfaceId || 'standard') === sf.id;
             return h('button', {
               key: 'sf-' + sf.id,
+              id: 'sk-surface-' + sf.id,
               onClick: function() { upd('surfaceId', sf.id); skAnnounce('Surface: ' + sf.label + '. ' + sf.blurb); },
+              onKeyDown: function(e) {
+                _radioKeyDown(e, SURFACES.map(function(item) { return item.id; }), d.surfaceId || 'standard', function(nextId) {
+                  upd('surfaceId', nextId);
+                  var nextSurface = getSurface(nextId);
+                  skAnnounce('Surface: ' + nextSurface.label + '. ' + nextSurface.blurb);
+                }, 'sk-surface-');
+              },
+              disabled: !!d.running,
               role: 'radio',
               'aria-checked': sel,
+              tabIndex: sel ? 0 : -1,
               'data-sk-focusable': 'true',
               title: sf.blurb + ' (efficiency ' + sf.efficiency.toFixed(2) + ')',
               style: {
@@ -3476,12 +3534,21 @@ window.StemLab = window.StemLab || {
             var sel = d.vehicle === vid;
             return h('button', {
               key: vid,
+              id: 'sk-vehicle-' + vid,
               onClick: function() {
                 upd('vehicle', vid);
                 skAnnounce('Switched to ' + v.label + '. ' + (vid === 'bmx' ? 'Heavier vehicle, slower rotation, slightly more air needed per trick.' : 'Standard skateboard physics.'));
               },
+              onKeyDown: function(e) {
+                _radioKeyDown(e, ['skate', 'bmx'], d.vehicle || 'skate', function(nextId) {
+                  upd('vehicle', nextId);
+                  skAnnounce('Switched to ' + getVehicle(nextId).label + '.');
+                }, 'sk-vehicle-');
+              },
+              disabled: !!d.running,
               role: 'radio',
               'aria-checked': sel,
+              tabIndex: sel ? 0 : -1,
               'data-sk-focusable': 'true',
               title: v.label + ' — mass ' + v.mass + ' kg · pump efficiency ' + v.pumpEfficiency + ' m/s · rotation ×' + v.rotationScale,
               style: {
@@ -3692,7 +3759,7 @@ window.StemLab = window.StemLab || {
           };
           return h('div', {
             role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sk-tour-title',
-            onKeyDown: function(e) { if (e.key === 'Escape') closeAndMarkSeen(); },
+            onKeyDown: function(e) { _dialogKeyDown(e, closeAndMarkSeen); },
             onClick: function(e) { if (e.target === e.currentTarget) closeAndMarkSeen(); },
             style: {
               position: 'fixed', inset: 0, zIndex: 9999,
@@ -3774,7 +3841,7 @@ window.StemLab = window.StemLab || {
         // Mirrors saveModalDraft visual pattern — overlay + card.
         (d.session && d.session.startPromptOpen) && h('div', {
           role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sk-sess-title',
-          onKeyDown: function(e) { if (e.key === 'Escape') upd({ session: Object.assign({}, d.session, { startPromptOpen: false }) }); },
+          onKeyDown: function(e) { _dialogKeyDown(e, function() { upd({ session: Object.assign({}, d.session, { startPromptOpen: false }) }); }); },
           onClick: function(e) { if (e.target === e.currentTarget) upd({ session: Object.assign({}, d.session, { startPromptOpen: false }) }); },
           style: {
             position: 'fixed', inset: 0, zIndex: 9999,
@@ -3830,7 +3897,7 @@ window.StemLab = window.StemLab || {
         // closing the modal is a pure dismiss.
         (d.session && d.session.summaryOpen && d.session.lastSummary) && h('div', {
           role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sk-sess-summary-title',
-          onKeyDown: function(e) { if (e.key === 'Escape') upd({ session: Object.assign({}, d.session, { summaryOpen: false }) }); },
+          onKeyDown: function(e) { _dialogKeyDown(e, function() { upd({ session: Object.assign({}, d.session, { summaryOpen: false }) }); }); },
           onClick: function(e) { if (e.target === e.currentTarget) upd({ session: Object.assign({}, d.session, { summaryOpen: false }) }); },
           style: {
             position: 'fixed', inset: 0, zIndex: 9999,
@@ -3935,7 +4002,7 @@ window.StemLab = window.StemLab || {
         // current state. Mirrors ThrowLab's save-scenario flow.
         d.saveModalDraft && h('div', {
           role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sk-save-title',
-          onKeyDown: function(e) { if (e.key === 'Escape') upd('saveModalDraft', null); },
+          onKeyDown: function(e) { _dialogKeyDown(e, function() { upd('saveModalDraft', null); }); },
           onClick: function(e) { if (e.target === e.currentTarget) upd('saveModalDraft', null); },
           style: {
             position: 'fixed', inset: 0, zIndex: 9999,
@@ -4005,7 +4072,7 @@ window.StemLab = window.StemLab || {
         // ── Reset confirm modal ─────────────────────────────────
         d.resetConfirmOpen && h('div', {
           role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sk-reset-title',
-          onKeyDown: function(e) { if (e.key === 'Escape') upd('resetConfirmOpen', false); },
+          onKeyDown: function(e) { _dialogKeyDown(e, function() { upd('resetConfirmOpen', false); }); },
           onClick: function(e) { if (e.target === e.currentTarget) upd('resetConfirmOpen', false); },
           style: {
             position: 'fixed', inset: 0, zIndex: 9999,
@@ -4767,9 +4834,19 @@ window.StemLab = window.StemLab || {
             var sel = (d.windId || 'calm') === wp.id;
             return h('button', {
               key: 'wp-' + wp.id,
+              id: 'sk-wind-' + wp.id,
               onClick: function() { upd('windId', wp.id); skAnnounce('Wind: ' + wp.label + '. ' + wp.blurb); },
+              onKeyDown: function(e) {
+                _radioKeyDown(e, WIND_PRESETS.map(function(item) { return item.id; }), d.windId || 'calm', function(nextId) {
+                  upd('windId', nextId);
+                  var nextWind = getWind(nextId);
+                  skAnnounce('Wind: ' + nextWind.label + '. ' + nextWind.blurb);
+                }, 'sk-wind-');
+              },
+              disabled: !!d.running,
               role: 'radio',
               'aria-checked': sel,
+              tabIndex: sel ? 0 : -1,
               'data-sk-focusable': 'true',
               title: wp.blurb + (wp.mph !== 0 ? ' (' + (wp.mph > 0 ? '+' : '') + wp.mph + ' mph)' : ''),
               style: {

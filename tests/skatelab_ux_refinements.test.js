@@ -87,4 +87,33 @@ describe('Skate Lab UX refinement', () => {
     expect(source).toContain("((sim.clearance - 1.2) * M2FT).toFixed(1) + ' ft.'");
     expect(source).not.toContain('(sim.clearance * M2FT - 1.2).toFixed(1)');
   });
+
+  it('locks every run-sensitive configuration choice during an attempt', () => {
+    const halfpipe = renderTool('skatelab', state({ running: true }));
+    const gap = renderTool('skatelab', state({ mode: 'gap', running: true }));
+
+    expect(halfpipe).toMatch(/id="sk-surface-standard"[^>]*disabled/);
+    expect(halfpipe).toMatch(/id="sk-vehicle-skate"[^>]*disabled/);
+    expect(halfpipe).toMatch(/id="sk-mode-tab-halfpipe"[^>]*disabled/);
+    expect(gap).toMatch(/id="sk-wind-calm"[^>]*disabled/);
+  });
+
+  it('uses roving focus for surface, vehicle, and wind radio groups', () => {
+    const halfpipe = renderTool('skatelab', state());
+    const gap = renderTool('skatelab', state({ mode: 'gap' }));
+
+    expect(halfpipe).toMatch(/id="sk-surface-standard"[^>]*tabindex="0"/);
+    expect(halfpipe).toMatch(/id="sk-surface-rough"[^>]*tabindex="-1"/);
+    expect(halfpipe).toMatch(/id="sk-vehicle-skate"[^>]*tabindex="0"/);
+    expect(gap).toMatch(/id="sk-wind-calm"[^>]*tabindex="0"/);
+    expect(gap).toMatch(/id="sk-wind-head_strong"[^>]*tabindex="-1"/);
+  });
+
+  it('traps dialog focus and handles Escape consistently', () => {
+    const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
+
+    expect(source).toContain('function _dialogKeyDown(e, closeDialog)');
+    expect(source).toContain("if (e.key !== 'Tab') return;");
+    expect(source.match(/_dialogKeyDown\(e,/g)).toHaveLength(7);
+  });
 });
