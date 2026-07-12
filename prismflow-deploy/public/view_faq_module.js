@@ -355,26 +355,7 @@ function FaqView(props) {
         className: "bg-white p-5 rounded-lg border border-slate-400 shadow-sm",
         "data-help-key": "faq_item"
       }, /*#__PURE__*/React.createElement("div", {
-        className: "flex items-start gap-3" + (isEditingFaq ? "" : " cursor-pointer select-none"),
-        onClick: !isEditingFaq ? function (e) {
-          // Clicks on sentence spans stop propagation for TTS — so reaching
-          // the row handler means the user clicked the Q badge, the chevron,
-          // or whitespace, all of which should toggle.
-          toggleFaq(idx);
-        } : undefined,
-        role: !isEditingFaq ? "button" : undefined,
-        tabIndex: !isEditingFaq ? 0 : undefined,
-        "aria-expanded": !isEditingFaq ? isExpanded : undefined,
-        "aria-controls": !isEditingFaq ? "faq-answer-" + idx : undefined,
-        onKeyDown: !isEditingFaq ? function (e) {
-          if (e.key === ' ' || e.key === 'Enter') {
-            // Only fire if the target is the row itself (not a sentence span)
-            if (e.target === e.currentTarget) {
-              e.preventDefault();
-              toggleFaq(idx);
-            }
-          }
-        } : undefined
+        className: "flex items-start gap-3"
       }, /*#__PURE__*/React.createElement("div", {
         className: "bg-cyan-100 text-cyan-700 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1"
       }, "Q"), /*#__PURE__*/React.createElement("div", {
@@ -416,10 +397,12 @@ function FaqView(props) {
         return qSentences.map((s, sIdx) => {
           const currentGlobalIdx = qBase + sIdx;
           const isActive = isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === currentGlobalIdx;
-          return /*#__PURE__*/React.createElement("span", {
+          return /*#__PURE__*/React.createElement("button", {
+            type: "button",
             key: sIdx,
             id: `sentence-${currentGlobalIdx}`,
-            className: `transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-50'}`,
+            "aria-label": `Read sentence: ${s}`,
+            className: `bg-transparent border-0 font-inherit text-inherit text-left transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-50'}`,
             onClick: e => {
               e.stopPropagation();
               handleSpeak(s, 'faq-active', currentGlobalIdx);
@@ -436,10 +419,12 @@ function FaqView(props) {
         return aSentences.map((s, sIdx) => {
           const currentGlobalIdx = aBase + sIdx;
           const isActive = isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === currentGlobalIdx;
-          return /*#__PURE__*/React.createElement("span", {
+          return /*#__PURE__*/React.createElement("button", {
+            type: "button",
             key: sIdx,
             id: `sentence-${currentGlobalIdx}`,
-            className: `transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-100'}`,
+            "aria-label": `Read sentence: ${s}`,
+            className: `bg-transparent border-0 font-inherit text-inherit text-left transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-100'}`,
             onClick: e => {
               e.stopPropagation();
               handleSpeak(s, 'faq-active', currentGlobalIdx);
@@ -448,14 +433,20 @@ function FaqView(props) {
         });
       })(), faq.answer_en && /*#__PURE__*/React.createElement("p", {
         className: "text-xs text-slate-600 mt-2 pt-2 border-t border-slate-200 italic"
-      }, "(", faq.answer_en, ")")))), !isEditingFaq && /*#__PURE__*/React.createElement("div", {
-        className: "shrink-0 mt-2 text-slate-600 transition-transform duration-200",
+      }, "(", faq.answer_en, ")")))), !isEditingFaq && /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        onClick: () => toggleFaq(idx),
+        "aria-expanded": isExpanded,
+        "aria-controls": `faq-answer-${idx}`,
+        "aria-label": isExpanded ? 'Collapse FAQ answer' : 'Expand FAQ answer',
+        className: "shrink-0 mt-2 w-8 h-8 inline-flex items-center justify-center rounded text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+      }, /*#__PURE__*/React.createElement(ChevronDown, {
+        size: 20,
+        "aria-hidden": "true",
+        className: "transition-transform duration-200",
         style: {
           transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
-        },
-        "aria-hidden": "true"
-      }, /*#__PURE__*/React.createElement(ChevronDown, {
-        size: 20
+        }
       }))));
     });
   })()));
