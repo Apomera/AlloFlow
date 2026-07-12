@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-07-12T14:05:08.840Z",
+  "generated": "2026-07-12T14:09:03.737Z",
   "count": 63,
   "total_keys_expected": 9307,
   "available": [
@@ -70,8 +70,8 @@
     {
       "slug": "dari",
       "display": "Dari",
-      "keys": 18442,
-      "bytes": 1917883,
+      "keys": 18607,
+      "bytes": 1948326,
       "updated": "2026-07-12"
     },
     {
@@ -84,8 +84,8 @@
     {
       "slug": "esperanto",
       "display": "Esperanto",
-      "keys": 18483,
-      "bytes": 1721690,
+      "keys": 18648,
+      "bytes": 1750485,
       "updated": "2026-07-12"
     },
     {
@@ -245,8 +245,8 @@
     {
       "slug": "latin",
       "display": "Latin",
-      "keys": 18439,
-      "bytes": 1710911,
+      "keys": 18604,
+      "bytes": 1739728,
       "updated": "2026-07-12"
     },
     {
@@ -294,8 +294,8 @@
     {
       "slug": "pashto",
       "display": "Pashto",
-      "keys": 18644,
-      "bytes": 1830113,
+      "keys": 18809,
+      "bytes": 1860738,
       "updated": "2026-07-12"
     },
     {
