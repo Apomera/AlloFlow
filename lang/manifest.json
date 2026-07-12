@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-07-12T02:22:12.802Z",
+  "generated": "2026-07-12T02:31:17.064Z",
   "count": 63,
   "total_keys_expected": 9307,
   "available": [
@@ -119,8 +119,8 @@
     {
       "slug": "greek",
       "display": "Greek",
-      "keys": 18428,
-      "bytes": 2532503,
+      "keys": 18593,
+      "bytes": 2564773,
       "updated": "2026-07-12"
     },
     {
@@ -161,9 +161,9 @@
     {
       "slug": "hmong",
       "display": "Hmong",
-      "keys": 18423,
-      "bytes": 1750272,
-      "updated": "2026-07-11"
+      "keys": 18632,
+      "bytes": 1766186,
+      "updated": "2026-07-12"
     },
     {
       "slug": "igbo",
@@ -175,8 +175,8 @@
     {
       "slug": "indonesian",
       "display": "Indonesian",
-      "keys": 18637,
-      "bytes": 1639740,
+      "keys": 18802,
+      "bytes": 1668582,
       "updated": "2026-07-12"
     },
     {
@@ -238,9 +238,9 @@
     {
       "slug": "lao",
       "display": "Lao",
-      "keys": 18107,
-      "bytes": 2147931,
-      "updated": "2026-07-11"
+      "keys": 18316,
+      "bytes": 2174630,
+      "updated": "2026-07-12"
     },
     {
       "slug": "latin",
@@ -371,8 +371,8 @@
     {
       "slug": "swahili",
       "display": "Swahili",
-      "keys": 18422,
-      "bytes": 1564112,
+      "keys": 18587,
+      "bytes": 1592951,
       "updated": "2026-07-12"
     },
     {
@@ -413,15 +413,15 @@
     {
       "slug": "turkish",
       "display": "Turkish",
-      "keys": 18274,
-      "bytes": 1841683,
+      "keys": 18439,
+      "bytes": 1870145,
       "updated": "2026-07-12"
     },
     {
       "slug": "ukrainian",
       "display": "Ukrainian",
-      "keys": 18631,
-      "bytes": 2136667,
+      "keys": 18796,
+      "bytes": 2168730,
       "updated": "2026-07-12"
     },
     {
@@ -434,8 +434,8 @@
     {
       "slug": "vietnamese",
       "display": "Vietnamese",
-      "keys": 18425,
-      "bytes": 2034498,
+      "keys": 18590,
+      "bytes": 2063905,
       "updated": "2026-07-12"
     },
     {
