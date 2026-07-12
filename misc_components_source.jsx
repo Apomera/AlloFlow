@@ -570,7 +570,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                 <span className="text-sm font-bold">🔤</span>
                                             </button>
                                         )}
-                                        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); }}} className="relative group/img" onClick={(e) => e.stopPropagation()}>
+                                        <div className="relative group/img" onClick={(e) => e.stopPropagation()}>
                                             {word.image && !word.imageFailed ? (
                                                 <div className="relative">
                                                     <img loading="lazy"
@@ -583,7 +583,6 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         }}
                                                     />
                                                     <button
-                                                        aria-label={t('common.regenerate_image')}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
@@ -591,7 +590,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         disabled={generatingImageIndex === idx}
                                                         aria-busy={generatingImageIndex === idx}
                                                         aria-label={generatingImageIndex === idx ? (t('word_sounds.generating_image_aria') || 'Generating image') : t('common.regenerate_image')}
-                                                        className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity border border-indigo-200"
+                                                        className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover/img:opacity-100 group-focus-within/img:opacity-100 focus:opacity-100 transition-opacity border border-indigo-200"
                                                         data-help-key="word_sounds_review_image_gen" title={t('common.regenerate_image')}
                                                     >
                                                         {generatingImageIndex === idx ? <RefreshCw size={10} className="animate-spin text-indigo-500" aria-hidden="true"/> : <RefreshCw size={10} className="text-indigo-500" aria-hidden="true"/>}
@@ -624,7 +623,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                         <span className="text-xl font-bold text-slate-800">{word.targetWord || word.word}</span>
                                         <select aria-label={t('common.selection')}
                                             value={word.difficulty || 'medium'}
-                                            role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}
+                                            onClick={(e) => e.stopPropagation()}
                                             onChange={(e) => onUpdateWord(idx, { ...word, difficulty: e.target.value })}
                                             className={`text-xs font-bold px-2 py-1 rounded-full border cursor-pointer appearance-none ${
                                                 word.difficulty === 'easy' ? 'bg-green-100 text-green-700 border-green-300' :
@@ -677,6 +676,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     <div
                                                         key={i}
                                                         className={`group relative cursor-grab active:cursor-grabbing ${dragOverIndex === i ? 'ring-2 ring-pink-400' : ''}`}
+                                                        role="group" aria-label={`${typeof p === 'string' ? p : 'Phoneme'}, position ${i + 1} of ${(word.phonemes || []).length}`}
                                                         draggable
                                                         onDragStart={(e) => handleDragStart(e, p, 'word', idx, i)}
                                                         onDragOver={(e) => handleDragOver(e, i)}
@@ -686,10 +686,12 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                         <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-violet-100 text-violet-700 font-bold rounded-lg border-2 border-violet-200" title={typeof p === "string" && typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[p] ? `${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) — ${PHONEME_GUIDE[p].examples}` : (typeof p === "string" ? p : "")}>
                                                             <span className="text-slate-600 text-xs mr-1">⠿</span>
                                                             {p}
+                                                            <button type="button" onClick={() => handlePhonemeReorder(idx, i, i - 1)} disabled={i === 0} aria-label={`Move ${typeof p === 'string' ? p : 'phoneme'} earlier`} className="w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40" title="Move earlier">â—€</button>
+                                                            <button type="button" onClick={() => handlePhonemeReorder(idx, i, i + 1)} disabled={i === (word.phonemes || []).length - 1} aria-label={`Move ${typeof p === 'string' ? p : 'phoneme'} later`} className="w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40" title="Move later">â–¶</button>
                                                             <button
                                                                 aria-label={t('common.remove')}
                                                                 onClick={() => removePhoneme(idx, i)}
-                                                                className="w-4 h-4 flex items-center justify-center rounded-full bg-red-100 text-red-500 hover:bg-red-200 text-xs opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
+                                                                className="w-6 h-6 flex items-center justify-center rounded-full bg-red-100 text-red-500 hover:bg-red-200 text-xs opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 transition-opacity"
                                                                 title={t('common.remove')}
                                                             >×</button>
                                                         </span>
