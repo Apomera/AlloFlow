@@ -49,6 +49,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             students: asRecord(data.students),
             displayNames: asRecord(data.displayNames),
             progressHistory: asRecord(data.progressHistory),
+            sessionHistory: Array.isArray(data.sessionHistory) ? data.sessionHistory.slice(-30) : [],
             ...(data.submissionKey?.publicJwk ? { submissionKey: data.submissionKey } : {})
           });
           if (window.AlloFlowUX) window.AlloFlowUX.toast('Roster imported, including class settings and submission setup.', 'success');
@@ -193,7 +194,11 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       const ns = { ...prev.students }; delete ns[name];
       const nd = { ...(prev.displayNames || {}) }; delete nd[name];
       const np = { ...(prev.progressHistory || {}) }; delete np[name];
-      return { ...prev, students: ns, displayNames: nd, progressHistory: np };
+      const nh = (Array.isArray(prev.sessionHistory) ? prev.sessionHistory : []).map(session => {
+        const participants = { ...(session.participants || {}) }; delete participants[name];
+        return { ...session, participants, absentCodenames: (session.absentCodenames || []).filter(codename => codename !== name) };
+      });
+      return { ...prev, students: ns, displayNames: nd, progressHistory: np, sessionHistory: nh };
     });
   };
   const handleMoveStudent = (name, toGroup) => {
@@ -492,7 +497,29 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               </div>
             </div>
           )}
-          {rosterKey && (
+          {Array.isArray(rosterKey?.sessionHistory) && rosterKey.sessionHistory.length > 0 && (
+            <details className="rounded-xl border border-cyan-200 bg-cyan-50/60 p-3">
+              <summary className="cursor-pointer font-bold text-sm text-cyan-900">Saved session history ({rosterKey.sessionHistory.length})</summary>
+              <div className="mt-3 space-y-2">
+                {[...rosterKey.sessionHistory].reverse().slice(0, 10).map(session => (
+                  <details key={session.id} className="rounded-lg border border-cyan-100 bg-white p-2">
+                    <summary className="cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap gap-x-2">
+                      <span>{session.endedAt ? new Date(session.endedAt).toLocaleString() : 'Saved session'}</span>
+                      <span className="text-cyan-700">{Object.keys(session.participants || {}).length} present</span>
+                      <span className="text-slate-500">{session.mode === 'mailbox' ? 'Mailbox' : 'Firebase'}</span>
+                    </summary>
+                    <div className="mt-2 text-xs text-slate-600 space-y-1">
+                      {typeof session.durationMinutes === 'number' && <p>Duration: {session.durationMinutes} min</p>}
+                      {session.teacherNote && <p><span className="font-bold">Teacher note:</span> {session.teacherNote}</p>}
+                      {Object.entries(session.participants || {}).map(([codename, record]) => <p key={codename}><span className="font-bold">{codename}</span>: {record.responseCount || 0} live response{record.responseCount === 1 ? '' : 's'}{record.groupId ? ` · group ${record.groupId}` : ''}</p>)}
+                      {(session.unmatchedCodenames || []).length > 0 && <p className="text-rose-700"><span className="font-bold">Unmatched:</span> {session.unmatchedCodenames.join(', ')}</p>}
+                    </div>
+                  </details>
+                ))}
+                {rosterKey.sessionHistory.length > 10 && <p className="text-[11px] text-cyan-800">Showing the 10 most recent of {rosterKey.sessionHistory.length}. Export JSON for the complete retained history.</p>}
+              </div>
+            </details>
+          )}          {rosterKey && (
             <div className="flex gap-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600 font-medium">
               <span>{groupIds.length} group{groupIds.length !== 1 ? 's' : ''}</span>
               <span>{Object.keys(students).length} student{Object.keys(students).length !== 1 ? 's' : ''}</span>

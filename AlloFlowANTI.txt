@@ -4917,6 +4917,50 @@ const countWords = (text) => {
       .replace(/\*/g, '');
   return clean.trim().split(/\s+/).filter(w => w.length > 0).length;
 };
+const normalizeRosterSessionCodename = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, endedAt = new Date().toISOString() }) => {
+    const rosterStudents = rosterKey?.students && typeof rosterKey.students === 'object' ? rosterKey.students : {};
+    const rosterByNormalizedName = {};
+    Object.keys(rosterStudents).forEach(name => {
+        const normalized = normalizeRosterSessionCodename(name);
+        if (normalized && !rosterByNormalizedName[normalized]) rosterByNormalizedName[normalized] = name;
+    });
+    const liveRoster = sessionData?.roster && typeof sessionData.roster === 'object' ? sessionData.roster : {};
+    const allResponses = sessionData?.quizState?.allResponses && typeof sessionData.quizState.allResponses === 'object' ? sessionData.quizState.allResponses : {};
+    const participants = {};
+    const unmatchedCodenames = [];
+    Object.entries(liveRoster).forEach(([uid, liveStudent]) => {
+        const rawName = String(liveStudent?.name || '').trim();
+        const rosterName = rosterByNormalizedName[normalizeRosterSessionCodename(rawName)];
+        if (!rosterName) {
+            if (rawName && !unmatchedCodenames.some(name => normalizeRosterSessionCodename(name) === normalizeRosterSessionCodename(rawName))) unmatchedCodenames.push(rawName);
+            return;
+        }
+        const responseMap = allResponses[uid] && typeof allResponses[uid] === 'object' ? allResponses[uid] : {};
+        participants[rosterName] = { groupId: liveStudent?.groupId || rosterStudents[rosterName] || null, joinedAt: typeof liveStudent?.joinedAt === 'string' ? liveStudent.joinedAt : null, responseCount: Object.keys(responseMap).length, resourcesOpened: liveStudent?.viewingResourceId ? 1 : 0 };
+    });
+    const createdAt = typeof sessionData?.createdAt === 'string' ? sessionData.createdAt : null;
+    const startMs = createdAt ? Date.parse(createdAt) : NaN;
+    const endMs = Date.parse(endedAt);
+    const durationMinutes = Number.isFinite(startMs) && Number.isFinite(endMs) && endMs >= startMs ? Math.max(0, Math.round((endMs - startMs) / 60000)) : null;
+    const resourceTitles = Array.isArray(sessionData?.resources) ? Array.from(new Set(sessionData.resources.map(item => String(item?.title || '').trim()).filter(Boolean))).slice(0, 20) : [];
+    const absentCodenames = Object.keys(rosterStudents).filter(name => !participants[name]);
+    return { schemaVersion: 1, id: String(sessionCode || ('session-' + endMs)), startedAt: createdAt, endedAt, durationMinutes, mode: mode === 'mailbox' ? 'mailbox' : 'firebase', resourceTitles, participants, unmatchedCodenames, absentCodenames };
+};
+const saveRosterSessionSummary = (rosterKey, summary, note = '', retentionLimit = 30) => {
+    if (!rosterKey || !summary?.id) return rosterKey;
+    const cleanNote = String(note || '').trim().slice(0, 500);
+    const savedSummary = cleanNote ? { ...summary, teacherNote: cleanNote } : summary;
+    const existing = Array.isArray(rosterKey.sessionHistory) ? rosterKey.sessionHistory : [];
+    const sessionHistory = [...existing.filter(item => item?.id !== savedSummary.id), savedSummary].slice(-Math.max(1, retentionLimit));
+    const progressHistory = { ...(rosterKey.progressHistory || {}) };
+    Object.entries(savedSummary.participants || {}).forEach(([codename, participant]) => {
+        const previous = Array.isArray(progressHistory[codename]) ? progressHistory[codename] : [];
+        const entry = { sessionId: savedSummary.id, timestamp: savedSummary.endedAt, groupId: participant.groupId || null, responseCount: participant.responseCount || 0, resourcesOpened: participant.resourcesOpened || 0 };
+        progressHistory[codename] = [...previous.filter(item => item?.sessionId !== savedSummary.id), entry].slice(-Math.max(1, retentionLimit));
+    });
+    return { ...rosterKey, sessionHistory, progressHistory };
+};
 const generateSessionCode = () => {
   const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
   // 5 chars over the 31-symbol confusable-stripped alphabet ≈ 28.6M codes
@@ -9780,6 +9824,24 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isStudentBingoGame, setIsStudentBingoGame] = useState(false);
   const [isWordScrambleGame, setIsWordScrambleGame] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState(null);
+  const [endSessionPreview, setEndSessionPreview] = useState(null);
+  const [endSessionNote, setEndSessionNote] = useState('');
+  const endSessionPreviewRef = useRef(null);
+  useEffect(() => {
+      const dialog = endSessionPreviewRef.current;
+      if (!endSessionPreview || !dialog) return undefined;
+      const previousFocus = document.activeElement;
+      dialog.focus();
+      const onKeyDown = (event) => {
+          if (event.key === 'Escape' && !endSessionPreview.busy) {
+              event.preventDefault();
+              setEndSessionPreview(null);
+              setEndSessionNote('');
+          }
+      };
+      dialog.addEventListener('keydown', onKeyDown);
+      return () => { dialog.removeEventListener('keydown', onKeyDown); if (previousFocus?.focus) previousFocus.focus(); };
+  }, [endSessionPreview]);
   const [promptDialog, setPromptDialog] = useState(null);
   const [bingoSettings, setBingoSettings] = useState({
       gridSize: 5,
@@ -14291,6 +14353,39 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           setSessionData(null);
       }
   }, [mbLive, mbConfig, _mbCloseTeacherPeers, activeSessionCode, activeSessionAppId]);
+  const requestEndLiveSession = () => {
+      if (!activeSessionCode) return;
+      const mergedSessionData = sessionData ? { ...sessionData, quizState: { ...(sessionData.quizState || {}), allResponses: quizMergedAllResponses || {} } } : { roster: {}, quizState: { allResponses: quizMergedAllResponses || {} } };
+      const summary = buildRosterSessionSummary({ sessionCode: activeSessionCode, sessionData: mergedSessionData, rosterKey, mode: mbLive ? 'mailbox' : 'firebase' });
+      setEndSessionNote('');
+      setEndSessionPreview({ summary, busy: false });
+  };
+  const completeLiveSessionEnd = async (saveSummary) => {
+      if (!activeSessionCode || endSessionPreview?.busy) return;
+      const endingCode = activeSessionCode;
+      const endingAppId = activeSessionAppId || appId;
+      const summary = endSessionPreview?.summary;
+      setEndSessionPreview(prev => prev ? { ...prev, busy: true } : prev);
+      if (saveSummary && rosterKey && summary) setRosterKey(prev => saveRosterSessionSummary(prev, summary, endSessionNote, 30));
+      try {
+          if (mbLive) await endMailboxLiveSession();
+          else {
+              const sessionRef = doc(db, 'artifacts', endingAppId, 'public', 'data', 'sessions', endingCode);
+              await updateDoc(sessionRef, { isActive: false, quizState: { isActive: false }, status: 'ended' });
+              setTimeout(() => { deleteDoc(sessionRef).catch(() => {}); }, 8000);
+              setActiveSessionCode(null);
+              setSessionData(null);
+          }
+          setShowSessionModal(false);
+          setEndSessionPreview(null);
+          setEndSessionNote('');
+          addToast(saveSummary && rosterKey ? 'Session ended and roster summary saved.' : 'Session ended without saving a roster summary.', 'success');
+      } catch (e) {
+          warnLog('Error ending live session:', e);
+          setEndSessionPreview(prev => prev ? { ...prev, busy: false } : prev);
+          addToast(t('session.error_end_session') || 'Failed to end session.', 'error');
+      }
+  };
   // One END regardless of which button ended it: if the standard session
   // pathway exits (SessionModal "End Session", or a server-side expiry the
   // bridge pump surfaced) while a mailbox session is still marked live,
@@ -14867,7 +14962,39 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // ensurePdfBase64 instead of prompting to re-attach the file. Cleared by startNewPdfAudit (new doc).
   const lastPdfBytesRef = useRef(null);
   useEffect(() => { if (pendingPdfBase64) lastPdfBytesRef.current = pendingPdfBase64; }, [pendingPdfBase64]);
-  const [pdfFixResult, setPdfFixResult] = useState(null);
+  // Keep the mutable ref beside the raw React state so every write can be checked
+  // synchronously. The public setter below is intentionally stable: HTML edits
+  // cannot spend a render displaying verification evidence for older content.
+  const pdfFixResultRef = useRef(null);
+  const pdfHtmlRevisionRef = useRef(0);
+  // A project file can finish reading/rehydrating after a newer selection.
+  // Only the latest selection may publish remediation state or notifications.
+  const pdfProjectLoadEpochRef = useRef(0);
+  const verificationBindingHelpersRef = useRef({ enforce: (value) => value, isLive: () => false });
+  const [pdfFixResult, _setPdfFixResultRaw] = useState(null);
+  const setPdfFixResult = React.useCallback((nextValue) => {
+    const previous = pdfFixResultRef.current;
+    const candidate = typeof nextValue === 'function' ? nextValue(previous) : nextValue;
+    const previousHtml = previous && typeof previous.accessibleHtml === 'string' ? previous.accessibleHtml : null;
+    const candidateHtml = candidate && typeof candidate.accessibleHtml === 'string' ? candidate.accessibleHtml : null;
+    if (candidateHtml !== previousHtml) pdfHtmlRevisionRef.current += 1;
+    // Runtime proof is deliberately non-enumerable. Preserve it only across
+    // metadata-only spreads whose exact HTML and binding record are unchanged.
+    if (candidate && previous && candidate !== previous
+        && candidate.accessibleHtml === previous.accessibleHtml
+        && verificationBindingHelpersRef.current.isLive(previous, previous.accessibleHtml)
+        && candidate.verificationHtmlBinding && previous.verificationHtmlBinding
+        && candidate.verificationHtmlBinding.version === previous.verificationHtmlBinding.version
+        && candidate.verificationHtmlBinding.algorithm === previous.verificationHtmlBinding.algorithm
+        && candidate.verificationHtmlBinding.digest === previous.verificationHtmlBinding.digest
+        && candidate.verificationHtmlBinding.utf8ByteLength === previous.verificationHtmlBinding.utf8ByteLength) {
+      attachVerificationHtmlProof(candidate, previous.accessibleHtml);
+    }
+    const enforced = verificationBindingHelpersRef.current.enforce(candidate, 'verification-html-binding-missing-or-stale');
+    pdfFixResultRef.current = enforced;
+    _setPdfFixResultRaw(enforced);
+    return enforced;
+  }, []);
   const [pdfFixLoading, setPdfFixLoading] = useState(false);
   // Three-way "save before closing?" dialog. Fires only when there is work to lose.
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
@@ -14950,15 +15077,20 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     } catch (_) { /* quota or SecurityError — non-fatal */ }
   }, [pdfFixResult, pendingPdfFile]);
   useEffect(() => {
-    try {
-      const latestKey = safeGetItem('allo.lastPdfAudit.latest');
-      const raw = (latestKey && safeGetItem(latestKey)) || safeGetItem('allo.lastPdfAudit');
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
-      if (parsed && parsed.pdfFixResult && parsed.pdfFixResult.sourceText) {
-        setPdfFixResult(parsed.pdfFixResult);
-      }
-    } catch (_) { /* corrupt entry — ignore */ }
+    let cancelled = false;
+    (async () => {
+      try {
+        const latestKey = safeGetItem('allo.lastPdfAudit.latest');
+        const raw = (latestKey && safeGetItem(latestKey)) || safeGetItem('allo.lastPdfAudit');
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.pdfFixResult && parsed.pdfFixResult.sourceText) {
+          const restored = await rehydrateVerificationHtmlBinding(parsed.pdfFixResult);
+          if (!cancelled) setPdfFixResult(restored);
+        }
+      } catch (_) { /* corrupt entry - ignore */ }
+    })();
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const toggleDiffChunk = React.useCallback((id) => {
@@ -15598,7 +15730,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('alloflow:pipeline-warn', onActivity);
     return () => { if (id) clearTimeout(id); if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('alloflow:pipeline-warn', onActivity); };
   }, [pdfAutoContinueRunning, pdfFixStep]);
-  const pdfFixResultRef = useRef(null);
+
   // Re-entry stash (2026-06-16): when the remediation modal closes, the result
   // survives in pdfFixResult but the modal's render gate (pdfAuditResult) is nulled,
   // stranding the work with no in-session door back. Capture the audit object on close
@@ -21419,6 +21551,301 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // fallback resolves immediately so an older pipeline module changes nothing.
   const waitForGeminiCalm = (_docPipeline && _docPipeline.waitForGeminiCalm) ? _docPipeline.waitForGeminiCalm : async () => ({ calm: true, waitedMs: 0 });
   const runEqualAccessAudit = _docPipeline ? _docPipeline.runEqualAccessAudit : async () => null;
+  // Canonical verification-state adapter. Newer pipeline modules own this policy; the
+  // fallback keeps an older/cached module honest by treating any unavailable or
+  // indeterminate engine as review-required rather than silently verified.
+  const deriveVerificationState = (input) => {
+    if (_docPipeline && typeof _docPipeline.deriveVerificationState === 'function') {
+      return _docPipeline.deriveVerificationState(input || {});
+    }
+    const _v = input || {};
+    const _ai = _v.ai || _v.verificationAudit || null;
+    const _axe = _v.axe || _v.axeAudit || null;
+    const _ea = _v.equalAccess || _v.secondEngineAudit || null;
+    const _reasons = [];
+    const _finite = (value) => typeof value === 'number' && Number.isFinite(value);
+    const _count = (value) => _finite(value) ? Math.max(0, Math.floor(value)) : null;
+
+    let _aiStatus = 'unavailable';
+    if (!_finite(_ai && _ai.score)) {
+      _reasons.push('ai-unavailable');
+    } else {
+      const _aiPartial = !!(_v.aiIncomplete || _v.aiVerificationIncomplete || _ai._partialAudit || _ai.partial || _ai._scoreDegraded || _ai.scoreDegraded || _ai.synthesized);
+      if (_aiPartial) {
+        _aiStatus = 'partial';
+        if (_v.aiIncomplete || _v.aiVerificationIncomplete) _reasons.push('ai-verification-incomplete');
+        if (_ai._partialAudit || _ai.partial) _reasons.push('ai-partial-audit');
+        if (_ai._scoreDegraded || _ai.scoreDegraded) _reasons.push('ai-score-degraded');
+        if (_ai.synthesized) _reasons.push('ai-synthesized');
+      } else {
+        _aiStatus = 'complete';
+      }
+    }
+
+    let _axeStatus = 'unavailable';
+    let _axeReviewCount = 0;
+    if (!_finite(_axe && _axe.score)) {
+      _reasons.push('axe-unavailable');
+    } else {
+      const _axeIncomplete = _count(_axe.totalIncomplete);
+      if (_axeIncomplete === null) {
+        _axeStatus = 'partial';
+        _reasons.push('axe-review-count-unknown');
+      } else if (_axeIncomplete > 0) {
+        _axeStatus = 'complete-with-review';
+        _axeReviewCount = _axeIncomplete;
+        _reasons.push('axe-incomplete:' + _axeIncomplete);
+      } else {
+        _axeStatus = 'complete';
+      }
+    }
+
+    let _eaStatus = 'unavailable';
+    let _eaReviewCount = 0;
+    if (!_finite(_ea && _ea.score)) {
+      _reasons.push('equal-access-unavailable');
+    } else {
+      const _eaPotential = _count(_ea.potentialViolations);
+      const _eaManual = _count(_ea.manualViolations);
+      const _eaAggregate = _count(_ea.reviewFindingCount);
+      if ((_eaPotential === null || _eaManual === null) && _eaAggregate === null) {
+        _eaStatus = 'partial';
+        _reasons.push('equal-access-review-count-unknown');
+      } else {
+        _eaReviewCount = _eaAggregate !== null ? _eaAggregate : ((_eaPotential || 0) + (_eaManual || 0));
+        if (_eaReviewCount > 0) {
+          _eaStatus = 'complete-with-review';
+          if ((_eaPotential || 0) > 0) _reasons.push('equal-access-potential:' + _eaPotential);
+          if ((_eaManual || 0) > 0) _reasons.push('equal-access-manual:' + _eaManual);
+          if ((_eaPotential === null || _eaManual === null) && _eaAggregate > 0) _reasons.push('equal-access-review-findings:' + _eaAggregate);
+        } else {
+          _eaStatus = 'complete';
+        }
+      }
+    }
+
+    const _extraReasons = Array.isArray(_v.extraReasons)
+      ? _v.extraReasons
+      : (_v.extraReasons == null || _v.extraReasons === '' ? [] : [_v.extraReasons]);
+    _extraReasons.forEach((reason) => {
+      const value = String(reason == null ? '' : reason).trim();
+      if (value) _reasons.push(value);
+    });
+    if (_v.languageReviewRequired) _reasons.push(String(_v.languageReviewReason || 'document-language-needs-review'));
+
+    const _reviewCount = _axeReviewCount + _eaReviewCount
+      + _extraReasons.filter((reason) => String(reason == null ? '' : reason).trim()).length
+      + (_v.languageReviewRequired ? 1 : 0);
+    const _allComplete = _aiStatus === 'complete' && _axeStatus === 'complete' && _eaStatus === 'complete';
+    const _allUnavailable = _aiStatus === 'unavailable' && _axeStatus === 'unavailable' && _eaStatus === 'unavailable';
+    const _hasReviewEvidence = _reviewCount > 0 || _aiStatus === 'complete-with-review' || _axeStatus === 'complete-with-review' || _eaStatus === 'complete-with-review';
+    const _verificationState = _hasReviewEvidence ? 'review-required' : (_allComplete ? 'complete' : (_allUnavailable ? 'unavailable' : 'partial'));
+    const _coverage = {
+      standard: 'WCAG 2.2 AA',
+      ai: _aiStatus,
+      axe: _axeStatus,
+      equalAccess: _eaStatus,
+      pdfUaSelfCheck: _v.pdfUaSelfCheck || 'not-run',
+    };
+    return {
+      verificationCoverage: _coverage,
+      coverage: _coverage,
+      verificationState: _verificationState,
+      afterScoreVerified: _verificationState === 'complete',
+      requiresManualReview: _verificationState !== 'complete',
+      reviewCount: _reviewCount,
+      reasons: _reasons,
+    };
+  };
+  // Bind verification evidence to the exact HTML bytes it audited. The shared
+  // pipeline owns the contract; these fail-closed fallbacks keep cached/older
+  // modules honest until the current module finishes loading.
+  async function createVerificationHtmlBinding(html) {
+    if (_docPipeline && typeof _docPipeline.createVerificationHtmlBinding === 'function') {
+      return _docPipeline.createVerificationHtmlBinding(html);
+    }
+    try {
+      const value = String(html == null ? '' : html);
+      const bytes = new TextEncoder().encode(value);
+      const subtle = typeof crypto !== 'undefined' && crypto && crypto.subtle;
+      if (!subtle || typeof subtle.digest !== 'function') return null;
+      const digestBuffer = await subtle.digest('SHA-256', bytes);
+      const digest = Array.from(new Uint8Array(digestBuffer)).map((byte) => byte.toString(16).padStart(2, '0')).join('');
+      if (!/^[a-f0-9]{64}$/.test(digest)) return null;
+      return { version: 1, algorithm: 'SHA-256', digest, utf8ByteLength: bytes.byteLength };
+    } catch (_) {
+      return null;
+    }
+  }
+  async function verifyVerificationHtmlBinding(html, binding) {
+    if (_docPipeline && typeof _docPipeline.verifyVerificationHtmlBinding === 'function') {
+      return _docPipeline.verifyVerificationHtmlBinding(html, binding);
+    }
+    if (!binding || binding.version !== 1 || binding.algorithm !== 'SHA-256'
+        || !/^[a-f0-9]{64}$/.test(String(binding.digest || ''))
+        || !Number.isInteger(binding.utf8ByteLength) || binding.utf8ByteLength < 0) return false;
+    const fresh = await createVerificationHtmlBinding(html);
+    return !!(fresh
+      && fresh.utf8ByteLength === binding.utf8ByteLength
+      && fresh.digest === binding.digest);
+  }
+  function attachVerificationHtmlProof(result, html) {
+    const binding = result && result.verificationHtmlBinding;
+    if (!result || typeof result !== 'object' || typeof html !== 'string'
+        || !binding || binding.version !== 1 || binding.algorithm !== 'SHA-256'
+        || !/^[a-f0-9]{64}$/.test(String(binding.digest || ''))
+        || !Number.isInteger(binding.utf8ByteLength) || binding.utf8ByteLength < 0) return false;
+    try {
+      Object.defineProperty(result, '_verificationHtmlSnapshot', {
+        value: html, writable: true, configurable: true, enumerable: false,
+      });
+      Object.defineProperty(result, '_verificationHtmlBindingDigest', {
+        value: binding.digest, writable: true, configurable: true, enumerable: false,
+      });
+      return true;
+    } catch (_) {
+      try { delete result._verificationHtmlSnapshot; } catch (_) {}
+      try { delete result._verificationHtmlBindingDigest; } catch (_) {}
+      return false;
+    }
+  }
+  function isLiveVerificationHtmlBound(result, optionalHtml) {
+    if (_docPipeline && typeof _docPipeline.isLiveVerificationHtmlBound === 'function') {
+      return _docPipeline.isLiveVerificationHtmlBound(result, optionalHtml);
+    }
+    if (!result || !result.verificationHtmlBinding) return false;
+    const html = optionalHtml == null ? String(result.accessibleHtml == null ? '' : result.accessibleHtml) : String(optionalHtml);
+    const binding = result.verificationHtmlBinding;
+    let descriptor = null;
+    let digestDescriptor = null;
+    let utf8ByteLength = null;
+    try {
+      descriptor = Object.getOwnPropertyDescriptor(result, '_verificationHtmlSnapshot');
+      digestDescriptor = Object.getOwnPropertyDescriptor(result, '_verificationHtmlBindingDigest');
+      utf8ByteLength = typeof TextEncoder !== 'undefined' ? new TextEncoder().encode(html).byteLength : null;
+    } catch (_) {}
+    return binding.version === 1
+      && binding.algorithm === 'SHA-256'
+      && /^[a-f0-9]{64}$/.test(String(binding.digest || ''))
+      && Number.isInteger(binding.utf8ByteLength)
+      && binding.utf8ByteLength === utf8ByteLength
+      && descriptor
+      && descriptor.enumerable === false
+      && descriptor.value === html
+      && digestDescriptor
+      && digestDescriptor.enumerable === false
+      && digestDescriptor.value === binding.digest;
+  }
+  function applyVerificationHtmlBinding(verification, isBound, reason) {
+    if (_docPipeline && typeof _docPipeline.applyVerificationHtmlBinding === 'function') {
+      return _docPipeline.applyVerificationHtmlBinding(verification, isBound, reason);
+    }
+    if (!verification || isBound) return verification;
+    const next = Object.assign({}, verification);
+    const staleReason = String(reason || 'verification-html-binding-missing-or-stale');
+    const sourceReasons = Array.isArray(next.reasons)
+      ? next.reasons
+      : (Array.isArray(next.verificationReasons) ? next.verificationReasons : []);
+    const reasons = Array.from(new Set(sourceReasons.concat(staleReason).filter(Boolean)));
+    const sourceReviewCount = Number.isFinite(next.reviewCount)
+      ? next.reviewCount
+      : (Number.isFinite(next.verificationReviewCount) ? next.verificationReviewCount : 0);
+    if (next.verificationState === 'complete') next.verificationState = 'partial';
+    next.afterScoreVerified = false;
+    next.requiresManualReview = true;
+    next.reviewCount = Math.max(sourceReviewCount, reasons.length);
+    next.reasons = reasons;
+    if ('verificationReasons' in next || !('coverage' in next || 'reasons' in verification)) {
+      next.verificationReviewCount = next.reviewCount;
+      next.verificationReasons = reasons;
+    }
+    const coverage = next.coverage || next.verificationCoverage;
+    if (coverage && typeof coverage === 'object') {
+      const adjustedCoverage = Object.assign({}, coverage, { pdfUaSelfCheck: 'not-run' });
+      if (next.coverage) next.coverage = adjustedCoverage;
+      if (next.verificationCoverage) next.verificationCoverage = adjustedCoverage;
+    }
+    return next;
+  }
+  function enforceVerificationHtmlBinding(result, optionalReason) {
+    // Null resets remain null. Objects carrying verification claims must have
+    // live proof even when their HTML is empty or missing.
+    if (!result || typeof result !== 'object') return result;
+    const hasVerificationEvidence = !!(result.verificationHtmlBinding
+      || result.verificationState
+      || result.afterScoreVerified
+      || result.verificationAudit
+      || result.axeAudit
+      || result.secondEngineAudit);
+    if (!hasVerificationEvidence) return result;
+    if (_docPipeline && typeof _docPipeline.enforceVerificationHtmlBinding === 'function') {
+      const delegated = _docPipeline.enforceVerificationHtmlBinding(result, optionalReason);
+      if (delegated && !isLiveVerificationHtmlBound(delegated, delegated.accessibleHtml)) {
+        try { delete delegated._verificationHtmlSnapshot; } catch (_) {}
+        try { delete delegated._verificationHtmlBindingDigest; } catch (_) {}
+      }
+      return delegated;
+    }
+    if (isLiveVerificationHtmlBound(result, result.accessibleHtml)) return result;
+    const downgraded = applyVerificationHtmlBinding(result, false, optionalReason || 'verification-html-binding-missing-or-stale');
+    try { delete downgraded._verificationHtmlSnapshot; } catch (_) {}
+    try { delete downgraded._verificationHtmlBindingDigest; } catch (_) {}
+    const priorReason = downgraded.expertReviewReason;
+    downgraded.needsExpertReview = true;
+    downgraded.expertReviewReason = (priorReason === 'content-fidelity' || priorReason === 'both') ? 'both' : 'accessibility';
+    downgraded._verificationExpertReview = true;
+    return downgraded;
+  }
+  verificationBindingHelpersRef.current.enforce = enforceVerificationHtmlBinding;
+  verificationBindingHelpersRef.current.isLive = isLiveVerificationHtmlBound;
+  async function rehydrateVerificationHtmlBinding(saved) {
+    if (!saved || typeof saved !== 'object') return saved;
+    if (_docPipeline && typeof _docPipeline.rehydrateVerificationHtmlBinding === 'function') {
+      return _docPipeline.rehydrateVerificationHtmlBinding(saved);
+    }
+    const restored = Object.assign({}, saved);
+    // Never trust serialized runtime proof. It becomes live only after the
+    // persisted SHA-256 binding independently matches accessibleHtml.
+    try { delete restored._verificationHtmlSnapshot; } catch (_) {}
+    try { delete restored._verificationHtmlBindingDigest; } catch (_) {}
+    const valid = await verifyVerificationHtmlBinding(restored.accessibleHtml, restored.verificationHtmlBinding);
+    if (!valid) return enforceVerificationHtmlBinding(restored, 'verification-html-binding-missing-or-stale');
+    if (!attachVerificationHtmlProof(restored, String(restored.accessibleHtml == null ? '' : restored.accessibleHtml))) {
+      return enforceVerificationHtmlBinding(restored, 'verification-html-binding-missing-or-stale');
+    }
+    return restored;
+  }
+  function _autosaveHtmlFingerprint(html) {
+    const value = String(html == null ? '' : html);
+    let first = 0x811c9dc5;
+    let second = 0x9e3779b9;
+    for (let index = 0; index < value.length; index++) {
+      const code = value.charCodeAt(index);
+      first = Math.imul(first ^ code, 0x01000193) >>> 0;
+      second = Math.imul(second ^ (code + index), 0x85ebca6b) >>> 0;
+    }
+    return value.length + ':' + first.toString(16).padStart(8, '0') + second.toString(16).padStart(8, '0');
+  }  const formatVerificationReason = (reason) => {
+    const value = String(reason == null ? '' : reason).trim();
+    let match;
+    if (!value) return '';
+    if (value === 'ai-unavailable') return 'AI semantic verification was unavailable.';
+    if (value === 'ai-verification-incomplete' || value === 'ai-partial-audit' || value === 'ai-score-degraded' || value === 'ai-synthesized') return 'AI semantic verification was incomplete.';
+    if (value === 'axe-unavailable') return 'axe-core verification was unavailable.';
+    if (value === 'axe-review-count-unknown') return 'axe-core returned findings with an unknown review count.';
+    match = value.match(/^axe-incomplete:(\d+)$/);
+    if (match) return match[1] + ' axe-core rule' + (match[1] === '1' ? '' : 's') + ' need manual review.';
+    if (value === 'equal-access-unavailable') return 'IBM Equal Access verification was unavailable.';
+    if (value === 'equal-access-review-count-unknown') return 'IBM Equal Access returned findings with an unknown review count.';
+    match = value.match(/^equal-access-(?:potential|manual|review-findings):(\d+)$/);
+    if (match) return match[1] + ' IBM Equal Access item' + (match[1] === '1' ? '' : 's') + ' need manual review.';
+    if (value === 'document-language-needs-review') return 'The document language needs manual confirmation.';
+    if (value === 'verification-html-binding-missing-or-stale') return 'The document changed after verification, or its saved verification binding could not be confirmed. Run verification again.';
+    if (value === 'verification-html-binding-unavailable') return 'A cryptographic link to the verified document could not be created. Run verification again in a supported browser.';
+    if (value === 'verification-html-binding-mismatch') return 'The saved verification evidence does not match this document. Run verification again.';
+    if (/^[a-z0-9-]+(?::\d+)?$/i.test(value)) return 'Verification evidence needs manual review.';
+    return value;
+  };
   const remediateSurgicallyThenAI = _docPipeline ? _docPipeline.remediateSurgicallyThenAI : async (h) => ({ html: h, surgicalFixCount: 0, geminiPassCount: 0, rejectedChunks: 0 });
   const runTier2SurgicalFixes = _docPipeline ? _docPipeline.runTier2SurgicalFixes : async (h) => ({ html: h, stats: { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0 } });
   const runTier2_5SectionScopedFixes = _docPipeline ? _docPipeline.runTier2_5SectionScopedFixes : async (h) => ({ html: h, stats: { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0 } });
@@ -21514,6 +21941,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     let cur = pdfFixResultRef.current;
     const _aiIssuesOf = (c) => (c && c.verificationAudit && Array.isArray(c.verificationAudit.issues)) ? c.verificationAudit.issues : [];
     const _plainTextOf = (html) => { try { const d = new DOMParser().parseFromString(html || '', 'text/html'); return (d.body && d.body.textContent || '').trim(); } catch (_) { return null; } };
+    const _isCanonicalComplete = (c) => !!(c && c.verificationState === 'complete' && c.afterScoreVerified === true && !c.requiresManualReview && isLiveVerificationHtmlBound(c, c.accessibleHtml));
     try {
       let lastViolations = Infinity;
       let lastScore = -1;
@@ -21522,9 +21950,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       let stagnantRounds = 0;
       for (let round = 0; round < maxRounds; round++) {
         if (pdfAutoContinueAbortRef.current || _genStale()) break;
-        if (!cur || !cur.axeAudit) break;
-        if ((cur.afterScore || 0) >= pdfTargetScore) break;
-        const _vio = cur.axeAudit.totalViolations || 0;
+        if (!cur || !cur.accessibleHtml) break;
+        const _roundHtmlRevision = pdfHtmlRevisionRef.current;
+        // A high score may stop accessibility work, but it is celebratory only
+        // after the final review gate below confirms no expert/fidelity concern.
+        if ((cur.afterScore || 0) >= pdfTargetScore && _isCanonicalComplete(cur)) break;
+        const _vio = (cur.axeAudit && typeof cur.axeAudit.totalViolations === 'number') ? cur.axeAudit.totalViolations : 0;
         const _aiIssues = _aiIssuesOf(cur);
         // Sweep 2026-06-11 [0]: axe-clean used to END the loop even below
         // target — the AI-rubric half of the score had NO fixer. Now an
@@ -21539,7 +21970,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         // into _det = min(axe, EA), so a genuinely unfixable EA rule shows no det progress and the
         // existing two-stall guard ends the loop.
         const _eaFails = (cur.secondEngineAudit && typeof cur.secondEngineAudit.failViolations === 'number') ? cur.secondEngineAudit.failViolations : 0;
-        if (_vio === 0 && _aiIssues.length === 0 && _eaFails === 0) break;
+        if (_vio === 0 && _aiIssues.length === 0 && _eaFails === 0 && _isCanonicalComplete(cur)) break;
         // NOISE-AWARE PROGRESS (loop fix, 2026-06-15): the blended afterScore is half AI-rubric,
         // which is run-to-run NOISY (SD ~5). Score-only progress let that noise fake a stall in the
         // axe-clean phase (and oscillate the stall-counter). Count progress ONLY from reliable
@@ -21580,14 +22011,27 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         // press or watchdog invalidation DURING it used to go unnoticed until AFTER the next full
         // round had fired into the storm (and the post-round check then discarded its work anyway).
         // Re-check before firing; shouldAbort above also exits the wait itself within seconds.
-        if (pdfAutoContinueAbortRef.current || _genStale()) break;
-        const _acDetail = _vio > 0
-          ? (t(_vio === 1 ? 'pdf_audit.violation_one' : 'pdf_audit.violation_other', { count: _vio }) || (_vio + ' violation' + (_vio !== 1 ? 's' : '')))
-          : (t(_aiIssues.length === 1 ? 'pdf_audit.ai_issue_one' : 'pdf_audit.ai_issue_other', { count: _aiIssues.length }) || (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : '')));
-        setPdfFixStep(t('pdf_audit.auto_continue_round', { round: round + 1, max: maxRounds, detail: _acDetail, score: cur.afterScore || 0, target: pdfTargetScore }) || ('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + (_vio > 0 ? (_vio + ' violation' + (_vio !== 1 ? 's' : '')) : (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : ''))) + ', score ' + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')...'));
+        if (pdfAutoContinueAbortRef.current || _genStale()
+            || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
+          cur = pdfFixResultRef.current;
+          break;
+        }
+        const _auditOnlyRefresh = _vio === 0 && _aiIssues.length === 0 && _eaFails === 0 && !_isCanonicalComplete(cur);
+        const _acDetail = _auditOnlyRefresh
+          ? 'verification refresh (no content rewrite)'
+          : (_vio > 0
+            ? (t(_vio === 1 ? 'pdf_audit.violation_one' : 'pdf_audit.violation_other', { count: _vio }) || (_vio + ' violation' + (_vio !== 1 ? 's' : '')))
+            : (t(_aiIssues.length === 1 ? 'pdf_audit.ai_issue_one' : 'pdf_audit.ai_issue_other', { count: _aiIssues.length }) || (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : ''))));
+        setPdfFixStep(t('pdf_audit.auto_continue_round', { round: round + 1, max: maxRounds, detail: _acDetail, score: cur.afterScore || 0, target: pdfTargetScore }) || ('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + _acDetail + ', score ' + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')...'));
         let result;
         if (_vio > 0) {
           result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses);
+        } else if (_auditOnlyRefresh) {
+          // No confirmed fixable issue remains. Refresh all verification evidence
+          // once without sending clean content through an empty AI rewrite.
+          let _refreshAxe = null;
+          try { _refreshAxe = await runAxeAudit(cur.accessibleHtml); } catch (_) {}
+          result = { html: cur.accessibleHtml, axe: _refreshAxe, passes: 0, _auditOnly: true };
         } else {
           // Finding 7 (2026-07-10): EA's CONFIRMED failures join the fix instructions — previously
           // the engine that governs the headline had no voice in what the fixer was told to fix.
@@ -21605,7 +22049,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           const _freshAxe = await runAxeAudit(_fixedHtml);
           result = { html: _fixedHtml, axe: _freshAxe, passes: 1 };
         }
-        if (pdfAutoContinueAbortRef.current) break;
+        if (pdfAutoContinueAbortRef.current || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
+          cur = pdfFixResultRef.current;
+          break;
+        }
         const reVerify = await auditOutputAccessibility(result.html);
         if (!reVerify) {
           warnLog('[AutoContinue] AI re-verification returned null; preserving prior state and stopping loop.');
@@ -21622,8 +22069,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         // deterministic runs each round.
         let _ea = null;
         try { _ea = runEqualAccessAudit ? await runEqualAccessAudit(result.html) : null; } catch (_) {}
-        let _det = (result.axe && typeof result.axe.score === 'number') ? result.axe.score : null;
-        if (_det !== null && _ea && typeof _ea.score === 'number') _det = Math.min(_det, _ea.score);
+        // Only scored fresh audits are retained. Empty/error objects replace, rather
+        // than inherit, a prior successful verifier object.
+        const _freshAxe = (result.axe && typeof result.axe.score === 'number' && Number.isFinite(result.axe.score)) ? result.axe : null;
+        const _freshEa = (_ea && typeof _ea.score === 'number' && Number.isFinite(_ea.score)) ? _ea : null;
+        let _det = _freshAxe ? _freshAxe.score : null;
+        if (_freshEa) _det = _det !== null ? Math.min(_det, _freshEa.score) : _freshEa.score;
         const newScore = (_det !== null) ? blendAiAxe(reVerify.score, _det) : reVerify.score; // shared weakest-layer (delegates to computeHeadline)
         // NOISE-AWARE COMMIT-OR-REVERT (loop fix, 2026-06-15): the blended score is half AI-rubric
         // (noisy), so reverting whenever newScore < prior threw away genuinely-improved rounds on a
@@ -21635,7 +22086,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         // Gate AI-issue count ONLY in the axe-CLEAN (AI-fix) branch — in the axe-violation branch the
         // fix is deterministic, so AI-enumeration noise must not revert a legit axe fix (review F5).
         const _moreIssues = (_vio === 0) && ((reVerify.issues ? reVerify.issues.length : 0) > _aiIssues.length);
-        if (_detRegressed || _moreIssues) {
+        if (!result._auditOnly && (_detRegressed || _moreIssues)) {
           warnLog('[AutoContinue] round ' + (round + 1) + ' REAL regression (det ' + _det + ' vs ' + _curDet + ', issues ' + (reVerify.issues ? reVerify.issues.length : 0) + ' vs ' + _aiIssues.length + ') — reverting this round.');
           // Do NOT increment stagnantRounds here — the revert leaves `cur` unchanged, so the next
           // round's top-of-loop no-progress check counts this stall exactly once (avoids the old
@@ -21652,7 +22103,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         // NEW output (pure pipeline helper; null when no text-layer ground truth → keep the prior
         // fields). fidelityLimited keeps its original definition: coverage<90 OR structural notes.
         let _roundFid = null;
-        try { _roundFid = recomputeContentFidelity ? recomputeContentFidelity(cur.sourceText, result.html) : null; } catch (_) {}
+        try { _roundFid = (!result._auditOnly && recomputeContentFidelity) ? recomputeContentFidelity(cur.sourceText, result.html) : null; } catch (_) {}
         // #6-ext (2026-07-10): merge fidelity notes — RECOMPUTABLE kinds (links/tables/refusal/
         // placement/numeric) are replaced by this round's fresh measurements so a round that swaps
         // a number or drops a table refreshes its warning; run-scoped kinds (pageEdge, OCR
@@ -21662,78 +22113,149 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         const _roundNotes = _roundFid
           ? (cur.fidelityNotes || []).filter((n) => !(n && _recompKinds[n.kind])).concat(_roundFid.fidelityNotes || [])
           : (cur.fidelityNotes || []);
+        const _nextIntegrityCoverage = _roundFid ? _roundFid.integrityCoverage : cur.integrityCoverage;
+        const _nextIntegrityWarning = _roundFid
+          ? ([_roundFid.coverageWarning, _roundFid.placementWarn, _roundFid.numericWarn].filter(Boolean).join(' ') || null)
+          : cur.integrityWarning;
+        const _nextFidelityLimited = _roundFid
+          ? ((_roundFid.integrityCoverage != null && _roundFid.integrityCoverage < 90) || _roundNotes.length > 0)
+          : !!cur.fidelityLimited;
+
+        const _sameRoundHtml = result.html === cur.accessibleHtml
+          && isLiveVerificationHtmlBound(cur, cur.accessibleHtml);
+        const _roundPdfUaSelfCheck = _sameRoundHtml
+          ? ((cur.verificationCoverage && cur.verificationCoverage.pdfUaSelfCheck) || 'not-run')
+          : 'not-run';
+        // Every accepted round receives one canonical, fresh verification snapshot.
+        let _verification = deriveVerificationState({
+          ai: reVerify,
+          axe: _freshAxe,
+          equalAccess: _freshEa,
+          pdfUaSelfCheck: _roundPdfUaSelfCheck,
+        }) || {};
+        // Create a fresh SHA-256 binding only after all three audits have run on
+        // this exact accepted HTML. No digest means the round remains unverified.
+        const _verificationHtmlBinding = await createVerificationHtmlBinding(result.html);
+        _verification = applyVerificationHtmlBinding(
+          _verification,
+          !!_verificationHtmlBinding,
+          'verification-html-binding-unavailable'
+        ) || _verification;
+        const _verificationCoverage = _verification.coverage || _verification.verificationCoverage || {
+          standard: 'WCAG 2.2 AA', ai: 'unavailable', axe: 'unavailable', equalAccess: 'unavailable',
+          pdfUaSelfCheck: _roundPdfUaSelfCheck,
+        };
+        const _verificationState = _verification.verificationState || 'partial';
+        const _afterScoreVerified = _verification.afterScoreVerified === true && _verificationState === 'complete' && !_verification.requiresManualReview;
+        const _requiresManualReview = !_afterScoreVerified || !!_verification.requiresManualReview;
+        const _verificationReasons = Array.isArray(_verification.reasons) ? _verification.reasons.slice() : [];
+        const _verificationReviewCount = Number.isFinite(_verification.reviewCount)
+          ? Math.max(0, _verification.reviewCount)
+          : 0;
+        const _aiVerificationIncomplete = _verificationCoverage.ai !== 'complete';
+        const _scoreSource = _aiVerificationIncomplete
+          ? (_det !== null ? 'deterministic-only' : 'unverified')
+          : (_det !== null ? 'min' : 'content-only');
+
+        // Separate the verification contribution from the stable expert-review
+        // base. A false/null base is deliberately persisted as a sentinel so a
+        // later complete refresh can clear a verification-only warning.
+        const _storedExpertBase = (cur._expertReviewBeforeVerification && typeof cur._expertReviewBeforeVerification === 'object')
+          ? cur._expertReviewBeforeVerification
+          : null;
+        const _hadVerificationContribution = !!cur._verificationExpertReview;
+        const _rawExpertBase = _storedExpertBase || (_hadVerificationContribution
+          ? { needed: false, reason: null }
+          : { needed: !!cur.needsExpertReview, reason: cur.expertReviewReason || null });
+        const _baseAccessibilityReview = !!(_rawExpertBase.needed && (_rawExpertBase.reason === 'accessibility' || _rawExpertBase.reason === 'both' || !_rawExpertBase.reason));
+        const _freshContentFidelityReview = !!_nextFidelityLimited;
+        const _expertBaseReason = _baseAccessibilityReview
+          ? (_freshContentFidelityReview ? 'both' : 'accessibility')
+          : (_freshContentFidelityReview ? 'content-fidelity' : null);
+        const _expertBase = { needed: !!_expertBaseReason, reason: _expertBaseReason };
+        let _nextNeedsExpertReview;
+        let _nextExpertReviewReason;
+        if (_requiresManualReview) {
+          _nextNeedsExpertReview = true;
+          _nextExpertReviewReason = (_expertBase.reason === 'content-fidelity' || _expertBase.reason === 'both') ? 'both' : 'accessibility';
+        } else {
+          _nextNeedsExpertReview = _expertBase.needed;
+          _nextExpertReviewReason = _expertBase.reason;
+        }
         cur = Object.assign({}, cur, {
           accessibleHtml: result.html,
-          axeAudit: result.axe,
-          _detScore: _det, // exact deterministic component for next round's revert/progress baseline (review F9)
-          // Never let a FAILED re-verify null out the prior round's
-          // verification (user report 2026-06-11) — carried forward above
-          // via the !reVerify break; here reVerify is always present.
+          axeAudit: _freshAxe,
+          _detScore: _det,
           verificationAudit: reVerify,
+          verificationHtmlBinding: _verificationHtmlBinding,
+          verificationCoverage: _verificationCoverage,
+          verificationState: _verificationState,
+          afterScoreVerified: _afterScoreVerified,
+          requiresManualReview: _requiresManualReview,
+          verificationReviewCount: _verificationReviewCount,
+          verificationReasons: _verificationReasons,
           issueResolution: _roundIR,
-          integrityCoverage: _roundFid ? _roundFid.integrityCoverage : cur.integrityCoverage,
-          integrityWarning: _roundFid ? ([_roundFid.coverageWarning, _roundFid.placementWarn, _roundFid.numericWarn].filter(Boolean).join(' ') || null) : cur.integrityWarning,
-          fidelityNotes: _roundNotes, // #6-ext: refreshed recomputable kinds + carried run-scoped kinds
-          fidelityLimited: _roundFid ? ((_roundFid.integrityCoverage != null && _roundFid.integrityCoverage < 90) || _roundNotes.length > 0) : cur.fidelityLimited,
+          integrityCoverage: _nextIntegrityCoverage,
+          integrityWarning: _nextIntegrityWarning,
+          fidelityNotes: _roundNotes,
+          fidelityLimited: _nextFidelityLimited,
           afterScore: newScore,
-          _scoreIsBlended: _det !== null,
-          // A completed re-verify clears any throttle-degraded flag from the ORIGINAL run, so a now-fully-
-          // AI-verified auto-continue score stops being shown as "AI verification incomplete" / slate /
-          // deterministic-only. (Critic's #1 miss — same root bug as the Workbench recompute VDH-1, but on
-          // the primary automated path.) 2026-06-21. TIGHTENED 2026-07-10 (ChatGPT review, finding 6):
-          // a PARTIAL re-audit can carry a numeric score (2-of-3 sections above the coverage floor) —
-          // clearing on "numeric" alone let a partial-derived score erase the incomplete disclosure and
-          // even satisfy the target. Clear ONLY on FULL coverage: numeric AND not partial/degraded/synthesized.
-          _aiVerificationIncomplete: (typeof reVerify.score === 'number' && !reVerify._partialAudit && !reVerify._scoreDegraded && !reVerify.synthesized) ? false : cur._aiVerificationIncomplete,
-          _scoreSource: (typeof reVerify.score === 'number' && !reVerify._partialAudit && !reVerify._scoreDegraded && !reVerify.synthesized) ? (_det !== null ? 'min' : 'content-only') : cur._scoreSource,
-          axeScore: result.axe && typeof result.axe.score === 'number' ? result.axe.score : cur.axeScore,
-          axeViolations: result.axe ? result.axe.totalViolations : cur.axeViolations,
-          secondEngineAudit: _ea || cur.secondEngineAudit,
+          _scoreIsBlended: _det !== null && !_aiVerificationIncomplete,
+          _aiVerificationIncomplete,
+          _scoreSource,
+          axeScore: _freshAxe ? _freshAxe.score : null,
+          axeViolations: _freshAxe && typeof _freshAxe.totalViolations === 'number' ? _freshAxe.totalViolations : null,
+          secondEngineAudit: _freshEa,
+          needsExpertReview: _nextNeedsExpertReview,
+          expertReviewReason: _nextExpertReviewReason,
+          _verificationExpertReview: _requiresManualReview,
+          _expertReviewBeforeVerification: _requiresManualReview ? _expertBase : null,
           finalText: _newPlain || cur.finalText,
           autoFixPasses: (cur.autoFixPasses || 0) + (result.passes || 0),
           htmlChars: result.html.length,
           chunkState: result.chunkState || cur.chunkState,
           chunkWeightedScore: result.chunkWeightedScore || cur.chunkWeightedScore,
         });
+        if (_verificationHtmlBinding && !attachVerificationHtmlProof(cur, result.html)) {
+          cur = enforceVerificationHtmlBinding(cur, 'verification-html-binding-unavailable');
+        }
         const snapshot = cur;
         // Gen guard (acl-1): a fresh run started while this round was in flight → discard this stale
         // round's writes instead of stomping the new run's state, and stop looping.
-        if (_genStale()) break;
+        if (_genStale() || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {
+          cur = pdfFixResultRef.current;
+          break;
+        }
         // Sweep 2026-06-11 [3]: sync the ref NOW — the finally-block
         // auto-save reads pdfFixResultRef and was one render behind,
         // silently missing the last round's improvements.
-        pdfFixResultRef.current = Object.assign({}, pdfFixResultRef.current, snapshot);
-        setPdfFixResult(prev => Object.assign({}, prev, {
-          accessibleHtml: snapshot.accessibleHtml,
-          axeAudit: snapshot.axeAudit,
-          verificationAudit: snapshot.verificationAudit,
-          issueResolution: snapshot.issueResolution,
-          integrityCoverage: snapshot.integrityCoverage, // #6-incremental: the recomputed fidelity
-          integrityWarning: snapshot.integrityWarning,   // fields must reach the RENDERED result,
-          fidelityNotes: snapshot.fidelityNotes,         // not just the ref/auto-save snapshot
-          fidelityLimited: snapshot.fidelityLimited,
-          afterScore: snapshot.afterScore,
-          _scoreIsBlended: snapshot._scoreIsBlended,
-          axeScore: snapshot.axeScore,
-          axeViolations: snapshot.axeViolations,
-          secondEngineAudit: snapshot.secondEngineAudit,
-          finalText: snapshot.finalText,
-          autoFixPasses: snapshot.autoFixPasses,
-          htmlChars: snapshot.htmlChars,
-          chunkState: snapshot.chunkState,
-          chunkWeightedScore: snapshot.chunkWeightedScore,
-        }));
+        setPdfFixResult(snapshot);
+        // An audit-only refresh is deliberately single-shot. Whether it recovered
+        // full evidence or remained partial, the final branch gives the honest result.
+        if (result._auditOnly) break;
       }
-      // Sweep 2026-06-11 [0]: success toasts ONLY at/above target — an
-      // axe-clean doc below target used to get the success message.
+      const _canonicalComplete = _isCanonicalComplete(cur);
+      const _expertOrFidelityReview = !!(cur && (cur.needsExpertReview || cur.fidelityLimited));
+      const _humanReviewRequired = !!(cur && (!_canonicalComplete || _expertOrFidelityReview));
       if (pdfAutoContinueAbortRef.current) {
         addToast(t('toasts.auto_continue_stopped'), 'info');
-      } else if (cur && (cur.afterScore || 0) >= pdfTargetScore) {
+      } else if (cur && (cur.afterScore || 0) >= pdfTargetScore && _canonicalComplete && !_expertOrFidelityReview) {
         if (cur.axeAudit && cur.axeAudit.totalViolations === 0) {
           addToast(t('toasts.all_violations_resolved_score') + (cur.afterScore || 0) + ')', 'success');
         } else {
           addToast(t('toasts.target_score_reached') + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')', 'success');
         }
+      } else if (cur && _humanReviewRequired) {
+        const _reviewReasons = Array.isArray(cur.verificationReasons) ? cur.verificationReasons.filter(Boolean) : [];
+        const _readableReasons = _reviewReasons.map(formatVerificationReason).filter(Boolean);
+        if (_expertOrFidelityReview && !_readableReasons.some((reason) => /content|fidelity/i.test(reason))) {
+          _readableReasons.push('Content fidelity or another expert-review concern still needs confirmation.');
+        }
+        const _reviewCount = Number.isFinite(cur.verificationReviewCount) ? cur.verificationReviewCount : 0;
+        const _reviewDetail = _readableReasons.length
+          ? ' ' + Array.from(new Set(_readableReasons)).slice(0, 3).join(' ')
+          : ' Review the verification and fidelity details before distributing this document.';
+        addToast('Human review required at score ' + (cur.afterScore == null ? 'not available' : (cur.afterScore + '/100')) + (_reviewCount > 0 ? ' (' + _reviewCount + ' review item' + (_reviewCount === 1 ? '' : 's') + ').' : '.') + _reviewDetail, 'warning');
       } else if (cur) {
         const _axeClean = cur.axeAudit && cur.axeAudit.totalViolations === 0;
         addToast('🔁 ' + (t('toasts.below_target_stop') || 'Stopped at ') + (cur.afterScore || 0) + '/' + pdfTargetScore + (_axeClean ? (t('toasts.below_target_axe_clean') || ' — automated checks are clean; the remaining gap is AI-rubric issues that likely need a human (see Remaining Issues).') : (t('toasts.below_target_stop2') || ' — recent rounds stopped improving (the remaining issues likely need a human: see Remaining Issues). You can run Fix again to retry, or review the issues list.')), 'info');
@@ -21762,7 +22284,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
       if (pdfAutoSaveProject) { try { saveProjectToFile(true); } catch (e) { /* non-fatal */ } }
     }
-  }, [pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, waitForGeminiCalm, runAxeAudit, runEqualAccessAudit, auditOutputAccessibility, recomputeIssueResolution, recomputeContentFidelity, addToast, pdfAutoSaveProject]);
+  }, [pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, waitForGeminiCalm, runAxeAudit, runEqualAccessAudit, deriveVerificationState, createVerificationHtmlBinding, applyVerificationHtmlBinding, isLiveVerificationHtmlBound, enforceVerificationHtmlBinding, formatVerificationReason, auditOutputAccessibility, recomputeIssueResolution, recomputeContentFidelity, addToast, pdfAutoSaveProject]);
 
   const saveProjectToFile = React.useCallback((isAuto, _override) => {
     // Incomplete/interrupted run (resumable-incomplete-project 2026-06-20): a hard AI
@@ -21814,7 +22336,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     }
     const cur = pdfFixResultRef.current;
     if (!cur || !cur.accessibleHtml) return false;
-    const hashKey = String(cur.accessibleHtml.length || 0) + ':' + String(cur.afterScore || 0) + ':' + String(cur.autoFixPasses || 0) + ':' + String(cur.axeAudit && cur.axeAudit.totalViolations || 0) + ':' + String(cur._audioJobMeta ? cur._audioJobMeta.nextIdx : '');
+    const _liveSaveBinding = verificationBindingHelpersRef.current.isLive(cur, cur.accessibleHtml) ? cur.verificationHtmlBinding : null;
+    const _htmlSaveIdentity = _liveSaveBinding
+      ? ('sha256:' + _liveSaveBinding.digest)
+      : ('local:' + _autosaveHtmlFingerprint(cur.accessibleHtml));
+    const hashKey = _htmlSaveIdentity + ':' + String(cur.afterScore || 0) + ':' + String(cur.autoFixPasses || 0) + ':' + String(cur.axeAudit && cur.axeAudit.totalViolations || 0) + ':' + String(cur.verificationState || '') + ':' + String(!!cur.requiresManualReview) + ':' + String(cur.verificationReviewCount || 0) + ':' + String((cur.verificationReasons || []).join('|')) + ':' + String(cur.verificationCoverage && [cur.verificationCoverage.ai, cur.verificationCoverage.axe, cur.verificationCoverage.equalAccess].join('|') || '') + ':' + String(cur._audioJobMeta ? cur._audioJobMeta.nextIdx : '');
     if (isAuto && lastAutoSaveHashRef.current === hashKey) return false;
     const project = {
       version: 1,
@@ -21830,6 +22356,24 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       axeAudit: cur.axeAudit,
       secondEngineAudit: cur.secondEngineAudit || null,
       verificationAudit: cur.verificationAudit,
+      // Persist only the cryptographic binding. The exact runtime HTML snapshot
+      // is non-enumerable and is re-created only after an async hash match.
+      verificationHtmlBinding: _liveSaveBinding ? {
+        version: _liveSaveBinding.version,
+        algorithm: _liveSaveBinding.algorithm,
+        digest: _liveSaveBinding.digest,
+        utf8ByteLength: _liveSaveBinding.utf8ByteLength,
+      } : null,
+      verificationCoverage: cur.verificationCoverage || null,
+      verificationState: cur.verificationState || null,
+      afterScoreVerified: cur.afterScoreVerified === true,
+      requiresManualReview: !!cur.requiresManualReview,
+      verificationReviewCount: Number.isFinite(cur.verificationReviewCount) ? cur.verificationReviewCount : 0,
+      verificationReasons: Array.isArray(cur.verificationReasons) ? cur.verificationReasons : [],
+      _verificationExpertReview: !!cur._verificationExpertReview,
+      _expertReviewBeforeVerification: (cur._expertReviewBeforeVerification && typeof cur._expertReviewBeforeVerification === 'object') ? cur._expertReviewBeforeVerification : null,
+      _scoreSource: cur._scoreSource || null,
+      _scoreIsBlended: !!cur._scoreIsBlended,
       docStyle: cur.docStyle,
       pageCount: cur.pageCount,
       imageCount: cur.imageCount,
@@ -22414,31 +22958,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       try { await updateDoc(sessionRef, { "forceStatic": !sessionData?.forceStatic }); } catch(e) { warnLog('Firestore sync failed:', e); }
       addToast(sessionData?.forceStatic ? t('session.interactive_unlocked') : t('session.forced_static'), "success");
   };
-  const handleEndLiveSession = async () => {
-      if (!activeSessionCode) return;
-      setConfirmDialog({ message: t('session.end_confirm_dialog') || 'End this session?', onConfirm: async () => {
-          setActiveSessionCode(null);
-          addToast(t('session.end_success'), "success");
-          try {
-              const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-              await updateDoc(sessionRef, {
-                  isActive: false,
-                  quizState: { isActive: false },
-                  status: 'ended',
-              });
-              // Data hygiene: session metadata (roster codenames, xp, signals,
-              // quiz answers) must not outlive the class period. The soft-end
-              // marker above gives connected students their terminal signal;
-              // the delayed delete then removes the doc entirely — student
-              // listeners handle doc-not-found identically, so laggy clients
-              // still exit cleanly. With this, ALL end paths (session modal,
-              // quiz dashboard, teacher tab close) converge on deletion.
-              setTimeout(() => { deleteDoc(sessionRef).catch(() => {}); }, 8000);
-          } catch (e) {
-              warnLog("Firestore soft-end failed (Canvas sandbox):", e.message);
-          }
-      } });
-  };
+  const handleEndLiveSession = () => requestEndLiveSession();
   const getGroupDifferentiationContext = () => {
       if (isTeacherMode && rosterKey?.groups && Object.keys(rosterKey.groups).length > 0) {
           let ctx = '\n--- CLASS ROSTER GROUPS (teacher reference) ---';
@@ -31871,7 +32391,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   Re-send full pack (troubleshooting — it already syncs automatically)
                 </button>
                 <p className="text-[10px] text-slate-400 mb-2 text-center">Your resource pack shares to the class automatically, like a regular live session.</p>
-                <button onClick={endMailboxLiveSession} className="w-full text-xs font-bold text-rose-600 hover:text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 transition-all">End session</button>
+                <button onClick={requestEndLiveSession} className="w-full text-xs font-bold text-rose-600 hover:text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 transition-all">End session</button>
               </div>
             )}
             {mbStatus && <p className="text-xs text-slate-600 mt-3">{mbStatus}</p>}
@@ -31910,8 +32430,31 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           )}
         </div>
       )}
-      {showSessionModal && activeSessionCode && <div ref={sessionModalRef}><SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} isMailboxSession={!!mbLive} mailboxJoinUrl={mbLive?.joinUrl || ''} onEndMailboxSession={mbLive ? endMailboxLiveSession : null} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} /></div>}
-      {confirmDialog && <ConfirmDialog confirmDialog={confirmDialog} setConfirmDialog={setConfirmDialog} t={t} />}
+      {showSessionModal && activeSessionCode && <div ref={sessionModalRef}><SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} isMailboxSession={!!mbLive} mailboxJoinUrl={mbLive?.joinUrl || ''} onRequestEndSession={requestEndLiveSession} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} /></div>}
+      {endSessionPreview && (
+        <div className="fixed inset-0 z-[10020] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4" role="presentation">
+          <div ref={endSessionPreviewRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="end-session-summary-title" className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 border-2 border-indigo-100">
+            <h2 id="end-session-summary-title" className="text-xl font-black text-slate-800">End session</h2>
+            <p className="text-sm text-slate-600 mt-1">Review the privacy-limited roster summary before temporary live-session data is deleted.</p>
+            <div className="grid grid-cols-3 gap-2 my-4">
+              <div className="rounded-xl bg-emerald-50 p-3 text-center"><div className="text-2xl font-black text-emerald-700">{Object.keys(endSessionPreview.summary.participants || {}).length}</div><div className="text-[11px] font-bold text-emerald-800">Roster matched</div></div>
+              <div className="rounded-xl bg-amber-50 p-3 text-center"><div className="text-2xl font-black text-amber-700">{(endSessionPreview.summary.absentCodenames || []).length}</div><div className="text-[11px] font-bold text-amber-800">Not present</div></div>
+              <div className="rounded-xl bg-rose-50 p-3 text-center"><div className="text-2xl font-black text-rose-700">{(endSessionPreview.summary.unmatchedCodenames || []).length}</div><div className="text-[11px] font-bold text-rose-800">Unmatched</div></div>
+            </div>
+            {(endSessionPreview.summary.unmatchedCodenames || []).length > 0 && <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 mb-4"><div className="text-xs font-black text-rose-800">Unmatched codenames are not added automatically</div><div className="text-xs text-rose-700 mt-1">{endSessionPreview.summary.unmatchedCodenames.join(', ')}</div></div>}
+            <details className="rounded-xl border border-slate-200 p-3 mb-4"><summary className="cursor-pointer text-sm font-bold text-slate-700">What will be saved?</summary><p className="text-xs text-slate-600 mt-2">Date, duration, matched codenames, groups, response counts, and whether a resource was opened. Raw answers, account IDs, mailbox tokens, chat, and real names are not saved.</p></details>
+            <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="end-session-note">Optional teacher note</label>
+            <textarea id="end-session-note" value={endSessionNote} onChange={e => setEndSessionNote(e.target.value.slice(0, 500))} rows={3} placeholder="Example: Small-group review of fractions" className="w-full rounded-xl border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
+            <div className="text-[11px] text-slate-500 text-right">{endSessionNote.length}/500</div>
+            {!rosterKey && <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">Create or import a class roster to save longitudinal summaries. You can still end this session normally.</p>}
+            <div className="flex flex-col sm:flex-row gap-2 mt-5 justify-end">
+              <button disabled={endSessionPreview.busy} onClick={() => { setEndSessionPreview(null); setEndSessionNote(''); }} className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold disabled:opacity-50">Keep session open</button>
+              <button disabled={endSessionPreview.busy} onClick={() => completeLiveSessionEnd(false)} className="px-4 py-2.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 font-bold disabled:opacity-50">End without saving</button>
+              {rosterKey && <button disabled={endSessionPreview.busy} onClick={() => completeLiveSessionEnd(true)} className="px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-bold shadow-lg disabled:opacity-50">{endSessionPreview.busy ? 'Ending…' : 'Save summary & end'}</button>}
+            </div>
+          </div>
+        </div>
+      )}      {confirmDialog && <ConfirmDialog confirmDialog={confirmDialog} setConfirmDialog={setConfirmDialog} t={t} />}
       {promptDialog && <PromptDialog promptDialog={promptDialog} setPromptDialog={setPromptDialog} t={t} />}
       {/* ── GroupSessionModal extracted to view_misc_panels_module.js (CDN) ── */}
       {(showGroupModal && activeSessionCode && sessionData) && window.AlloModules && window.AlloModules.GroupSessionModal && React.createElement(window.AlloModules.GroupSessionModal, {
@@ -32947,26 +33490,63 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         <FileDown size={12} /> {t('input.load_project') || 'Load Project'}
                         <input type="file" accept=".json" className="hidden" onChange={(e) => {
                           const file = e.target.files?.[0]; if (!file) return;
+                          const _projectLoadEpoch = ++pdfProjectLoadEpochRef.current;
                           const reader = new FileReader();
-                          reader.onload = (ev) => {
+                          reader.onload = async (ev) => {
+                            if (_projectLoadEpoch !== pdfProjectLoadEpochRef.current) return;
                             try {
-                              const project = JSON.parse(ev.target.result);
-                              if (!project.accessibleHtml || !project.version) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
+                              const _savedProject = JSON.parse(ev.target.result);
+                              if (!_savedProject.accessibleHtml || !_savedProject.version) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
+                              // Ignore any serialized runtime snapshot. Rehydrate makes it live
+                              // only when the persisted SHA-256 digest matches accessibleHtml.
+                              const project = await rehydrateVerificationHtmlBinding(_savedProject);
+                              if (_projectLoadEpoch !== pdfProjectLoadEpochRef.current) return;
+                              const _derivedProjectVerification = deriveVerificationState({
+                                ai: project.verificationAudit || null,
+                                axe: project.axeAudit || null,
+                                equalAccess: project.secondEngineAudit || null,
+                                aiIncomplete: !!project._aiVerificationIncomplete,
+                                pdfUaSelfCheck: project.verificationCoverage && project.verificationCoverage.pdfUaSelfCheck,
+                              }) || {};
+                              const _loadedVerificationCoverage = project.verificationCoverage || _derivedProjectVerification.coverage || _derivedProjectVerification.verificationCoverage || null;
+                              const _loadedVerificationState = project.verificationState || _derivedProjectVerification.verificationState || 'partial';
+                              const _loadedHtmlBound = isLiveVerificationHtmlBound(project, project.accessibleHtml);
+                              const _loadedRequiresManualReview = _loadedVerificationState !== 'complete' || project.requiresManualReview === true || !_loadedHtmlBound;
+                              const _loadedAfterScoreVerified = (typeof project.afterScoreVerified === 'boolean' ? project.afterScoreVerified : _derivedProjectVerification.afterScoreVerified === true) && _loadedVerificationState === 'complete' && !_loadedRequiresManualReview && _loadedHtmlBound;
+                              const _loadedFidelityLimited = !!project.fidelityLimited;
+                              const _loadedExpertReason = project.expertReviewReason || (_loadedFidelityLimited
+                                ? (_loadedRequiresManualReview ? 'both' : 'content-fidelity')
+                                : (_loadedRequiresManualReview ? 'accessibility' : null));
+                              const _loadedExpertBase = (project._expertReviewBeforeVerification && typeof project._expertReviewBeforeVerification === 'object')
+                                ? project._expertReviewBeforeVerification
+                                : (_loadedRequiresManualReview ? { needed: _loadedFidelityLimited, reason: _loadedFidelityLimited ? 'content-fidelity' : null } : null);
                               setPdfAuditResult({
                                 score: project.beforeScore || 0, scores: [], critical: [], major: [], minor: [],
                                 passes: [], summary: 'Loaded from saved project', pageCount: project.pageCount,
                                 hasSearchableText: true, hasImages: project.imageCount > 0,
                               });
-                              setPdfFixResult({
+                              const _loadedPdfFixResult = {
                                 accessibleHtml: project.accessibleHtml,
                                 beforeScore: project.beforeScore, afterScore: project.afterScore,
                                 axeAudit: project.axeAudit || null, verificationAudit: project.verificationAudit || null,
+                                secondEngineAudit: project.secondEngineAudit || null,
+                                verificationHtmlBinding: project.verificationHtmlBinding || null,
+                                verificationCoverage: _loadedVerificationCoverage,
+                                verificationState: _loadedVerificationState,
+                                afterScoreVerified: _loadedAfterScoreVerified,
+                                requiresManualReview: _loadedRequiresManualReview,
+                                verificationReviewCount: Number.isFinite(project.verificationReviewCount) ? project.verificationReviewCount : (Number.isFinite(_derivedProjectVerification.reviewCount) ? _derivedProjectVerification.reviewCount : 0),
+                                verificationReasons: Array.isArray(project.verificationReasons) ? project.verificationReasons : (Array.isArray(_derivedProjectVerification.reasons) ? _derivedProjectVerification.reasons : []),
+                                _verificationExpertReview: typeof project._verificationExpertReview === 'boolean' ? project._verificationExpertReview : _loadedRequiresManualReview,
+                                _expertReviewBeforeVerification: _loadedExpertBase,
+                                _aiVerificationIncomplete: _loadedVerificationCoverage ? _loadedVerificationCoverage.ai !== 'complete' : !!project._aiVerificationIncomplete,
+                                _scoreSource: project._scoreSource || null,
                                 docStyle: project.docStyle || null, pageCount: project.pageCount,
-                                imageCount: project.imageCount || 0, needsExpertReview: project.needsExpertReview || false,
+                                imageCount: project.imageCount || 0, needsExpertReview: !!(project.needsExpertReview || _loadedRequiresManualReview || _loadedFidelityLimited),
                                 // Restore the fields older project files didn't carry (fallbacks keep
                                 // backward compatibility): reason-specific banner, integrity indicators,
                                 // Diff inputs (so the Diff works on a loaded project), and stat badges.
-                                expertReviewReason: project.expertReviewReason || null,
+                                expertReviewReason: _loadedExpertReason,
                                 integrityCoverage: project.integrityCoverage != null ? project.integrityCoverage : null,
                                 integrityWarning: project.integrityWarning || null,
                                 fidelityNotes: Array.isArray(project.fidelityNotes) ? project.fidelityNotes : [],
@@ -32987,12 +33567,17 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                 _plainLanguage: project._plainLanguage || null,
                                 _audioJobMeta: project._audioJobMeta || null,
                                 _scoreIsBlended: !!project._scoreIsBlended,
-                                secondEngineAudit: project.secondEngineAudit || null,
                                 chunkState: project.chunkState || null,
-                              });
+                              };
+                              if (isLiveVerificationHtmlBound(project, project.accessibleHtml)) {
+                                attachVerificationHtmlProof(_loadedPdfFixResult, project.accessibleHtml);
+                              }
+                              setPdfFixResult(_loadedPdfFixResult);
                               setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf' });
                               addToast(t('toasts.loaded') + (project.fileName || 'project'), 'success');
-                            } catch(err) { addToast(t('toasts.failed') + err.message, 'error'); }
+                            } catch(err) {
+                              if (_projectLoadEpoch === pdfProjectLoadEpochRef.current) addToast(t('toasts.failed') + err.message, 'error');
+                            }
                           };
                           reader.readAsText(file); e.target.value = '';
                         }} />

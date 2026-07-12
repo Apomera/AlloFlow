@@ -26,7 +26,7 @@ function SessionModal({
   handleSetShowSessionModalToFalse,
   isMailboxSession = false,
   mailboxJoinUrl = "",
-  onEndMailboxSession = null,
+  onRequestEndSession,
   sessionData,
   setActiveSessionCode,
   setConfirmDialog,
@@ -212,26 +212,9 @@ function SessionModal({
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
-      onClick: async () => {
-        setConfirmDialog({ message: t("session.end_confirm") || "Are you sure you want to end this session?", onConfirm: async () => {
-          if (typeof onEndMailboxSession === "function") {
-            try {
-              await onEndMailboxSession();
-              addToast(t("session.session_ended_toast") || "Session ended.", "success");
-            } catch (e) {
-              warnLog("Error ending mailbox session:", e);
-              addToast(t("session.error_end_session") || "Failed to end session.", "error");
-            }
-          } else if (activeSessionCode) {
-            try {
-              const sessionRef = doc(db, "artifacts", activeSessionAppId || appId, "public", "data", "sessions", activeSessionCode);
-              await deleteDoc(sessionRef);
-              addToast(t("session.session_ended_toast") || "Session ended.", "success");
-            } catch (e) {
-              warnLog("Error ending session:", e);
-              addToast(t("session.error_end_session") || "Failed to end session.", "error");
-            }
-          }
+      onClick: () => {
+        if (typeof onRequestEndSession === "function") onRequestEndSession();
+        else setConfirmDialog({ message: t("session.end_confirm") || "Are you sure you want to end this session?", onConfirm: () => {
           setActiveSessionCode(null);
           setSessionData(null);
           setShowSessionModal(false);

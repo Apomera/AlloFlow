@@ -45,7 +45,7 @@ function SessionModal({
   handleSetShowSessionModalToFalse,
   isMailboxSession = false,
   mailboxJoinUrl = '',
-  onEndMailboxSession = null,
+  onRequestEndSession,
   sessionData,
   setActiveSessionCode,
   setConfirmDialog,
@@ -260,30 +260,9 @@ function SessionModal({
             {t('session.action_close')}
           </button>
           <button
-            onClick={async () => {
-              setConfirmDialog({ message: t('session.end_confirm') || 'Are you sure you want to end this session?', onConfirm: async () => {
-                if (typeof onEndMailboxSession === 'function') {
-                  try {
-                    await onEndMailboxSession();
-                    addToast(t('session.session_ended_toast') || "Session ended.", "success");
-                  } catch (e) {
-                    warnLog("Error ending mailbox session:", e);
-                    addToast(t('session.error_end_session') || "Failed to end session.", "error");
-                  }
-                } else if (activeSessionCode) {
-                  try {
-                    const sessionRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
-                    await deleteDoc(sessionRef);
-                    addToast(t('session.session_ended_toast') || "Session ended.", "success");
-                  } catch (e) {
-                    warnLog("Error ending session:", e);
-                    addToast(t('session.error_end_session') || "Failed to end session.", "error");
-                  }
-                }
-                setActiveSessionCode(null);
-                setSessionData(null);
-                setShowSessionModal(false);
-              }});
+            onClick={() => {
+              if (typeof onRequestEndSession === 'function') onRequestEndSession();
+              else setConfirmDialog({ message: t('session.end_confirm') || 'Are you sure you want to end this session?', onConfirm: () => { setActiveSessionCode(null); setSessionData(null); setShowSessionModal(false); } });
             }}
             className="w-full sm:w-auto px-8 py-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-full transition-colors flex items-center justify-center gap-2"
           >
