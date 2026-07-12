@@ -177,6 +177,47 @@ function makeDragHandler(s, hostFinder, onMove, wasDraggedRef) {
     window.addEventListener("pointerup", upHandler);
   };
 }
+function announceAnnotationMove(message) {
+  let live = document.getElementById("allo-annotation-move-status");
+  if (!live) {
+    live = document.createElement("div");
+    live.id = "allo-annotation-move-status";
+    live.className = "sr-only";
+    live.setAttribute("role", "status");
+    live.setAttribute("aria-live", "polite");
+    live.setAttribute("aria-atomic", "true");
+    document.body.appendChild(live);
+  }
+  live.textContent = "";
+  window.setTimeout(function() {
+    live.textContent = message;
+  }, 0);
+}
+function makeKeyboardMoveHandler(annotation, hostFinder, onMove, onActivate) {
+  return function(e) {
+    if ((e.key === "Enter" || e.key === " ") && onActivate) {
+      e.preventDefault();
+      onActivate();
+      return;
+    }
+    const movement = {
+      ArrowLeft: { x: -1, y: 0, label: "left" },
+      ArrowRight: { x: 1, y: 0, label: "right" },
+      ArrowUp: { x: 0, y: -1, label: "up" },
+      ArrowDown: { x: 0, y: 1, label: "down" }
+    }[e.key];
+    if (!movement || !onMove) return;
+    const host = hostFinder ? hostFinder(e.currentTarget) : null;
+    if (!host) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const step = e.shiftKey ? 40 : 10;
+    const nextX = Math.max(0, Math.min(host.clientWidth - 14, annotation.x + movement.x * step));
+    const nextY = Math.max(0, Math.min(host.clientHeight - 14, annotation.y + movement.y * step));
+    onMove(annotation.id, nextX, nextY, true);
+    announceAnnotationMove(`Annotation moved ${movement.label}${e.shiftKey ? " by a larger step" : ""}.`);
+  };
+}
 function findAnnoHost(el) {
   let cur = el;
   while (cur && cur !== document.body) {
@@ -199,8 +240,11 @@ function StickerNode({ s, draggable, onMove }) {
       className: "absolute text-3xl drop-shadow-md animate-[ping_0.4s_ease-out_reverse_forwards] select-none z-50 hover:scale-110 transition-transform" + pointerClass + dragClass + ringClass,
       style: { top: s.y - 15, left: s.x - 15, touchAction: isDraggable ? "none" : void 0 },
       title: title || icon,
-      "aria-label": title ? icon + " \u2014 " + title : icon,
-      onPointerDown: isDraggable ? makeDragHandler(s, findAnnoHost, onMove) : void 0
+      "aria-label": (title ? icon + " \u2014 " + title : icon) + (isDraggable ? ". Use arrow keys to move; hold Shift for a larger step." : ""),
+      onPointerDown: isDraggable ? makeDragHandler(s, findAnnoHost, onMove) : void 0,
+      onKeyDown: isDraggable ? makeKeyboardMoveHandler(s, findAnnoHost, onMove) : void 0,
+      tabIndex: isDraggable ? 0 : void 0,
+      role: isDraggable ? "button" : void 0
     },
     icon
   );
@@ -243,15 +287,12 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
         className: "absolute z-50 select-none transition-transform " + (isDraggable ? "cursor-grab active:cursor-grabbing hover:scale-110" : "cursor-pointer hover:scale-110"),
         style: { top: a.y - 14, left: a.x - 14, width: 28, height: 28, touchAction: isDraggable ? "none" : void 0 },
         title: (a.content ? a.content + " \u2014 " : "") + title,
-        "aria-label": "Sticky note from " + title + (a.content ? ": " + a.content : ""),
+        "aria-label": "Sticky note from " + title + (a.content ? ": " + a.content : "") + (isDraggable ? ". Use arrow keys to move; hold Shift for a larger step." : ""),
         onPointerDown: handleDown,
         onClick: handleClick,
-        onKeyDown: function(e) {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setExpanded(true);
-          }
-        },
+        onKeyDown: makeKeyboardMoveHandler(a, findAnnoHost, isDraggable ? onMove : null, function() {
+          setExpanded(true);
+        }),
         tabIndex: 0,
         role: "button"
       },
@@ -359,15 +400,12 @@ function VoiceNoteBubble({ a, onDelete, draggable, onMove }) {
         className: "absolute z-50 select-none transition-transform " + (isDraggable ? "cursor-grab active:cursor-grabbing hover:scale-110" : "cursor-pointer hover:scale-110"),
         style: { top: a.y - 14, left: a.x - 14, width: 28, height: 28, touchAction: isDraggable ? "none" : void 0 },
         title: title + (dur != null ? " \u2022 " + dur + "s" : ""),
-        "aria-label": "Voice note from " + title + (dur != null ? ", " + dur + " seconds" : ""),
+        "aria-label": "Voice note from " + title + (dur != null ? ", " + dur + " seconds" : "") + (isDraggable ? ". Use arrow keys to move; hold Shift for a larger step." : ""),
         onPointerDown: handleDown,
         onClick: handleClick,
-        onKeyDown: function(e) {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setExpanded(true);
-          }
-        },
+        onKeyDown: makeKeyboardMoveHandler(a, findAnnoHost, isDraggable ? onMove : null, function() {
+          setExpanded(true);
+        }),
         tabIndex: 0,
         role: "button"
       },

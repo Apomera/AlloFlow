@@ -37,6 +37,7 @@ This report evaluates the current local desktop command center and the bundled A
 - Added labeled Move up/Move down alternatives and live position announcements to the draggable timeline editor (WCAG 2.5.7).
 - Added labeled Move up/Move down alternatives, keyboard instructions, and live position announcements to draggable Persona blueprint items (WCAG 2.5.7).
 - Added bounded arrow-key positioning, Shift-modified larger steps, instructions, and live movement announcements to the draggable AlloBot control (WCAG 2.5.7).
+- Added bounded arrow-key positioning, Shift-modified larger steps, accessible instructions, and live movement announcements to draggable stickers, text notes, and voice notes (WCAG 2.5.7).
 
 ## Resolved finding
 
@@ -55,7 +56,7 @@ Verification at 320 x 800 CSS pixels found 0 axe WCAG A/AA violations, a 320px d
 - Complete keyboard-only walkthroughs of every major workflow and modal, including focus return and focus-not-obscured checks.
 - NVDA + Chrome/Edge and VoiceOver + Safari testing across representative teacher and student workflows.
 - Browser-native 400% zoom confirmation and WCAG text-spacing overrides across representative complex tools.
-- Dragging alternatives for remaining drag-and-drop interactions beyond the remediated timeline, Persona blueprint, and AlloBot controls (WCAG 2.5.7).
+- Dragging alternatives for remaining drag-and-drop interactions beyond the remediated timeline, Persona blueprint, AlloBot, and annotation controls (WCAG 2.5.7).
 - Authentication flows and third-party identity providers (WCAG 3.3.8).
 - Consistent help placement across multi-step processes (WCAG 3.2.6).
 - Generated PDFs, documents, media, and AI-created content, which require their own output-level evaluation.
