@@ -1,4 +1,4 @@
-﻿// view_export_preview_source.jsx — Export Preview & Customization Modal (Round 5 Tier A)
+// view_export_preview_source.jsx — Export Preview & Customization Modal (Round 5 Tier A)
 //
 // Extracted from AlloFlowANTI.txt L31652-L32469 (817 lines, ~50 props).
 //
@@ -67,6 +67,8 @@ function ExportPreviewView(props) {
   const imageAddButtonRef = React.useRef(null);
   const imageAltInputRef = React.useRef(null);
   const imageInsertionRangeRef = React.useRef(null);
+  const exportDialogRef = React.useRef(null);
+  const imageDialogRef = React.useRef(null);
 
   const closeImageDialog = React.useCallback(() => {
     setPendingImageFile(null);
@@ -77,10 +79,42 @@ function ExportPreviewView(props) {
   }, []);
 
   React.useEffect(() => {
+    if (!showExportPreview || pendingImageFile) return undefined;
+    const dialog = exportDialogRef.current;
+    if (!dialog) return undefined;
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])'));
+    if (!dialog.contains(document.activeElement)) (getFocusable()[0] || dialog).focus();
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); setShowExportPreview(false); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return () => dialog.removeEventListener('keydown', onKeyDown);
+  }, [showExportPreview, pendingImageFile, setShowExportPreview]);
+
+  React.useEffect(() => {
     if (!pendingImageFile) return undefined;
+    const dialog = imageDialogRef.current;
+    if (!dialog) return undefined;
     const timer = window.setTimeout(() => imageAltInputRef.current?.focus(), 0);
-    return () => window.clearTimeout(timer);
-  }, [pendingImageFile]);
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeImageDialog(); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return () => { window.clearTimeout(timer); dialog.removeEventListener('keydown', onKeyDown); };
+  }, [pendingImageFile, closeImageDialog]);
 
   const insertPendingImage = React.useCallback(() => {
     if (!pendingImageFile) return;
@@ -166,42 +200,15 @@ function ExportPreviewView(props) {
   if (!showExportPreview) return null;
 
   return (
-          <div className="allo-docsuite fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="document-builder-title"
-            onClick={(e) => { if (e.target === e.currentTarget) setShowExportPreview(false); }}
-            onKeyDown={(e) => { if (e.key !== 'Escape') return; if (pendingImageFile) { e.stopPropagation(); closeImageDialog(); } else setShowExportPreview(false); }}
-            ref={(el) => {
-              if (!el) return;
-              // iframe included: the WYSIWYG editing surface was previously
-              // unreachable by Tab inside the trap — a WCAG 2.1.1 failure on
-              // the builder's main feature.
-              const focusables = el.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])');
-              if (focusables.length > 0 && !el.contains(document.activeElement)) focusables[0].focus();
-              el.__focusTrap = el.__focusTrap || ((ev) => {
-                if (ev.key !== 'Tab') return;
-                const fl = el.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])');
-                if (fl.length === 0) return;
-                const first = fl[0], last = fl[fl.length - 1];
-                if (ev.shiftKey) { if (document.activeElement === first) { ev.preventDefault(); last.focus(); } }
-                else { if (document.activeElement === last) { ev.preventDefault(); first.focus(); } }
-              });
-              el.removeEventListener('keydown', el.__focusTrap);
-              el.addEventListener('keydown', el.__focusTrap);
-            }}>
+          <div className="allo-docsuite fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-4" role="presentation"
+            onClick={(e) => { if (e.target === e.currentTarget) setShowExportPreview(false); }}>
             {pendingImageFile && (
-              <div className="fixed inset-0 z-[210] bg-black/70 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="image-description-title"
+              <div className="fixed inset-0 z-[210] bg-black/70 flex items-center justify-center p-4" role="presentation"
                 onClick={(e) => { if (e.target === e.currentTarget) closeImageDialog(); }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeImageDialog(); return; }
-                  if (e.key !== 'Tab') return;
-                  const controls = Array.from(e.currentTarget.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled])'));
-                  if (!controls.length) return;
-                  const first = controls[0], last = controls[controls.length - 1];
-                  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-                  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-                }}>
-                <div className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl" role="document">
+                >
+                <div ref={imageDialogRef} tabIndex={-1} className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="image-description-title" aria-describedby="image-description-help">
                   <h3 id="image-description-title" className="text-lg font-black text-slate-900">Describe this image</h3>
-                  <p className="mt-1 text-sm text-slate-700">Alternative text should communicate the image’s purpose to someone who cannot see it.</p>
+                  <p id="image-description-help" className="mt-1 text-sm text-slate-700">Alternative text should communicate the image’s purpose to someone who cannot see it.</p>
                   <p className="mt-2 text-xs font-medium text-slate-600 truncate" title={pendingImageFile.name}>{pendingImageFile.name}</p>
                   <label htmlFor="builder-image-alt" className="mt-4 block text-sm font-bold text-slate-800">Alternative text</label>
                   <textarea id="builder-image-alt" ref={imageAltInputRef} value={imageAltText} disabled={imageDecorative} rows={3}
@@ -221,9 +228,9 @@ function ExportPreviewView(props) {
                 </div>
               </div>
             )}
-            <div className="bg-white rounded-2xl shadow-2xl flex w-full max-w-[95vw] max-h-[95vh] overflow-hidden" inert={pendingImageFile ? true : undefined} aria-hidden={pendingImageFile ? 'true' : undefined}>
+            <div ref={exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="document-builder-title" className="bg-white rounded-2xl shadow-2xl flex flex-col lg:flex-row w-full max-w-[95vw] max-h-[95vh] overflow-y-auto lg:overflow-hidden focus:outline-none" inert={pendingImageFile ? true : undefined} aria-hidden={pendingImageFile ? 'true' : undefined} onClick={(e) => e.stopPropagation()}>
               {/* Left Panel — Settings */}
-              <div className="w-72 shrink-0 bg-gradient-to-b from-slate-50 to-white border-r border-slate-200 overflow-y-auto p-4 space-y-3">
+              <div className="w-full lg:w-72 shrink-0 bg-gradient-to-b from-slate-50 to-white border-b lg:border-b-0 lg:border-r border-slate-200 overflow-visible lg:overflow-y-auto p-4 space-y-3">
                 <div className="flex items-center justify-between mb-1">
                   <h2 id="document-builder-title" className="text-sm font-black text-slate-800 flex items-center gap-2">🛠️ Document Builder</h2>
                   <div className="flex items-center gap-1">
@@ -350,7 +357,7 @@ function ExportPreviewView(props) {
                       ))}
                     </select>
                   </label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="text-[11px] text-slate-600 shrink-0">Size:</span>
                     <input type="range" min={12} max={24} value={exportConfig.fontSize} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, fontSize: parseInt(e.target.value) }))}
                       className="flex-1 accent-indigo-600" data-help-key="doc_builder_font_size_slider" aria-label={t("a11y.font_size")} />
@@ -392,7 +399,7 @@ function ExportPreviewView(props) {
                       })()} words
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <label className="text-[11px] text-slate-600 shrink-0" htmlFor="word-goal-input">Goal:</label>
                     <input type="number" id="word-goal-input" min="0" step="50" placeholder="e.g. 500" defaultValue=""
                       className="flex-1 text-[11px] border border-slate-400 rounded px-2 py-1 bg-white"
@@ -1086,14 +1093,14 @@ function ExportPreviewView(props) {
               </div>
 
               {/* Right Panel — Live Preview with Editing */}
-              <div className="flex-1 flex flex-col min-w-0">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-white shrink-0">
-                  <div className="flex items-center gap-3">
+              <div className="flex-1 flex flex-col min-w-0 min-h-[60vh] lg:min-h-0">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 border-b border-slate-200 bg-white shrink-0">
+                  <div className="flex flex-wrap items-center gap-3">
                     <h3 className="text-sm font-bold text-slate-700">Live Preview</h3>
                     <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-mono">{exportPreviewMode === 'worksheet' ? 'Worksheet' : exportPreviewMode === 'html' ? 'HTML' : exportPreviewMode === 'slides' ? 'Slides' : 'PDF'}</span>
                     <span className="text-[11px] text-indigo-700 font-medium">Focus the preview and edit text directly</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {/* Editing toolbar */}
                     <input ref={imageFileInputRef} type="file" accept="image/*" className="sr-only" tabIndex={-1} aria-hidden="true"
                       onChange={(e) => {
