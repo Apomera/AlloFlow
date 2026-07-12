@@ -288,6 +288,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           return { x: 24, y: 20 };
       }
   });
+  const [keyboardMoveStatus, setKeyboardMoveStatus] = useState('');
   const [isHovered, setIsHovered] = useState(false);
   const [pulseScale, setPulseScale] = useState(1);
   useEffect(() => {
@@ -915,7 +916,26 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
            e.preventDefault();
            summon();
        }
+       return;
     }
+    const movement = {
+      ArrowLeft: { x: 1, y: 0, label: 'left' },
+      ArrowRight: { x: -1, y: 0, label: 'right' },
+      ArrowUp: { x: 0, y: -1, label: 'up' },
+      ArrowDown: { x: 0, y: 1, label: 'down' }
+    }[e.key];
+    if (!movement || isSleeping) return;
+    e.preventDefault();
+    const step = e.shiftKey ? 40 : 10;
+    setPosition((current) => {
+      const maxRight = Math.max(10, window.innerWidth - 74);
+      const maxTop = Math.max(10, window.innerHeight - 74);
+      return {
+        x: Math.min(maxRight, Math.max(10, current.x + movement.x * step)),
+        y: Math.min(maxTop, Math.max(10, current.y + movement.y * step))
+      };
+    });
+    setKeyboardMoveStatus(`AlloBot moved ${movement.label}${e.shiftKey ? ' by a larger step' : ''}.`);
   };
   const pendingSpeechTimerRef = useRef(null);
   useEffect(() => {
@@ -1430,6 +1450,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   };
   return (
     <aside aria-label={t('bot.assistant_landmark') || 'AlloBot assistant'}>
+    <p id="allobot-move-instructions" className="sr-only">Use the arrow keys to move AlloBot. Hold Shift with an arrow key for a larger step.</p>
+    <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{keyboardMoveStatus}</div>
     <style>{`
         @keyframes allo-float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
         /* allo-talk keyframe removed — defined but never applied to any element. Audit confirmed dead code. */
@@ -1735,6 +1757,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
     <div
       ref={containerRef}
       tabIndex={0} data-help-key="bot_avatar"
+      aria-describedby="allobot-move-instructions"
       aria-label={isSleeping ? t('bot.aria_sleeping') : t('bot.aria_active')}
       onKeyDown={handleKeyDown}
       className={`fixed z-[10000] group ${motionDisabled ? 'allobot-motion-disabled' : ''} ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isSleeping ? 'opacity-60 grayscale-[0.5]' : ''} outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 rounded-full`}
