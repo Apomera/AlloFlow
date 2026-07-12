@@ -85,6 +85,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Corrected the teacher dashboard Clear all confirmation: removed button semantics and keyboard focus from the backdrop, changed the destructive prompt to a named/described alert dialog, focused the safe Cancel action instead of deletion, contained Tab, supported Escape and backdrop cancellation, restored focus to either Clear all trigger, added Space activation to the legacy card trigger, hid the decorative trash icon, and maintained 44 CSS-pixel actions (WCAG 1.1.1, 2.1.1, 2.4.3, 2.4.7, 2.5.8, 3.3.4, 4.1.2).
 
+- Made the student Escape Room puzzle layer a named focus-managed dialog; moved initial focus to its named 44 CSS-pixel Close control, contained Tab, supported Escape dismissal, returned focus to the exact puzzle object, routed successful completion through the same focus-aware close path, and hid the decorative Close icon (WCAG 1.1.1, 2.1.1, 2.4.3, 2.4.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

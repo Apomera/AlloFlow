@@ -709,6 +709,20 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
   const [showConfetti, setShowConfetti] = useState(false);
   const [teamEscapeToast, setTeamEscapeToast] = useState(null);
   const [lastEscapedTeams, setLastEscapedTeams] = useState([]);
+  const puzzleDialogRef = useRef(null);
+  const puzzleTriggerRef = useRef(null);
+  useEffect(() => {
+    if (!selectedPuzzle) return;
+    puzzleDialogRef.current?.querySelector('[data-initial-focus="true"]')?.focus();
+  }, [selectedPuzzle]);
+  const closePuzzleDialog = () => {
+    setSelectedPuzzle(null);
+    window.setTimeout(() => puzzleTriggerRef.current?.focus(), 0);
+  };
+  const openPuzzleDialog = (event, objectId) => {
+    puzzleTriggerRef.current = event.currentTarget;
+    setSelectedPuzzle(objectId);
+  };
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
     const s2 = seconds % 60;
@@ -804,7 +818,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
         if (allSolved) {
           setIsEscapeTimerRunning(false);
         }
-        setSelectedPuzzle(null);
+        closePuzzleDialog();
         setUserInput("");
         setSequenceOrder([]);
         setMatchingPairs([]);
@@ -858,7 +872,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       "button",
       {
         key: obj.id,
-        onClick: () => !isSolved && puzzle && setSelectedPuzzle(obj.id),
+        onClick: (event) => !isSolved && puzzle && openPuzzleDialog(event, obj.id),
         disabled: isSolved,
         "data-help-key": "escape_room_object",
         className: `
@@ -870,213 +884,254 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       /* @__PURE__ */ React.createElement("span", { className: "text-white text-sm font-bold text-center" }, obj.name),
       isSolved && /* @__PURE__ */ React.createElement(CheckCircle, { className: "text-green-400", size: 20 })
     );
-  }))), currentPuzzle && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800 rounded-2xl p-6 max-w-lg w-full border-2 border-purple-500 max-h-[90vh] overflow-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "text-xs px-2 py-0.5 bg-purple-600 text-white rounded-full uppercase font-bold" }, currentPuzzle.type || "mcq")), /* @__PURE__ */ React.createElement("button", { onClick: () => setSelectedPuzzle(null), "data-help-key": "escape_room_close_btn", className: "text-slate-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-full p-1", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 }))), /* @__PURE__ */ React.createElement("p", { className: "text-xl text-white font-bold mb-4" }, currentPuzzle.question), currentPuzzle.hint && /* @__PURE__ */ React.createElement("div", { className: "mb-4" }, escapeState.revealedHints?.[currentPuzzle.id] ? /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-yellow-500/20 border border-yellow-500/40 rounded-lg text-yellow-200 text-sm animate-in fade-in" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 14, className: "inline mr-2 text-yellow-400" }), currentPuzzle.hint) : /* @__PURE__ */ React.createElement(
-    "button",
+  }))), currentPuzzle && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center p-4", role: "presentation" }, /* @__PURE__ */ React.createElement(
+    "div",
     {
-      onClick: async () => {
-        if ((escapeState.hintsRemaining || 0) <= 0) return;
-        try {
-          const effectiveAppId = targetAppId || appId;
-          const sessionRef = doc(db, "artifacts", effectiveAppId, "public", "data", "sessions", activeSessionCode);
-          await updateDoc(sessionRef, {
-            [`escapeRoomState.hintsRemaining`]: (escapeState.hintsRemaining || 0) - 1,
-            [`escapeRoomState.revealedHints.${currentPuzzle.id}`]: true,
-            [`escapeRoomState.streak`]: 0
-          });
-          playSound?.("notification");
-        } catch (e) {
-          warnLog("Failed to use hint:", e);
+      ref: puzzleDialogRef,
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": "escape-room-puzzle-question",
+      onKeyDown: (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closePuzzleDialog();
+          return;
+        }
+        if (event.key !== "Tab") return;
+        const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+        if (!focusable.length) {
+          event.preventDefault();
+          return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
         }
       },
-      disabled: (escapeState.hintsRemaining || 0) <= 0,
-      "data-help-key": "escape_room_hint_button",
-      className: `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors whitespace-nowrap ${(escapeState.hintsRemaining || 0) > 0 ? "bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 border border-yellow-500/40" : "bg-slate-700 text-slate-300 cursor-not-allowed"}`
+      className: "bg-slate-800 rounded-2xl p-6 max-w-lg w-full border-2 border-purple-500 max-h-[90vh] overflow-auto"
     },
-    /* @__PURE__ */ React.createElement("span", { className: "text-sm" }, "\u{1F4A1}"),
-    t("escape_room.hint_btn"),
-    " (",
-    escapeState.hintsRemaining || 0,
-    " ",
-    t("escape_room.left"),
-    ")"
-  )), (!currentPuzzle.type || currentPuzzle.type === "mcq") && currentPuzzle.options && /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, currentPuzzle.options.map((opt, idx) => /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      key: idx,
-      onClick: () => handleSubmitAnswer(currentPuzzle.id, idx, "mcq"),
-      "data-help-key": "escape_room_mcq_option",
-      className: "w-full text-left p-4 bg-slate-700 hover:bg-purple-700 rounded-xl text-white font-medium transition-colors border-2 border-transparent hover:border-purple-400"
-    },
-    /* @__PURE__ */ React.createElement("span", { className: "inline-block w-8 font-bold text-purple-400" }, String.fromCharCode(65 + idx), "."),
-    opt
-  ))), currentPuzzle.type === "cipher" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, currentPuzzle.encodedText && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-4 rounded-lg font-mono text-purple-300 text-center" }, currentPuzzle.encodedText), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.escape_room_enter_answer"),
-      type: "text",
-      value: userInput,
-      onChange: (e) => setUserInput(e.target.value),
-      placeholder: t("escape_room.enter_answer"),
-      "data-help-key": "escape_room_cipher_input",
-      className: "w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300"
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: () => handleSubmitAnswer(currentPuzzle.id, userInput, "cipher"),
-      "data-help-key": "escape_room_cipher_submit",
-      className: "w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
-    },
-    t("escape_room.submit_answer")
-  )), currentPuzzle.type === "fillin" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, currentPuzzle.sentence && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-4 rounded-lg text-white text-center text-lg" }, currentPuzzle.sentence.replace("___", userInput ? `[${userInput}]` : "______")), currentPuzzle.wordbank && currentPuzzle.wordbank.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 text-center uppercase font-bold" }, t("escape_room.select_word") || "Select the correct word:"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" }, currentPuzzle.wordbank.map((word, idx) => /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      key: idx,
-      onClick: () => setUserInput(word),
-      className: `px-4 py-2 rounded-lg font-bold transition-all ${userInput === word ? "bg-purple-600 text-white ring-2 ring-purple-300" : "bg-slate-700 text-white hover:bg-slate-600"}`
-    },
-    word
-  )))) : /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.escape_room_enter_answer"),
-      type: "text",
-      value: userInput,
-      onChange: (e) => setUserInput(e.target.value),
-      placeholder: t("escape_room.enter_answer"),
-      "data-help-key": "escape_room_fillin_input",
-      className: "w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300"
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: () => handleSubmitAnswer(currentPuzzle.id, userInput, "fillin"),
-      disabled: !userInput,
-      "data-help-key": "escape_room_fillin_submit",
-      className: "w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50"
-    },
-    t("escape_room.submit_answer")
-  )), currentPuzzle.type === "scramble" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" }, (currentPuzzle.displayLetters || currentPuzzle.scrambledWord?.split("")).map((letter, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "w-10 h-10 flex items-center justify-center bg-purple-700 text-white font-bold rounded-lg text-xl" }, letter))), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.escape_room_unscramble_placeholder"),
-      type: "text",
-      value: userInput,
-      onChange: (e) => setUserInput(e.target.value.toUpperCase()),
-      placeholder: t("escape_room.unscramble_placeholder"),
-      "data-help-key": "escape_room_scramble_input",
-      className: "w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 text-center font-mono text-xl uppercase"
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: () => handleSubmitAnswer(currentPuzzle.id, userInput, "scramble"),
-      "data-help-key": "escape_room_scramble_submit",
-      className: "w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
-    },
-    t("escape_room.check_word")
-  )), currentPuzzle.type === "sequence" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4", "data-help-key": "escape_room_sequence_container" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-purple-300 italic mb-2" }, t("escape_room.sequence_instructions")), /* @__PURE__ */ React.createElement("div", { className: "space-y-2", role: "list", "aria-label": t("escape_room.sequence_list") || "Sequence items to order" }, sequenceOrder.length === 0 ? (currentPuzzle.shuffledItems || currentPuzzle.items || []).map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", className: "flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, item))) : sequenceOrder.map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", "aria-label": `${t("escape_room.position") || "Position"} ${idx + 1}: ${item}`, className: "flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white" }, /* @__PURE__ */ React.createElement("span", { className: "w-8 h-8 flex items-center justify-center bg-purple-600 rounded-full font-bold", "aria-hidden": "true" }, idx + 1), /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, item), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1", role: "group", "aria-label": t("escape_room.reorder_buttons") || "Reorder buttons" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: () => {
-        if (idx > 0) {
-          const newOrder = [...sequenceOrder];
-          [newOrder[idx], newOrder[idx - 1]] = [newOrder[idx - 1], newOrder[idx]];
-          setSequenceOrder(newOrder);
-        }
+    /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "text-xs px-2 py-0.5 bg-purple-600 text-white rounded-full uppercase font-bold" }, currentPuzzle.type || "mcq")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-initial-focus": "true", onClick: closePuzzleDialog, "data-help-key": "escape_room_close_btn", className: "min-w-11 min-h-11 inline-flex items-center justify-center text-slate-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-full", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" }))),
+    /* @__PURE__ */ React.createElement("h2", { id: "escape-room-puzzle-question", className: "text-xl text-white font-bold mb-4" }, currentPuzzle.question),
+    currentPuzzle.hint && /* @__PURE__ */ React.createElement("div", { className: "mb-4" }, escapeState.revealedHints?.[currentPuzzle.id] ? /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-yellow-500/20 border border-yellow-500/40 rounded-lg text-yellow-200 text-sm animate-in fade-in" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 14, className: "inline mr-2 text-yellow-400" }), currentPuzzle.hint) : /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: async () => {
+          if ((escapeState.hintsRemaining || 0) <= 0) return;
+          try {
+            const effectiveAppId = targetAppId || appId;
+            const sessionRef = doc(db, "artifacts", effectiveAppId, "public", "data", "sessions", activeSessionCode);
+            await updateDoc(sessionRef, {
+              [`escapeRoomState.hintsRemaining`]: (escapeState.hintsRemaining || 0) - 1,
+              [`escapeRoomState.revealedHints.${currentPuzzle.id}`]: true,
+              [`escapeRoomState.streak`]: 0
+            });
+            playSound?.("notification");
+          } catch (e) {
+            warnLog("Failed to use hint:", e);
+          }
+        },
+        disabled: (escapeState.hintsRemaining || 0) <= 0,
+        "data-help-key": "escape_room_hint_button",
+        className: `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors whitespace-nowrap ${(escapeState.hintsRemaining || 0) > 0 ? "bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 border border-yellow-500/40" : "bg-slate-700 text-slate-300 cursor-not-allowed"}`
       },
-      disabled: idx === 0,
-      "aria-label": `${t("escape_room.move_up") || "Move up"}: ${item}`,
-      title: t("escape_room.move_up") || "Move up",
-      className: "w-8 h-8 bg-slate-600 hover:bg-slate-500 text-white rounded disabled:opacity-30 focus:ring-2 focus:ring-purple-400 focus:outline-none"
-    },
-    "\u2191"
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: () => {
-        if (idx < sequenceOrder.length - 1) {
-          const newOrder = [...sequenceOrder];
-          [newOrder[idx], newOrder[idx + 1]] = [newOrder[idx + 1], newOrder[idx]];
-          setSequenceOrder(newOrder);
-        }
-      },
-      disabled: idx === sequenceOrder.length - 1,
-      "aria-label": `${t("escape_room.move_down") || "Move down"}: ${item}`,
-      title: t("escape_room.move_down") || "Move down",
-      className: "w-8 h-8 bg-slate-600 hover:bg-slate-500 text-white rounded disabled:opacity-30 focus:ring-2 focus:ring-purple-400 focus:outline-none"
-    },
-    "\u2193"
-  ))))), sequenceOrder.length === 0 && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: () => setSequenceOrder(currentPuzzle.shuffledItems || currentPuzzle.items || []),
-      className: "w-full p-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
-    },
-    t("escape_room.start_ordering") || "Start Ordering"
-  ), sequenceOrder.length > 0 && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: () => {
-        const originalItems = currentPuzzle.items || [];
-        const orderIndices = sequenceOrder.map((item) => originalItems.indexOf(item));
-        handleSubmitAnswer(currentPuzzle.id, orderIndices, "sequence");
-      },
-      className: "w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors"
-    },
-    t("escape_room.check_sequence")
-  )), currentPuzzle.type === "matching" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4", "data-help-key": "escape_room_matching_container" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-purple-700 italic mb-2" }, t("escape_room.matching_instructions")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-4", role: "group", "aria-label": t("escape_room.matching_columns") || "Matching columns" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-2", role: "group", "aria-label": t("escape_room.left_column") || "Left column options" }, (currentPuzzle.leftColumn || currentPuzzle.pairs?.map((p) => p.left) || []).map((item, idx) => {
-    const isMatched = matchingPairs.some((p) => p.left === item);
-    const isSelected = matchingSelected?.side === "left" && matchingSelected?.item === item;
-    return /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("span", { className: "text-sm" }, "\u{1F4A1}"),
+      t("escape_room.hint_btn"),
+      " (",
+      escapeState.hintsRemaining || 0,
+      " ",
+      t("escape_room.left"),
+      ")"
+    )),
+    (!currentPuzzle.type || currentPuzzle.type === "mcq") && currentPuzzle.options && /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, currentPuzzle.options.map((opt, idx) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: idx,
-        onClick: () => {
-          if (isMatched) return;
-          if (matchingSelected?.side === "right") {
-            setMatchingPairs([...matchingPairs, { left: item, right: matchingSelected.item }]);
-            setMatchingSelected(null);
-          } else {
-            setMatchingSelected({ side: "left", item });
-          }
-        },
-        disabled: isMatched,
-        "aria-label": isMatched ? `${item} - ${t("escape_room.matched") || "matched"}` : isSelected ? `${item} - ${t("escape_room.selected") || "selected"}` : item,
-        className: `w-full p-3 rounded-lg text-left font-medium transition-all focus:outline-none focus:ring-2 focus:ring-purple-400 ${isMatched ? "bg-green-700 text-white opacity-60" : isSelected ? "bg-purple-500 text-white ring-2 ring-purple-300" : "bg-slate-700 text-white hover:bg-slate-600"}`
+        onClick: () => handleSubmitAnswer(currentPuzzle.id, idx, "mcq"),
+        "data-help-key": "escape_room_mcq_option",
+        className: "w-full text-left p-4 bg-slate-700 hover:bg-purple-700 rounded-xl text-white font-medium transition-colors border-2 border-transparent hover:border-purple-400"
       },
-      item
-    );
-  })), /* @__PURE__ */ React.createElement("div", { className: "space-y-2", role: "group", "aria-label": t("escape_room.right_column") || "Right column options" }, (currentPuzzle.rightColumn || currentPuzzle.pairs?.map((p) => p.right) || []).map((item, idx) => {
-    const isMatched = matchingPairs.some((p) => p.right === item);
-    const isSelected = matchingSelected?.side === "right" && matchingSelected?.item === item;
-    return /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("span", { className: "inline-block w-8 font-bold text-purple-400" }, String.fromCharCode(65 + idx), "."),
+      opt
+    ))),
+    currentPuzzle.type === "cipher" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, currentPuzzle.encodedText && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-4 rounded-lg font-mono text-purple-300 text-center" }, currentPuzzle.encodedText), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        "aria-label": t("common.escape_room_enter_answer"),
+        type: "text",
+        value: userInput,
+        onChange: (e) => setUserInput(e.target.value),
+        placeholder: t("escape_room.enter_answer"),
+        "data-help-key": "escape_room_cipher_input",
+        className: "w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => handleSubmitAnswer(currentPuzzle.id, userInput, "cipher"),
+        "data-help-key": "escape_room_cipher_submit",
+        className: "w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
+      },
+      t("escape_room.submit_answer")
+    )),
+    currentPuzzle.type === "fillin" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, currentPuzzle.sentence && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-4 rounded-lg text-white text-center text-lg" }, currentPuzzle.sentence.replace("___", userInput ? `[${userInput}]` : "______")), currentPuzzle.wordbank && currentPuzzle.wordbank.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 text-center uppercase font-bold" }, t("escape_room.select_word") || "Select the correct word:"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" }, currentPuzzle.wordbank.map((word, idx) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: idx,
+        onClick: () => setUserInput(word),
+        className: `px-4 py-2 rounded-lg font-bold transition-all ${userInput === word ? "bg-purple-600 text-white ring-2 ring-purple-300" : "bg-slate-700 text-white hover:bg-slate-600"}`
+      },
+      word
+    )))) : /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        "aria-label": t("common.escape_room_enter_answer"),
+        type: "text",
+        value: userInput,
+        onChange: (e) => setUserInput(e.target.value),
+        placeholder: t("escape_room.enter_answer"),
+        "data-help-key": "escape_room_fillin_input",
+        className: "w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => handleSubmitAnswer(currentPuzzle.id, userInput, "fillin"),
+        disabled: !userInput,
+        "data-help-key": "escape_room_fillin_submit",
+        className: "w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50"
+      },
+      t("escape_room.submit_answer")
+    )),
+    currentPuzzle.type === "scramble" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" }, (currentPuzzle.displayLetters || currentPuzzle.scrambledWord?.split("")).map((letter, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "w-10 h-10 flex items-center justify-center bg-purple-700 text-white font-bold rounded-lg text-xl" }, letter))), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        "aria-label": t("common.escape_room_unscramble_placeholder"),
+        type: "text",
+        value: userInput,
+        onChange: (e) => setUserInput(e.target.value.toUpperCase()),
+        placeholder: t("escape_room.unscramble_placeholder"),
+        "data-help-key": "escape_room_scramble_input",
+        className: "w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 text-center font-mono text-xl uppercase"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => handleSubmitAnswer(currentPuzzle.id, userInput, "scramble"),
+        "data-help-key": "escape_room_scramble_submit",
+        className: "w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
+      },
+      t("escape_room.check_word")
+    )),
+    currentPuzzle.type === "sequence" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4", "data-help-key": "escape_room_sequence_container" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-purple-300 italic mb-2" }, t("escape_room.sequence_instructions")), /* @__PURE__ */ React.createElement("div", { className: "space-y-2", role: "list", "aria-label": t("escape_room.sequence_list") || "Sequence items to order" }, sequenceOrder.length === 0 ? (currentPuzzle.shuffledItems || currentPuzzle.items || []).map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", className: "flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, item))) : sequenceOrder.map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", "aria-label": `${t("escape_room.position") || "Position"} ${idx + 1}: ${item}`, className: "flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white" }, /* @__PURE__ */ React.createElement("span", { className: "w-8 h-8 flex items-center justify-center bg-purple-600 rounded-full font-bold", "aria-hidden": "true" }, idx + 1), /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, item), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1", role: "group", "aria-label": t("escape_room.reorder_buttons") || "Reorder buttons" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
         onClick: () => {
-          if (isMatched) return;
-          if (matchingSelected?.side === "left") {
-            setMatchingPairs([...matchingPairs, { left: matchingSelected.item, right: item }]);
-            setMatchingSelected(null);
-          } else {
-            setMatchingSelected({ side: "right", item });
+          if (idx > 0) {
+            const newOrder = [...sequenceOrder];
+            [newOrder[idx], newOrder[idx - 1]] = [newOrder[idx - 1], newOrder[idx]];
+            setSequenceOrder(newOrder);
           }
         },
-        disabled: isMatched,
-        "aria-label": isMatched ? `${item} - ${t("escape_room.matched") || "matched"}` : isSelected ? `${item} - ${t("escape_room.selected") || "selected"}` : item,
-        className: `w-full p-3 rounded-lg text-left font-medium transition-all focus:outline-none focus:ring-2 focus:ring-purple-400 ${isMatched ? "bg-green-700 text-white opacity-60" : isSelected ? "bg-purple-500 text-white ring-2 ring-purple-300" : "bg-slate-700 text-white hover:bg-slate-600"}`
+        disabled: idx === 0,
+        "aria-label": `${t("escape_room.move_up") || "Move up"}: ${item}`,
+        title: t("escape_room.move_up") || "Move up",
+        className: "w-8 h-8 bg-slate-600 hover:bg-slate-500 text-white rounded disabled:opacity-30 focus:ring-2 focus:ring-purple-400 focus:outline-none"
       },
-      item
-    );
-  }))), matchingPairs.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-3 rounded-lg", role: "list", "aria-label": t("escape_room.matched_pairs") || "Matched pairs" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2", "aria-hidden": "true" }, t("escape_room.matched_pairs")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, matchingPairs.map((pair, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", className: "text-sm text-green-400" }, "\u2713 ", pair.left, " \u2194 ", pair.right)))), matchingPairs.length >= (currentPuzzle.pairs?.length || 4) && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: () => handleSubmitAnswer(currentPuzzle.id, matchingPairs, "matching"),
-      className: "w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors"
-    },
-    t("escape_room.submit_answer")
-  )), currentPuzzle.hint && /* @__PURE__ */ React.createElement("p", { className: "mt-4 text-purple-400 text-sm italic" }, "\u{1F4A1} ", currentPuzzle.hint))), isPaused && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[10001] bg-black/80 flex items-center justify-center backdrop-blur-sm" }, /* @__PURE__ */ React.createElement("div", { className: "text-center text-white animate-pulse" }, /* @__PURE__ */ React.createElement("div", { className: "text-8xl mb-6" }, "\u23F8\uFE0F"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black mb-3" }, t("escape_room.game_paused")), /* @__PURE__ */ React.createElement("p", { className: "text-xl text-slate-400" }, t("escape_room.waiting_resume")))), teamEscapeToast && /* @__PURE__ */ React.createElement("div", { className: "fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in slide-in-from-bottom duration-300" }, /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border-2 ${teamColors[teamEscapeToast]?.border || "border-purple-500"} bg-slate-900` }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl" }, "\u{1F6AA}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-white font-bold" }, t("escape_room.team_escaped", { team: teamEscapeToast })), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm" }, t("escape_room.hurry_up"))))));
+      "\u2191"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => {
+          if (idx < sequenceOrder.length - 1) {
+            const newOrder = [...sequenceOrder];
+            [newOrder[idx], newOrder[idx + 1]] = [newOrder[idx + 1], newOrder[idx]];
+            setSequenceOrder(newOrder);
+          }
+        },
+        disabled: idx === sequenceOrder.length - 1,
+        "aria-label": `${t("escape_room.move_down") || "Move down"}: ${item}`,
+        title: t("escape_room.move_down") || "Move down",
+        className: "w-8 h-8 bg-slate-600 hover:bg-slate-500 text-white rounded disabled:opacity-30 focus:ring-2 focus:ring-purple-400 focus:outline-none"
+      },
+      "\u2193"
+    ))))), sequenceOrder.length === 0 && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => setSequenceOrder(currentPuzzle.shuffledItems || currentPuzzle.items || []),
+        className: "w-full p-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
+      },
+      t("escape_room.start_ordering") || "Start Ordering"
+    ), sequenceOrder.length > 0 && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => {
+          const originalItems = currentPuzzle.items || [];
+          const orderIndices = sequenceOrder.map((item) => originalItems.indexOf(item));
+          handleSubmitAnswer(currentPuzzle.id, orderIndices, "sequence");
+        },
+        className: "w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors"
+      },
+      t("escape_room.check_sequence")
+    )),
+    currentPuzzle.type === "matching" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4", "data-help-key": "escape_room_matching_container" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-purple-700 italic mb-2" }, t("escape_room.matching_instructions")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-4", role: "group", "aria-label": t("escape_room.matching_columns") || "Matching columns" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-2", role: "group", "aria-label": t("escape_room.left_column") || "Left column options" }, (currentPuzzle.leftColumn || currentPuzzle.pairs?.map((p) => p.left) || []).map((item, idx) => {
+      const isMatched = matchingPairs.some((p) => p.left === item);
+      const isSelected = matchingSelected?.side === "left" && matchingSelected?.item === item;
+      return /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: idx,
+          onClick: () => {
+            if (isMatched) return;
+            if (matchingSelected?.side === "right") {
+              setMatchingPairs([...matchingPairs, { left: item, right: matchingSelected.item }]);
+              setMatchingSelected(null);
+            } else {
+              setMatchingSelected({ side: "left", item });
+            }
+          },
+          disabled: isMatched,
+          "aria-label": isMatched ? `${item} - ${t("escape_room.matched") || "matched"}` : isSelected ? `${item} - ${t("escape_room.selected") || "selected"}` : item,
+          className: `w-full p-3 rounded-lg text-left font-medium transition-all focus:outline-none focus:ring-2 focus:ring-purple-400 ${isMatched ? "bg-green-700 text-white opacity-60" : isSelected ? "bg-purple-500 text-white ring-2 ring-purple-300" : "bg-slate-700 text-white hover:bg-slate-600"}`
+        },
+        item
+      );
+    })), /* @__PURE__ */ React.createElement("div", { className: "space-y-2", role: "group", "aria-label": t("escape_room.right_column") || "Right column options" }, (currentPuzzle.rightColumn || currentPuzzle.pairs?.map((p) => p.right) || []).map((item, idx) => {
+      const isMatched = matchingPairs.some((p) => p.right === item);
+      const isSelected = matchingSelected?.side === "right" && matchingSelected?.item === item;
+      return /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: idx,
+          onClick: () => {
+            if (isMatched) return;
+            if (matchingSelected?.side === "left") {
+              setMatchingPairs([...matchingPairs, { left: matchingSelected.item, right: item }]);
+              setMatchingSelected(null);
+            } else {
+              setMatchingSelected({ side: "right", item });
+            }
+          },
+          disabled: isMatched,
+          "aria-label": isMatched ? `${item} - ${t("escape_room.matched") || "matched"}` : isSelected ? `${item} - ${t("escape_room.selected") || "selected"}` : item,
+          className: `w-full p-3 rounded-lg text-left font-medium transition-all focus:outline-none focus:ring-2 focus:ring-purple-400 ${isMatched ? "bg-green-700 text-white opacity-60" : isSelected ? "bg-purple-500 text-white ring-2 ring-purple-300" : "bg-slate-700 text-white hover:bg-slate-600"}`
+        },
+        item
+      );
+    }))), matchingPairs.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-3 rounded-lg", role: "list", "aria-label": t("escape_room.matched_pairs") || "Matched pairs" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2", "aria-hidden": "true" }, t("escape_room.matched_pairs")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, matchingPairs.map((pair, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", className: "text-sm text-green-400" }, "\u2713 ", pair.left, " \u2194 ", pair.right)))), matchingPairs.length >= (currentPuzzle.pairs?.length || 4) && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => handleSubmitAnswer(currentPuzzle.id, matchingPairs, "matching"),
+        className: "w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors"
+      },
+      t("escape_room.submit_answer")
+    )),
+    currentPuzzle.hint && /* @__PURE__ */ React.createElement("p", { className: "mt-4 text-purple-400 text-sm italic" }, "\u{1F4A1} ", currentPuzzle.hint)
+  )), isPaused && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[10001] bg-black/80 flex items-center justify-center backdrop-blur-sm" }, /* @__PURE__ */ React.createElement("div", { className: "text-center text-white animate-pulse" }, /* @__PURE__ */ React.createElement("div", { className: "text-8xl mb-6" }, "\u23F8\uFE0F"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black mb-3" }, t("escape_room.game_paused")), /* @__PURE__ */ React.createElement("p", { className: "text-xl text-slate-400" }, t("escape_room.waiting_resume")))), teamEscapeToast && /* @__PURE__ */ React.createElement("div", { className: "fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in slide-in-from-bottom duration-300" }, /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border-2 ${teamColors[teamEscapeToast]?.border || "border-purple-500"} bg-slate-900` }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl" }, "\u{1F6AA}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-white font-bold" }, t("escape_room.team_escaped", { team: teamEscapeToast })), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm" }, t("escape_room.hurry_up"))))));
 });
 const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, appId: appId2, t, addToast: addToast2 }) => {
   const escapeState = sessionData?.escapeRoomState;

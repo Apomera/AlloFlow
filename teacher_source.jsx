@@ -712,6 +712,20 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
   const [showConfetti, setShowConfetti] = useState(false);
   const [teamEscapeToast, setTeamEscapeToast] = useState(null);
   const [lastEscapedTeams, setLastEscapedTeams] = useState([]);
+  const puzzleDialogRef = useRef(null);
+  const puzzleTriggerRef = useRef(null);
+  useEffect(() => {
+    if (!selectedPuzzle) return;
+    puzzleDialogRef.current?.querySelector('[data-initial-focus="true"]')?.focus();
+  }, [selectedPuzzle]);
+  const closePuzzleDialog = () => {
+    setSelectedPuzzle(null);
+    window.setTimeout(() => puzzleTriggerRef.current?.focus(), 0);
+  };
+  const openPuzzleDialog = (event, objectId) => {
+    puzzleTriggerRef.current = event.currentTarget;
+    setSelectedPuzzle(objectId);
+  };
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -807,7 +821,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
         if (allSolved) {
           setIsEscapeTimerRunning(false);
         }
-        setSelectedPuzzle(null);
+        closePuzzleDialog();
         setUserInput('');
         setSequenceOrder([]);
         setMatchingPairs([]);
@@ -961,7 +975,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
             return (
               <button
                 key={obj.id}
-                onClick={() => !isSolved && puzzle && setSelectedPuzzle(obj.id)}
+                onClick={event => !isSolved && puzzle && openPuzzleDialog(event, obj.id)}
                 disabled={isSolved}
                 data-help-key="escape_room_object"
                 className={`
@@ -981,19 +995,35 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
         </div>
       </div>
       {currentPuzzle && (
-        <div className="fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-slate-800 rounded-2xl p-6 max-w-lg w-full border-2 border-purple-500 max-h-[90vh] overflow-auto">
+        <div className="fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center p-4" role="presentation">
+          <div
+            ref={puzzleDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="escape-room-puzzle-question"
+            onKeyDown={event => {
+              if (event.key === 'Escape') { event.preventDefault(); closePuzzleDialog(); return; }
+              if (event.key !== 'Tab') return;
+              const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+              if (!focusable.length) { event.preventDefault(); return; }
+              const first = focusable[0];
+              const last = focusable[focusable.length - 1];
+              if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+              else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+            }}
+            className="bg-slate-800 rounded-2xl p-6 max-w-lg w-full border-2 border-purple-500 max-h-[90vh] overflow-auto"
+          >
             <div className="flex justify-between items-start mb-4">
               <div>
                 <span className="text-xs px-2 py-0.5 bg-purple-600 text-white rounded-full uppercase font-bold">
                   {currentPuzzle.type || 'mcq'}
                 </span>
               </div>
-              <button onClick={() => setSelectedPuzzle(null)} data-help-key="escape_room_close_btn" className="text-slate-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-full p-1" aria-label={t('common.close')}>
-                <X size={24} />
+              <button type="button" data-initial-focus="true" onClick={closePuzzleDialog} data-help-key="escape_room_close_btn" className="min-w-11 min-h-11 inline-flex items-center justify-center text-slate-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-full" aria-label={t('common.close')}>
+                <X size={24} aria-hidden="true" />
               </button>
             </div>
-            <p className="text-xl text-white font-bold mb-4">{currentPuzzle.question}</p>
+            <h2 id="escape-room-puzzle-question" className="text-xl text-white font-bold mb-4">{currentPuzzle.question}</h2>
             {currentPuzzle.hint && (
               <div className="mb-4">
                 {escapeState.revealedHints?.[currentPuzzle.id] ? (
