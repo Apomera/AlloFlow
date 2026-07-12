@@ -661,12 +661,12 @@ function HighlightOverlay({ a, onDelete }) {
             onClick={function (e) { e.stopPropagation(); onDelete(a.id); }}
             className="absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
             style={{
-              top: -10, right: -10,
-              width: 18, height: 18,
+              top: -12, right: -12,
+              width: 24, height: 24,
               borderRadius: '50%',
               background: 'white',
               border: '1px solid ' + palette.border,
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: 700,
               cursor: 'pointer',
               display: 'flex',
@@ -795,11 +795,11 @@ function DrawingOverlay({ a, onDelete }) {
           className="absolute pointer-events-auto opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
           style={{
             top: 0, right: 0,
-            width: 18, height: 18,
+            width: 24, height: 24,
             borderRadius: '50%',
             background: 'white',
             border: '1px solid ' + stroke,
-            fontSize: 11, fontWeight: 700,
+            fontSize: 12, fontWeight: 700,
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: '#475569', lineHeight: 1,
@@ -1235,7 +1235,7 @@ function Toolbar(props) {
           <div className="w-px h-4 bg-slate-200 mx-1"></div>
           <button
             onClick={onClear}
-            className="p-1 text-slate-600 hover:text-red-500 rounded-full"
+            className="w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full"
             title={tt('toolbar.clear_stickers')}
             aria-label={tt('toolbar.clear_stickers')}
           >
@@ -1253,7 +1253,7 @@ function Toolbar(props) {
                 key={key}
                 aria-label={'Note color ' + key}
                 onClick={function () { onPickNoteColor(key); }}
-                className={'w-5 h-5 rounded transition-transform hover:scale-125 ' + (noteColor === key ? 'ring-2 ring-amber-500 scale-110' : 'opacity-70 hover:opacity-100')}
+                className={'w-6 h-6 rounded transition-transform hover:scale-125 ' + (noteColor === key ? 'ring-2 ring-amber-500 scale-110' : 'opacity-70 hover:opacity-100')}
                 style={{ background: palette.fill, border: '2px solid ' + palette.border }}
                 title={key}
               />
@@ -1269,7 +1269,7 @@ function Toolbar(props) {
             className="text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400 max-w-[150px]"
             aria-label={t("a11y.note_template")}
             title={noteTemplate ? 'Template active: next note auto-fills' : 'Pick a template to auto-fill the next note'}
-            style={{ height: 22 }}
+            style={{ minHeight: 24 }}
           >
             <option value="">Custom (type)</option>
             {templateSet.map(function (tmpl) {
@@ -1279,7 +1279,7 @@ function Toolbar(props) {
           <div className="w-px h-4 bg-slate-200 mx-1"></div>
           <button
             onClick={onClear}
-            className="p-1 text-slate-600 hover:text-red-500 rounded-full"
+            className="w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full"
             title="Clear all annotations"
             aria-label={t("a11y.clear_all_annotations")}
           >
@@ -1297,7 +1297,7 @@ function Toolbar(props) {
                 key={key}
                 aria-label={'Highlight color ' + key}
                 onClick={function () { onPickHighlightColor(key); }}
-                className={'w-5 h-5 rounded transition-transform hover:scale-125 ' + (highlightColor === key ? 'ring-2 ring-yellow-500 scale-110' : 'opacity-70 hover:opacity-100')}
+                className={'w-6 h-6 rounded transition-transform hover:scale-125 ' + (highlightColor === key ? 'ring-2 ring-yellow-500 scale-110' : 'opacity-70 hover:opacity-100')}
                 style={{ background: palette.fill, border: '2px solid ' + palette.border }}
                 title={key}
               />
@@ -1306,7 +1306,7 @@ function Toolbar(props) {
           <div className="w-px h-4 bg-slate-200 mx-1"></div>
           <button
             onClick={onClear}
-            className="p-1 text-slate-600 hover:text-red-500 rounded-full"
+            className="w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full"
             title="Clear all annotations"
             aria-label={t("a11y.clear_all_annotations")}
           >
@@ -1345,7 +1345,7 @@ function Toolbar(props) {
                     key={key}
                     aria-label={'Draw color ' + key}
                     onClick={function () { onPickDrawColor(key); }}
-                    className={'w-5 h-5 rounded-full transition-transform hover:scale-125 ' + (drawColor === key ? 'ring-2 ring-fuchsia-500 scale-110' : 'opacity-70 hover:opacity-100')}
+                    className={'w-6 h-6 rounded-full transition-transform hover:scale-125 ' + (drawColor === key ? 'ring-2 ring-fuchsia-500 scale-110' : 'opacity-70 hover:opacity-100')}
                     style={{ background: c, border: '2px solid ' + c }}
                     title={key}
                   />
@@ -1359,7 +1359,7 @@ function Toolbar(props) {
                 const currentHex = DRAW_COLORS[drawColor] || drawColor || '#dc2626';
                 return (
                   <label
-                    className={'relative w-5 h-5 rounded-full overflow-hidden transition-transform hover:scale-125 cursor-pointer ' + (isCustom ? 'ring-2 ring-fuchsia-500 scale-110' : 'opacity-70 hover:opacity-100')}
+                    className={'relative w-6 h-6 rounded-full overflow-hidden transition-transform hover:scale-125 cursor-pointer ' + (isCustom ? 'ring-2 ring-fuchsia-500 scale-110' : 'opacity-70 hover:opacity-100')}
                     style={{
                       // Rainbow gradient hint that this swatch picks any color
                       background: 'conic-gradient(red, yellow, lime, cyan, blue, magenta, red)',
@@ -1398,7 +1398,7 @@ function Toolbar(props) {
                     aria-label={'Line width ' + w + 'px'}
                     onClick={function () { onPickDrawWidth(w); }}
                     className={'flex items-center justify-center rounded transition-transform hover:scale-125 ' + (drawWidth === w ? 'ring-2 ring-fuchsia-500 scale-110 bg-fuchsia-50' : 'opacity-70 hover:opacity-100')}
-                    style={{ width: 22, height: 22 }}
+                    style={{ width: 24, height: 24 }}
                     title={w + 'px'}
                   >
                     <span style={{ display: 'inline-block', width: 12, height: w, borderRadius: w / 2, background: '#374151' }} />
@@ -1410,7 +1410,7 @@ function Toolbar(props) {
           <div className="w-px h-4 bg-slate-200 mx-1"></div>
           <button
             onClick={onClear}
-            className="p-1 text-slate-600 hover:text-red-500 rounded-full"
+            className="w-6 h-6 inline-flex items-center justify-center text-slate-600 hover:text-red-500 rounded-full"
             title="Clear all annotations"
             aria-label={t("a11y.clear_all_annotations")}
           >
