@@ -332,6 +332,65 @@ describe('Lingua Practice UI localization', () => {
     expect(Lingua._translate('Klingon', 'nav_setup')).toBe('Setup');
     expect(Lingua._translate('Spanish', 'no_such_key')).toBe('no_such_key');
   });
+
+  it('keeps every bundled pack complete, token-faithful, and free of em dashes', () => {
+    const packs = Lingua._uiStrings;
+    const englishKeys = Object.keys(packs.English);
+    const tokens = (value) => (String(value).match(/\{[a-z]+\}/gi) || []).sort();
+    for (const language of Object.keys(packs)) {
+      for (const key of englishKeys) {
+        expect(packs[language][key], `${language}.${key} missing`).toBeTypeOf('string');
+        expect(packs[language][key].trim(), `${language}.${key} empty`).not.toBe('');
+        // Interpolation tokens must survive translation exactly.
+        expect(tokens(packs[language][key]), `${language}.${key} tokens`).toEqual(tokens(packs.English[key]));
+        // Standing editorial rule: no em or en dashes in user-facing text.
+        expect(packs[language][key], `${language}.${key} dash`).not.toMatch(/[—–]/);
+      }
+      // No stray keys that English (the canonical set) does not define.
+      expect(Object.keys(packs[language]).filter((k) => !englishKeys.includes(k))).toEqual([]);
+    }
+  });
+
+  it('buckets recent activity into translatable parts', () => {
+    const now = Date.UTC(2026, 0, 5);
+    expect(Lingua._activityParts(0, now)).toEqual({ key: 'activity_none', n: 0 });
+    expect(Lingua._activityParts(now, now)).toEqual({ key: 'activity_today', n: 0 });
+    expect(Lingua._activityParts(now - 86400000, now)).toEqual({ key: 'activity_yesterday', n: 0 });
+    expect(Lingua._activityParts(now - 3 * 86400000, now)).toEqual({ key: 'activity_days', n: 3 });
+  });
+});
+
+describe('Lingua Practice word-bank CSV export', () => {
+  it('quotes fields, escapes quotes, and neutralizes leading formula characters', () => {
+    const csv = Lingua._wordBankCsv([
+      { language: 'Spanish', term: 'hola', meaning: 'hello', pronunciation: 'OH-lah', example: 'Hola, "Ana".', examplePronunciation: '', translation: 'Hello, "Ana".' },
+      { language: 'French', term: '=2+2', meaning: 'injection attempt', pronunciation: '', example: '', examplePronunciation: '', translation: '' },
+    ]);
+    const lines = csv.split('\r\n');
+    expect(lines[0]).toBe('"Language","Term","Meaning","Pronunciation","Example","Example pronunciation","Translation"');
+    expect(lines[1]).toContain('"Hola, ""Ana""."');
+    // Leading = is prefixed so spreadsheet apps treat the cell as text.
+    expect(lines[2]).toContain('"\'=2+2"');
+    expect(lines).toHaveLength(3);
+  });
+
+  it('handles missing fields and non-array input safely', () => {
+    expect(Lingua._wordBankCsv(null).split('\r\n')).toHaveLength(1);
+    const csv = Lingua._wordBankCsv([{ language: 'Spanish', term: 'hola' }]);
+    expect(csv.split('\r\n')[1]).toBe('"Spanish","hola","","","","",""');
+  });
+});
+
+describe('Lingua Practice coaching fallback localization', () => {
+  it('uses caller-provided fallback strength and tip when the AI reply is unusable', () => {
+    const result = Lingua._parseCoachFeedback('not json', { sample: 'Hola.', samplePronunciation: 'OH-lah' }, {
+      strength: 'Completaste el turno.',
+      tip: 'Compara tu respuesta.',
+    });
+    expect(result.strength).toBe('Completaste el turno.');
+    expect(result.tip).toBe('Compara tu respuesta.');
+    expect(result.suggested).toBe('Hola.');
+  });
 });
 
 describe('Lingua Practice chat persistence', () => {
@@ -362,6 +421,23 @@ describe('Lingua Practice script-aware speech matching', () => {
     expect(Lingua._usesCharacterMatching('こんにちは、ゆきです。')).toBe(true);
     expect(Lingua._usesCharacterMatching('안녕하세요')).toBe(true);
     expect(Lingua._usesCharacterMatching('Hola, me llamo Ana.')).toBe(false);
+  });
+
+  it('uses character coverage for spaceless Thai, Lao, Khmer, and Burmese scripts', () => {
+    // These scripts write without spaces between words; word matching would
+    // treat a whole phrase as one token and score honest attempts near zero.
+    expect(Lingua._usesCharacterMatching('สวัสดีครับ')).toBe(true); // Thai
+    expect(Lingua._usesCharacterMatching('ສະບາຍດີ')).toBe(true); // Lao
+    expect(Lingua._usesCharacterMatching('សួស្តី')).toBe(true); // Khmer
+    expect(Lingua._usesCharacterMatching('မင်္ဂလာပါ')).toBe(true); // Burmese
+    // Arabic and Latin keep word coverage.
+    expect(Lingua._usesCharacterMatching('مرحباً، اسمي نور.')).toBe(false);
+
+    // A partial Thai attempt earns partial credit instead of zero.
+    expect(Lingua._similarity('สวัสดีครับ', 'สวัสดีครับ')).toBe(100);
+    const partial = Lingua._similarity('สวัสดีครับ', 'สวัสดี');
+    expect(partial).toBeGreaterThan(30);
+    expect(partial).toBeLessThan(100);
 
     expect(Lingua._similarity('你好，我叫小明。', '你好我叫小明')).toBe(100);
     expect(Lingua._similarity('你好，我叫小明。', '你好小明')).toBeGreaterThan(40);

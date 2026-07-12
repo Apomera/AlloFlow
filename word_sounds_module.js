@@ -669,15 +669,29 @@
       const g = String(grapheme).trim().toLowerCase();
       return PHONEME_KEY_OF[g] || g;
     };
-    const WordSoundsReviewPanel =
-      typeof window.WordSoundsReviewPanel !== "undefined"
-        ? window.WordSoundsReviewPanel
-        : (props) =>
-          React.createElement(
-            "div",
-            { className: "p-4 text-center text-slate-600 text-sm" },
-            "📋 Review Panel (loading...)",
-          );
+    // Resolved at RENDER time, not module-load time: CDN module fetch order is
+    // network-dependent, so capturing window.WordSoundsReviewPanel once at IIFE
+    // evaluation permanently froze the "loading..." fallback whenever this
+    // module finished loading before misc_components. The fallback also keeps a
+    // Start button usable so nobody is ever hard-stuck on it.
+    const WordSoundsReviewPanel = (props) => {
+      const Impl = window.WordSoundsReviewPanel;
+      if (typeof Impl === "function") return React.createElement(Impl, props);
+      return React.createElement(
+        "div",
+        { className: "p-6 text-center text-slate-600 text-sm space-y-3" },
+        React.createElement("div", null, "📋 Review Panel (loading...)"),
+        React.createElement(
+          "button",
+          {
+            onClick: props.onStartActivity,
+            className:
+              "px-4 py-2 bg-violet-600 text-white font-bold rounded-lg text-sm hover:bg-violet-700",
+          },
+          "Start Activity",
+        ),
+      );
+    };
     const loadWordAudioBank =
       typeof window.loadWordAudioBank === "function"
         ? window.loadWordAudioBank
@@ -1404,6 +1418,18 @@
           return "s";
         if (w.startsWith("g") && w.length > 1 && "eiy".includes(w[1]))
           return "j";
+        // Vowel-first words: the first PHONEME can be a multi-letter unit —
+        // an r-controlled vowel ("art" → /ar/, not letter-a) or a vowel team
+        // ("eat" → /ea/, "out" → /ow/). Returning the bare first letter made
+        // corrective feedback speak the wrong sound for these words.
+        const rControlled = ["ar", "er", "ir", "or", "ur"];
+        for (const rc of rControlled) {
+          if (w.startsWith(rc)) return rc;
+        }
+        const vowelTeams = ["ai", "ay", "au", "aw", "ea", "ee", "ei", "ey", "ew", "ie", "igh", "oa", "oe", "oi", "oo", "ou", "ow", "oy", "ue"];
+        for (const vt of vowelTeams) {
+          if (w.startsWith(vt)) return vt;
+        }
         return w.charAt(0);
       };
       const estimateLastPhoneme = (word) => {
@@ -1429,6 +1455,12 @@
         for (const dg of digraphs) {
           if (dg === "ck" && w.endsWith("ck")) return "k";
           if (w.endsWith(dg)) return dg;
+        }
+        // Vowel-team endings are one PHONEME ("play" → /ay/, not letter-y;
+        // "tree" → /ee/) — mirror of the first-phoneme fix above.
+        const vowelTeams = ["igh", "ay", "ey", "ee", "ea", "oo", "ew", "ue", "ie", "oa", "ow", "oe", "oy", "oi", "aw", "au"];
+        for (const vt of vowelTeams) {
+          if (w.endsWith(vt)) return vt;
         }
         return w.slice(-1);
       };
@@ -1968,6 +2000,19 @@
         initialShowReviewPanel || false,
       );
       const hasStartedFromReview = React.useRef(false);
+      // Direct-play detection: hosts that preset a concrete activity before
+      // mount (live-session push hydration, student self-open from history,
+      // the preview "Launch" button) intend the GAME, not the teacher
+      // word-list review. Every teacher launch path that wants the review
+      // panel says so via initialShowReviewPanel (wordSoundsAutoReview), so
+      // the force-review effects below must not override a direct-play mount
+      // — that stranded live-session students on a teacher-only screen.
+      // 'word-sounds' is the placeholder activity value, not a real one.
+      const mountPresetActivityRef = React.useRef(
+        !!wordSoundsActivity &&
+          wordSoundsActivity !== "word-sounds" &&
+          !initialShowReviewPanel,
+      );
       const lastPreloadedFirstWord = React.useRef(null);
       const [masteryStats, setMasteryStats] = React.useState({});
       const [revisitQueue, setRevisitQueue] = React.useState([]);
@@ -7284,8 +7329,10 @@ EXAMPLES:
                   phonemes: smartPhonemes,
                   phonemeCount: smartPhonemes.length,
                   rhymeWords: [],
-                  firstSound: targetWord[0]?.toLowerCase(),
-                  lastSound: targetWord[targetWord.length - 1]?.toLowerCase(),
+                  // First/last SOUND, not letter: smartPhonemes is digraph-
+                  // aware, so "car" cues /ar/ (r-controlled) not letter-r.
+                  firstSound: smartPhonemes[0] || targetWord[0]?.toLowerCase(),
+                  lastSound: smartPhonemes[smartPhonemes.length - 1] || targetWord[targetWord.length - 1]?.toLowerCase(),
                 };
               }
               // ── eSpeak-primary phoneme sequence + Gemini triangulation (2026-07-06) ──
@@ -9443,7 +9490,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           }
           const firstWord = preloadedWords[0];
           if (firstWord && firstWord.phonemes) {
-            if (!showReviewPanel && !hasStartedFromReview.current && !isProbeMode) {
+            if (
+              !showReviewPanel &&
+              !hasStartedFromReview.current &&
+              !isProbeMode &&
+              !mountPresetActivityRef.current
+            ) {
               setShowReviewPanel(true);
             }
           }
@@ -9467,7 +9519,17 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           (preloadedWords && preloadedWords.length > 0);
         if (hasWords && !currentWordSoundsWord && !isLoadingPhonemes) {
           if (preloadedWords.length > 0 && !hasStartedFromReview.current && !isProbeMode) {
-            setShowReviewPanel(true);
+            if (!mountPresetActivityRef.current) {
+              setShowReviewPanel(true);
+              return;
+            }
+            // Direct-play mount (live-session push / student self-open /
+            // preview Launch): start the preset activity — never strand a
+            // student on the teacher review panel. Also restarts play when a
+            // teacher pushes a DIFFERENT word set while the modal is mounted
+            // (the new-first-word effect resets hasStartedFromReview).
+            hasStartedFromReview.current = true;
+            startActivity(wordSoundsActivity || "counting");
             return;
           }
           // Guard: if user already started from review and we have preloaded words,
@@ -10309,11 +10371,18 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               } else {
                 // Never build a letter hint from a sentinel ("correct" →
                 // 'starts with "C"') — fall back to a generic encouragement.
+                // Cue the first grapheme CLUSTER, not the first letter: "chip"
+                // starts with "CH", "art" with "AR" (r-controlled) — a bare
+                // "C"/"A" cues the wrong sound for digraph/vowel-team words.
+                const _hintOnset =
+                  (typeof estimateFirstPhoneme === "function"
+                    ? estimateFirstPhoneme(safeExpected)
+                    : "") || safeExpected.charAt(0);
                 const hint = _expIsSentinel || !safeExpected
                   ? "So close!"
                   : wordSoundsPhonemes?.phonemes
-                    ? `Hint: This word has ${wordSoundsPhonemes.phonemes.length} sounds and starts with "${safeExpected.charAt(0).toUpperCase()}"`
-                    : `Hint: It starts with "${safeExpected.charAt(0).toUpperCase()}"`;
+                    ? `Hint: This word has ${wordSoundsPhonemes.phonemes.length} sounds and starts with "${_hintOnset.toUpperCase()}"`
+                    : `Hint: It starts with "${_hintOnset.toUpperCase()}"`;
                 setWordSoundsFeedback?.({
                   isCorrect: false,
                   message:

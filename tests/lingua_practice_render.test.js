@@ -326,6 +326,107 @@ describe('Lingua Practice runtime auto-localization', () => {
   });
 });
 
+describe('Lingua Practice localized chrome details', () => {
+  it('shows level labels in the known language while storing canonical values', async () => {
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, callGemini: async () => '{}' }));
+    const known = host.querySelector('select[aria-label="I know"]');
+    await act(async () => { known.value = 'Spanish'; known.dispatchEvent(new Event('change', { bubbles: true })); });
+
+    const level = host.querySelector('select[aria-label="Mi nivel"]');
+    expect(level).toBeTruthy();
+    expect(level.value).toBe('Beginner'); // stored value stays canonical
+    const labels = Array.from(level.options).map((o) => o.textContent);
+    expect(labels).toContain('Principiante');
+    expect(labels).toContain('Intermedio');
+    // Wave-2 strings: long setup paragraph and topic chips are localized too.
+    expect(host.textContent).toContain('Elige tus idiomas y un tema.');
+    expect(button('Presentaciones')).toBeTruthy();
+  });
+
+  it('flips the dialog to RTL once translated chrome exists for an RTL known language', async () => {
+    const callGemini = async (prompt) => {
+      if (typeof prompt === 'string' && prompt.includes('Localize the user-interface labels')) {
+        const en = JSON.parse(prompt.slice(prompt.indexOf('{"')));
+        const out = {};
+        Object.keys(en).forEach((k) => { out[k] = 'AR·' + en[k]; });
+        return JSON.stringify(out);
+      }
+      return '{}';
+    };
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, callGemini }));
+
+    const dialog = host.querySelector('[role="dialog"]');
+    expect(dialog.getAttribute('dir')).toBe(null); // English chrome stays LTR
+
+    const known = host.querySelector('select[aria-label="I know"]');
+    await act(async () => { known.value = 'Arabic'; known.dispatchEvent(new Event('change', { bubbles: true })); });
+    // Still LTR while the auto-translation is pending (English labels).
+    expect(dialog.getAttribute('dir')).toBe(null);
+
+    await act(async () => { await new Promise((r) => setTimeout(r, 900)); });
+    expect(dialog.getAttribute('dir')).toBe('rtl');
+    expect(dialog.getAttribute('lang')).toBe('ar-SA');
+  });
+});
+
+describe('Lingua Practice progress quick-switch', () => {
+  it('lists other practiced languages and switches the target from the Progress tab', async () => {
+    localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({
+      sessions: 2,
+      spokenAttempts: 0,
+      languageStats: {
+        Spanish: { practiceSets: 2, lastPracticedAt: Date.now() },
+        French: { practiceSets: 1, lastPracticedAt: Date.now() },
+      },
+      saved: [{ id: 'French::bonjour', language: 'French', term: 'bonjour', meaning: 'hello', reviewStage: 0, nextReviewAt: 0 }],
+    }));
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {} }));
+    await act(async () => { button('Progress').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+
+    expect(host.textContent).toContain('Other languages you have practiced');
+    const chip = host.querySelector('button[aria-label="Practice French"]');
+    expect(chip.textContent).toBe('French · 1');
+    await act(async () => { chip.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+
+    // Still on Progress, now for French; French no longer offered as "other".
+    expect(host.textContent).toContain('French progress');
+    expect(host.querySelector('button[aria-label="Practice French"]')).toBe(null);
+    expect(host.querySelector('button[aria-label="Practice Spanish"]')).toBeTruthy();
+    expect(JSON.parse(localStorage.getItem('allo_lingua_profile_v1')).target).toBe('French');
+  });
+});
+
+describe('Lingua Practice word-bank download', () => {
+  it('downloads the saved words as a local CSV file', async () => {
+    localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({
+      sessions: 0,
+      spokenAttempts: 0,
+      saved: [{ id: 'Spanish::hola', language: 'Spanish', term: 'hola', meaning: 'hello', reviewStage: 0, nextReviewAt: 0 }],
+    }));
+    const toasts = [];
+    const clicks = [];
+    const originalClick = window.HTMLAnchorElement.prototype.click;
+    const originalCreate = window.URL.createObjectURL;
+    const originalRevoke = window.URL.revokeObjectURL;
+    window.HTMLAnchorElement.prototype.click = function () { clicks.push(this.getAttribute('download')); };
+    window.URL.createObjectURL = () => 'blob:lingua-test';
+    window.URL.revokeObjectURL = () => {};
+    try {
+      await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, addToast: (m, t) => toasts.push({ m, t }) }));
+      await act(async () => { button('Saved words').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      const download = button('Download CSV');
+      expect(download).toBeTruthy();
+      await act(async () => { download.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      expect(clicks).toEqual(['lingua-word-bank.csv']);
+      expect(toasts.some((x) => x.t === 'success')).toBe(true);
+    } finally {
+      window.HTMLAnchorElement.prototype.click = originalClick;
+      window.URL.createObjectURL = originalCreate;
+      window.URL.revokeObjectURL = originalRevoke;
+    }
+  });
+});
+
 describe('Lingua Practice slow audio', () => {
   it('toggles slow playback, persists it, and passes a slower rate to the player', async () => {
     const spoken = [];

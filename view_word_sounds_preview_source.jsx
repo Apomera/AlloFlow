@@ -25,7 +25,14 @@ function WordSoundsPreviewView(props) {
                           <BookOpen size={18} /> Pre-Activity Review
                         </button>
                         <button
-                          onClick={() => { setIsWordSoundsMode(true); setWordSoundsActivity('counting'); }}
+                          onClick={() => {
+                            // Honor the lesson-plan sequence exactly like the
+                            // Review button above — 'counting' is only the
+                            // no-sequence fallback.
+                            const initialActivity = (wsActivitySequence && wsActivitySequence.length > 0) ? wsActivitySequence[0] : 'counting';
+                            setWordSoundsActivity(initialActivity);
+                            setIsWordSoundsMode(true);
+                          }}
                           className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all hover:scale-105"
                         >
                           <Play size={18} /> Launch Word Sounds Studio

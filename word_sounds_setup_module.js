@@ -1169,13 +1169,40 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     const width = Math.ceil(source.length / count);
     return Array.from({ length: count }, (_, i) => source.slice(i * width, Math.min((i + 1) * width, source.length))).filter(Boolean);
   };
+  const estimatePackPhonemes = (word) => {
+    const w = normalizePackKey(word).replace(/[^a-z]/g, "");
+    if (!w) return [];
+    const trigraphs = ["igh", "tch", "dge"];
+    const digraphs = ["sh", "ch", "th", "wh", "ph", "ng", "ck", "qu", "wr", "kn", "gn", "mb", "ar", "er", "ir", "or", "ur", "ai", "ay", "au", "aw", "ea", "ee", "ei", "ey", "ew", "ie", "oa", "oe", "oi", "oo", "ou", "ow", "oy", "ue"];
+    const result = [];
+    let i = 0;
+    while (i < w.length) {
+      if (i < w.length - 2 && trigraphs.includes(w.slice(i, i + 3))) {
+        result.push(w.slice(i, i + 3));
+        i += 3;
+      } else if (i < w.length - 1 && digraphs.includes(w.slice(i, i + 2))) {
+        result.push(w.slice(i, i + 2));
+        i += 2;
+      } else if (w[i] === "c" && i < w.length - 1 && "eiy".includes(w[i + 1])) {
+        result.push("s");
+        i++;
+      } else if (w[i] === "g" && i < w.length - 1 && "eiy".includes(w[i + 1])) {
+        result.push("j");
+        i++;
+      } else {
+        result.push(w[i]);
+        i++;
+      }
+    }
+    return result;
+  };
   const makePackManipulationFallback = (word, phonemes) => {
     const source = normalizePackKey(word);
     const answer = source.length > 1 ? source.slice(1) : source;
     return {
       type: "deletion",
       instruction: `Say '${source}'. Now say it again, but leave out the first sound.`,
-      targetPhoneme: flatPackPhoneme((phonemes || [])[0]) || source[0] || "",
+      targetPhoneme: flatPackPhoneme((phonemes || [])[0]) || estimatePackPhonemes(source)[0] || "",
       answer,
       distractors: ["at", "on", "in", "up", "it", "an", "sit", "map"].filter((w) => w !== answer).slice(0, 5)
     };
@@ -1200,24 +1227,22 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     const commonWords = ["cat", "dog", "sun", "map", "bed", "pig", "cup", "hat", "fish", "star", "tree", "frog", "duck", "book", "run", "red", "sit", "fan", "hop", "moon", "pen", "top", "ring", "rock", "look", "mug"];
     const itemWords = items.map((item) => normalizePackKey(item.targetWord || item.word || item.term)).filter(Boolean);
     const wordPool = [.../* @__PURE__ */ new Set([...itemWords, ...commonWords])];
+    const SILENT_ONSETS = { kn: "n", gn: "n", wr: "r" };
     const firstSound = (raw) => {
-      const word = normalizePackKey(raw);
-      const pair = ["sh", "ch", "th", "wh", "ph", "kn", "wr", "gn"].find((value) => word.startsWith(value));
-      if (pair === "kn" || pair === "gn") return "n";
-      if (pair === "wr") return "r";
-      return pair || word[0] || "";
+      const first = estimatePackPhonemes(raw)[0] || "";
+      return SILENT_ONSETS[first] || first;
     };
     const lastSound = (raw) => {
-      const word = normalizePackKey(raw);
-      const pair = ["sh", "ch", "th", "ng", "ck"].find((value) => word.endsWith(value));
-      return pair === "ck" ? "k" : pair || word.slice(-1);
+      const clusters = estimatePackPhonemes(raw);
+      const last = clusters[clusters.length - 1] || "";
+      return last === "ck" ? "k" : last;
     };
     items.forEach((item) => {
       const word = normalizePackKey(item.targetWord || item.word || item.term);
       const phonemes = (item.phonemes || []).map(flatPackPhoneme).filter(Boolean);
       const seed = word.split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
       const position = phonemes.length ? seed % phonemes.length : 0;
-      const correctSound = phonemes[position] || item.firstSound || word[0] || "a";
+      const correctSound = phonemes[position] || item.firstSound || estimatePackPhonemes(word)[0] || "a";
       const isolationPool = [...phonemes, "b", "d", "f", "g", "k", "l", "m", "n", "p", "r", "s", "t", "a", "e", "i", "o", "u", "sh", "ch", "th"];
       const isolationOptions = shuffleForPack([.../* @__PURE__ */ new Set([correctSound, ...isolationPool.filter((value) => value && value !== correctSound)])].slice(0, 6));
       const chipDistractors = shuffleForPack(["s", "t", "m", "p", "k", "n", "r", "l", "b", "g", "f", "h", "d", "sh", "ch", "th", "a", "e", "i", "o", "u"].filter((value) => !phonemes.includes(value))).slice(0, 5);
@@ -1389,7 +1414,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
               warnLog("Caught error:", e?.message || e);
             }
           }
-          const validatedPhonemes = data.phonemes && data.phonemes.length > 0 ? data.phonemes : data.word.toLowerCase().split("");
+          const _phonemesMissing = !(data.phonemes && data.phonemes.length > 0);
+          const validatedPhonemes = _phonemesMissing ? estimatePackPhonemes(data.word) : data.phonemes;
           let manipTask = null;
           if (data.manipulationTask && data.manipulationTask.answer && Array.isArray(data.manipulationTask.distractors) && data.manipulationTask.distractors.length >= 2 && data.manipulationTask.instruction) {
             manipTask = {
@@ -1418,15 +1444,16 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             orthographyDistractors: data.orthographyDistractors || [],
             familyEnding: data.familyEnding || "",
             familyMembers: data.familyMembers || [],
-            firstSound: data.firstSound || data.phonemes && data.phonemes[0] || "",
-            lastSound: data.lastSound || data.phonemes && data.phonemes[data.phonemes.length - 1] || "",
+            firstSound: data.firstSound || validatedPhonemes[0] || "",
+            lastSound: data.lastSound || validatedPhonemes[validatedPhonemes.length - 1] || "",
             definition: data.definition,
             image: imageUrl,
-            manipulationTask: manipTask
+            manipulationTask: manipTask,
+            _fallbackUsed: _phonemesMissing || void 0
           });
         } catch (e) {
           warnLog("Word processing failed for:", rawWord, e.message);
-          const fallbackPhonemes = rawWord.toLowerCase().split("");
+          const fallbackPhonemes = estimatePackPhonemes(rawWord);
           processed.push({
             term: rawWord,
             word: rawWord,
@@ -2439,7 +2466,7 @@ const WordSoundsReviewPanel = ({
       title: t("word_sounds.retry_audio_tooltip") || "Retry audio generation for words that failed"
     },
     t("word_sounds.retry_audio_button") || "Retry audio"
-  )), !isLoading && preloadedWords.some((w) => w && w._fallbackUsed) && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 bg-amber-500/30 border border-amber-200/60 px-3 py-1 rounded-full text-xs" }, /* @__PURE__ */ React.createElement("span", null, "\u26A0\uFE0F Phoneme data unavailable for ", preloadedWords.filter((w) => w && w._fallbackUsed).length, " word", preloadedWords.filter((w) => w && w._fallbackUsed).length === 1 ? "" : "s", " (letter-split fallback, review before use)")))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar" }, preloadedWords.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-300" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2" }, "\u23F3"), isLoading ? /* @__PURE__ */ React.createElement("p", { className: "animate-pulse" }, t("word_sounds.generating_new_words") || "Generating new words... this may take a moment") : /* @__PURE__ */ React.createElement("p", null, t("word_sounds.no_words_preloaded") || "No words preloaded yet. Start the activity to generate words.")) : (preloadedWords || []).map((word, idx) => /* @__PURE__ */ React.createElement(
+  )), !isLoading && preloadedWords.some((w) => w && w._fallbackUsed) && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 bg-amber-500/30 border border-amber-200/60 px-3 py-1 rounded-full text-xs" }, /* @__PURE__ */ React.createElement("span", null, "\u26A0\uFE0F Phoneme data estimated for ", preloadedWords.filter((w) => w && w._fallbackUsed).length, " word", preloadedWords.filter((w) => w && w._fallbackUsed).length === 1 ? "" : "s", " (phonics-rule fallback, review before use)")))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar" }, preloadedWords.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-300" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2" }, "\u23F3"), isLoading ? /* @__PURE__ */ React.createElement("p", { className: "animate-pulse" }, t("word_sounds.generating_new_words") || "Generating new words... this may take a moment") : /* @__PURE__ */ React.createElement("p", null, t("word_sounds.no_words_preloaded") || "No words preloaded yet. Start the activity to generate words.")) : (preloadedWords || []).map((word, idx) => /* @__PURE__ */ React.createElement(
     "div",
     {
       key: word.id || `word-${word.targetWord || word.word}-${idx}`,
@@ -2631,9 +2658,9 @@ const WordSoundsReviewPanel = ({
         "span",
         {
           className: "text-[11px] font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-300",
-          title: "Phoneme data could not be generated, so this word was split letter-by-letter. Expand and use Re-check to fix it before using it for assessment."
+          title: "Phoneme data could not be generated, so this word's sounds were estimated from phonics rules. Expand and use Re-check to fix it before using it for assessment."
         },
-        "\u26A0\uFE0F letter-split"
+        "\u26A0\uFE0F estimated sounds"
       ), /* @__PURE__ */ React.createElement(
         "select",
         {

@@ -37,7 +37,7 @@ import { loadTool, renderTool, resetStemLab, findInquirySignal } from './helpers
 // ─────────────────────────────────────────────────────────────────────
 const WIDGETS = [
   // B11
-  { file: 'stem_lab/stem_tool_atctower.js', toolId: 'atcTower', data: { atcTower: { atcMenuPanel: 'ops' } } }, // the menu-tabs redesign moved the Ops-Control inquiry widget under the 'ops' tab (default tab is 'airports')
+  { file: 'stem_lab/stem_tool_atctower.js', toolId: 'atcTower', data: {} },
   { file: 'stem_lab/stem_tool_geosandbox.js', toolId: 'geoSandbox', skip: 'Three.js / OrbitControls global (loaded via CDN at runtime; not available in jsdom)', data: { geoSandbox: { mode: 'stretch', construction: { objects: [{ type: 'segment', position: [0, 0, 0], vector: [1, 0, 0] }], selection: null }, history: [], savedConstructions: {} } } },
   { file: 'stem_lab/stem_tool_pets.js', toolId: 'petsLab', data: {} },
   { file: 'stem_lab/stem_tool_fisherlab.js', toolId: 'fisherLab', skip: 'Tool body depends on window.THREE; aqcond inquiry tab is reached after sim init', data: { fisherLab: {} } },

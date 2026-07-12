@@ -1245,16 +1245,7 @@
     return String(s == null ? 'lumen' : s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'lumen';
   }
 
-  // Sign-off hash. The optional dataHash (the claim's _hash) binds the sign-off
-  // to the DATA the reading was given over, not just the hypothesis bytes — so a
-  // sign-off earned on one dataset can never clear an export over edited data
-  // (the stale-signoff-across-data-edit hole). Omitting dataHash is the legacy
-  // hyps-only hash, kept for backward compatibility with stored sign-offs.
-  function signoffHash(aiHyps, dataHash) {
-    return dataHash == null
-      ? cyrb53(JSON.stringify(aiHyps || []))
-      : cyrb53(JSON.stringify([aiHyps || [], dataHash]));
-  }
+  function signoffHash(aiHyps) { return cyrb53(JSON.stringify(aiHyps || [])); }
 
   // The defensible (IEP-team) export is gated: an L3 AI reading must be OWNED
   // (a sign-off whose hash matches the CURRENT bytes) or removed (§7). A stale
@@ -1262,10 +1253,7 @@
   function assertDefensible(req) {
     if (!req || req.audience !== 'iep-team') return { ok: true, blocked: false };
     if (!req.aiHyps || !req.aiHyps.length) return { ok: true, blocked: false };
-    // req.claimHash (the claim's _hash) folds the DATA into the expected hash:
-    // editing any observation re-derives the claim, changes the hash, and
-    // re-blocks — the sign-off must be re-earned over the new data.
-    var current = signoffHash(req.aiHyps, req.claimHash);
+    var current = signoffHash(req.aiHyps);
     if (req.signoff && req.signoff === current) return { ok: true, blocked: false };
     return {
       ok: false, blocked: true, need: current,
@@ -1326,7 +1314,7 @@
     // table only when includePII is explicitly set (mirrors buildExportCsv).
     var includePII = !!opts.includePII;
     var tableBlock = includePII
-      ? ('<table border="1" cellpadding="3"><thead><tr>' + tbl.columns.map(function (c) { return '<th scope="col">' + escHtml(c) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table>')
+      ? ('<table border="1" cellpadding="3"><thead><tr>' + tbl.columns.map(function (c) { return '<th>' + escHtml(c) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table>')
       : '<p><em>Per-student data points are omitted from this finding-only brief (FERPA). Re-export with “Include identifiable data” to embed the full per-point table.</em></p>';
     var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + escHtml(synTag + 'Lumen — ' + comp.variable) + '</title></head><body>'
       + synBanner
@@ -1391,7 +1379,7 @@
       return '<tr><td>' + escHtml(r.x) + '</td><td>' + escHtml(r.y) + '</td><td>' + escHtml(r.phase) + '</td><td>' + escHtml(r.level) + '</td></tr>';
     }).join('');
     var tableBlock = includePII
-      ? ('<h3>Per-point data <span class="muted">(identifiable)</span></h3><table><thead><tr>' + tbl.columns.map(function (c) { return '<th scope="col">' + escHtml(c) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table>')
+      ? ('<h3>Per-point data <span class="muted">(identifiable)</span></h3><table><thead><tr>' + tbl.columns.map(function (c) { return '<th>' + escHtml(c) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table>')
       : '<p class="muted"><em>Per-student data points are omitted from this finding-only presentation (FERPA). Re-export with “Include identifiable data” to embed the full table.</em></p>';
     var subset = (claim.shownOf && claim.shownOf.shown < claim.shownOf.total)
       ? '<p><strong>Showing ' + claim.shownOf.shown + ' of ' + claim.shownOf.total + ' observations.</strong></p>' : '';
@@ -1871,7 +1859,7 @@
   // THE single export gate — ANDs the AI-reading gate (assertDefensible) and the Sourced gate.
   function assertExportClean(req) {
     req = req || {};
-    var a = assertDefensible({ audience: req.audience, aiHyps: req.aiHyps, signoff: req.signoff, claimHash: req.claimHash });
+    var a = assertDefensible({ audience: req.audience, aiHyps: req.aiHyps, signoff: req.signoff });
     var s = assertSourcedDefensible(req);
     var n = assertNotSynthetic(req);
     if (a.blocked || s.blocked || n.blocked) return { ok: false, blocked: true, reason: [a.blocked ? a.reason : null, s.blocked ? s.reason : null, n.blocked ? n.reason : null].filter(Boolean).join(' ') };
@@ -2388,7 +2376,7 @@
           var exportHtml = function () {
             if (!claim || claim.refused) return;
             var includeAI = levelIndex(ceiling) >= 2;
-            var gate = assertExportClean({ audience: audience, aiHyps: includeAI ? d.aiHyps : null, signoff: d.signoff, claimHash: claim._hash, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs, synthetic: compHasSynthetic(comp) });
+            var gate = assertExportClean({ audience: audience, aiHyps: includeAI ? d.aiHyps : null, signoff: d.signoff, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs, synthetic: compHasSynthetic(comp) });
             if (gate.blocked) { upd('exportMsg', gate.reason); announce(gate.reason); return; }
             // Same FERPA consent as the CSV: the brief embeds the per-row table ONLY on explicit opt-in.
             if (d.includePII && typeof window !== 'undefined' && window.confirm &&
@@ -2399,7 +2387,7 @@
           };
           var exportCsv = function () {
             if (!claim) return;
-            var gate = assertExportClean({ audience: audience, aiHyps: levelIndex(ceiling) >= 2 ? d.aiHyps : null, signoff: d.signoff, claimHash: claim._hash, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs, synthetic: compHasSynthetic(comp) });
+            var gate = assertExportClean({ audience: audience, aiHyps: levelIndex(ceiling) >= 2 ? d.aiHyps : null, signoff: d.signoff, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs, synthetic: compHasSynthetic(comp) });
             if (gate.blocked) { upd('exportMsg', gate.reason); announce(gate.reason); return; }
             if (d.includePII && typeof window !== 'undefined' && window.confirm &&
               !window.confirm('This CSV contains identifiable student data. Export it?')) return;
@@ -2414,7 +2402,7 @@
           var exportPresentation = function () {
             if (!claim || claim.refused) return;
             var includeAI = levelIndex(ceiling) >= 2;
-            var gate = assertExportClean({ audience: audience, aiHyps: includeAI ? d.aiHyps : null, signoff: d.signoff, claimHash: claim._hash, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs, synthetic: compHasSynthetic(comp) });
+            var gate = assertExportClean({ audience: audience, aiHyps: includeAI ? d.aiHyps : null, signoff: d.signoff, sourceRefs: sourceRefs, sourceSignoffs: d.sourceSignoffs, synthetic: compHasSynthetic(comp) });
             if (gate.blocked) { upd('exportMsg', gate.reason); announce(gate.reason); return; }
             if (d.includePII && typeof window !== 'undefined' && window.confirm &&
               !window.confirm('This presentation will embed the full identifiable per-student data table. Export it?')) return;
@@ -2430,19 +2418,6 @@
             announce('Exported presentation ' + out.filename + '.');
           };
           var kids = [];
-          // THE single write path for the observations array. Any data mutation
-          // (add / remove / undo / clear / load / import) invalidates a previously
-          // generated AI reading — it was derived over the OLD data — so the stale
-          // aiHyps/aiText/signoff are cleared here rather than left on screen to
-          // narrate data they never saw. (The export gate is ALSO hash-bound, so
-          // even a missed clear can never launder a stale sign-off.)
-          var setObservations = function (next, msg) {
-            upd('observations', next);
-            if (d.aiHyps) upd('aiHyps', null);
-            if (d.aiText) upd('aiText', '');
-            if (d.signoff) upd('signoff', null);
-            if (msg) announce(msg);
-          };
           // Load a curated EXAMPLE dataset — stamped synthetic so it self-declares +
           // is export-guarded exactly like generated data (an example is not real data).
           // Optional meta sets the measure/unit/x-axis labels so the example is
@@ -2454,7 +2429,8 @@
             if (meta.xLabel != null) upd('xLabel', meta.xLabel);
             if (meta.variable2 != null) upd('variable2', meta.variable2);
             if (meta.unit2 != null) upd('unit2', meta.unit2);
-            setObservations(rows.map(function (r) { return Object.assign({}, r, { synthetic: true }); }), msg);
+            upd('observations', rows.map(function (r) { return Object.assign({}, r, { synthetic: true }); }));
+            announce(msg);
           };
           // Generate fresh synthetic PRACTICE data from the current scenario; pass
           // bumpSeed=true to re-roll for variety (deterministic per seed). Rows are
@@ -2463,8 +2439,8 @@
             var seed = (d.genSeed || 0) + (bumpSeed ? 1 : 0);
             if (bumpSeed) upd('genSeed', seed);
             var sc = d.genScenario || 'improving';
-            setObservations(generatePracticeData({ scenario: sc, n: d.genN, seed: seed, xLabel: d.xLabel }),
-              'Generated ' + sc + ' synthetic practice data — not a real student.');
+            upd('observations', generatePracticeData({ scenario: sc, n: d.genN, seed: seed, xLabel: d.xLabel }));
+            announce('Generated ' + sc + ' synthetic practice data — not a real student.');
           };
           // Stage a parsed table (from a file OR pasted text) into the column-
           // mapper preview — the shared glance-then-confirm binding flow. The
@@ -2509,10 +2485,8 @@
 
           kids.push(h('div', { key: 'hdr', className: 'flex items-center gap-2 flex-wrap pb-2 mb-1', style: { borderBottom: '1px solid #f1f5f9' } },
             h('span', { className: 'text-lg leading-none', 'aria-hidden': 'true' }, '💡'),
-            // backgroundImage (longhand), NOT the background shorthand: shorthand + background-clip
-            // in one style attribute crashes jsdom 29's CSS parser (breaks the axe audit harness).
-            h('span', { className: 'font-extrabold text-base tracking-tight', style: { backgroundImage: 'linear-gradient(90deg,#b45309,#ea580c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' } }, __alloT('stem.lumen.lumen', 'Lumen')),
-            h('span', { className: 'text-[11px] text-slate-500 italic' }, __alloT('stem.lumen.honest_data_made_to_share', 'honest data, made to share')),
+            h('span', { className: 'font-extrabold text-base tracking-tight', style: { background: 'linear-gradient(90deg,#b45309,#ea580c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' } }, __alloT('stem.lumen.lumen', 'Lumen')),
+            h('span', { className: 'text-[11px] text-slate-400 italic' }, __alloT('stem.lumen.honest_data_made_to_share', 'honest data, made to share')),
             h('span', { className: 'text-[11px] font-semibold text-amber-800 rounded-full px-2 py-0.5 ml-auto', style: { background: '#fffbeb', border: '1px solid #fde68a' } }, comp.variable + (comp.unit ? ' · ' + comp.unit : ''))
           ));
           // Persistent, non-dismissible synthetic-data banner — fires whenever ANY
@@ -2534,7 +2508,7 @@
           };
           kids.push(h('div', { key: 'dial', className: 'mt-2 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': __alloT('stem.lumen.ai_involvement_ceiling', 'AI involvement ceiling') },
             h('span', { className: 'text-xs text-slate-500 mr-1' }, __alloT('stem.lumen.ai_ceiling', 'AI ceiling:')),
-            ceilBtn('L1', __alloT('stem.lumen.ceiling_l1', 'L1 · Data only')), ceilBtn('L2', __alloT('stem.lumen.ceiling_l2', 'L2 · Assisted')), ceilBtn('L3', __alloT('stem.lumen.ceiling_l3', 'L3 · Interpretive'))));
+            ceilBtn('L1', 'L1 · Data only'), ceilBtn('L2', 'L2 · Assisted'), ceilBtn('L3', 'L3 · Interpretive')));
           var faceBtn = function (a, label, title) {
             return h('button', {
               key: 'f' + a, 'aria-pressed': audience === a ? 'true' : 'false', title: title,
@@ -2546,49 +2520,24 @@
           // Working = your own analysis · Formal = a defensible artifact for a decision (IEP team, review
           // board, grant reviewer; sign-off + FERPA gates live here) · Plain = a lay audience that the
           // projection can never over-confidently mislead. (Enum values kept for the gates: iep-team/family.)
-          //
-          // Calm-by-default (design §15.1): the AI dial stays persistent; the audience + chart-type
-          // rows live behind a [View options] disclosure. It AUTO-OPENS whenever either is off its
-          // default (state is never hidden), and the CLOSED toggle names the current audience + chart
-          // so nothing is invisible. An explicit user toggle always wins over the auto rule.
-          var FACE_LABELS = { working: __alloT('stem.lumen.face_working', 'Working'), 'iep-team': __alloT('stem.lumen.face_formal', 'Formal'), family: __alloT('stem.lumen.face_plain', 'Plain language') };
-          var audienceLabel = FACE_LABELS[audience] || FACE_LABELS.working;
-          var chartLabels = {
-            trend: __alloT('stem.lumen.chart_trend', 'Trend'), bar: __alloT('stem.lumen.chart_bar', 'Bar'), dot: __alloT('stem.lumen.chart_dot', 'Dot'),
-            box: __alloT('stem.lumen.chart_box', 'Box'), histogram: __alloT('stem.lumen.chart_histogram', 'Histogram'), scatter: __alloT('stem.lumen.chart_scatter', 'Scatter'),
-            slope: __alloT('stem.lumen.chart_slope', 'Slope'), multiSeriesLine: __alloT('stem.lumen.chart_multi_line', 'Multi-line'), groupedBar: __alloT('stem.lumen.chart_grouped_bar', 'Grouped bar')
-          };
-          var viewOptionsOpen = (d.showViewOptions == null) ? (audience !== 'working' || chartType !== 'trend') : !!d.showViewOptions;
-          kids.push(h('button', {
-            key: 'viewOptsBtn', 'aria-expanded': viewOptionsOpen ? 'true' : 'false', 'aria-controls': 'lumen-view-options',
-            className: 'mt-1.5 text-xs underline text-slate-600',
-            onClick: function () { announce(viewOptionsOpen ? 'View options hidden.' : 'View options shown.'); upd('showViewOptions', !viewOptionsOpen); }
-          }, (viewOptionsOpen ? '▾ ' : '▸ ') + __alloT('stem.lumen.view_options', 'View options') + ' — ' + audienceLabel + ' · ' + (chartLabels[chartType] || chartType)));
+          kids.push(h('div', { key: 'faces', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': __alloT('stem.lumen.audience', 'Audience') },
+            h('span', { className: 'text-xs text-slate-500 mr-1' }, 'Audience:'),
+            faceBtn('working', 'Working', 'For your own analysis — the full technical wording.'),
+            faceBtn('iep-team', 'Formal', 'A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here.'),
+            faceBtn('family', 'Plain language', 'For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates.')));
           // Chart-type switcher — multiple visualization pathways for the same provenance-bound data.
           var ctBtn = function (tp, label) {
-            return h('button', { key: 'ct' + tp, 'aria-pressed': chartType === tp ? 'true' : 'false', className: (chartType === tp ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-700 border-slate-300') + ' px-2 py-1 text-xs rounded border', onClick: function () {
-              upd('chartType', tp);
-              // Present mode is trend-shaped; leaving it open over a non-presentable view would present a mismatched face.
-              if (d.presentMode && (tp === 'scatter' || tp === 'multiSeriesLine' || tp === 'groupedBar')) upd('presentMode', false);
-            } }, label);
+            return h('button', { key: 'ct' + tp, 'aria-pressed': chartType === tp ? 'true' : 'false', className: (chartType === tp ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-700 border-slate-300') + ' px-2 py-1 text-xs rounded border', onClick: function () { upd('chartType', tp); } }, label);
           };
-          if (viewOptionsOpen) {
-            kids.push(h('div', { key: 'viewopts', id: 'lumen-view-options' },
-              h('div', { key: 'faces', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': __alloT('stem.lumen.audience', 'Audience') },
-                h('span', { className: 'text-xs text-slate-500 mr-1' }, __alloT('stem.lumen.audience_label', 'Audience:')),
-                faceBtn('working', FACE_LABELS.working, __alloT('stem.lumen.face_working_title', 'For your own analysis — the full technical wording.')),
-                faceBtn('iep-team', FACE_LABELS['iep-team'], __alloT('stem.lumen.face_formal_title', 'A defensible artifact for a formal decision — an IEP team, a review board, a grant reviewer. Sign-off + FERPA gates apply here.')),
-                faceBtn('family', FACE_LABELS.family, __alloT('stem.lumen.face_plain_title', 'For a lay audience — a parent, a student, the public. Keeps the uncertainty; never overstates.'))),
-              h('div', { key: 'charttype', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': __alloT('stem.lumen.chart_type', 'Chart type') },
-                h('span', { className: 'text-xs text-slate-500 mr-1' }, __alloT('stem.lumen.chart_label', 'Chart:')),
-                ctBtn('trend', chartLabels.trend), ctBtn('bar', chartLabels.bar), ctBtn('dot', chartLabels.dot), ctBtn('box', chartLabels.box), ctBtn('histogram', chartLabels.histogram), ctBtn('scatter', chartLabels.scatter), ctBtn('slope', chartLabels.slope), ctBtn('multiSeriesLine', chartLabels.multiSeriesLine), ctBtn('groupedBar', chartLabels.groupedBar))));
-          }
+          kids.push(h('div', { key: 'charttype', className: 'mt-1 flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': __alloT('stem.lumen.chart_type', 'Chart type') },
+            h('span', { className: 'text-xs text-slate-500 mr-1' }, 'Chart:'),
+            ctBtn('trend', 'Trend'), ctBtn('bar', 'Bar'), ctBtn('dot', 'Dot'), ctBtn('box', 'Box'), ctBtn('histogram', 'Histogram'), ctBtn('scatter', 'Scatter'), ctBtn('slope', 'Slope'), ctBtn('multiSeriesLine', 'Multi-line'), ctBtn('groupedBar', 'Grouped bar')));
 
           // Guided 3-step onboarding — the empty canvas explains what Lumen is
           // FOR and the exact path to a result, instead of a wall of controls.
           // Shows only on the empty first run (no data, no staged import, paste
           // box closed); it vanishes the moment data or an import is present.
-          if (!obs.length && !d.importPreview && !d.showPaste && !d.showPractice) {
+          if (!obs.length && !d.importPreview && !d.showPaste) {
             var obStep = function (n, bold, rest) {
               return h('li', { key: 's' + n, className: 'flex items-start gap-2 text-xs text-slate-700' },
                 h('span', { 'aria-hidden': 'true', className: 'flex items-center justify-center font-bold text-white rounded-full', style: { width: '18px', height: '18px', fontSize: '11px', background: '#d97706', flexShrink: 0 } }, String(n)),
@@ -2598,9 +2547,9 @@
               h('div', { className: 'text-sm font-bold text-amber-900 flex items-center gap-2' }, h('span', { 'aria-hidden': 'true' }, '✨'), h('span', null, __alloT('stem.lumen.turn_any_dataset_into_an_honest_defens', 'Turn any dataset into an honest, defensible finding you can hand to a person.'))),
               h('p', { className: 'mt-1 text-xs text-slate-600' }, __alloT('stem.lumen.lumen_charts_your_data_and_writes_a_pl', 'Lumen charts YOUR data and writes a plain-language finding from the numbers only — it never invents certainty or a score.')),
               h('ol', { className: 'mt-3 space-y-2', style: { listStyle: 'none', paddingLeft: 0, margin: 0 } },
-                obStep(1, __alloT('stem.lumen.ob_step1_bold', 'Name your measure'), __alloT('stem.lumen.ob_step1_rest', ' in the Setup row (anything — plant height / Day, survey score / Round, words-per-minute / Week).')),
-                obStep(2, __alloT('stem.lumen.ob_step2_bold', 'Add data'), __alloT('stem.lumen.ob_step2_rest', ' — type points, paste a table, or import a CSV / Excel / JSON file.')),
-                obStep(3, __alloT('stem.lumen.ob_step3_bold', 'Read the finding'), __alloT('stem.lumen.ob_step3_rest', ' — a chart + plain-language finding appear at 3+ points; export an honest artifact to hand to a colleague, a parent, a team, or a reviewer.'))),
+                obStep(1, 'Name your measure', ' in the Setup row (anything — plant height / Day, survey score / Round, words-per-minute / Week).'),
+                obStep(2, 'Add data', ' — type points, paste a table, or import a CSV / Excel / JSON file.'),
+                obStep(3, 'Read the finding', ' — a chart + plain-language finding appear at 3+ points; export an honest artifact to hand to a colleague, a parent, a team, or a reviewer.')),
               h('div', { className: 'mt-3 flex gap-2 flex-wrap' },
                 h('button', { key: 'obSample', className: 'px-3 py-1.5 text-sm font-semibold rounded-lg text-white hover:opacity-90', style: { background: 'linear-gradient(90deg,#d97706,#ea580c)', boxShadow: '0 1px 3px rgba(234,88,12,0.3)' }, onClick: function () { loadExample(GROWTH_SAMPLE.slice(), 'Loaded the plant-growth example — synthetic practice data: height in cm over 10 weeks, before vs after fertilizer.', { variable: 'Plant height', unit: 'cm', xLabel: 'Week' }); } }, __alloT('stem.lumen.try_a_sample', 'Try a sample')),
                 h('button', { key: 'obPaste', className: 'px-3 py-1.5 text-sm rounded-lg border border-amber-300 text-amber-800 hover:bg-amber-100', onClick: function () { upd('showPaste', true); announce('Paste box opened.'); } }, __alloT('stem.lumen.paste_data', '⎘ Paste data')),
@@ -2615,9 +2564,9 @@
           kids.push(h('div', { key: 'setup', className: 'mt-3 flex items-end gap-2 flex-wrap', role: 'group', 'aria-label': __alloT('stem.lumen.measure_setup', 'Measure setup') },
             h('span', { className: 'text-xs text-slate-500 mr-1 self-center' }, 'Setup:'),
             h('label', { className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.measure_name', 'Measure name'),
-              h('input', { type: 'text', value: d.variable == null ? '' : d.variable, placeholder: 'e.g. Plant height', 'aria-label': __alloT('stem.lumen.measure_name_y_variable', 'Measure name (y variable)'), onChange: function (ev) { upd('variable', ev.target.value); }, className: 'w-32 px-2 py-1 border rounded' })),
+              h('input', { type: 'text', value: d.variable == null ? '' : d.variable, placeholder: 'WCPM', 'aria-label': __alloT('stem.lumen.measure_name_y_variable', 'Measure name (y variable)'), onChange: function (ev) { upd('variable', ev.target.value); }, className: 'w-32 px-2 py-1 border rounded' })),
             h('label', { className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.unit', 'Unit'),
-              h('input', { type: 'text', value: d.unit == null ? '' : d.unit, placeholder: 'e.g. cm', 'aria-label': __alloT('stem.lumen.unit_2', 'Unit'), onChange: function (ev) { upd('unit', ev.target.value); }, className: 'w-28 px-2 py-1 border rounded' })),
+              h('input', { type: 'text', value: d.unit == null ? '' : d.unit, placeholder: 'words/min', 'aria-label': __alloT('stem.lumen.unit_2', 'Unit'), onChange: function (ev) { upd('unit', ev.target.value); }, className: 'w-28 px-2 py-1 border rounded' })),
             h('label', { className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.x_axis_label', 'X-axis label'),
               h('input', { type: 'text', value: d.xLabel == null ? '' : d.xLabel, placeholder: __alloT('stem.lumen.week', 'Week'), 'aria-label': __alloT('stem.lumen.x_axis_label_x_variable', 'X-axis label (x variable)'), onChange: function (ev) { upd('xLabel', ev.target.value); }, className: 'w-24 px-2 py-1 border rounded' }))
           ));
@@ -2627,11 +2576,6 @@
               h('input', { type: 'number', value: d.draftX == null ? '' : d.draftX, onChange: function (ev) { upd('draftX', ev.target.value); }, className: 'w-20 px-2 py-1 border rounded' })),
             h('label', { className: 'text-xs text-slate-600 flex flex-col' }, comp.variable + ' (y)',
               h('input', { type: 'number', value: d.draftY == null ? '' : d.draftY, onChange: function (ev) { upd('draftY', ev.target.value); }, className: 'w-24 px-2 py-1 border rounded' })),
-            // GENERIC bring-your-own A/B annotation (a category on observations — e.g. before/after a
-            // change). Typed points inherit it until you change it; a phase CHANGE draws the dashed
-            // phase line the geometry already supports. Deliberately NOT an aimline/goal/RTI device.
-            h('label', { key: 'phaselab', className: 'text-xs text-slate-600 flex flex-col', title: __alloT('stem.lumen.phase_tooltip', 'Optional condition tag (e.g. before / after). When the tag changes between points, a phase line is drawn there. Sticks until you change it.') }, __alloT('stem.lumen.phase_optional', 'Phase (optional)'),
-              h('input', { type: 'text', value: d.draftPhase == null ? '' : d.draftPhase, placeholder: 'e.g. before', onChange: function (ev) { upd('draftPhase', ev.target.value); }, className: 'w-24 px-2 py-1 border rounded' })),
             // The 2nd-measure input appears ONLY in the scatter view (calm-by-default: the trend entry stays two fields).
             (chartType === 'scatter' ? h('label', { key: 'y2lab', className: 'text-xs text-slate-600 flex flex-col' }, (comp.variable2 || 'value₂') + ' (y2)',
               h('input', { type: 'number', value: d.draftY2 == null ? '' : d.draftY2, onChange: function (ev) { upd('draftY2', ev.target.value); }, className: 'w-24 px-2 py-1 border rounded' })) : null),
@@ -2648,43 +2592,43 @@
                 if (chartType === 'scatter' && !isNaN(y2)) row.y2 = y2; // paired 2nd measure, scatter only
                 if (chartType === 'multiSeriesLine' && d.draftSeries) row.series = d.draftSeries; // category tag, multi-series only
                 var next = obs.concat([row]);
-                setObservations(next); upd('draftX', ''); upd('draftY', ''); upd('draftY2', '');
-                announce('Added ' + xLabel.toLowerCase() + ' ' + x + ' equals ' + y + (row.phase ? (' (' + row.phase + ')') : '') + (row.y2 != null ? (' (and ' + row.y2 + ')') : '') + (row.series ? (' [' + row.series + ']') : '') + '. ' + next.length + ' observations.');
+                upd('observations', next); upd('draftX', ''); upd('draftY', ''); upd('draftY2', '');
+                announce('Added ' + xLabel.toLowerCase() + ' ' + x + ' equals ' + y + (row.y2 != null ? (' (and ' + row.y2 + ')') : '') + (row.series ? (' [' + row.series + ']') : '') + '. ' + next.length + ' observations.');
               }
             }, __alloT('stem.lumen.add', '+ Add')),
-            // Fixing a typo shouldn't mean starting over: Undo removes the last point,
-            // Clear (confirmed) empties the canvas. Both clear any stale AI reading.
-            (obs.length ? h('button', {
-              key: 'undoBtn', className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
-              title: __alloT('stem.lumen.undo_last_tooltip', 'Remove the most recently added data point.'),
-              onClick: function () {
-                var last = obs[obs.length - 1];
-                setObservations(obs.slice(0, -1), 'Removed the last point (' + xLabel.toLowerCase() + ' ' + last.x + ', ' + last.y + '). ' + (obs.length - 1) + ' observations remain.');
-              }
-            }, __alloT('stem.lumen.undo_last', '↩ Undo last')) : null),
-            (obs.length ? h('button', {
-              key: 'clearBtn', className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
-              title: __alloT('stem.lumen.clear_all_tooltip', 'Remove every data point and start fresh.'),
-              onClick: function () {
-                if (typeof window !== 'undefined' && window.confirm && !window.confirm('Remove all ' + obs.length + ' data points? This cannot be undone.')) return;
-                setObservations([], 'All data cleared.');
-              }
-            }, __alloT('stem.lumen.clear_all', '🗑 Clear all')) : null),
-            // Practice data + curated samples live behind ONE disclosure — the entry row
-            // stays calm (design §15.1 clutter lever) and the violet practice lane is
-            // still one click away. Everything inside loads synthetic-stamped rows.
             h('button', {
-              key: 'practiceBtn', 'aria-expanded': d.showPractice ? 'true' : 'false', 'aria-controls': 'lumen-practice-box',
-              className: 'px-3 py-1 text-sm rounded border ' + (d.showPractice ? 'border-violet-500 bg-violet-50 text-violet-800' : 'border-violet-400 text-violet-800 hover:bg-violet-50'),
+              className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
+              onClick: function () { loadExample(GROWTH_SAMPLE.slice(), 'Loaded the plant-growth example — synthetic practice data: height in cm over 10 weeks, before vs after fertilizer.', { variable: 'Plant height', unit: 'cm', xLabel: 'Week' }); }
+            }, __alloT('stem.lumen.use_sample_data', 'Use sample data')),
+            // Generate fresh synthetic practice data (the "generate sample" feature) — a scenario picker + Generate + Re-roll.
+            h('select', {
+              key: 'genScenario', value: d.genScenario || 'improving',
+              onChange: function (ev) { upd('genScenario', ev.target.value); },
+              'aria-label': __alloT('stem.lumen.practice_data_scenario', 'Practice-data scenario'),
+              className: 'px-2 py-1 text-sm border border-slate-300 rounded'
+            }, Object.keys(PRACTICE_SCENARIOS).map(function (s) { return h('option', { key: s, value: s }, s); })),
+            h('button', {
+              key: 'genBtn', className: 'px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 hover:bg-violet-50',
               title: __alloT('stem.lumen.generate_synthetic_practice_data_to_ex', 'Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.'),
-              onClick: function () { announce(d.showPractice ? 'Practice-data controls hidden.' : 'Practice-data controls shown.'); upd('showPractice', !d.showPractice); }
-            }, d.showPractice ? __alloT('stem.lumen.hide_practice_data', '⚗ Hide practice data') : __alloT('stem.lumen.show_practice_data', '⚗ Practice data…')),
+              onClick: function () { genPractice(false); }
+            }, __alloT('stem.lumen.generate_practice_data', '⚗ Generate practice data')),
+            (obs.length && compHasSynthetic(comp) ? h('button', {
+              key: 'rerollBtn', className: 'px-3 py-1 text-sm rounded border border-violet-300 text-violet-700 hover:bg-violet-50',
+              title: __alloT('stem.lumen.re_roll_a_fresh_random_draw_of_the_sam', 'Re-roll: a fresh random draw of the same scenario.'),
+              onClick: function () { genPractice(true); }
+            }, __alloT('stem.lumen.re_roll', '↻ Re-roll')) : null),
+            // A PAIRED sample (WCPM + comprehension) only in the scatter view, so the correlation has data to read.
+            (chartType === 'scatter' ? h('button', { key: 'paired', className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
+              onClick: function () { loadExample(PAIRED_SAMPLE.slice(), 'Loaded the paired example — synthetic practice data: 10 paired points (reading rate vs comprehension).', { variable: 'Reading rate', unit: 'wpm', xLabel: 'Week', variable2: 'Comprehension', unit2: '%' }); } }, __alloT('stem.lumen.use_paired_sample', 'Use paired sample')) : null),
+            // A MULTI-SERIES sample (one student, two conditions of one measure) only in the multi-line view.
+            (chartType === 'multiSeriesLine' ? h('button', { key: 'multi', className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
+              onClick: function () { loadExample(MULTI_SAMPLE.slice(), 'Loaded the multi-series example — synthetic practice data: two conditions compared across 8 weeks.', { variable: 'Reading rate', unit: 'wpm', xLabel: 'Week' }); } }, __alloT('stem.lumen.use_multi_series_sample', 'Use multi-series sample')) : null),
             h('button', {
-              key: 'pasteBtn', 'aria-expanded': d.showPaste ? 'true' : 'false', 'aria-controls': 'lumen-paste-box',
+              key: 'pasteBtn',
               className: 'px-3 py-1 text-sm rounded border border-slate-300 hover:bg-slate-50',
               title: __alloT('stem.lumen.paste_a_block_of_csv_tsv_json_text_dir', 'Paste a block of CSV / TSV / JSON text directly — no file needed.'),
               onClick: function () { upd('showPaste', !d.showPaste); }
-            }, d.showPaste ? __alloT('stem.lumen.hide_paste_box', '⎘ Hide paste box') : __alloT('stem.lumen.show_paste_box', '⎘ Paste data…')),
+            }, d.showPaste ? '⎘ Hide paste box' : '⎘ Paste data…'),
             // ═══════════════════════════════════════════════════════════════
             // INGEST (§5 Pillar 1) — file picker for CSV/TSV/TXT/XLSX.
             //
@@ -2739,55 +2683,12 @@
             })
           ));
 
-          // Practice-data + curated-samples box (the disclosure target). Everything
-          // here loads SYNTHETIC-stamped rows: banner + ◇ marks + export block apply.
-          if (d.showPractice) {
-            var scenarioLabels = {
-              improving: __alloT('stem.lumen.scenario_improving', 'Improving trend'),
-              flat: __alloT('stem.lumen.scenario_flat', 'Flat / no change'),
-              variable: __alloT('stem.lumen.scenario_variable', 'Highly variable'),
-              declining: __alloT('stem.lumen.scenario_declining', 'Declining trend'),
-              responsive: __alloT('stem.lumen.scenario_responsive', 'Responds after a change')
-            };
-            kids.push(h('div', { key: 'practicebox', id: 'lumen-practice-box', className: 'mt-3 p-3 rounded border border-violet-300', style: { background: '#f5f3ff' } },
-              h('div', { className: 'text-sm font-semibold text-slate-700 mb-1' }, __alloT('stem.lumen.practice_data_samples', '⚗ Practice data & samples')),
-              h('p', { className: 'text-[11px] text-slate-600 mb-2' }, __alloT('stem.lumen.everything_here_is_marked_synthetic', 'Everything here loads clearly-marked synthetic practice data — great for exploring Lumen, watermarked on every chart and export, and never exportable as a defensible formal document.')),
-              h('div', { className: 'flex items-end gap-2 flex-wrap' },
-                h('button', {
-                  key: 'sampleBtn', className: 'px-3 py-1 text-sm rounded border border-slate-300 bg-white hover:bg-slate-50',
-                  onClick: function () { loadExample(GROWTH_SAMPLE.slice(), 'Loaded the plant-growth example — synthetic practice data: height in cm over 10 weeks, before vs after fertilizer.', { variable: 'Plant height', unit: 'cm', xLabel: 'Week' }); }
-                }, __alloT('stem.lumen.use_sample_data', 'Use sample data')),
-                // A PAIRED sample (rate + comprehension) only in the scatter view, so the correlation has data to read.
-                (chartType === 'scatter' ? h('button', { key: 'paired', className: 'px-3 py-1 text-sm rounded border border-slate-300 bg-white hover:bg-slate-50',
-                  onClick: function () { loadExample(PAIRED_SAMPLE.slice(), 'Loaded the paired example — synthetic practice data: 10 paired points (reading rate vs comprehension).', { variable: 'Reading rate', unit: 'wpm', xLabel: 'Week', variable2: 'Comprehension', unit2: '%' }); } }, __alloT('stem.lumen.use_paired_sample', 'Use paired sample')) : null),
-                // A MULTI-SERIES sample (one student, two conditions of one measure) only in the multi-line view.
-                (chartType === 'multiSeriesLine' ? h('button', { key: 'multi', className: 'px-3 py-1 text-sm rounded border border-slate-300 bg-white hover:bg-slate-50',
-                  onClick: function () { loadExample(MULTI_SAMPLE.slice(), 'Loaded the multi-series example — synthetic practice data: two conditions compared across 8 weeks.', { variable: 'Reading rate', unit: 'wpm', xLabel: 'Week' }); } }, __alloT('stem.lumen.use_multi_series_sample', 'Use multi-series sample')) : null),
-                h('label', { key: 'genScenarioLab', className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.scenario', 'Scenario'),
-                  h('select', {
-                    key: 'genScenario', value: d.genScenario || 'improving',
-                    onChange: function (ev) { upd('genScenario', ev.target.value); },
-                    'aria-label': __alloT('stem.lumen.practice_data_scenario', 'Practice-data scenario'),
-                    className: 'px-2 py-1 text-sm border border-slate-300 rounded bg-white'
-                  }, Object.keys(PRACTICE_SCENARIOS).map(function (s) { return h('option', { key: s, value: s }, scenarioLabels[s] || s); }))),
-                h('button', {
-                  key: 'genBtn', className: 'px-3 py-1 text-sm rounded border border-violet-400 text-violet-800 bg-white hover:bg-violet-50',
-                  title: __alloT('stem.lumen.generate_synthetic_practice_data_to_ex', 'Generate synthetic PRACTICE data to explore Lumen. Clearly marked — not real; cannot be exported as a defensible formal document.'),
-                  onClick: function () { genPractice(false); }
-                }, __alloT('stem.lumen.generate_practice_data', '⚗ Generate practice data')),
-                (obs.length && compHasSynthetic(comp) ? h('button', {
-                  key: 'rerollBtn', className: 'px-3 py-1 text-sm rounded border border-violet-300 text-violet-700 bg-white hover:bg-violet-50',
-                  title: __alloT('stem.lumen.re_roll_a_fresh_random_draw_of_the_sam', 'Re-roll: a fresh random draw of the same scenario.'),
-                  onClick: function () { genPractice(true); }
-                }, __alloT('stem.lumen.re_roll', '↻ Re-roll')) : null))));
-          }
-
           // Paste-text ingest — a textarea that routes pasted CSV/TSV/JSON
           // through the SAME pure parsers + column-mapper as a file import.
           // "Accepts input text as well as files" without weakening the
           // glance-then-confirm binding (still nothing binds until Confirm).
           if (d.showPaste) {
-            kids.push(h('div', { key: 'pastebox', id: 'lumen-paste-box', className: 'mt-3 p-3 rounded border border-amber-300 bg-amber-50/60' },
+            kids.push(h('div', { key: 'pastebox', className: 'mt-3 p-3 rounded border border-amber-300 bg-amber-50/60' },
               h('div', { className: 'text-sm font-semibold text-slate-700 mb-1' }, __alloT('stem.lumen.paste_data_2', '⎘ Paste data')),
               h('p', { className: 'text-[11px] text-slate-600 mb-2' }, __alloT('stem.lumen.paste_csv_tsv_or_json_straight_from_a_', 'Paste CSV, TSV, or JSON straight from a spreadsheet or export. The first row is treated as headers; you map x/y/phase and confirm before anything binds — same as a file import.')),
               h('textarea', {
@@ -2826,7 +2727,7 @@
             var dropDownClass = 'w-40 px-2 py-1 border border-slate-300 rounded text-xs';
             kids.push(h('div', { key: 'mapper', className: 'mt-3 p-3 rounded border border-amber-300 bg-amber-50/60' },
               h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
-                h('div', { className: 'text-sm font-semibold text-slate-700' }, __alloT('stem.lumen.map_columns_from', '⇪ Map columns from') + ' ' + (ip.fileName || __alloT('stem.lumen.imported_file', 'imported file')) + (ip.fileType ? (' · ' + ip.fileType + (ip.delimiter && ip.fileType !== 'xlsx' ? (' · delim ' + (ip.delimiter === '\t' ? 'TAB' : '"' + ip.delimiter + '"')) : '')) : '')),
+                h('div', { className: 'text-sm font-semibold text-slate-700' }, '⇪ Map columns from ' + (ip.fileName || 'imported file') + (ip.fileType ? (' · ' + ip.fileType + (ip.delimiter && ip.fileType !== 'xlsx' ? (' · delim ' + (ip.delimiter === '\t' ? 'TAB' : '"' + ip.delimiter + '"')) : '')) : '')),
                 h('div', { className: 'flex gap-2' },
                   h('button', { className: 'px-3 py-1 text-xs rounded border border-slate-300 hover:bg-slate-50', onClick: function () { upd('importPreview', null); announce('Import cancelled.'); } }, __alloT('stem.lumen.cancel_2', 'Cancel')),
                   h('button', { className: 'px-3 py-1 text-xs font-semibold rounded bg-amber-600 text-white hover:bg-amber-500', onClick: function () {
@@ -2834,7 +2735,7 @@
                     if (mapped.error) { announce('Import error: ' + mapped.error); return; }
                     if (!mapped.rows.length) { announce('Import bound 0 rows (every row missing or non-numeric in the mapped columns).'); return; }
                     var next = obs.concat(mapped.rows);
-                    setObservations(next);
+                    upd('observations', next);
                     upd('importPreview', null);
                     announce('Bound ' + mapped.rows.length + ' observations from ' + (ip.fileName || 'file') + (mapped.dropped.length ? ('; ' + mapped.dropped.length + ' row(s) dropped (missing or non-numeric).') : '.') + ' Total now ' + next.length + '.');
                   } }, __alloT('stem.lumen.confirm_bind', 'Confirm + bind')))),
@@ -2859,7 +2760,7 @@
                 h('div', { className: 'text-[11px] font-semibold text-slate-600 mb-1' }, 'First ' + previewRows.length + ' row(s) (of ' + (ip.rows || []).length + ') — headers NEVER reach the AI surface:'),
                 h('div', { className: 'overflow-x-auto' },
                   h('table', { className: 'min-w-full text-[11px]' },
-                    h('thead', null, h('tr', null, (ip.headers || []).map(function (hd, i) { return h('th', { key: 'th' + i, scope: 'col', className: 'px-2 py-1 text-left bg-slate-100 border border-slate-200 font-semibold text-slate-700' }, hd || ('col' + (i + 1))); }))),
+                    h('thead', null, h('tr', null, (ip.headers || []).map(function (hd, i) { return h('th', { key: 'th' + i, className: 'px-2 py-1 text-left bg-slate-100 border border-slate-200 font-semibold text-slate-700' }, hd || ('col' + (i + 1))); }))),
                     h('tbody', null, previewRows.map(function (r, ri) {
                       return h('tr', { key: 'tr' + ri }, r.map(function (c, ci) { return h('td', { key: 'td' + ri + '-' + ci, className: 'px-2 py-1 border border-slate-200 text-slate-700' }, c == null ? '' : String(c)); }));
                     }))))),
@@ -2885,7 +2786,6 @@
             // Open button (always visible in the entry zone — added LAST in the row above)
             kids.push(h('div', { key: 'benchOpener', className: 'mt-2' },
               h('button', {
-                'aria-expanded': (d.benchWorkspace && d.benchWorkspace.open) ? 'true' : 'false', 'aria-controls': 'lumen-bench-workspace',
                 className: 'px-3 py-1 text-xs rounded border ' + (d.benchWorkspace && d.benchWorkspace.open ? 'border-cyan-700 bg-cyan-50 text-cyan-800' : 'border-slate-300 hover:bg-slate-50'),
                 onClick: function () {
                   var open = !(d.benchWorkspace && d.benchWorkspace.open);
@@ -2906,7 +2806,7 @@
                   upd('benchWorkspace', defaults);
                   announce(open ? 'Benchmark workspace opened. Import a PDF, DOCX, CSV, TSV, TXT, or single-sheet XLSX to populate the norm spine.' : 'Benchmark workspace closed.');
                 }
-              }, (d.benchWorkspace && d.benchWorkspace.open ? '▣ Close benchmark workspace' : __alloT('stem.lumen.open_benchmark_workspace', '▣ Benchmark workspace (verify external norms)…')))));
+              }, (d.benchWorkspace && d.benchWorkspace.open ? '▣ Close benchmark workspace' : '▣ Open benchmark workspace (§16 SOURCED)'))));
 
             if (!d.benchWorkspace || !d.benchWorkspace.open) return;
             var bw = d.benchWorkspace;
@@ -2935,10 +2835,10 @@
             var verifiedCount = (bw.cells || []).filter(function (c) { return c.verified === true; }).length;
             var totalCount = (bw.cells || []).length;
 
-            kids.push(h('section', { key: 'benchWorkspace', id: 'lumen-bench-workspace', 'aria-label': __alloT('stem.lumen.16_sourced_benchmark_workspace', 'Benchmark workspace — verify external norms'), className: 'mt-3 p-3 rounded-lg border-2 border-cyan-700/40 bg-cyan-50/40' },
+            kids.push(h('section', { key: 'benchWorkspace', 'aria-label': __alloT('stem.lumen.16_sourced_benchmark_workspace', '§16 SOURCED — benchmark workspace'), className: 'mt-3 p-3 rounded-lg border-2 border-cyan-700/40 bg-cyan-50/40' },
               h('div', { className: 'flex items-start gap-3 flex-wrap' },
                 h('div', { className: 'flex-1 min-w-[200px]' },
-                  h('div', { className: 'text-sm font-semibold text-cyan-900' }, __alloT('stem.lumen.benchmark_workspace_16_sourced', '▣ Benchmark workspace — verify norms against their primary source')),
+                  h('div', { className: 'text-sm font-semibold text-cyan-900' }, __alloT('stem.lumen.benchmark_workspace_16_sourced', '▣ Benchmark workspace — §16 SOURCED')),
                   h('p', { className: 'text-[11px] text-slate-700 mt-1' },
                     __alloT('stem.lumen.drop_a_benchmark_document_text_extract', 'Drop a benchmark document. Text extracts deterministically (no AI). You byte-check each cell against the source and sign it off; verified cells fold into the NORM_SPINE JSON for paste-back. '),
                     h('strong', null, __alloT('stem.lumen.ai_search_is_intentionally_deferred_16', 'AI-search is intentionally deferred (§16.4 Phase 2B).')))),
@@ -3087,7 +2987,7 @@
             kids.push(h('div', { key: 'claim', className: 'mt-3 p-3 rounded-xl bg-white', style: { border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(15,23,42,0.06)' } },
               h('div', { className: 'flex items-center gap-2 text-xs font-semibold text-slate-700' },
                 h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, bundle.glyph),
-                h('span', null, bundle.label + ' · ' + multiClaims.length + __alloT('stem.lumen.series_same_measure', ' series (same measure)'))),
+                h('span', null, bundle.label + ' · ' + multiClaims.length + ' series (same measure)')),
               h('ul', { className: 'mt-1 text-sm' }, multiClaims.map(function (c, i) {
                 return h('li', { key: 'msc' + i, className: 'flex items-start gap-2 mb-0.5' },
                   h('span', { 'aria-hidden': 'true', style: { marginTop: '3px', flexShrink: 0, display: 'inline-flex' } }, seriesLegendLine(i)),
@@ -3099,7 +2999,7 @@
             kids.push(h('div', { key: 'claim', className: 'mt-3 p-3 rounded-xl bg-white', style: { border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(15,23,42,0.06)' } },
               h('div', { className: 'flex items-center gap-2 text-xs font-semibold text-slate-700' },
                 h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, bundle.glyph),
-                h('span', null, bundle.label + ' · ' + comp.variable + __alloT('stem.lumen.mean_per_phase_series', ' mean per phase × series'))),
+                h('span', null, bundle.label + ' · ' + comp.variable + ' mean per phase × series')),
               h('div', { className: 'mt-1 flex items-center gap-2 flex-wrap text-xs text-slate-700' }, seriesKeys(obs).map(function (k, i) {
                 return h('span', { key: 'leg' + i, className: 'inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 border', style: { borderColor: seriesColor(i), background: seriesColor(i) + '14' } },
                   seriesLegendSwatch(i),
@@ -3107,24 +3007,10 @@
               })),
               h('p', { className: 'mt-1 text-[11px] text-slate-500' }, __alloT('stem.lumen.bars_are_per_cell_means_descriptive_sm', 'Bars are per-cell means (descriptive); small cells (n<3) are faded. Every point is in the data table.'))));
           } else if (activeClaim) {
-            // One-click copy of the finding SENTENCE. Safe to hand out by construction:
-            // the prose-template invariant burns the level word + interval + n into the
-            // first literal chars, so what lands on the clipboard self-declares.
-            var copyFinding = function () {
-              var text = assoc ? assoc.text : faceFor(claim, audience, compHasSynthetic(comp));
-              try {
-                if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
-                  navigator.clipboard.writeText(text).then(function () { announce('Finding copied — the provenance level travels with it.'); },
-                    function () { announce('Copy failed — select the sentence and copy manually.'); });
-                } else { announce('Copy is not available here — select the sentence and copy manually.'); }
-              } catch (eC) { announce('Copy failed — select the sentence and copy manually.'); }
-            };
             kids.push(h('div', { key: 'claim', className: 'mt-3 p-3 rounded-xl bg-white', style: { border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(15,23,42,0.06)' } },
-              h('div', { className: 'flex items-center gap-2' },
-                h('div', { className: 'inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5', style: { color: bundle.ink, background: bundle.ink + '12', border: '1px solid ' + bundle.ink + '33' } },
-                  h('span', { 'aria-hidden': 'true', style: { fontSize: '13px', lineHeight: '1' } }, bundle.glyph),
-                  h('span', null, bundle.label)),
-                h('button', { className: 'ml-auto text-[11px] underline text-slate-600 hover:text-slate-800', title: __alloT('stem.lumen.copy_finding_tooltip', 'Copy the finding sentence — the level word and interval travel with it.'), onClick: copyFinding }, __alloT('stem.lumen.copy_finding', '⧉ Copy finding'))),
+              h('div', { className: 'inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5', style: { color: bundle.ink, background: bundle.ink + '12', border: '1px solid ' + bundle.ink + '33' } },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: '13px', lineHeight: '1' } }, bundle.glyph),
+                h('span', null, bundle.label)),
               // Scatter shows the association sentence verbatim (it already carries r + interval + n + the
               // not-causation caveat); the trend/other views keep the audience-faced trend wording.
               h('p', { className: 'text-sm text-slate-800 mt-1' }, assoc ? assoc.text : faceFor(claim, audience, compHasSynthetic(comp))),
@@ -3280,26 +3166,14 @@
           var showTableSection = (chartType === 'multiSeriesLine') ? !!multiClaims : (groupedMulti ? true : (activeClaim && !activeClaim.refused));
           if (showTableSection) {
             var tbl = dataTableModel(obs, tableClaim, sourceRefs);
-            // Per-row removal is offered only on the DEFAULT (single-claim, trend-family)
-            // table, where a table row maps 1:1 onto one observation. The multi-series
-            // and association peers stay read-only (Undo/Clear still cover them).
-            var canEditRows = !Array.isArray(tableClaim) && !(tableClaim && tableClaim.kind === 'association');
-            // dataTableModel sorts obs by x (stable); the SAME stable sort over indices
-            // maps the k-th data row back to its original observation for removal.
-            var tableObsIdx = canEditRows ? obs.map(function (_, i) { return i; }).sort(function (a2, b2) { return obs[a2].x - obs[b2].x; }) : null;
-            var dataRowSeq = 0;
-            kids.push(h('button', { key: 'tbtn', className: 'mt-2 text-xs underline text-slate-600', 'aria-expanded': d.showTable ? 'true' : 'false', 'aria-controls': 'lumen-data-table', onClick: function () { announce(d.showTable ? 'Data table hidden.' : 'Data table shown.'); upd('showTable', !d.showTable); } },
-              d.showTable ? __alloT('stem.lumen.hide_data_table', 'Hide data table') : __alloT('stem.lumen.show_data_table', 'Show data table (the chart as a table)')));
+            kids.push(h('button', { key: 'tbtn', className: 'mt-2 text-xs underline text-slate-600', 'aria-expanded': d.showTable ? 'true' : 'false', onClick: function () { announce(d.showTable ? 'Data table hidden.' : 'Data table shown.'); upd('showTable', !d.showTable); } },
+              d.showTable ? 'Hide data table' : 'Show data table (the chart as a table)'));
             if (d.showTable) {
-              var tblCols = tbl.columns.length + (canEditRows ? 1 : 0);
-              kids.push(h('table', { key: 'tbl', id: 'lumen-data-table', className: 'mt-2 text-xs border-collapse' },
-                h('caption', { className: 'sr-only' }, comp.variable + ' — ' + __alloT('stem.lumen.data_table_caption', 'the chart as an accessible table; each row is one charted point')),
-                h('thead', null, h('tr', null, tbl.columns.map(function (c, i) { return h('th', { key: 'th' + i, scope: 'col', className: 'border px-2 py-0.5 text-left bg-slate-50' }, c); })
-                  .concat(canEditRows ? [h('th', { key: 'thRm', scope: 'col', className: 'border px-2 py-0.5 text-left bg-slate-50' }, __alloT('stem.lumen.remove_col', 'Remove'))] : []))),
+              kids.push(h('table', { key: 'tbl', className: 'mt-2 text-xs border-collapse' },
+                h('thead', null, h('tr', null, tbl.columns.map(function (c, i) { return h('th', { key: 'th' + i, className: 'border px-2 py-0.5 text-left bg-slate-50' }, c); }))),
                 h('tbody', null, tbl.rows.map(function (r, i) {
-                  if (r.boundary) return h('tr', { key: 'tr' + i }, h('td', { colSpan: tblCols, className: 'border px-2 py-0.5 italic text-slate-500' }, r.label));
-                  if (r.reference) return h('tr', { key: 'tr' + i }, h('td', { colSpan: tblCols, className: 'border px-2 py-0.5', style: { color: '#0e7490' } }, r.label));
-                  var origIdx = canEditRows ? tableObsIdx[dataRowSeq++] : null;
+                  if (r.boundary) return h('tr', { key: 'tr' + i }, h('td', { colSpan: tbl.columns.length, className: 'border px-2 py-0.5 italic text-slate-500' }, r.label));
+                  if (r.reference) return h('tr', { key: 'tr' + i }, h('td', { colSpan: tbl.columns.length, className: 'border px-2 py-0.5', style: { color: '#0e7490' } }, r.label));
                   return h('tr', { key: 'tr' + i },
                     h('td', { className: 'border px-2 py-0.5' }, String(r.x)),
                     h('td', { className: 'border px-2 py-0.5' }, String(r.y)),
@@ -3307,16 +3181,7 @@
                     // child renders nothing, so the trend/scatter tables stay byte-identical.
                     (r.series !== undefined ? h('td', { className: 'border px-2 py-0.5' }, String(r.series)) : null),
                     h('td', { className: 'border px-2 py-0.5' }, String(r.phase)),
-                    h('td', { className: 'border px-2 py-0.5' }, r.level),
-                    (canEditRows ? h('td', { key: 'rm', className: 'border px-2 py-0.5 text-center' },
-                      h('button', {
-                        className: 'text-rose-700 hover:text-rose-900 font-semibold',
-                        'aria-label': 'Remove the point at ' + xLabel.toLowerCase() + ' ' + r.x + ', value ' + r.y,
-                        onClick: (function (oi, rx, ry) { return function () {
-                          setObservations(obs.filter(function (_, k2) { return k2 !== oi; }),
-                            'Removed the point at ' + xLabel.toLowerCase() + ' ' + rx + ', value ' + ry + '. ' + (obs.length - 1) + ' observations remain.');
-                        }; })(origIdx, r.x, r.y)
-                      }, '✕')) : null));
+                    h('td', { className: 'border px-2 py-0.5' }, r.level));
                 }))));
             }
           }
@@ -3331,7 +3196,7 @@
             } else {
               kids.push(h('div', { key: 'aibar', className: 'mt-3 flex items-center gap-2 flex-wrap' },
                 h('button', { className: 'px-3 py-1 text-sm rounded bg-violet-600 text-white hover:bg-violet-500', onClick: fireAI },
-                  d.aiLoading ? __alloT('stem.lumen.thinking', 'Thinking…') : (levelIndex(ceiling) >= 3 ? __alloT('stem.lumen.generate_ai_reading', 'Generate AI reading (hypotheses)') : __alloT('stem.lumen.generate_ai_reword', 'Generate AI re-word'))),
+                  d.aiLoading ? 'Thinking…' : (levelIndex(ceiling) >= 3 ? 'Generate AI reading (hypotheses)' : 'Generate AI re-word')),
                 h('span', { className: 'text-[10px] text-slate-500' }, encode(levelIndex(ceiling) >= 3 ? 'L3' : 'L2').label + ' · ' + AI_CAVEAT)));
               if (d.aiError) kids.push(h('div', { key: 'aierr', className: 'mt-1 text-xs italic text-slate-500' }, d.aiError));
               if (levelIndex(ceiling) >= 3 && Array.isArray(d.aiHyps) && d.aiHyps.length) {
@@ -3346,14 +3211,11 @@
                   })),
                   h('p', { className: 'mt-1 text-[10px] text-slate-500' }, HYP_CAVEAT + '. Regenerates each run. Export needs your sign-off.'),
                   (audience === 'iep-team') ? h('div', { key: 'so', className: 'mt-1 text-xs' },
-                    // The sign-off hash binds the hypotheses AND the claim's data hash — editing
-                    // any observation re-derives the claim and this check (plus the export gate)
-                    // re-blocks until the reading is re-owned over the NEW data.
-                    (d.signoff === signoffHash(d.aiHyps, claim._hash))
+                    (d.signoff === signoffHash(d.aiHyps))
                       ? h('span', { className: 'text-emerald-700' }, __alloT('stem.lumen.signed_off_kept_as_an_ai_reading_not_a', '✓ Signed off — kept as an AI reading, not a measured finding.'))
                       : h('span', null,
                         h('span', { className: 'text-amber-700 mr-2' }, __alloT('stem.lumen.sign_off_before_a_formal_export', '⚠ Sign off before a formal export:')),
-                        h('button', { className: 'underline mr-2', onClick: function () { upd('signoff', signoffHash(d.aiHyps, claim._hash)); announce('Signed off: AI reading owned for this exact data.'); } }, __alloT('stem.lumen.own_it', 'Own it')),
+                        h('button', { className: 'underline mr-2', onClick: function () { upd('signoff', signoffHash(d.aiHyps)); announce('Signed off: AI reading owned.'); } }, __alloT('stem.lumen.own_it', 'Own it')),
                         h('button', { className: 'underline', onClick: function () { upd('aiHyps', null); upd('signoff', null); announce('Demoted: AI reading removed.'); } }, __alloT('stem.lumen.demote_remove', 'Demote (remove)')))
                   ) : null));
               }
@@ -3384,7 +3246,7 @@
           // The add-from-curated-norms picker (the spine ships EMPTY → selectNorm refuses until a human populates+verifies it).
           if (claim && !claim.refused && chartType !== 'scatter') {
             kids.push(h('div', { key: 'addbench', className: 'mt-2 flex items-end gap-2 flex-wrap' },
-              h('span', { className: 'text-xs text-slate-500' }, __alloT('stem.lumen.add_external_benchmark', 'Add external benchmark (reading-fluency norms):')),
+              h('span', { className: 'text-xs text-slate-500' }, __alloT('stem.lumen.add_orf_benchmark', 'Add ORF benchmark:')),
               h('label', { className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.grade', 'Grade'),
                 h('input', { type: 'number', value: d.benchGrade == null ? '' : d.benchGrade, onChange: function (ev) { upd('benchGrade', ev.target.value === '' ? null : parseInt(ev.target.value, 10)); }, className: 'w-16 px-2 py-1 border rounded' })),
               h('label', { className: 'text-xs text-slate-600 flex flex-col' }, __alloT('stem.lumen.season', 'Season'),
@@ -3412,14 +3274,7 @@
                   upd('sourceRefs', sourceRefs.concat([nref])); upd('benchMsg', '');
                   announce('Added benchmark: ' + nref.keyLabel + '.');
                 }
-              }, __alloT('stem.lumen.add_benchmark_btn', 'Add'))));
-            // Honest empty-state: the curated norm table SHIPS EMPTY by design (every cell must be
-            // human-verified against its primary source first), so say that up front instead of
-            // letting the picker refuse mysteriously. Disappears the moment the spine is 'ready'.
-            if (validateNormSpine(NORM_SPINE).status === 'empty' && validateNormSpine(DIBELS8_ORF).status === 'empty' && !sourceRefs.length) {
-              kids.push(h('p', { key: 'benchEmpty', className: 'mt-1 text-[10px] italic text-slate-500' },
-                __alloT('stem.lumen.benchmark_spine_empty_note', 'The built-in norm table ships empty on purpose — a benchmark line renders only after each value is verified against its primary source (see the Benchmark workspace below). Until then, adding one politely refuses rather than showing an unverified number.')));
-            }
+              }, 'Add')));
             if (d.benchMsg) kids.push(h('div', { key: 'benchmsg', className: 'mt-1 text-xs italic text-slate-500' }, d.benchMsg));
           }
 
@@ -3446,8 +3301,7 @@
           // behind a default-closed disclosure, so the empty canvas + first run
           // stay calm (positioning de-drift: it must not look like a different app).
           if (obs.length >= 3) {
-            kids.push(h('button', { key: 'iqToggle', className: 'mt-3 text-xs underline text-slate-600', 'aria-expanded': d.showInquiry ? 'true' : 'false', onClick: function () { announce(d.showInquiry ? 'Evidence-inquiry sandbox hidden.' : 'Evidence-inquiry sandbox shown.'); upd('showInquiry', !d.showInquiry); } },
-              d.showInquiry ? __alloT('stem.lumen.iq_hide', '🔬 Hide the “should I trust a trend?” sandbox') : __alloT('stem.lumen.iq_learn', '🔬 Learn: “should I trust a trend?” sandbox')));
+            kids.push(h('button', { key: 'iqToggle', className: 'mt-3 text-xs underline text-slate-600', 'aria-expanded': d.showInquiry ? 'true' : 'false', onClick: function () { announce(d.showInquiry ? 'Evidence-inquiry sandbox hidden.' : 'Evidence-inquiry sandbox shown.'); upd('showInquiry', !d.showInquiry); } }, '🔬 ' + (d.showInquiry ? 'Hide the' : 'Learn:') + ' “should I trust a trend?” sandbox'));
           }
           if (obs.length >= 3 && d.showInquiry) kids.push((function() {
             var iq = d.evidenceIQ || { trendStrength: 0.5, sampleSize: 8, baseline: 50, aiLevel: 1, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
@@ -3528,10 +3382,8 @@
           // IDENTICAL chart (mkChartSvgRef) large, with one honest reveal — the
           // whole chart fades+rises in together (band, line and points at once,
           // never the confident line first), and respects prefers-reduced-motion.
-          // It is also what the presentation export captures. Guarded to the trend-shaped
-          // views (same set as the ▶ Present button) so a persisted presentMode can never
-          // present a trend face over a scatter/multi/grouped chart.
-          if (d.presentMode && chartType !== 'scatter' && chartType !== 'multiSeriesLine' && chartType !== 'groupedBar') {
+          // It is also what the presentation export captures.
+          if (d.presentMode) {
             var presentMax = (levelIndex(ceiling) >= 3 && Array.isArray(d.aiHyps) && d.aiHyps.length) ? 'L3'
               : (levelIndex(ceiling) >= 2 && d.aiText ? 'L2' : 'L1');
             var presentBtn = function (label, onClick, primary, opts) {
@@ -3552,37 +3404,27 @@
             var goFullscreen = function () {
               try { var el = document.getElementById('lumen-present-overlay'); if (window.__alloStemFS) window.__alloStemFS(el); } catch (eF) { }
             };
-            // The Tab trap lives in the dialog's own keydown (no useEffect/useRef needed):
-            // Tab on the LAST control wraps to the first, Shift+Tab on the FIRST wraps to
-            // the last. This replaced the earlier aria-hidden focusable sentinel divs —
-            // an aria-hidden element that can take focus is itself a WCAG 4.1.2 failure
-            // (axe aria-hidden-focus), and a screen-reader user's focus could land on it.
+            // A focusable sentinel — onFocus bounces to the opposite end so Tab/Shift+Tab
+            // WRAP inside the overlay (a focus trap without useEffect/useRef, which this
+            // ctx-render model doesn't expose). Visually hidden, aria-hidden.
+            var trapSentinel = function (key, toId) {
+              return h('div', { key: key, tabIndex: 0, 'aria-hidden': 'true', onFocus: function () { focusId(toId); }, style: { position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', opacity: 0 } });
+            };
             kids.push(h('div', {
               key: 'present', id: 'lumen-present-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': __alloT('stem.lumen.lumen_present_mode', 'Lumen present mode'),
-              onKeyDown: function (ev) {
-                if (ev.key === 'Escape') { ev.stopPropagation(); closePresent(); return; } // Esc closes; stopPropagation so the host STEM Lab modal does not also close
-                if (ev.key === 'Tab') {
-                  try {
-                    var first = document.getElementById('lumen-present-first');
-                    var last = document.getElementById('lumen-present-last');
-                    if (!first || !last) return;
-                    if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
-                    else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
-                  } catch (eT) { }
-                }
-              },
+              onKeyDown: function (ev) { if (ev.key === 'Escape') { ev.stopPropagation(); closePresent(); } }, // Esc closes; stopPropagation so the host STEM Lab modal does not also close
               style: { position: 'fixed', inset: 0, zIndex: 50, background: 'linear-gradient(180deg,#ffffff 0%,#fffdf7 100%)', overflow: 'auto', padding: '28px 24px' }
             },
-              // CSS, not copy — must NEVER go through __alloT (a translated pack would corrupt the keyframes).
-              h('style', { key: 'pkf' }, '@keyframes lumenReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}.lumen-reveal{animation:lumenReveal .55s cubic-bezier(.22,1,.36,1) both}@media (prefers-reduced-motion:reduce){.lumen-reveal{animation:none}}'),
+              h('style', { key: 'pkf' }, __alloT('stem.lumen.keyframes_lumenreveal_from_opacity_0_t', '@keyframes lumenReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}.lumen-reveal{animation:lumenReveal .55s cubic-bezier(.22,1,.36,1) both}@media (prefers-reduced-motion:reduce){.lumen-reveal{animation:none}}')),
+              trapSentinel('psA', 'lumen-present-last'), // Shift+Tab from the first control wraps to the last
               h('div', { key: 'pbar', className: 'flex items-center gap-2 flex-wrap', style: { maxWidth: '960px', margin: '0 auto 18px' } },
                 h('span', { className: 'text-xl', 'aria-hidden': 'true' }, '💡'),
-                h('span', { className: 'font-extrabold text-lg tracking-tight', style: { backgroundImage: 'linear-gradient(90deg,#b45309,#ea580c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' } }, __alloT('stem.lumen.lumen_2', 'Lumen')),
-                h('span', { className: 'text-xs text-slate-500 italic' }, __alloT('stem.lumen.present_mode', 'present mode')),
+                h('span', { className: 'font-extrabold text-lg tracking-tight', style: { background: 'linear-gradient(90deg,#b45309,#ea580c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' } }, __alloT('stem.lumen.lumen_2', 'Lumen')),
+                h('span', { className: 'text-xs text-slate-400 italic' }, __alloT('stem.lumen.present_mode', 'present mode')),
                 h('div', { className: 'ml-auto flex items-center gap-2 flex-wrap' },
-                  presentBtn(__alloT('stem.lumen.export_presentation_html', '⤓ Export presentation (HTML)'), exportPresentation, true, { id: 'lumen-present-first', autoFocus: true }),
-                  presentBtn(__alloT('stem.lumen.fullscreen', '⤢ Fullscreen'), goFullscreen, false),
-                  presentBtn(__alloT('stem.lumen.exit', '✕ Exit'), closePresent, false, { id: 'lumen-present-last' }))),
+                  presentBtn('⤓ Export presentation (HTML)', exportPresentation, true, { id: 'lumen-present-first', autoFocus: true }),
+                  presentBtn('⤢ Fullscreen', goFullscreen, false),
+                  presentBtn('✕ Exit', closePresent, false, { id: 'lumen-present-last' }))),
               h('div', { key: 'pslide', className: 'lumen-reveal', style: { maxWidth: '960px', margin: '0 auto' } },
                 (compHasSynthetic(comp) ? h('div', { key: 'psyn', className: 'mb-3 px-3 py-2 rounded-lg text-sm font-bold text-white', style: { background: '#6d28d9' } }, __alloT('stem.lumen.synthetic_practice_data_not_a_real_stu_2', '⚗ Synthetic practice data — not a real student. For demonstration only; not a defensible record.')) : null),
                 h('div', { key: 'pmeasure', className: 'text-sm font-semibold text-slate-500 mb-1' }, comp.variable + (comp.unit ? ' · ' + comp.unit : '')),
@@ -3593,8 +3435,9 @@
                   ? h('div', { key: 'pchart', className: 'mt-3', style: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px', boxShadow: '0 1px 4px rgba(15,23,42,0.06)' } }, mkChartSvgRef('lumen-chart-present', 'presvg'))
                   : h('p', { key: 'pnochart', className: 'mt-3 text-sm text-slate-500' }, __alloT('stem.lumen.add_at_least_3_observations_to_show_a_', 'Add at least 3 observations to show a chart.'))),
                 h('p', { key: 'psummary', className: 'mt-3 text-sm text-slate-600' }, chartSummaryText(obs, activeClaim, sourceRefs, chartType)),
-                h('p', { key: 'pfoot', className: 'mt-4 text-[11px] text-slate-500' }, 'Present mode · max epistemic level ' + presentMax + '. The uncertainty band and provenance marks are the live chart; “Export presentation” embeds this exact chart (FERPA-gated). The calm analysis view is still underneath — press Esc or Exit to return.')
-              )
+                h('p', { key: 'pfoot', className: 'mt-4 text-[11px] text-slate-400' }, 'Present mode · max epistemic level ' + presentMax + '. The uncertainty band and provenance marks are the live chart; “Export presentation” embeds this exact chart (FERPA-gated). The calm analysis view is still underneath — press Esc or Exit to return.')
+              ),
+              trapSentinel('psZ', 'lumen-present-first') // Tab from the last control wraps to the first
             ));
           }
 
