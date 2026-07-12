@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-07-12T02:31:17.064Z",
+  "generated": "2026-07-12T02:39:49.870Z",
   "count": 63,
   "total_keys_expected": 9307,
   "available": [
@@ -35,9 +35,9 @@
     {
       "slug": "burmese",
       "display": "Burmese",
-      "keys": 18422,
-      "bytes": 2931151,
-      "updated": "2026-07-11"
+      "keys": 18631,
+      "bytes": 2964486,
+      "updated": "2026-07-12"
     },
     {
       "slug": "chin_falam",
@@ -56,15 +56,15 @@
     {
       "slug": "chinese_simplified",
       "display": "Chinese (Simplified)",
-      "keys": 18423,
-      "bytes": 1518606,
+      "keys": 18588,
+      "bytes": 1546648,
       "updated": "2026-07-12"
     },
     {
       "slug": "chinese_traditional",
       "display": "Chinese (Traditional)",
-      "keys": 18423,
-      "bytes": 1519775,
+      "keys": 18588,
+      "bytes": 1547829,
       "updated": "2026-07-12"
     },
     {
@@ -154,9 +154,9 @@
     {
       "slug": "hindi",
       "display": "Hindi",
-      "keys": 18213,
-      "bytes": 2476779,
-      "updated": "2026-07-11"
+      "keys": 18422,
+      "bytes": 2502834,
+      "updated": "2026-07-12"
     },
     {
       "slug": "hmong",
@@ -189,8 +189,8 @@
     {
       "slug": "japanese",
       "display": "Japanese",
-      "keys": 18495,
-      "bytes": 1487056,
+      "keys": 18660,
+      "bytes": 1516362,
       "updated": "2026-07-12"
     },
     {
@@ -231,8 +231,8 @@
     {
       "slug": "korean",
       "display": "Korean",
-      "keys": 18422,
-      "bytes": 1585875,
+      "keys": 18587,
+      "bytes": 1614714,
       "updated": "2026-07-12"
     },
     {
