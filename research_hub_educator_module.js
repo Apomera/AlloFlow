@@ -1,12 +1,20 @@
-(function() {
+(function initResearchHubEducator(retriesLeft) {
   "use strict";
   if (window.AlloModules && window.AlloModules.ResearchHubEducator && window.AlloModules.ResearchHubEducator.__tier >= 2) {
     console.log("[CDN] ResearchHubEducator already loaded, skipping");
     return;
   }
+  window.AlloModules = window.AlloModules || {};
+  if (!window.AlloModules.ResearchHubEducator) window.AlloModules.ResearchHubEducator = { __pending: true };
   if (!window.ResearchHub || typeof window.ResearchHub.registerEducatorView !== "function") {
+    if (retriesLeft === void 0) retriesLeft = 50;
+    if (retriesLeft <= 0) {
+      console.error("[ResearchHubEducator] window.ResearchHub never became available \u2014 giving up");
+      return;
+    }
     console.warn("[ResearchHubEducator] window.ResearchHub.registerEducatorView not yet available \u2014 deferring");
-    setTimeout(arguments.callee || function() {
+    setTimeout(function() {
+      initResearchHubEducator(retriesLeft - 1);
     }, 200);
     return;
   }
