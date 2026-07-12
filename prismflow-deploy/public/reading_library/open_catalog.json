@@ -4768,6 +4768,50 @@
     {
       "slug": "gutenberg-ebook-2088-life-and-letters-of-charles-darwin-volume-2",
       "file": "books/gutenberg-ebook-2088-life-and-letters-of-charles-darwin-volume-2.json"
+    },
+    {
+      "slug": "gutenberg-ebook-9980-platero-y-yo",
+      "file": "books/gutenberg-ebook-9980-platero-y-yo.json"
+    },
+    {
+      "slug": "gutenberg-ebook-320-vida-de-lazarillo-de-tormes-y-de-sus-fortunas-y-adversidades",
+      "file": "books/gutenberg-ebook-320-vida-de-lazarillo-de-tormes-y-de-sus-fortunas-y-adversidades.json"
+    },
+    {
+      "slug": "gutenberg-ebook-13951-les-trois-mousquetaires",
+      "file": "books/gutenberg-ebook-13951-les-trois-mousquetaires.json"
+    },
+    {
+      "slug": "gutenberg-ebook-5097-vingt-mille-lieues-sous-les-mers-complete",
+      "file": "books/gutenberg-ebook-5097-vingt-mille-lieues-sous-les-mers-complete.json"
+    },
+    {
+      "slug": "gutenberg-ebook-800-le-tour-du-monde-en-quatre-vingts-jours",
+      "file": "books/gutenberg-ebook-800-le-tour-du-monde-en-quatre-vingts-jours.json"
+    },
+    {
+      "slug": "gutenberg-ebook-56327-fables-de-la-fontaine",
+      "file": "books/gutenberg-ebook-56327-fables-de-la-fontaine.json"
+    },
+    {
+      "slug": "gutenberg-ebook-4650-candide-ou-l-optimisme",
+      "file": "books/gutenberg-ebook-4650-candide-ou-l-optimisme.json"
+    },
+    {
+      "slug": "gutenberg-ebook-55752-dom-casmurro",
+      "file": "books/gutenberg-ebook-55752-dom-casmurro.json"
+    },
+    {
+      "slug": "gutenberg-ebook-54829-memorias-posthumas-de-braz-cubas",
+      "file": "books/gutenberg-ebook-54829-memorias-posthumas-de-braz-cubas.json"
+    },
+    {
+      "slug": "gutenberg-ebook-22367-die-verwandlung",
+      "file": "books/gutenberg-ebook-22367-die-verwandlung.json"
+    },
+    {
+      "slug": "gutenberg-ebook-7500-heidis-lehr-und-wanderjahre",
+      "file": "books/gutenberg-ebook-7500-heidis-lehr-und-wanderjahre.json"
     }
   ]
 }

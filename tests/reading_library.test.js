@@ -419,6 +419,12 @@ describe('mirrored data contract (reading_library/)', () => {
       // with "[Illustrations of it thoughtlessly omitted…]").
       if (/\[Illustration(?::|\])/i.test(joined)) offenders.push(entry.slug + ': [Illustration block');
       if (/\[Transcriber'?s? Note/i.test(joined)) offenders.push(entry.slug + ': transcriber note');
+      // Volunteer production credits belong to PG's boilerplate, not the book;
+      // they sometimes sit after the *** START marker (front pages only).
+      const front = book.pages.slice(1, 3).map((p) => p.text || '').join('\n\n');
+      if (/^(Produced by|E-?text prepared by)/im.test(front) || /Distributed Proofreading|pgdp\.net/i.test(front)) {
+        offenders.push(entry.slug + ': production credits in front matter');
+      }
       // Same guards as the importer's stripEmphasisUnderscores: underscores
       // used as table blank-fills (space-anchored) or in ASCII diagrams
       // (| / \ etc.) are legitimate content and stay.

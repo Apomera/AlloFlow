@@ -693,6 +693,26 @@ const DEFAULT_IMPORTS = [
   { id: 12410, subjects: ['World history', 'Travel writing', 'Primary sources'], description: 'A full in-app public-domain copy of The Travels of Marco Polo, Volume 2, for older-student world history study.' },
   { id: 816, subjects: ['Civics', 'Political science', 'United States history'], description: 'A full in-app public-domain copy of Democracy in America, Volume 2, for civics and political-science study.' },
   { id: 2088, subjects: ['Biology', 'History of science', 'Biography'], description: 'A full in-app public-domain copy of Life and Letters of Charles Darwin, Volume 2, for older-student science-history study.' },
+  // ---- 2026-07-12 batch 2: non-English classics (the importer has been
+  //  language-aware since the Find-more work, but the catalog had ~0
+  //  non-English full texts). Serves heritage/world-language readers —
+  //  French and Portuguese in particular match Portland ME's Congolese and
+  //  Angolan communities. `level` is hand-assigned (assign_levels.js is
+  //  FK/English-only and skips these). IDs text-verified via gutendex
+  //  resolver + --dry-run. Skipped as no-plain-text on PG: Don Quijote (es),
+  //  Contes de Perrault (fr), Cyrano (fr); skipped as multi-volume: Le comte
+  //  de Monte-Cristo (fr, 4 tomes).
+  { id: 9980, level: '5', subjects: ['Spanish language', 'Poetry', 'Animals'], description: 'A full in-app public-domain copy of Platero y yo, in the original Spanish, for heritage and world-language readers.' },
+  { id: 320, level: '6', subjects: ['Spanish language', 'Fiction', 'Picaresque'], description: 'A full in-app public-domain copy of Lazarillo de Tormes, in the original Spanish, for heritage and world-language readers.' },
+  { id: 13951, level: '6', subjects: ['French language', 'Fiction', 'Adventure'], description: 'A full in-app public-domain copy of Les Trois Mousquetaires, in the original French, for heritage and world-language readers.' },
+  { id: 5097, level: '6', subjects: ['French language', 'Science fiction', 'Ocean'], description: 'A full in-app public-domain copy of Vingt mille lieues sous les mers, in the original French, for heritage and world-language readers.' },
+  { id: 800, level: '5', subjects: ['French language', 'Fiction', 'Adventure'], description: 'A full in-app public-domain copy of Le Tour du monde en quatre-vingts jours, in the original French, for heritage and world-language readers.' },
+  { id: 56327, level: '4', subjects: ['French language', 'Fables', 'Poetry'], description: 'A full in-app public-domain copy of Fables de La Fontaine, in the original French, for heritage and world-language readers.' },
+  { id: 4650, level: '6', subjects: ['French language', 'Satire', 'Philosophy'], description: 'A full in-app public-domain copy of Candide, ou l\'optimisme, in the original French, for heritage and world-language readers.' },
+  { id: 55752, level: '6', subjects: ['Portuguese language', 'Fiction', 'Brazilian literature'], description: 'A full in-app public-domain copy of Dom Casmurro, in the original Portuguese, for heritage and world-language readers.' },
+  { id: 54829, level: '6', subjects: ['Portuguese language', 'Fiction', 'Brazilian literature'], description: 'A full in-app public-domain copy of Memórias Póstumas de Brás Cubas, in the original Portuguese, for heritage and world-language readers.' },
+  { id: 22367, level: '6', subjects: ['German language', 'Fiction', 'World literature'], description: 'A full in-app public-domain copy of Die Verwandlung (The Metamorphosis), in the original German, for heritage and world-language readers.' },
+  { id: 7500, level: '5', subjects: ['German language', 'Fiction', 'Children\'s literature'], description: 'A full in-app public-domain copy of Heidis Lehr- und Wanderjahre, in the original German, for heritage and world-language readers.' },
 ];
 
 const dryRun = process.argv.includes('--dry-run');
@@ -854,6 +874,17 @@ function isTranscriberNoteBlock(paragraph) {
   return /^[+|\[]/.test(p.trim()) || /^\s*[+|]/m.test(p);
 }
 
+// Volunteer production credits ("Produced by X and the Online Distributed
+// Proofreading Team…") often sit AFTER the *** START marker in older files.
+// Only ever applied to the first few front-matter paragraphs, and only to
+// short standalone blocks, so book prose can never match positionally.
+function isProductionCreditBlock(paragraph) {
+  var p = String(paragraph || '').trim();
+  if (!p || p.length > 500) return false;
+  if (/^(Produced by|E-?text prepared by|Text file produced by|This etext was produced by|Transcribed from .{0,120}by|Scanned by|HTML version by)/i.test(p)) return true;
+  return /Distributed Proofreading|pgdp\.net/i.test(p);
+}
+
 function stripGutenbergBoilerplate(raw) {
   let text = String(raw || '').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
   const startPatterns = [
@@ -996,7 +1027,9 @@ function makeBook(metadata, textSource, curation, catalogItem) {
   const slug = catalogItem ? catalogItem.slug : 'gutenberg-ebook-' + metadata.id + '-' + slugify(title);
   const textUrl = textSource.url;
   const body = stripBlockArtifacts(stripGutenbergBoilerplate(fetchPlainText(textSource)));
-  const paragraphs = normalizeParagraphs(body).map(stripEmphasisUnderscores);
+  const paragraphs = normalizeParagraphs(body)
+    .map(stripEmphasisUnderscores)
+    .filter((p, i) => i >= 6 || !isProductionCreditBlock(p));
   const bodyWords = words(paragraphs.join(' '));
   if (bodyWords < 300) throw new Error('Text for #' + metadata.id + ' was too short after cleaning (' + bodyWords + ' words).');
   const note = [
@@ -1017,7 +1050,9 @@ function makeBook(metadata, textSource, curation, catalogItem) {
     language: langInfo.language,
     langCode: langInfo.langCode,
     isRtl: langInfo.isRtl,
-    level: '6',
+    // assign_levels.js re-measures ENGLISH texts (FK) after import; for
+    // non-English imports it skips, so a curated hand level sticks here.
+    level: String(curation.level || '6'),
     orientation: 'portrait',
     sourceId: 'gutenberg',
     contentType: 'public-domain-full-text',
@@ -1107,6 +1142,7 @@ module.exports = {
   stripBlockArtifacts,
   stripEmphasisUnderscores,
   isTranscriberNoteBlock,
+  isProductionCreditBlock,
   compact,
   words,
 };

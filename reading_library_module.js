@@ -2037,8 +2037,11 @@
       e('div', { className: 'flex flex-wrap gap-1' },
         bookSourceId(b) !== 'storyweaver' ? e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[11px] font-semibold' },
           sourceLabel(bookSourceId(b))) : null,
-        e('span', { className: 'px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-semibold' },
-          tr('readinglib_level', 'Level') + ' ' + b.level),
+        // Source cards carry a hardcoded audience level with no text behind
+        // it — showing a Level chip there implies a measurement we never
+        // made. The 🔗 Source card badge already says what these are.
+        !isCardContent(b) ? e('span', { className: 'px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-semibold' },
+          tr('readinglib_level', 'Level') + ' ' + b.level) : null,
         e('span', { className: 'px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[11px] font-semibold' }, b.language),
         b.hasAudio ? e('span', { className: 'px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-semibold' },
           '🔊 ' + tr('readinglib_narrated', 'Narrated')) : null,

@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-12T13:01:05.441Z",
+ "generatedAt": "2026-07-12T21:28:46.305Z",
  "attribution": {
   "text": "Open reading materials from StoryWeaver and curated public/open education sources. Item-level licenses are shown on each text.",
   "url": "https://storyweaver.org.in",
@@ -15,12 +15,12 @@
   {
    "name": "Spanish",
    "code": "es",
-   "count": 80
+   "count": 82
   },
   {
    "name": "French",
    "code": "fr",
-   "count": 62
+   "count": 67
   },
   {
    "name": "Hindi",
@@ -28,14 +28,14 @@
    "count": 40
   },
   {
+   "name": "Portuguese",
+   "code": "pt",
+   "count": 36
+  },
+  {
    "name": "Arabic",
    "code": "ar",
    "count": 35
-  },
-  {
-   "name": "Portuguese",
-   "code": "pt",
-   "count": 34
   },
   {
    "name": "Vietnamese",
@@ -46,6 +46,11 @@
    "name": "Urdu",
    "code": "ur",
    "count": 32
+  },
+  {
+   "name": "German",
+   "code": "de",
+   "count": 27
   },
   {
    "name": "Kiswahili",
@@ -130,11 +135,6 @@
   {
    "name": "Russian",
    "code": "ru",
-   "count": 25
-  },
-  {
-   "name": "German",
-   "code": "de",
    "count": 25
   },
   {
@@ -53300,7 +53300,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 327,
-   "wordCount": 144531,
+   "wordCount": 144519,
    "file": "books/gutenberg-ebook-245-life-on-the-mississippi.json"
   },
   {
@@ -53404,7 +53404,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 563,
-   "wordCount": 233535,
+   "wordCount": 233528,
    "file": "books/gutenberg-ebook-6400-the-lives-of-the-twelve-caesars-complete.json"
   },
   {
@@ -53643,7 +53643,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 455,
-   "wordCount": 193580,
+   "wordCount": 193576,
    "file": "books/gutenberg-ebook-2087-life-and-letters-of-charles-darwin-volume-1.json"
   },
   {
@@ -53742,7 +53742,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 49,
-   "wordCount": 20252,
+   "wordCount": 20247,
    "file": "books/gutenberg-ebook-851-narrative-of-the-captivity-and-restoration-of-mrs-mary-rowlandso.json"
   },
   {
@@ -55735,7 +55735,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 1573,
-   "wordCount": 668985,
+   "wordCount": 668981,
    "file": "books/gutenberg-ebook-8419-the-journals-of-lewis-and-clark-1804-1806.json"
   },
   {
@@ -56648,7 +56648,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 63,
-   "wordCount": 27051,
+   "wordCount": 27023,
    "file": "books/gutenberg-ebook-57821-scenes-in-the-life-of-harriet-tubman.json"
   },
   {
@@ -71083,7 +71083,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 347,
-   "wordCount": 141288,
+   "wordCount": 141281,
    "file": "books/gutenberg-ebook-816-democracy-in-america-volume-2.json"
   },
   {
@@ -80360,7 +80360,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 77,
-   "wordCount": 34137,
+   "wordCount": 34123,
    "file": "books/gutenberg-ebook-14977-the-red-record-tabulated-statistics-and-alleged-causes-of-lynchi.json"
   },
   {
@@ -82168,7 +82168,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 33,
-   "wordCount": 14612,
+   "wordCount": 14601,
    "file": "books/gutenberg-ebook-31193-manifesto-of-the-communist-party.json"
   },
   {
@@ -82300,7 +82300,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 114,
-   "wordCount": 55734,
+   "wordCount": 55728,
    "file": "books/gutenberg-ebook-1450-pollyanna.json"
   },
   {
@@ -82817,7 +82817,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 63,
-   "wordCount": 24749,
+   "wordCount": 24745,
    "file": "books/gutenberg-ebook-26095-the-athenian-constitution.json"
   },
   {
@@ -83047,7 +83047,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 143,
-   "wordCount": 66604,
+   "wordCount": 66590,
    "file": "books/gutenberg-ebook-46409-heidi.json"
   },
   {
@@ -84215,7 +84215,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 202,
-   "wordCount": 88780,
+   "wordCount": 88765,
    "file": "books/gutenberg-ebook-3420-a-vindication-of-the-rights-of-woman-with-strictures-on-politica.json"
   },
   {
@@ -84283,7 +84283,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 35,
-   "wordCount": 15227,
+   "wordCount": 15222,
    "file": "books/gutenberg-ebook-1974-the-poetics-of-aristotle.json"
   },
   {
@@ -84488,7 +84488,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 124,
-   "wordCount": 52094,
+   "wordCount": 52080,
    "file": "books/gutenberg-ebook-34901-on-liberty.json"
   },
   {
@@ -85202,7 +85202,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 148,
-   "wordCount": 62734,
+   "wordCount": 62722,
    "file": "books/gutenberg-ebook-4363-beyond-good-and-evil.json"
   },
   {
@@ -85270,7 +85270,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 19,
-   "wordCount": 7572,
+   "wordCount": 7567,
    "file": "books/gutenberg-ebook-880-my-garden-acquaintance.json"
   },
   {
@@ -89519,7 +89519,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 48,
-   "wordCount": 23065,
+   "wordCount": 23045,
    "file": "books/gutenberg-ebook-67098-winnie-the-pooh.json"
   },
   {
@@ -89621,7 +89621,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 82,
-   "wordCount": 39933,
+   "wordCount": 39924,
    "file": "books/gutenberg-ebook-500-the-adventures-of-pinocchio.json"
   },
   {
@@ -89723,7 +89723,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 122,
-   "wordCount": 59392,
+   "wordCount": 59388,
    "file": "books/gutenberg-ebook-1874-the-railway-children.json"
   },
   {
@@ -89757,7 +89757,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 113,
-   "wordCount": 53303,
+   "wordCount": 53277,
    "file": "books/gutenberg-ebook-17314-five-children-and-it.json"
   },
   {
@@ -89791,7 +89791,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 190,
-   "wordCount": 88570,
+   "wordCount": 88566,
    "file": "books/gutenberg-ebook-225-at-the-back-of-the-north-wind.json"
   },
   {
@@ -89893,7 +89893,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 61,
-   "wordCount": 28828,
+   "wordCount": 28824,
    "file": "books/gutenberg-ebook-2781-just-so-stories.json"
   },
   {
@@ -90029,7 +90029,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 152,
-   "wordCount": 70098,
+   "wordCount": 70085,
    "file": "books/gutenberg-ebook-1837-the-prince-and-the-pauper.json"
   },
   {
@@ -90097,7 +90097,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 178,
-   "wordCount": 83659,
+   "wordCount": 83655,
    "file": "books/gutenberg-ebook-764-hans-brinker-or-the-silver-skates.json"
   },
   {
@@ -90505,7 +90505,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 78,
-   "wordCount": 35870,
+   "wordCount": 35854,
    "file": "books/gutenberg-ebook-19942-candide.json"
   },
   {
@@ -90539,7 +90539,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 771,
-   "wordCount": 334935,
+   "wordCount": 334913,
    "file": "books/gutenberg-ebook-56644-bulfinch-s-mythology-the-age-of-fable-the-age-of-chivalry-legend.json"
   },
   {
@@ -90981,7 +90981,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 23,
-   "wordCount": 10700,
+   "wordCount": 10696,
    "file": "books/gutenberg-ebook-216-the-tao-teh-king-or-the-tao-and-its-characteristics.json"
   },
   {
@@ -91117,7 +91117,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 157,
-   "wordCount": 71190,
+   "wordCount": 71150,
    "file": "books/gutenberg-ebook-7128-indian-fairy-tales.json"
   },
   {
@@ -91151,7 +91151,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 130,
-   "wordCount": 60945,
+   "wordCount": 60934,
    "file": "books/gutenberg-ebook-7439-english-fairy-tales.json"
   },
   {
@@ -91185,7 +91185,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 120,
-   "wordCount": 55457,
+   "wordCount": 55453,
    "file": "books/gutenberg-ebook-1597-andersen-s-fairy-tales.json"
   },
   {
@@ -91391,6 +91391,381 @@
    "pageCount": 417,
    "wordCount": 184088,
    "file": "books/gutenberg-ebook-2088-life-and-letters-of-charles-darwin-volume-2.json"
+  },
+  {
+   "slug": "gutenberg-ebook-9980-platero-y-yo",
+   "title": "Platero y yo",
+   "description": "A full in-app public-domain copy of Platero y yo, in the original Spanish, for heritage and world-language readers.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Spanish language",
+    "Poetry",
+    "Animals"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/9980",
+    "textUrl": "https://www.gutenberg.org/files/9980/9980-8.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/9980/pg9980.cover.medium.jpg",
+   "authors": [
+    "Jiménez, Juan Ramón"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 67,
+   "wordCount": 31663,
+   "file": "books/gutenberg-ebook-9980-platero-y-yo.json"
+  },
+  {
+   "slug": "gutenberg-ebook-320-vida-de-lazarillo-de-tormes-y-de-sus-fortunas-y-adversidades",
+   "title": "Vida De Lazarillo De Tormes Y De Sus Fortunas Y Adversidades",
+   "description": "A full in-app public-domain copy of Lazarillo de Tormes, in the original Spanish, for heritage and world-language readers.",
+   "language": "Spanish",
+   "langCode": "es",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Spanish language",
+    "Fiction",
+    "Picaresque"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/320",
+    "textUrl": "https://www.gutenberg.org/files/320/320-0.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/320/pg320.cover.medium.jpg",
+   "authors": [
+    "Anonymous"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 46,
+   "wordCount": 20127,
+   "file": "books/gutenberg-ebook-320-vida-de-lazarillo-de-tormes-y-de-sus-fortunas-y-adversidades.json"
+  },
+  {
+   "slug": "gutenberg-ebook-13951-les-trois-mousquetaires",
+   "title": "Les trois mousquetaires",
+   "description": "A full in-app public-domain copy of Les Trois Mousquetaires, in the original French, for heritage and world-language readers.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "French language",
+    "Fiction",
+    "Adventure"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/13951",
+    "textUrl": "https://www.gutenberg.org/files/13951/13951-0.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/13951/pg13951.cover.medium.jpg",
+   "authors": [
+    "Dumas, Alexandre",
+    "Maquet, Auguste"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 457,
+   "wordCount": 225196,
+   "file": "books/gutenberg-ebook-13951-les-trois-mousquetaires.json"
+  },
+  {
+   "slug": "gutenberg-ebook-5097-vingt-mille-lieues-sous-les-mers-complete",
+   "title": "Vingt mille Lieues Sous Les Mers — Complete",
+   "description": "A full in-app public-domain copy of Vingt mille lieues sous les mers, in the original French, for heritage and world-language readers.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "French language",
+    "Science fiction",
+    "Ocean"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/5097",
+    "textUrl": "https://www.gutenberg.org/files/5097/5097-0.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/5097/pg5097.cover.medium.jpg",
+   "authors": [
+    "Verne, Jules"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 300,
+   "wordCount": 143347,
+   "file": "books/gutenberg-ebook-5097-vingt-mille-lieues-sous-les-mers-complete.json"
+  },
+  {
+   "slug": "gutenberg-ebook-800-le-tour-du-monde-en-quatre-vingts-jours",
+   "title": "Le tour du monde en quatre-vingts jours",
+   "description": "A full in-app public-domain copy of Le Tour du monde en quatre-vingts jours, in the original French, for heritage and world-language readers.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "French language",
+    "Fiction",
+    "Adventure"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/800",
+    "textUrl": "https://www.gutenberg.org/files/800/800-8.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/800/pg800.cover.medium.jpg",
+   "authors": [
+    "Verne, Jules"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 140,
+   "wordCount": 67451,
+   "file": "books/gutenberg-ebook-800-le-tour-du-monde-en-quatre-vingts-jours.json"
+  },
+  {
+   "slug": "gutenberg-ebook-56327-fables-de-la-fontaine",
+   "title": "Fables de La Fontaine",
+   "description": "A full in-app public-domain copy of Fables de La Fontaine, in the original French, for heritage and world-language readers.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "French language",
+    "Fables",
+    "Poetry"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/56327",
+    "textUrl": "https://www.gutenberg.org/files/56327/56327-0.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/56327/pg56327.cover.medium.jpg",
+   "authors": [
+    "La Fontaine, Jean de"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 199,
+   "wordCount": 80334,
+   "file": "books/gutenberg-ebook-56327-fables-de-la-fontaine.json"
+  },
+  {
+   "slug": "gutenberg-ebook-4650-candide-ou-l-optimisme",
+   "title": "Candide, ou l'optimisme",
+   "description": "A full in-app public-domain copy of Candide, ou l'optimisme, in the original French, for heritage and world-language readers.",
+   "language": "French",
+   "langCode": "fr",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "French language",
+    "Satire",
+    "Philosophy"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/4650",
+    "textUrl": "https://www.gutenberg.org/files/4650/4650-0.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/4650/pg4650.cover.medium.jpg",
+   "authors": [
+    "Voltaire"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 79,
+   "wordCount": 34119,
+   "file": "books/gutenberg-ebook-4650-candide-ou-l-optimisme.json"
+  },
+  {
+   "slug": "gutenberg-ebook-55752-dom-casmurro",
+   "title": "Dom Casmurro",
+   "description": "A full in-app public-domain copy of Dom Casmurro, in the original Portuguese, for heritage and world-language readers.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Portuguese language",
+    "Fiction",
+    "Brazilian literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/55752",
+    "textUrl": "https://www.gutenberg.org/files/55752/55752-0.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/55752/pg55752.cover.medium.jpg",
+   "authors": [
+    "Machado de Assis"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 141,
+   "wordCount": 65746,
+   "file": "books/gutenberg-ebook-55752-dom-casmurro.json"
+  },
+  {
+   "slug": "gutenberg-ebook-54829-memorias-posthumas-de-braz-cubas",
+   "title": "Memorias Posthumas de Braz Cubas",
+   "description": "A full in-app public-domain copy of Memórias Póstumas de Brás Cubas, in the original Portuguese, for heritage and world-language readers.",
+   "language": "Portuguese",
+   "langCode": "pt",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Portuguese language",
+    "Fiction",
+    "Brazilian literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/54829",
+    "textUrl": "https://www.gutenberg.org/files/54829/54829-0.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/54829/pg54829.cover.medium.jpg",
+   "authors": [
+    "Machado de Assis"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 136,
+   "wordCount": 61588,
+   "file": "books/gutenberg-ebook-54829-memorias-posthumas-de-braz-cubas.json"
+  },
+  {
+   "slug": "gutenberg-ebook-22367-die-verwandlung",
+   "title": "Die Verwandlung",
+   "description": "A full in-app public-domain copy of Die Verwandlung (The Metamorphosis), in the original German, for heritage and world-language readers.",
+   "language": "German",
+   "langCode": "de",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "German language",
+    "Fiction",
+    "World literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/22367",
+    "textUrl": "https://www.gutenberg.org/files/22367/22367-8.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/22367/pg22367.cover.medium.jpg",
+   "authors": [
+    "Kafka, Franz"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 47,
+   "wordCount": 19354,
+   "file": "books/gutenberg-ebook-22367-die-verwandlung.json"
+  },
+  {
+   "slug": "gutenberg-ebook-7500-heidis-lehr-und-wanderjahre",
+   "title": "Heidis Lehr- und Wanderjahre",
+   "description": "A full in-app public-domain copy of Heidis Lehr- und Wanderjahre, in the original German, for heritage and world-language readers.",
+   "language": "German",
+   "langCode": "de",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "German language",
+    "Fiction",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/7500",
+    "textUrl": "https://www.gutenberg.org/files/7500/7500-0.txt"
+   },
+   "cover": "https://www.gutenberg.org/cache/epub/7500/pg7500.cover.medium.jpg",
+   "authors": [
+    "Spyri, Johanna"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 116,
+   "wordCount": 51303,
+   "file": "books/gutenberg-ebook-7500-heidis-lehr-und-wanderjahre.json"
   }
  ]
 }
