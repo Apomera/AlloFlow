@@ -738,6 +738,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }
   }
 
+  // Letter grade for a combined (safety+eco)/2 score. Single source of truth for
+  // the debrief AND the certificate — the certificate used to read the debrief
+  // branch's local `gradeLetter`, which is unassigned when view==='certificate'
+  // (function-scoped var), so the printable FINAL GRADE rendered blank.
+  function rrGradeLetter(combined) {
+    if (combined >= 95) return 'A+';
+    if (combined >= 90) return 'A';
+    if (combined >= 80) return 'B';
+    if (combined >= 70) return 'C';
+    if (combined >= 55) return 'D';
+    return 'F';
+  }
+
+  // Local calendar-day key (YYYY-MM-DD). Daily features must use LOCAL days:
+  // toISOString() is UTC, which rolls the "day" at 7-8 PM for this tool's
+  // Maine/Eastern audience — the daily challenge visibly reset mid-evening and
+  // a student could bump the streak twice in one night.
+  function localDayKey(dt) {
+    dt = dt || new Date();
+    var mo = String(dt.getMonth() + 1);
+    var da = String(dt.getDate());
+    if (mo.length < 2) mo = '0' + mo;
+    if (da.length < 2) da = '0' + da;
+    return dt.getFullYear() + '-' + mo + '-' + da;
+  }
+
   // Shuffle a question's answer choices and remap `correct` to the new index.
   // The bank stores B (index 1) as the correct answer in ~75% of questions;
   // without per-question answer-permutation, a student can pass at 75% just
@@ -761,16 +787,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return out;
   }
 
+  // Uniform Fisher–Yates shuffle (returns a new array). The old
+  // `.sort(() => Math.random() - 0.5)` trick is statistically biased — some
+  // questions were systematically more likely to appear early/at all.
+  function shuffleArray(arr) {
+    var out = arr.slice();
+    for (var fy = out.length - 1; fy > 0; fy--) {
+      var fj = Math.floor(Math.random() * (fy + 1));
+      var ft = out[fy]; out[fy] = out[fj]; out[fj] = ft;
+    }
+    return out;
+  }
+
   function buildRandomTest() {
-    var shuffled = PERMIT_BANK.slice().sort(function() { return Math.random() - 0.5; });
-    return shuffled.slice(0, 20).map(shuffleAnswers);
+    return shuffleArray(PERMIT_BANK).slice(0, 20).map(shuffleAnswers);
   }
   function buildCategoryTest(cat) {
     var pool = PERMIT_BANK.filter(function(q) { return q.category === cat; });
-    var shuffled = pool.slice().sort(function() { return Math.random() - 0.5; });
-    var picked = shuffled.slice(0, Math.min(20, shuffled.length));
+    var picked = shuffleArray(pool).slice(0, Math.min(20, pool.length));
     if (picked.length < 20) {
-      var fillers = PERMIT_BANK.filter(function(q) { return q.category !== cat; }).sort(function() { return Math.random() - 0.5; });
+      var fillers = shuffleArray(PERMIT_BANK.filter(function(q) { return q.category !== cat; }));
       picked = picked.concat(fillers.slice(0, 20 - picked.length));
     }
     return picked.map(shuffleAnswers);
@@ -782,10 +818,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     });
     if (weakCats.length === 0) return buildRandomTest();
     var pool = PERMIT_BANK.filter(function(q) { return weakCats.indexOf(q.category) !== -1; });
-    var shuffled = pool.slice().sort(function() { return Math.random() - 0.5; });
-    var picked = shuffled.slice(0, 20);
+    var picked = shuffleArray(pool).slice(0, 20);
     if (picked.length < 20) {
-      var fillers = PERMIT_BANK.filter(function(q) { return weakCats.indexOf(q.category) === -1; }).sort(function() { return Math.random() - 0.5; });
+      var fillers = shuffleArray(PERMIT_BANK.filter(function(q) { return weakCats.indexOf(q.category) === -1; }));
       picked = picked.concat(fillers.slice(0, 20 - picked.length));
     }
     return picked.map(shuffleAnswers);
@@ -826,7 +861,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       content: "A moving car stores energy — kinetic energy. KE = ½mv². Notice the v-squared again. At 30 mph a car has some kinetic energy. At 60 mph it has FOUR TIMES that. At 90 mph it has NINE TIMES. Every bit of that has to go somewhere in a crash — into crumple zones, airbags, and unfortunately, into people. This is the single biggest reason speed limits exist. Modern crumple zones are designed for ~35 mph impacts. Above that, the occupants start to see forces that human bodies cannot survive. Seatbelts, airbags, and crumple zones together cut fatality risk by ~75% at legal speeds — but they cannot fight physics forever.",
       formula: 'KE = ½ · m · v²',
       variables: 'm = mass (kg), v = velocity (m/s). 1 mph = 0.447 m/s',
-      practice: 'Calculate it: a 1500 kg car at 60 mph (27 m/s) has KE ≈ 547,000 joules. That is equivalent to a ton of TNT-scale energy release on impact.'
+      practice: 'Calculate it: a 1500 kg car at 60 mph (27 m/s) has KE ≈ 547,000 joules — the same energy as dropping that car from a 12-story building. In a crash it all dissipates in about a tenth of a second.'
     },
     mpg: {
       title: 'MPG Math: What Your Fuel Gauge Is Really Telling You',
@@ -1026,8 +1061,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // Winter penalty: dense air, ethanol, accessory load. ~5% across powertrains.
     if (opts.winter) engineEff *= 0.95;
     var fuelPowerW = powerW / engineEff;
-    // Energy density: gasoline ≈ 33.7 kWh / gallon gas-equivalent. (EPA uses this for MPGe.)
-    var gallonsPerHour = fuelPowerW / (33700 * 1000) * 3600;
+    // Energy density: gasoline ≈ 33.7 kWh/gallon gas-equivalent (EPA's MPGe basis).
+    // A gallon delivers 33,700 W for one hour, so gal/h = watts / 33,700 directly.
+    // (A previous version divided by 33700*1000*... with a Wh→J factor of 1000
+    // instead of 3600, making every MPG readout 3.6× too low — sedan cruise at
+    // 60 mph read ~12 MPG instead of the ~42 its own spec sheet promises.)
+    var gallonsPerHour = fuelPowerW / 33700;
     if (gallonsPerHour <= 0.0001) return 999;
     return v_mph / gallonsPerHour;
   }
@@ -1557,8 +1596,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var ty = Math.floor(Math.random() * MAP_SIZE);
         if (map[ty][tx] === 2) map[ty][tx] = 5;
       }
-    } else if (scenarioId === 'rural' || scenarioId === 'snow' || scenarioId === 'fog') {
-      // Winding road with actual curves (sine wave offset from center)
+    } else if (scenarioId === 'rural' || scenarioId === 'snow' || scenarioId === 'fog' || scenarioId === 'dawn') {
+      // Winding road with actual curves (sine wave offset from center).
+      // 'dawn' MUST take this branch: the 3D renderer, traffic spawner, and pole
+      // placement all treat dawn as a rural curve (['rural','snow','fog','dawn']),
+      // so a straight carved map would disagree with the drawn road.
       for (var y2 = 0; y2 < MAP_SIZE; y2++) {
         var curveOffset = Math.round(Math.sin(y2 * 0.12) * 5); // road curves left-right
         var roadCenterHere = centerX + curveOffset;
@@ -1568,11 +1610,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         }
         if (roadCenterHere >= 0 && roadCenterHere < MAP_SIZE) map[y2][roadCenterHere] = 3;
       }
-      // Dense forest along sides
-      for (var ti2 = 0; ti2 < 200; ti2++) {
-        var tx2 = Math.floor(Math.random() * MAP_SIZE);
-        var ty2 = Math.floor(Math.random() * MAP_SIZE);
-        if (map[ty2][tx2] === 2) map[ty2][tx2] = 5;
+      // Dense forest along sides (dawn gets its own thinner scatter below instead)
+      if (scenarioId !== 'dawn') {
+        for (var ti2 = 0; ti2 < 200; ti2++) {
+          var tx2 = Math.floor(Math.random() * MAP_SIZE);
+          var ty2 = Math.floor(Math.random() * MAP_SIZE);
+          if (map[ty2][tx2] === 2) map[ty2][tx2] = 5;
+        }
       }
     } else if (scenarioId === 'highway') {
       // 4-lane highway with gentle curves
@@ -1777,19 +1821,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return traffic;
   }
 
+  // Road center X at a given map Y for scenario-mode maps. Mirrors the exact
+  // curve formulas used by buildMap and the 3D road renderer (rural-family
+  // sine 0.12*5, highway sine 0.06*3) so spawned entities land ON the road
+  // even where it bends. Grid scenarios are straight → plain centerX.
+  function scenarioRoadCenterX(scenarioId, mapY) {
+    var cx = Math.floor(MAP_SIZE / 2);
+    if (['rural', 'snow', 'fog', 'dawn'].indexOf(scenarioId) !== -1) return cx + Math.sin(mapY * 0.12) * 5;
+    if (scenarioId === 'highway') return cx + Math.sin(mapY * 0.06) * 3;
+    return cx;
+  }
+
   function spawnPedestrians(scenario) {
     if (scenario.id === 'highway' || scenario.id === 'rural') return [];
     var peds = [];
     var count = scenario.id === 'school_zone' ? 8 : scenario.id === 'downtown' ? 10 : scenario.id === 'residential' ? 4 : 3;
-    var centerX = Math.floor(MAP_SIZE / 2);
-    // Sidewalk X positions (left and right sidewalks)
-    var sidewalkLeft = centerX - 4.5;
-    var sidewalkRight = centerX + 4.5;
     var crossYs = [20, 40, 56, 72];
     for (var i = 0; i < count; i++) {
       var nearIntersection = i < count * 0.6;
       var pedY = nearIntersection ? crossYs[i % crossYs.length] : 10 + Math.random() * (MAP_SIZE - 20);
       var side = i % 2 === 0 ? -1 : 1; // alternate sides
+      // Sidewalk X positions follow the road curve at this pedestrian's Y
+      // (dawn/snow/fog roads bend; centerX-anchored sidewalks left peds in the field).
+      var roadC = scenarioRoadCenterX(scenario.id, pedY);
+      var sidewalkLeft = roadC - 4.5;
+      var sidewalkRight = roadC + 4.5;
       // Spawn exactly ON the sidewalk
       var pedX = side === -1 ? sidewalkLeft : sidewalkRight;
       // Pedestrian "kind" — changes appearance and speed. Kids are small and
@@ -1828,18 +1884,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   function spawnCyclists(scenario) {
     if (['highway', 'fog', 'snow', 'night', 'parking'].indexOf(scenario.id) !== -1) return [];
     var cyclists = [];
-    var centerX = Math.floor(MAP_SIZE / 2);
     var count = scenario.id === 'rural' ? 2 : scenario.id === 'residential' ? 3 : 2;
     for (var i = 0; i < count; i++) {
       // Cyclists travel ON THE RIGHT SIDE relative to their direction of motion.
       // Since the car moves in -Y (heading = -π/2) and uses the right side of road,
-      // cyclists heading -π/2 (same direction as player) are at X = centerX + 2.3 (bike lane).
-      // Cyclists heading +π/2 (oncoming) are at X = centerX - 2.3.
+      // cyclists heading -π/2 (same direction as player) ride at roadCenter + 2.3 (bike lane).
+      // Cyclists heading +π/2 (oncoming) ride at roadCenter - 2.3.
+      // Anchor to the road CURVE at their Y — rural/dawn roads bend up to 5 cells
+      // off centerX, which used to strand cyclists on the shoulder or in the trees.
       var heading = Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2;
-      var bikeLaneX = heading === -Math.PI / 2 ? centerX + 2.3 : centerX - 2.3;
+      var cyY = Math.random() * MAP_SIZE;
+      var cyRoadC = scenarioRoadCenterX(scenario.id, cyY);
+      var bikeLaneX = heading === -Math.PI / 2 ? cyRoadC + 2.3 : cyRoadC - 2.3;
       cyclists.push({
         x: bikeLaneX,
-        y: Math.random() * MAP_SIZE,
+        y: cyY,
         heading: heading,
         speed: (12 + Math.random() * 4) * MPH_TO_MS, // 12-16 mph
         type: 'cyclist'
@@ -1851,10 +1910,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   function spawnMotorcycles(scenario) {
     if (['fog', 'snow', 'parking'].indexOf(scenario.id) !== -1) return [];
     if (Math.random() > 0.4) return [];
-    var centerX = Math.floor(MAP_SIZE / 2);
+    var mcY = Math.random() * MAP_SIZE;
+    // Follow the road curve at the spawn Y (rural/dawn/highway roads bend).
+    var mcRoadC = scenarioRoadCenterX(scenario.id, mcY);
     return [{
-      x: centerX + (Math.random() < 0.5 ? -1.5 : 1.5),
-      y: Math.random() * MAP_SIZE,
+      x: mcRoadC + (Math.random() < 0.5 ? -1.5 : 1.5),
+      y: mcY,
       heading: Math.random() < 0.5 ? Math.PI / 2 : -Math.PI / 2,
       speed: scenario.speedLimit * MPH_TO_MS,
       type: 'motorcycle'
@@ -1992,13 +2053,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       duration: 30, weather: ['rain', 'snow'],
       check: function(ctx) {
         var mph = Math.abs(ctx.car.speed) * ctx.MS_TO_MPH;
-        if (!ctx._armed && mph >= 35) { ctx._armed = true; }
+        // Capture the skid baseline HERE at arm time. (An earlier onArm hook was
+        // invoked at Accept with a ctx that had no .stats — it threw a TypeError
+        // and skid seconds accrued before reaching 35 mph wrongly counted.)
+        if (!ctx._armed && mph >= 35) { ctx._armed = true; ctx._startSkid = ctx.stats.skidSeconds; }
         if (ctx._armed && ctx.stats.skidSeconds - (ctx._startSkid || 0) > 0.3) return { failed: true, reason: 'You skidded.' };
         if (ctx._armed && mph <= 5) return { passed: true };
         if (ctx.elapsed >= 30) return { failed: true, reason: 'Time ran out.' };
         return { progress: ctx._armed ? Math.min(1, (35 - mph) / 30) : 0 };
-      },
-      onArm: function(ctx) { ctx._startSkid = ctx.stats.skidSeconds; }
+      }
     },
     {
       id: 'smooth_operator', icon: '🕊️', title: 'Smooth Operator',
@@ -2184,6 +2247,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   var _lastEmergencyCheck = 0;
   function maybeSpawnEmergency(scenario, time) {
     if (time < 30) return null; // give player 30 seconds to settle
+    // Sim time restarts at 0 on every new drive but this guard is module-scoped:
+    // without the backwards-clock reset below, drive #2 inherits drive #1's last
+    // check time and emergency vehicles stay suppressed for the whole next drive.
+    if (time < _lastEmergencyCheck) _lastEmergencyCheck = 0;
     // Only check once per second (not every frame)
     if (time - _lastEmergencyCheck < 1) return null;
     _lastEmergencyCheck = time;
@@ -2252,6 +2319,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   function maybeSpawnWildlife(scenario, time) {
     // Only on rural/snow/fog/night/dawn
     if (['rural', 'snow', 'fog', 'night', 'dawn'].indexOf(scenario.id) === -1) return null;
+    // Sim time restarts at 0 each drive; reset the module-scoped guard when the
+    // clock goes backwards or wildlife is silently suppressed on every drive after the first.
+    if (time < _lastWildlifeCheck) _lastWildlifeCheck = 0;
     // Check once per second
     if (time - _lastWildlifeCheck < 1) return null;
     _lastWildlifeCheck = time;
@@ -2390,11 +2460,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }
   };
 
+  // Axis-aligned rectangle overlap. MODULE scope on purpose: ScenarioParkingMode
+  // and ParkingMode both need it, and a previous revision defined it only inside
+  // ParkingMode — ScenarioParkingMode's update() then threw ReferenceError on its
+  // first frame, killing 5 of the 6 parking scenarios (every one with obstacles).
+  function rectsOverlap(a, b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  }
+
+  // Enclosing axis-aligned box of an obstacle, honoring rotateDeg (drawn about its
+  // center). angleBack's 45° parked cars were drawn rotated but collided as their
+  // unrotated rects — invisible walls where nothing is drawn, pass-through where
+  // the car visibly is.
+  function obstacleAabb(ob) {
+    if (!ob.rotateDeg) return ob;
+    var rad = ob.rotateDeg * Math.PI / 180;
+    var c = Math.abs(Math.cos(rad)), s = Math.abs(Math.sin(rad));
+    var rw = ob.w * c + ob.h * s;
+    var rh = ob.w * s + ob.h * c;
+    return { x: ob.x + ob.w / 2 - rw / 2, y: ob.y + ob.h / 2 - rh / 2, w: rw, h: rh };
+  }
+
   // ScenarioParkingMode: parameterized variant of ParkingMode for the new scenarios.
   // Uses the same bicycle-model integrator and hit detection patterns. Each scenario's
   // stepCheck (above) determines completion. Score starts at 100, -25 per obstacle hit,
-  // -10 per boundary breach. Reusing rectsOverlap from parent scope. Score persists to
-  // d.parkingBest[id] via lsSet.
+  // -10 per boundary breach. Score persists to d.parkingBest[id] via lsSet.
   function ScenarioParkingMode(props) {
     var React = props.React;
     var h = props.h;
@@ -2411,6 +2501,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var doneRef = useRef(false);
     var status = useState({ score: 100, time: 0, hits: 0, parked: false });
     var st = status[0]; var setSt = status[1];
+    // The RAF effect's deps are [scn.id], so its closure over `st` is frozen at
+    // mount — every penalty used to recompute from the initial 100 and the canvas
+    // HUD never moved. stRef is the loop's live source of truth; commitSt keeps
+    // React state in sync for the DOM.
+    var stRef = useRef(st);
+    var commitSt = function(next) { stRef.current = next; setSt(next); };
     var feedback = useState(scn.hint);
     var feedbackText = feedback[0]; var setFeedback = feedback[1];
 
@@ -2418,7 +2514,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       carRef.current = Object.assign({ speed: 0, steering: 0 }, scn.startCar);
       doneRef.current = false;
       hitCooldownRef.current = 0;
-      setSt({ score: 100, time: 0, hits: 0, parked: false });
+      commitSt({ score: 100, time: 0, hits: 0, parked: false });
       setFeedback(scn.hint);
     }
 
@@ -2472,19 +2568,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         car.x += Math.cos(car.heading) * car.speed * dt;
         car.y += Math.sin(car.heading) * car.speed * dt;
 
-        // Hit detection vs obstacles (axis-aligned approximation)
+        // Hit detection vs obstacles (axis-aligned approximation; rotated
+        // obstacles collide via their drawn footprint's enclosing box)
         var carBox = { x: car.x - 25, y: car.y - 12, w: 50, h: 24 };
         var anyHit = false;
         scn.obstacles.forEach(function(ob) {
-          if (rectsOverlap(carBox, ob)) anyHit = true;
+          if (rectsOverlap(carBox, obstacleAabb(ob))) anyHit = true;
         });
         if (anyHit) {
           if (hitCooldownRef.current <= 0) {
             hitCooldownRef.current = 0.5;
-            var newSt = Object.assign({}, st);
+            var newSt = Object.assign({}, stRef.current);
             newSt.score = Math.max(0, newSt.score - 25);
             newSt.hits += 1;
-            setSt(newSt);
+            commitSt(newSt);
             setFeedback('💥 You hit an obstacle. -25. Press R to reset.');
           }
           car.speed *= -0.3;
@@ -2498,9 +2595,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var outOfBounds = car.x < bd.x || car.x > bd.x + bd.w || car.y < bd.y || car.y > bd.y + bd.h;
           if (outOfBounds && hitCooldownRef.current <= 0) {
             hitCooldownRef.current = 0.5;
-            var newSt2 = Object.assign({}, st);
+            var newSt2 = Object.assign({}, stRef.current);
             newSt2.score = Math.max(0, newSt2.score - 10);
-            setSt(newSt2);
+            commitSt(newSt2);
             setFeedback('⚠️ Out of bounds. Stay inside the lane markings. -10.');
           }
         }
@@ -2509,7 +2606,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var headingDeg = (car.heading * 180 / Math.PI + 360) % 360;
         if (!doneRef.current && scn.stepCheck(car, scn, headingDeg)) {
           doneRef.current = true;
-          var finalSt = Object.assign({}, st);
+          var finalSt = Object.assign({}, stRef.current);
           finalSt.parked = true;
           var notes = [];
           // Curb-distance grading (Maine road test rule: 6–12 inches).
@@ -2560,7 +2657,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               notes.push('⚠ Uphill: turn wheels AWAY from curb (toward street). −10.');
             }
           }
-          setSt(finalSt);
+          commitSt(finalSt);
           setFeedback('✅ Parked! Final score: ' + finalSt.score + '/100 (' + finalSt.hits + ' hits). ' + notes.join(' '));
           if (props.onComplete) props.onComplete(finalSt.score);
         }
@@ -2648,7 +2745,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         gfx.fillStyle = 'rgba(15,23,42,0.85)';
         gfx.fillRect(10, 10, 180, 56);
         gfx.fillStyle = '#22d3ee'; gfx.font = 'bold 14px system-ui'; gfx.textAlign = 'left';
-        gfx.fillText('Score: ' + st.score, 20, 30);
+        gfx.fillText('Score: ' + stRef.current.score, 20, 30);
         gfx.fillStyle = '#fbbf24'; gfx.font = '11px system-ui';
         gfx.fillText(scn.label + (scn.difficulty ? ' · ' + scn.difficulty : ''), 20, 46);
         gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
@@ -2905,9 +3002,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       };
     }, [st]);
 
-    function rectsOverlap(a, b) {
-      return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-    }
+    // rectsOverlap now lives at module scope (shared with ScenarioParkingMode).
 
     return h('div', { style: { padding: '14px', maxWidth: '900px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
       h('button', { onClick: props.onExit, style: { marginBottom: '10px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
@@ -3111,7 +3206,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var useRef = React.useRef;
     var useState = React.useState;
     var canvasRef = useRef(null);
-    var carRef = useRef({ x: 300, y: 80, heading: Math.PI / 2, speed: 0, steering: 0 });
+    // Nose points UP (-π/2) so REVERSING (S/Shift) moves the car down the cone
+    // lane toward the target, matching the drill's instructions. A previous
+    // +π/2 heading made reverse drive AWAY from the target — the drill could
+    // only be completed by pressing forward.
+    var carRef = useRef({ x: 300, y: 80, heading: -Math.PI / 2, speed: 0, steering: 0 });
     var keysRef = useRef({});
     var animRef = useRef(null);
     var doneRef = useRef(false);
@@ -3123,11 +3222,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var LANE_LEFT = 275;
     var LANE_RIGHT = 325;
     var TARGET_Y = 430;
-    var CONES = [];
-    for (var ci = 0; ci < 10; ci++) {
-      CONES.push({ x: LANE_LEFT, y: 100 + ci * 36 });
-      CONES.push({ x: LANE_RIGHT, y: 100 + ci * 36 });
+    // Cones live in a ref: the RAF effect re-runs on every score change, and a
+    // per-render rebuild wiped each cone's `hit` flag — one brushed cone was
+    // re-penalized on every subsequent render (and visually un-grayed).
+    var conesRef = useRef(null);
+    if (!conesRef.current) {
+      conesRef.current = [];
+      for (var ci = 0; ci < 10; ci++) {
+        conesRef.current.push({ x: LANE_LEFT, y: 100 + ci * 36 });
+        conesRef.current.push({ x: LANE_RIGHT, y: 100 + ci * 36 });
+      }
     }
+    var CONES = conesRef.current;
 
     useEffect(function() {
       var onD = function(e) { if (['w','a','s','d','shift'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault(); if (e.repeat) return; keysRef.current[e.key.toLowerCase()] = true; if (e.key.toLowerCase() === 'r') resetCar(); };
@@ -3137,8 +3243,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }, []);
 
     function resetCar() {
-      carRef.current = { x: 300, y: 80, heading: Math.PI / 2, speed: 0, steering: 0 };
+      carRef.current = { x: 300, y: 80, heading: -Math.PI / 2, speed: 0, steering: 0 };
       doneRef.current = false;
+      conesRef.current.forEach(function(cone) { cone.hit = false; });
       setSt({ score: 100, conesHit: 0, done: false });
       setFb('Reverse in a perfectly straight line for 100 ft. Stay between the cones.');
     }
@@ -3204,12 +3311,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillStyle = cone.hit ? '#475569' : '#f97316';
           gfx.beginPath(); gfx.moveTo(cone.x, cone.y - 8); gfx.lineTo(cone.x - 6, cone.y + 6); gfx.lineTo(cone.x + 6, cone.y + 6); gfx.closePath(); gfx.fill();
         });
-        // Car
+        // Car — rotate(heading) keeps the body's long axis aligned with travel
+        // (nose = local +X). Reverse lights sit at the rear (local −X), the
+        // leading edge while backing down the lane.
         var car = carRef.current;
-        gfx.save(); gfx.translate(car.x, car.y); gfx.rotate(car.heading - Math.PI / 2);
+        gfx.save(); gfx.translate(car.x, car.y); gfx.rotate(car.heading);
         gfx.fillStyle = '#a3a3a3'; gfx.fillRect(-22, -12, 44, 24);
         gfx.fillStyle = '#404040'; gfx.fillRect(-16, -10, 14, 20);
-        if (car.speed < -0.5) { gfx.fillStyle = '#fff'; gfx.fillRect(17, -8, 5, 5); gfx.fillRect(17, 3, 5, 5); }
+        if (car.speed < -0.5) { gfx.fillStyle = '#fff'; gfx.fillRect(-22, -8, 5, 5); gfx.fillRect(-22, 3, 5, 5); }
         gfx.restore();
         // HUD
         gfx.fillStyle = 'rgba(0,0,0,0.7)'; gfx.fillRect(10, 10, 280, 50);
@@ -3614,7 +3723,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var start = Date.now();
             var animate = function() {
               var elapsed = Date.now() - start;
-              if (elapsed > 3000) { cctx.clearRect(0, 0, cvs.width, cvs.height); return; }
+              if (elapsed > 3000) { cctx.clearRect(0, 0, cvs.width, cvs.height); cvs._rrConfettiRaf = null; return; }
               cctx.clearRect(0, 0, cvs.width, cvs.height);
               parts.forEach(function(p) {
                 p.x += p.vx;
@@ -3631,19 +3740,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 cctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
                 cctx.restore();
               });
-              requestAnimationFrame(animate);
+              cvs._rrConfettiRaf = requestAnimationFrame(animate);
             };
-            requestAnimationFrame(animate);
+            // Track the RAF id on the canvas so unmount cleanup can cancel a
+            // mid-flight celebration instead of drawing to a detached canvas.
+            cvs._rrConfettiRaf = requestAnimationFrame(animate);
           } catch (confErr) { /* ignore — confetti is cosmetic */ }
         } else if (current < lastBadgeCountRef.current) {
           // Reset if badges were cleared (e.g., save loaded with fewer).
           lastBadgeCountRef.current = current;
         }
-        // Cleanup on unmount: clear any pending auto-dismiss timer.
+        // Cleanup on unmount: clear any pending auto-dismiss timer + confetti RAF.
         return function() {
           if (badgePopupTimerRef.current) {
             clearTimeout(badgePopupTimerRef.current);
             badgePopupTimerRef.current = null;
+          }
+          var confCvs = confettiCanvasRef.current;
+          if (confCvs && confCvs._rrConfettiRaf) {
+            cancelAnimationFrame(confCvs._rrConfettiRaf);
+            confCvs._rrConfettiRaf = null;
           }
         };
       }, [Object.keys(d.badges || {}).length]);
@@ -3752,6 +3868,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             },
           };
         }
+        // Drop the hook on unmount so it doesn't pin this instance's refs (and a
+        // dead startDriving) after the tool closes.
+        return function() {
+          if (typeof window !== 'undefined' && window.__testHooks && window.__testHooks.roadReady) {
+            delete window.__testHooks.roadReady;
+          }
+        };
+      }, []);
+
+      // Close the WebAudio context on unmount. Browsers cap live AudioContexts
+      // (~6 per page in Chrome); each open→drive→close cycle of this modal used
+      // to leak one, after which `new AudioContext()` throws and every later
+      // drive runs silent. Null it out so a remount lazily re-creates it.
+      useEffect(function() {
+        return function() {
+          try {
+            var aUnmount = audioRef.current;
+            if (aUnmount && aUnmount.ctx && aUnmount.ctx.state !== 'closed') {
+              aUnmount.ctx.close();
+            }
+            if (aUnmount) { aUnmount.ctx = null; aUnmount.started = false; }
+          } catch (e) {}
+        };
       }, []);
 
       // Two-tone horn: major-third stack (≈400 + ≈500 Hz) with a square wave for
@@ -4093,6 +4232,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // value we last fired for, so repeated renders don't schedule duplicate upd()
       // calls (each would overwrite rtStartTime and skew the measured reaction time).
       var rtTransitionFiredRef = useRef(null);
+      // Reaction Test heartbeat: the waiting→react transition used to be evaluated
+      // ONLY inside render, but nothing re-renders this component while the test
+      // sits in 'waiting' (no interval, no RAF on that view) — the colored circle
+      // never appeared and the feature hung forever. This effect owns the timer;
+      // the render-time check remains as a harmless backup, deduped by
+      // rtTransitionFiredRef.
+      useEffect(function() {
+        if (view !== 'reactionTest' || d.rtPhase !== 'waiting' || !d.rtWaitUntil) return;
+        var rtDelay = Math.max(0, d.rtWaitUntil - Date.now());
+        var rtTimerId = setTimeout(function() {
+          if (rtTransitionFiredRef.current === d.rtWaitUntil) return; // render path beat us
+          rtTransitionFiredRef.current = d.rtWaitUntil;
+          updMulti({ rtPhase: 'react', rtStartTime: Date.now() });
+        }, rtDelay);
+        return function() { clearTimeout(rtTimerId); };
+      }, [view, d.rtPhase, d.rtWaitUntil]);
       // Parent Ride Check: a structured 2-minute eval mode. Parent taps a category
       // button each time they see an error; engine logs it with timestamp + speed.
       // On drive end (or 2-min timer), a summary screen shows error counts by category
@@ -4123,6 +4278,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var beltFastenedTuple = useState(false);
       var beltFastened = beltFastenedTuple[0];
       var setBeltFastened = beltFastenedTuple[1];
+      // Pause UI mirror — same ref-vs-state trap as the seatbelt above. The sim
+      // loop reads pausedRef per frame (cheap), but the PAUSED overlay and the
+      // pause button's aria-pressed live in React: toggling only the ref never
+      // re-rendered, so the overlay didn't appear and screen-reader users heard
+      // no state change. All pause toggles go through togglePause.
+      var isPausedTuple = useState(false);
+      var isPaused = isPausedTuple[0];
+      var setIsPaused = isPausedTuple[1];
+      var togglePause = function(force) {
+        var pNext = typeof force === 'boolean' ? force : !pausedRef.current;
+        pausedRef.current = pNext;
+        setIsPaused(pNext);
+      };
+      // Grace-banner mirror ("check your mirrors" card after buckling). Its old
+      // condition read timeRef at render time, but nothing re-renders when the
+      // 4s window ends — the banner lingered until an unrelated state change.
+      var graceVisibleTuple = useState(false);
+      var graceVisible = graceVisibleTuple[0];
+      var setGraceVisible = graceVisibleTuple[1];
       // Blind spot detector: populated every render based on adjacent-lane traffic.
       var blindSpotRef = useRef({ left: false, right: false });
       // Lane departure detector: flags when we drift across a lane line without signaling.
@@ -4179,19 +4353,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       useEffect(function() {
         if (view !== 'driving') return;
         var onKeyDown = function(e) {
+          // Don't steal keys from form fields — the shared modal can host text
+          // inputs (coach panels, sibling tools); typing "was" in one used to
+          // pause the sim and throttle the car.
+          var kTarget = e.target, kTag = kTarget && kTarget.tagName;
+          if (kTag === 'INPUT' || kTag === 'TEXTAREA' || (kTarget && kTarget.isContentEditable)) return;
           // preventDefault runs on every event (including repeats) so held WASD/arrows don't scroll the page.
           if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','q','z','x'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
           // Skip one-shot toggle logic on OS key-repeat — otherwise holding Space strobes pause,
           // holding C cycles cameras at ~30Hz, holding E/V flips signals, etc.
           if (e.repeat) return;
           keysRef.current[e.key.toLowerCase()] = true;
-          if (e.key === ' ') { pausedRef.current = !pausedRef.current; }
+          if (e.key === ' ') { togglePause(); }
           if (e.key.toLowerCase() === 'c') {
             var modes = ['cockpit', 'chase', 'overhead', 'rearview'];
             cameraModeRef.current = modes[(modes.indexOf(cameraModeRef.current) + 1) % modes.length];
           }
           if (e.key.toLowerCase() === 'h') showHUDRef.current = !showHUDRef.current;
-          if (e.key.toLowerCase() === 'l') upd('highBeams', !d.highBeams);
+          // Read live state via dataRef — this effect's deps are [view], so the
+          // closed-over `d` is frozen at drive start; `!d.highBeams` computed the
+          // same value on every press and the beams stuck after one toggle.
+          if (e.key.toLowerCase() === 'l') upd('highBeams', !dataRef.current.highBeams);
           if (e.key.toLowerCase() === 'k') takePhoto();
           // Gear shifting: F = drive, G = reverse, P = park (only when stopped or slow)
           if (e.key.toLowerCase() === 'f') {
@@ -4211,11 +4393,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (e.key.toLowerCase() === 'q') playHorn(0.35);
         };
         var onKeyUp = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
+        // Release everything when focus leaves the window — the matching keyup
+        // fires in the other app, so a held W kept the car accelerating on its
+        // own until the user came back and re-tapped the key.
+        var onWindowBlur = function() { keysRef.current = {}; };
+        var onVisChange = function() { if (document.hidden) keysRef.current = {}; };
         window.addEventListener('keydown', onKeyDown);
         window.addEventListener('keyup', onKeyUp);
+        window.addEventListener('blur', onWindowBlur);
+        document.addEventListener('visibilitychange', onVisChange);
         return function() {
           window.removeEventListener('keydown', onKeyDown);
           window.removeEventListener('keyup', onKeyUp);
+          window.removeEventListener('blur', onWindowBlur);
+          document.removeEventListener('visibilitychange', onVisChange);
         };
       }, [view]);
 
@@ -4312,6 +4503,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var autoBelt = ['parking', 'threePoint', 'backingDrill'].indexOf(scn.id) !== -1;
         seatbeltRef.current = { fastened: autoBelt, chimeOsc: null, chimeGain: null, startedAt: Date.now() };
         setBeltFastened(!!autoBelt); // reset the UI mirror whenever driving starts
+        // Auto-belted scenarios skip the fasten branch in the sim loop, so show
+        // the mirror-check grace banner from here instead.
+        setGraceVisible(!!autoBelt);
+        if (autoBelt) safeTimeout(function() { setGraceVisible(false); }, 4200);
         if (!autoBelt) {
           safeTimeout(function() {
             if (!seatbeltRef.current.fastened) {
@@ -4594,8 +4789,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         emergencyRef.current = null;
         lastStateRef.current = { speed: 0, accel: 0 };
         timeRef.current = 0;
+        // Fresh path + black box per drive. The old array carried _lastSample
+        // (stamped in the PREVIOUS drive's sim time) across drives, so the
+        // sampler recorded nothing for the whole next drive and the debrief
+        // map + ghost replay showed the previous drive's route.
+        drivePathRef.current = [];
+        blackBoxRef.current = [];
         drivingRef.current = true;
-        pausedRef.current = false;
+        togglePause(false);
         updMulti({ view: 'driving', scenario: scn.id, vehicle: veh.id });
         // Door-thud when the session starts, then engine crank a beat later.
         // Delay so the audio ctx (only resumes on user gesture) has settled.
@@ -4666,6 +4867,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
           journalLog('roadtest_done', rtPassed ? '🪪' : '❌', 'Road test ' + (rtPassed ? 'PASSED' : 'failed') + ' — score ' + rtFinalScore);
         }
+        // Emergency Drill is a one-drive mode. The flag lives in persisted tool
+        // state; without this reset a single drill tap left every later drive —
+        // Free Explore, road tests, lessons — swarming with ambulances all session.
+        if (d.emergencyDrillMode) upd('emergencyDrillMode', false);
         // Seal the parent report if a Parent Ride Check was running.
         if (d.parentRideMode) {
           var sealedReport = {
@@ -4831,9 +5036,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // ── Gamepad API support ──
         var pollGamepad = function() {
           var gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+          var gpFound = false;
           for (var gi = 0; gi < gamepads.length; gi++) {
             var gp = gamepads[gi];
             if (!gp) continue;
+            gpFound = true;
             // Standard gamepad mapping:
             // Left stick X = steering (-1 left, +1 right)
             // Right trigger (axis 5 or button 7) = throttle
@@ -4867,7 +5074,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             else if (!buttons[2] || !buttons[2].pressed) k._gpX = false;
             if (buttons[3] && buttons[3].pressed && !k._gpY) { k._gpY = true; blinkerRef.current = blinkerRef.current === 1 ? 0 : 1; }
             else if (!buttons[3] || !buttons[3].pressed) k._gpY = false;
-            if (buttons[9] && buttons[9].pressed && !k._gpStart) { k._gpStart = true; pausedRef.current = !pausedRef.current; }
+            if (buttons[9] && buttons[9].pressed && !k._gpStart) { k._gpStart = true; togglePause(); }
             else if (!buttons[9] || !buttons[9].pressed) k._gpStart = false;
             // D-pad gear shifting
             if (buttons[12] && buttons[12].pressed && !k._gpUp) { k._gpUp = true; if (Math.abs(carRef.current.speed) < 1) gearRef.current = 'D'; }
@@ -4880,6 +5087,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (buttons[5] && buttons[5].pressed && !k._gpRB) { k._gpRB = true; upd('highBeams', true); }
             else if (!buttons[5] || !buttons[5].pressed) k._gpRB = false;
             break; // use first connected gamepad
+          }
+          // Controller unplugged / went to sleep: zero the synthetic inputs.
+          // They were only ever written while a gamepad existed, so a trigger
+          // held at disconnect kept the car accelerating with no way to stop
+          // it from the keyboard.
+          if (!gpFound) {
+            var kGone = keysRef.current;
+            if (kGone._gpSteer || kGone._gpThrottle || kGone._gpBrake) {
+              kGone._gpSteer = 0; kGone._gpThrottle = 0; kGone._gpBrake = 0;
+            }
           }
         };
 
@@ -5113,10 +5330,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         var hasDeadline = Math.random() < 0.30;
                         if (hasDeadline) {
                           // Give 1 minute per ~0.25 miles, minimum 60s, rounded for display.
-                          var targetFt = Math.hypot(carRef.current.x - rsArr.dropoff.x, carRef.current.y - rsArr.dropoff.y) * 0.1;
+                          // ×10 = the file's cells→feet display convention. (This was ×0.1 —
+                          // 100× short — so targetMin always clamped to 1.0 and EVERY rush
+                          // deadline was a flat 72s regardless of trip length.)
+                          var targetFt = Math.hypot(carRef.current.x - rsArr.dropoff.x, carRef.current.y - rsArr.dropoff.y) * 10;
                           var targetMin = Math.max(1.0, targetFt / 2500); // ~2500 ft per "minute" of generosity
                           // Add 20% slack so smooth driving can still make it.
-                          var deadlineSec = Math.round(targetMin * 60 * 1.2);
+                          // Clamp to keep extreme spawns humane (45s..10min).
+                          var deadlineSec = Math.min(600, Math.max(45, Math.round(targetMin * 60 * 1.2)));
                           rsArr.hasDeadline = true;
                           rsArr.deadlineAt = timeRef.current + deadlineSec;
                           rsArr.deadlineStart = timeRef.current;
@@ -5575,10 +5796,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
 
             // ── Road Test scoring: sample once per second, deduct for violations ──
+            // Runs on SIM time (timeRef), not wall clock: this whole block is gated
+            // on !paused, but Date.now() kept advancing while paused, so pausing
+            // burned test time and the test ended early relative to actual driving.
             if (roadTestRef.current.active) {
-              var nowMsRT = Date.now();
-              if (nowMsRT - (roadTestRef.current.lastSampleAt || 0) >= 1000) {
-                roadTestRef.current.lastSampleAt = nowMsRT;
+              if (timeRef.current - (roadTestRef.current.lastSampleT || 0) >= 1) {
+                roadTestRef.current.lastSampleT = timeRef.current;
                 var rtCar = carRef.current;
                 var mphRT = Math.abs(rtCar.speed) * MS_TO_MPH;
                 var limRT = currentScenario.speedLimit;
@@ -5591,15 +5814,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   roadTestRef.current.score -= 1;
                 }
               }
-              // Auto-end when duration elapses.
-              if (nowMsRT - roadTestRef.current.startedAt >= roadTestRef.current.durationSec * 1000) {
+              // Auto-end when duration elapses (sim time — road test always starts
+              // with the drive, when timeRef resets to 0).
+              if (timeRef.current >= roadTestRef.current.durationSec) {
                 roadTestRef.current.active = false;
                 addToast('🪪 Road Test complete. Tap End Drive for results.');
                 speak('Road test complete. Tap end drive for your results.');
               }
             }
-            // ── Parent Ride Check: auto-end when 2 minutes elapses ──
-            if (parentRef.current.active && (Date.now() - parentRef.current.startedAt) >= parentRef.current.durationSec * 1000) {
+            // ── Parent Ride Check: auto-end when 2 minutes elapses (sim time; see road test note) ──
+            if (parentRef.current.active && timeRef.current >= parentRef.current.durationSec) {
               parentRef.current.active = false;
               addToast('⏱️ Parent Ride Check complete — 2 minutes elapsed.');
               speak('Parent ride check complete. Tap End Drive to see the report.');
@@ -5789,6 +6013,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (throttleInput > 0 || brakeInput > 0 || k['b']) {
               seatbeltRef.current.fastened = true;
               setBeltFastened(true); // sync React state so the prompt disappears
+              // Show the mirror-check grace banner for ~4s, with its own timed
+              // dismissal (safeTimeout is cancelled on drive exit).
+              setGraceVisible(true);
+              safeTimeout(function() { setGraceVisible(false); }, 4200);
               addToast('🔔 Seatbelt fastened. Drive safe.');
               speak('Seatbelt fastened.');
             } else {
@@ -5796,7 +6024,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               throttleInput = 0;
               var sbNow = Date.now();
               var sbElapsed = sbNow - (seatbeltRef.current.startedAt || sbNow);
-              if (sbElapsed > 2000 && sbElapsed % 4000 < 50) {
+              // Fire once per 4s cycle. The bare `% 4000 < 50` window spans 2-3
+              // frames at 60fps, stacking overlapping oscillators into a chord.
+              var sbCycle = Math.floor(sbElapsed / 4000);
+              if (sbElapsed > 2000 && sbCycle !== seatbeltRef.current._lastChimeCycle) {
+                seatbeltRef.current._lastChimeCycle = sbCycle;
                 try {
                   var sbAc = audioRef.current.ctx;
                   if (sbAc) {
@@ -6227,9 +6459,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (d.freeExplore && !infiniteWorldRef.current) {
             infiniteWorldRef.current = createInfiniteWorld(d.worldSeed || 12345);
           }
-          // Infinite world: cleanup distant chunks periodically
-          if (infiniteWorldRef.current && Math.floor(timeRef.current) % 5 === 0) {
-            infiniteWorldRef.current.cleanup(Math.floor(car.y / CHUNK_SIZE));
+          // Infinite world: cleanup distant chunks periodically. Second-marker
+          // guard — a bare `% 5 === 0` stays true for a full second, re-running
+          // the cleanup ~60× each time it comes around.
+          if (infiniteWorldRef.current) {
+            var _cleanSec = Math.floor(timeRef.current);
+            if (_cleanSec % 5 === 0 && statsRef.current._lastChunkCleanSec !== _cleanSec) {
+              statsRef.current._lastChunkCleanSec = _cleanSec;
+              infiniteWorldRef.current.cleanup(Math.floor(car.y / CHUNK_SIZE));
+            }
           }
           // ─── LANDMARK PROXIMITY HUD ───
           // When approaching a named landmark, announce it and (for schools) apply context rules.
@@ -6273,7 +6511,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
             }
             // Garbage-collect old announcements to prevent memory growth
-            if (Math.floor(timeRef.current) % 30 === 0) {
+            // (second-marker guard: run once per 30s window, not 60×/s during it)
+            var _gcSec = Math.floor(timeRef.current);
+            if (_gcSec % 30 === 0 && statsRef.current._lastLmGcSec !== _gcSec) {
+              statsRef.current._lastLmGcSec = _gcSec;
               Object.keys(statsRef.current._announcedLandmarks).forEach(function(k) {
                 if (timeRef.current - statsRef.current._announcedLandmarks[k] > 60) {
                   delete statsRef.current._announcedLandmarks[k];
@@ -6369,7 +6610,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
           // Update stats
           var deltaDist = car.speed * dt;
-          statsRef.current.distance += deltaDist;
+          // Odometer is a path length — reverse gear must ADD distance, not
+          // subtract it (backing during a 3-point turn used to shrink the
+          // hypermile challenge's mileage and could push it negative).
+          statsRef.current.distance += Math.abs(deltaDist);
           if (car.speed > statsRef.current.maxSpeed) statsRef.current.maxSpeed = car.speed;
           // MPG sample. First 5 min of any drive runs the cold-start penalty
           // (real cars lose 10–15% MPG until warm). Snow scenarios proxy as
@@ -6430,6 +6674,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // so brief dips at the threshold don't manufacture extra incident counts.
             statsRef.current._wasOverLimit = false;
           }
+          // NOTE for readers in updateTraffic: this is written at the END of
+          // updatePhysics, which runs BEFORE updateTraffic each tick — so over
+          // there, .speed is the CURRENT frame's speed, not the previous one.
+          // (The rear-end fault logic reads the black box instead for history.)
           lastStateRef.current = { speed: car.speed, accel: accel };
           // Black box recording (last ~5 seconds for crash replay)
           blackBoxRef.current.push({ t: timeRef.current, x: car.x, y: car.y, heading: car.heading, speed: car.speed, gear: gear, steering: car.steering });
@@ -6490,16 +6738,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (!laneChangeRef.current._cooldown || timeRef.current - laneChangeRef.current._cooldown > 5) {
               // Direction in driver-relative terms (right vs left)
               var dirShift = laneShift > 0 ? 1 : -1;
-              // For the player heading −π/2 (default Free Explore), sin(heading) < 0 so
-              // they're northbound. Their RIGHT is +X (positive perp-offset). For southbound
-              // (sin > 0), their right is −X. Driver-relative "right" = sign matching myDirSign.
-              // Player heading sign maps to dirSign just like AI.
-              var pDirSign = car.heading > 0 ? 1 : -1;
-              // "right shift" in perp-offset space: positive perp = world +X = right for NB (-1).
-              // For SB (+1) right = negative perp. So driver-right-shift = -dirShift * pDirSign? Equivalent to perp shift sign for NB and inverted for SB.
-              var driverRelDir = -dirShift * pDirSign; // +1 = signaled left, -1 = signaled right
-              // Map blinkerRef.current (-1=left, +1=right) to driverRelDir convention (+1=left, -1=right)
-              var expectedBlinker = driverRelDir === 1 ? -1 : 1;
+              // Same sign convention as the wrong-side detector below: NB driver
+              // (sin(heading) < 0) has their RIGHT at +perp; SB driver (sin > 0)
+              // has their right at −perp. A rightward maneuver is therefore
+              // dirShift === (NB ? +1 : −1). (A previous version used raw
+              // `heading > 0` plus an extra negation — both cardinal directions
+              // came out inverted, so a correctly-signaled lane change was
+              // penalized "no signal" and a wrong-way signal earned the ✓.)
+              var pRightSignLC = Math.sin(car.heading) > 0 ? -1 : 1; // sign of "driver's right" in perp space
+              var isRightShift = dirShift === pRightSignLC;
+              // blinkerRef convention: -1 = left, +1 = right
+              var expectedBlinker = isRightShift ? 1 : -1;
               if (blinkerRef.current !== expectedBlinker) {
                 statsRef.current.safetyScore -= 5;
                 if (!statsRef.current.unsignaledLaneChanges) statsRef.current.unsignaledLaneChanges = 0;
@@ -7100,9 +7349,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     // Normally a rear-end = rear car's fault (following too close). BUT if the
                     // player brake-checked (they just decelerated hard from speed to near-stop),
                     // it's the player's fault. Detect via lastStateRef for player.
-                    var plPrevSpd = (lastStateRef.current && lastStateRef.current.speed) || 0;
-                    var decelRate = (plPrevSpd - Math.abs(playerCar.speed)) / Math.max(0.016, dt);
-                    var brakeCheck = plPrevSpd > 8 && Math.abs(playerCar.speed) < 2 && decelRate > 40;
+                    // Detect a brake-check over the last ~1s of black-box history.
+                    // (Two prior versions were unreachable: reading lastStateRef
+                    // .speed compared the current speed to itself, and even a true
+                    // one-frame delta can't clear a 40 m/s² bar when max braking
+                    // is ~7 m/s². A 1-second window catches a real slam: >8 m/s
+                    // down to <2 m/s at ≥0.6g sustained.)
+                    var bbArr = blackBoxRef.current || [];
+                    var plPrevSpd = 0;
+                    for (var bbi = bbArr.length - 1; bbi >= 0; bbi--) {
+                      if (timeRef.current - bbArr[bbi].t >= 1.0) { plPrevSpd = Math.abs(bbArr[bbi].speed); break; }
+                    }
+                    var speedLost = plPrevSpd - Math.abs(playerCar.speed); // m/s shed over ~1s
+                    var brakeCheck = plPrevSpd > 8 && Math.abs(playerCar.speed) < 2 && speedLost > 6;
                     if (brakeCheck) {
                       // Player's fault: brake-check
                       statsRef.current.safetyScore -= 15;
@@ -9059,7 +9318,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Closing speed = component of (-relV) along (other → self) direction
             // ≈ Math.hypot(relVx, relVy) is the upper bound; use it as worst-case impact.
             var relativeSpeed = Math.hypot(relVx, relVy);
-            if (dist < 1.2 && relativeSpeed > 0.5 && absSpeed > 0.5) {
+            // Gate on the CLOSING speed and either party moving — requiring the
+            // PLAYER to be moving (absSpeed) silently dropped every crash into a
+            // stopped player (T-boned at a light, AI drifting into a parked car).
+            if (dist < 1.2 && relativeSpeed > 0.5 && (absSpeed > 0.5 || Math.abs(t.speed) > 0.5)) {
               if (!t._hitCooldown || timeRef.current - t._hitCooldown > 5) {
                 t._hitCooldown = timeRef.current;
                 // Mirror to the rear-end cooldown so the upstream rear-end-of-player
@@ -9606,6 +9868,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var _xroadDowntown = currentScenario.id === 'downtown';
           if (_xroadIDs.indexOf(currentScenario.id) !== -1 || _xroadDowntown) {
             var _xroadYs = _xroadDowntown ? [14, 24, 36, 48, 60, 72, 84] : [20, 40, 56, 72];
+            // One shared white material for all cross-street edge lines. (The old
+            // `edgeMat || new …` fallback ALWAYS allocated: edgeMat is a hoisted
+            // var that isn't assigned until the main-road edge-line block below.)
+            var _xrEdgeMat = new T.MeshBasicMaterial({ color: 0xffffff });
             _xroadYs.forEach(function(crossY) {
               // Cross-street asphalt plane: 7 wide along Z (matching main road
               // width), MAP_SIZE * 2 long along X (full ground span). Lifted
@@ -9630,7 +9896,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
               // Cross-street white shoulder edge lines — visual road boundary.
               [-3.3, 3.3].forEach(function(xrEdgeOff) {
-                var xrEdge = new T.Mesh(new T.PlaneGeometry(MAP_SIZE * 2, 0.18), edgeMat || new T.MeshBasicMaterial({ color: 0xffffff }));
+                var xrEdge = new T.Mesh(new T.PlaneGeometry(MAP_SIZE * 2, 0.18), _xrEdgeMat);
                 xrEdge.rotation.x = -Math.PI / 2;
                 xrEdge.position.set(0, 0.022, crossY - MAP_SIZE / 2 + xrEdgeOff);
                 scene.add(xrEdge);
@@ -11089,8 +11355,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var roofMesh = new T.Mesh(roofGeo, roofMat);
           roofMesh.position.set(-0.1, 0.97, 0);
           playerCarGroup.add(roofMesh);
-          // Glass material — tinted, semi-transparent, both sides visible
-          var glassMat = new T.MeshPhysicalMaterial ? new T.MeshPhysicalMaterial({
+          // Glass material — tinted, semi-transparent, both sides visible.
+          // Presence check WITHOUT `new`: `new T.MeshPhysicalMaterial ? … : …`
+          // parsed as `(new T.MeshPhysicalMaterial) ? …` — a wasted construction
+          // when the class exists, and a TypeError (not the intended fallback)
+          // exactly on the older-THREE hardware the guard was written for.
+          var glassMat = T.MeshPhysicalMaterial ? new T.MeshPhysicalMaterial({
             color: 0x88bbdd, transparent: true, opacity: 0.35,
             roughness: 0.1, metalness: 0.1, side: T.DoubleSide
           }) : new T.MeshBasicMaterial({ color: 0x88bbdd, transparent: true, opacity: 0.35, side: T.DoubleSide });
@@ -11536,6 +11806,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // ── Update Three.js scene each frame ──
         function updateThreeScene(s3) {
           if (!s3) return;
+          // Live-ref shadow of `d` (same reason as in `step`/`drawHUD`): the 3D
+          // headlight intensity/angle and rideshare marker read d.X per frame and
+          // otherwise never see toggles made after drive start.
+          var d = dataRef.current || {};
           var T = window.THREE;
           var car = carRef.current;
           var scn = currentScenario;
@@ -11711,6 +11985,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (child.isDirectionalLight) {
               child.intensity = (isNightNow ? 0.3 : 0.9) * cloudShadow;
               child.color.setHex(isNightNow ? 0x4466aa : 0xfff5e0);
+            }
+            // Hemisphere sky-fill has the same day/night problem: it kept its
+            // daytime sky-blue 0.35 after a Free Explore Day→Night toggle,
+            // over-brightening the night scene. Values mirror its creation above.
+            if (child.isHemisphereLight) {
+              child.intensity = (isNightNow ? 0.1 : 0.35) * cloudShadow;
+              child.color.setHex(isNightNow ? 0x0a0f2e : isFogNow ? 0x94a3b8 : 0x87ceeb);
             }
           });
 
@@ -12027,32 +12308,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Detect hard brake: high brake pressure AND moving fast — marks are subtler
           var hardBrake = car.brake > 0.7 && carAbsSpeed > 8;
           if (skidding || hardBrake) {
-            var markGeo = new T2.PlaneGeometry(0.08, 0.5);
+            // ONE shared geometry + one shared faint material for the life of the
+            // scene. The old per-frame PlaneGeometry was shared by each PAIR of
+            // marks but the pruner disposed it while the sibling still rendered
+            // it (then double-disposed), and the per-mark cloned faint material
+            // was never disposed at all — a steady GPU leak during any skid.
+            if (!s3._skidMarkGeo) s3._skidMarkGeo = new T2.PlaneGeometry(0.08, 0.5);
+            if (!s3._skidMarkFaintMat && s3.skidMarkMat) {
+              s3._skidMarkFaintMat = s3.skidMarkMat.clone();
+              s3._skidMarkFaintMat.opacity = 0.35;
+              s3._skidMarkFaintMat.transparent = true;
+            }
             // Two parallel tire strips (left + right wheel tracks).
             // Marks must be road-relative in Y — using a flat 0.015 made them appear
             // BELOW the road on hills (road mesh sits at heightAt(y) + 0.011, can be
             // 5+ units up). Now uses roadH so marks always lay just above the actual
             // road surface, matching painted markings.
             [-0.35, 0.35].forEach(function(lateral) {
-              var mark = new T2.Mesh(markGeo, s3.skidMarkMat);
+              // Hard-brake marks are fainter than skid marks
+              var markMat = (hardBrake && !skidding && s3._skidMarkFaintMat) ? s3._skidMarkFaintMat : s3.skidMarkMat;
+              var mark = new T2.Mesh(s3._skidMarkGeo, markMat);
               mark.rotation.x = -Math.PI / 2;
               mark.rotation.z = -car.heading + Math.PI / 2;
               var perpX = -Math.sin(car.heading) * lateral;
               var perpZ = Math.cos(car.heading) * lateral;
               mark.position.set(carWorldX + perpX, roadH + 0.018, carWorldZ + perpZ);
-              // Hard-brake marks are fainter than skid marks
-              if (hardBrake && !skidding) {
-                mark.material = mark.material.clone();
-                mark.material.opacity = 0.35;
-                mark.material.transparent = true;
-              }
               s3.skidMarksGroup.add(mark);
             });
-            // Cap at 300 marks (accounts for paired tracks)
+            // Cap at 300 marks (accounts for paired tracks). No dispose here —
+            // geometry + materials are shared and live as long as the scene.
             while (s3.skidMarksGroup.children.length > 300) {
-              var oldMark = s3.skidMarksGroup.children[0];
-              if (oldMark.geometry) oldMark.geometry.dispose();
-              s3.skidMarksGroup.remove(oldMark);
+              s3.skidMarksGroup.remove(s3.skidMarksGroup.children[0]);
             }
           }
 
@@ -12186,14 +12472,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (n !== s3.scene) return false;
               var lit = (beaconTick === b.phase);
               b.mesh.material.opacity = lit ? 1.0 : 0.25;
-              b.mesh.material.color.setHex(lit ? 0xffd900 : 0x8a6a00);
+              // Per-beacon colors (amber default; railroad crossbucks push red).
+              b.mesh.material.color.setHex(lit ? (b.onColor || 0xffd900) : (b.offColor || 0x8a6a00));
               return true;
             });
           }
 
-          // Update traffic vehicles (low-poly car groups)
+          // Dispose helper for dropped entity builds (traffic/peds/cyclists/
+          // wildlife/emergency). Declared BEFORE first use — function expressions
+          // don't hoist their assignment.
+          var _disposeNode = function(node) {
+            node.traverse(function(n) {
+              if (n.geometry) n.geometry.dispose();
+              if (n.material) {
+                if (Array.isArray(n.material)) n.material.forEach(function(m) { m.dispose(); });
+                else n.material.dispose();
+              }
+            });
+          };
+          // Update traffic vehicles (low-poly car groups). Dispose what we drop —
+          // each despawned car group carries ~10-30 geometries/materials that
+          // otherwise accumulate on the GPU over a long drive.
           var tGroup = s3.trafficGroup;
-          while (tGroup.children.length > trafficRef.current.length) tGroup.remove(tGroup.children[tGroup.children.length - 1]);
+          while (tGroup.children.length > trafficRef.current.length) {
+            var tDrop = tGroup.children[tGroup.children.length - 1];
+            tGroup.remove(tDrop);
+            _disposeNode(tDrop);
+          }
           trafficRef.current.forEach(function(t, ti) {
             var m;
             if (ti < tGroup.children.length) {
@@ -12546,9 +12851,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             t._prevSpeed = t.speed;
           });
 
-          // Update pedestrians
+          // Update pedestrians (dispose dropped builds — see traffic note)
           var pGroup = s3.pedGroup;
-          while (pGroup.children.length > pedsRef.current.length) pGroup.remove(pGroup.children[pGroup.children.length - 1]);
+          while (pGroup.children.length > pedsRef.current.length) {
+            var pDrop = pGroup.children[pGroup.children.length - 1];
+            pGroup.remove(pDrop);
+            _disposeNode(pDrop);
+          }
           pedsRef.current.forEach(function(p, pi) {
             var m;
             if (pi < pGroup.children.length) {
@@ -12628,8 +12937,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           });
 
           // Update cyclists — proper bike (wheels inline, frame, handlebars, rider torso+head+helmet)
+          // (dispose dropped builds — see traffic note)
           var cGroup = s3.cyclistGroup;
-          while (cGroup.children.length > cyclistsRef.current.length) cGroup.remove(cGroup.children[cGroup.children.length - 1]);
+          while (cGroup.children.length > cyclistsRef.current.length) {
+            var cDrop = cGroup.children[cGroup.children.length - 1];
+            cGroup.remove(cDrop);
+            _disposeNode(cDrop);
+          }
           cyclistsRef.current.forEach(function(cy, ci) {
             var m;
             var isMoto = cy.type === 'motorcycle';
@@ -12747,140 +13061,190 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             m.rotation.y = Math.PI / 2 - cy.heading;
           });
 
-          // Wildlife
+          // Wildlife — built ONCE per spawn and repositioned each frame. The old
+          // code cleared + rebuilt the whole creature every frame without ever
+          // disposing the orphaned geometries/materials: GC thrash + a steady
+          // GPU leak for as long as any moose/deer/dog/child was on screen.
           var wGroup = s3.wildlifeGroup;
-          while (wGroup.children.length > 0) wGroup.remove(wGroup.children[0]);
-          if (wildlifeRef.current) {
+          var _clearWl = function() {
+            while (wGroup.children.length > 0) {
+              var wOld = wGroup.children[0];
+              wGroup.remove(wOld);
+              _disposeNode(wOld);
+            }
+            s3._wlKey = null;
+            s3._wlNode = null;
+          };
+          if (!wildlifeRef.current) {
+            if (s3._wlKey) _clearWl();
+          } else {
             var wl = wildlifeRef.current;
-            // Look up road height at the wildlife position so children/animals stand
-            // ON the road instead of at world Y=0 (which on hills puts them under it).
+            var wlKey = wl.kind === 'child' ? 'child' : ('box_' + wl.mass);
+            if (s3._wlKey !== wlKey) {
+              _clearWl();
+              if (wl.kind === 'child') {
+                var childGroup = new T.Group();
+                var bodyMat = new T.MeshLambertMaterial({ color: 0xfbbf24 });
+                var torsoChild = new T.Mesh(new T.CylinderGeometry(0.13, 0.16, 0.45, 8), bodyMat);
+                torsoChild.position.y = 0.4;
+                torsoChild.castShadow = true;
+                childGroup.add(torsoChild);
+                var headChild = new T.Mesh(new T.SphereGeometry(0.13, 10, 8), new T.MeshLambertMaterial({ color: 0xf4c8a8 }));
+                headChild.position.y = 0.78;
+                childGroup.add(headChild);
+                var packChild = new T.Mesh(new T.BoxGeometry(0.18, 0.22, 0.12), new T.MeshLambertMaterial({ color: 0xdc2626 }));
+                packChild.position.set(-0.13, 0.45, 0);
+                childGroup.add(packChild);
+                wGroup.add(childGroup);
+                s3._wlNode = childGroup;
+              } else {
+                var wSize0 = wl.mass === 'massive' ? 1.5 : wl.mass === 'medium' ? 0.8 : 0.4;
+                var wGeo = new T.BoxGeometry(wSize0 * 1.5, wSize0, wSize0 * 0.6);
+                var wMat = new T.MeshLambertMaterial({ color: wl.mass === 'massive' ? 0x4a3520 : 0x8b6914 });
+                var wMesh = new T.Mesh(wGeo, wMat);
+                wMesh.castShadow = true;
+                wGroup.add(wMesh);
+                s3._wlNode = wMesh;
+              }
+              s3._wlKey = wlKey;
+            }
+            // Per-frame: follow the creature. Road height keeps it ON the road
+            // instead of at world Y=0 (which on hills puts it under the surface).
             var wlRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline)
               ? infiniteWorldRef.current.spline.heightAt(wl.y) : 0;
-            if (wl.kind === 'child') {
-              var childGroup = new T.Group();
-              var bodyMat = new T.MeshLambertMaterial({ color: 0xfbbf24 });
-              var torsoChild = new T.Mesh(new T.CylinderGeometry(0.13, 0.16, 0.45, 8), bodyMat);
-              torsoChild.position.y = 0.4;
-              torsoChild.castShadow = true;
-              childGroup.add(torsoChild);
-              var headChild = new T.Mesh(new T.SphereGeometry(0.13, 10, 8), new T.MeshLambertMaterial({ color: 0xf4c8a8 }));
-              headChild.position.y = 0.78;
-              childGroup.add(headChild);
-              var packChild = new T.Mesh(new T.BoxGeometry(0.18, 0.22, 0.12), new T.MeshLambertMaterial({ color: 0xdc2626 }));
-              packChild.position.set(-0.13, 0.45, 0);
-              childGroup.add(packChild);
-              childGroup.position.set(wl.x - MAP_SIZE / 2, wlRoadH, wl.y - MAP_SIZE / 2);
-              wGroup.add(childGroup);
-            } else {
-              var wSize = wl.mass === 'massive' ? 1.5 : wl.mass === 'medium' ? 0.8 : 0.4;
-              var wGeo = new T.BoxGeometry(wSize * 1.5, wSize, wSize * 0.6);
-              var wMat = new T.MeshLambertMaterial({ color: wl.mass === 'massive' ? 0x4a3520 : 0x8b6914 });
-              var wMesh = new T.Mesh(wGeo, wMat);
-              wMesh.position.set(wl.x - MAP_SIZE / 2, wlRoadH + wSize / 2, wl.y - MAP_SIZE / 2);
-              wMesh.castShadow = true;
-              wGroup.add(wMesh);
+            if (s3._wlNode) {
+              var wlYOff = wl.kind === 'child' ? 0 : ((wl.mass === 'massive' ? 1.5 : wl.mass === 'medium' ? 0.8 : 0.4) / 2);
+              s3._wlNode.position.set(wl.x - MAP_SIZE / 2, wlRoadH + wlYOff, wl.y - MAP_SIZE / 2);
             }
           }
 
-          // Emergency vehicles — detailed 3D with light bar + SpotLights
+          // Emergency vehicles — detailed 3D with light bar + SpotLights.
+          // Built ONCE per spawn (keyed by kind) and mutated per frame: position,
+          // pod colors, glow visibility, spotlight flash. The old code rebuilt
+          // ~25 meshes + 2 SpotLights EVERY frame and never disposed the orphans.
           var eGroup = s3.emergencyGroup;
-          while (eGroup.children.length > 0) eGroup.remove(eGroup.children[0]);
-          if (emergencyRef.current) {
-            var em = emergencyRef.current;
-            var eGrp = new T.Group();
-            var isTruck = em.kind === 'firetruck';
-            var bodyLen = isTruck ? 3.0 : 2.2;
-            var bodyH = isTruck ? 1.4 : 1.0;
-            var bodyCol = em.bodyColor || new T.Color(em.color).getHex();
-            // Main body
-            var eBGeo = new T.BoxGeometry(bodyLen, bodyH, 1.0);
-            var eBMat = new T.MeshLambertMaterial({ color: bodyCol });
-            var eBody = new T.Mesh(eBGeo, eBMat);
-            eBody.position.y = bodyH / 2 + 0.2;
-            eBody.castShadow = true;
-            eGrp.add(eBody);
-            // Cabin / roof (lighter)
-            if (!isTruck) {
-              var cabGeo = new T.BoxGeometry(bodyLen * 0.45, 0.4, 0.9);
-              var cabMat = new T.MeshLambertMaterial({ color: bodyCol });
-              var cab = new T.Mesh(cabGeo, cabMat);
-              cab.position.set(-bodyLen * 0.1, bodyH + 0.35, 0);
-              eGrp.add(cab);
+          var _clearEm = function() {
+            while (eGroup.children.length > 0) {
+              var eOld = eGroup.children[0];
+              eGroup.remove(eOld);
+              _disposeNode(eOld);
             }
-            // Wheels (4) — lifted by 0.04 to prevent Z-fighting with road surface
-            var ewMat = new T.MeshLambertMaterial({ color: 0x111111 });
-            [[-bodyLen * 0.3, 0.24, 0.52], [-bodyLen * 0.3, 0.24, -0.52], [bodyLen * 0.3, 0.24, 0.52], [bodyLen * 0.3, 0.24, -0.52]].forEach(function(wp) {
-              var ewGeo = new T.CylinderGeometry(0.2, 0.2, 0.12, 10);
-              var ew = new T.Mesh(ewGeo, ewMat);
-              ew.rotation.x = Math.PI / 2;
-              ew.position.set(wp[0], wp[1], wp[2]);
-              eGrp.add(ew);
-            });
-            // ── Light bar on roof ──
-            var barGeo = new T.BoxGeometry(bodyLen * 0.5, 0.12, 0.7);
-            var barMat = new T.MeshLambertMaterial({ color: 0x222222 });
-            var bar = new T.Mesh(barGeo, barMat);
-            var barY = bodyH + (isTruck ? 0.15 : 0.68);
-            bar.position.set(0, barY, 0);
-            eGrp.add(bar);
-            // Alternating flash lights on the light bar
-            var flashPhase = Math.floor(timeRef.current * 8) % 4;
-            var lc1 = em.lightColor1 || 0xff0000;
-            var lc2 = em.lightColor2 || 0x0000ff;
-            // 4 light pods across the bar
-            [-0.25, -0.08, 0.08, 0.25].forEach(function(zOff, idx) {
-              var isOn = (idx % 2 === 0) ? (flashPhase < 2) : (flashPhase >= 2);
-              var podColor = (idx < 2) ? lc1 : lc2;
-              var podMat = new T.MeshBasicMaterial({ color: isOn ? podColor : 0x222222 });
-              var podGeo = new T.BoxGeometry(0.08, 0.1, 0.12);
-              var pod = new T.Mesh(podGeo, podMat);
-              pod.position.set(0, barY + 0.1, zOff);
-              eGrp.add(pod);
-              // Glow sphere when on
-              if (isOn) {
+            s3._emKey = null;
+            s3._emRig = null;
+          };
+          if (!emergencyRef.current) {
+            if (s3._emKey) _clearEm();
+          } else {
+            var em = emergencyRef.current;
+            if (s3._emKey !== em.kind) {
+              _clearEm();
+              var eGrp = new T.Group();
+              var isTruck = em.kind === 'firetruck';
+              var bodyLen = isTruck ? 3.0 : 2.2;
+              var bodyH = isTruck ? 1.4 : 1.0;
+              var bodyCol = em.bodyColor || new T.Color(em.color).getHex();
+              // Main body
+              var eBGeo = new T.BoxGeometry(bodyLen, bodyH, 1.0);
+              var eBMat = new T.MeshLambertMaterial({ color: bodyCol });
+              var eBody = new T.Mesh(eBGeo, eBMat);
+              eBody.position.y = bodyH / 2 + 0.2;
+              eBody.castShadow = true;
+              eGrp.add(eBody);
+              // Cabin / roof (lighter)
+              if (!isTruck) {
+                var cabGeo = new T.BoxGeometry(bodyLen * 0.45, 0.4, 0.9);
+                var cabMat = new T.MeshLambertMaterial({ color: bodyCol });
+                var cab = new T.Mesh(cabGeo, cabMat);
+                cab.position.set(-bodyLen * 0.1, bodyH + 0.35, 0);
+                eGrp.add(cab);
+              }
+              // Wheels (4) — lifted by 0.04 to prevent Z-fighting with road surface
+              var ewMat = new T.MeshLambertMaterial({ color: 0x111111 });
+              [[-bodyLen * 0.3, 0.24, 0.52], [-bodyLen * 0.3, 0.24, -0.52], [bodyLen * 0.3, 0.24, 0.52], [bodyLen * 0.3, 0.24, -0.52]].forEach(function(wp) {
+                var ewGeo = new T.CylinderGeometry(0.2, 0.2, 0.12, 10);
+                var ew = new T.Mesh(ewGeo, ewMat);
+                ew.rotation.x = Math.PI / 2;
+                ew.position.set(wp[0], wp[1], wp[2]);
+                eGrp.add(ew);
+              });
+              // ── Light bar on roof ──
+              var barGeo = new T.BoxGeometry(bodyLen * 0.5, 0.12, 0.7);
+              var barMat = new T.MeshLambertMaterial({ color: 0x222222 });
+              var bar = new T.Mesh(barGeo, barMat);
+              var barY = bodyH + (isTruck ? 0.15 : 0.68);
+              bar.position.set(0, barY, 0);
+              eGrp.add(bar);
+              var lc1 = em.lightColor1 || 0xff0000;
+              var lc2 = em.lightColor2 || 0x0000ff;
+              // 4 light pods across the bar + always-built glow spheres (toggled
+              // via .visible each frame instead of created/destroyed)
+              var emPods = [];
+              [-0.25, -0.08, 0.08, 0.25].forEach(function(zOff, idx) {
+                var podColor = (idx < 2) ? lc1 : lc2;
+                var podMat = new T.MeshBasicMaterial({ color: 0x222222 });
+                var podGeo = new T.BoxGeometry(0.08, 0.1, 0.12);
+                var pod = new T.Mesh(podGeo, podMat);
+                pod.position.set(0, barY + 0.1, zOff);
+                eGrp.add(pod);
                 var glowMat = new T.MeshBasicMaterial({ color: podColor, transparent: true, opacity: 0.4 });
                 var glowGeo = new T.SphereGeometry(0.2, 6, 6);
                 var glow = new T.Mesh(glowGeo, glowMat);
                 glow.position.set(0, barY + 0.1, zOff);
+                glow.visible = false;
                 eGrp.add(glow);
+                emPods.push({ mat: podMat, glow: glow, idx: idx, podColor: podColor });
+              });
+              // SpotLights casting colored cones (visible at night, always present for effect)
+              var spotL = new T.SpotLight(0x000000, 2.0, 15, Math.PI / 4, 0.6, 1);
+              spotL.position.set(0, barY + 0.2, -0.3);
+              eGrp.add(spotL); eGrp.add(spotL.target);
+              var spotR = new T.SpotLight(0x000000, 2.0, 15, Math.PI / 4, 0.6, 1);
+              spotR.position.set(0, barY + 0.2, 0.3);
+              eGrp.add(spotR); eGrp.add(spotR.target);
+              // Headlights (always on for emergency)
+              var ehlMat = new T.MeshBasicMaterial({ color: 0xffffff });
+              [-0.35, 0.35].forEach(function(z) {
+                var ehl = new T.Mesh(new T.SphereGeometry(0.06, 6, 6), ehlMat);
+                ehl.position.set(bodyLen / 2 + 0.01, bodyH / 2 + 0.2, z);
+                eGrp.add(ehl);
+              });
+              // Marking stripe (ambulance = red cross, police = stripe, fire = gold)
+              if (em.kind === 'ambulance') {
+                var crossMat = new T.MeshBasicMaterial({ color: 0xff0000 });
+                var crossH = new T.Mesh(new T.BoxGeometry(0.6, 0.05, 0.15), crossMat);
+                crossH.position.set(0, bodyH + 0.05, 0.51);
+                eGrp.add(crossH);
+                var crossV = new T.Mesh(new T.BoxGeometry(0.15, 0.05, 0.6), crossMat);
+                crossV.position.set(0, bodyH + 0.05, 0.51);
+                eGrp.add(crossV);
+              } else if (em.kind === 'police') {
+                var stripeMat = new T.MeshBasicMaterial({ color: 0x3b82f6 });
+                var stripe = new T.Mesh(new T.BoxGeometry(bodyLen * 0.8, 0.04, 0.2), stripeMat);
+                stripe.position.set(0, bodyH * 0.6, 0.51);
+                eGrp.add(stripe);
               }
-            });
-            // SpotLights casting colored cones (visible at night, always present for effect)
-            var flashOn = flashPhase < 2;
-            var spotL = new T.SpotLight(flashOn ? lc1 : 0x000000, 2.0, 15, Math.PI / 4, 0.6, 1);
-            spotL.position.set(0, barY + 0.2, -0.3);
-            spotL.target.position.set(flashOn ? -3 : 3, 0, -4);
-            eGrp.add(spotL); eGrp.add(spotL.target);
-            var spotR = new T.SpotLight(!flashOn ? lc2 : 0x000000, 2.0, 15, Math.PI / 4, 0.6, 1);
-            spotR.position.set(0, barY + 0.2, 0.3);
-            spotR.target.position.set(!flashOn ? 3 : -3, 0, 4);
-            eGrp.add(spotR); eGrp.add(spotR.target);
-            // Headlights (always on for emergency)
-            var ehlMat = new T.MeshBasicMaterial({ color: 0xffffff });
-            [-0.35, 0.35].forEach(function(z) {
-              var ehl = new T.Mesh(new T.SphereGeometry(0.06, 6, 6), ehlMat);
-              ehl.position.set(bodyLen / 2 + 0.01, bodyH / 2 + 0.2, z);
-              eGrp.add(ehl);
-            });
-            // Marking stripe (ambulance = red cross, police = stripe, fire = gold)
-            if (em.kind === 'ambulance') {
-              var crossMat = new T.MeshBasicMaterial({ color: 0xff0000 });
-              var crossH = new T.Mesh(new T.BoxGeometry(0.6, 0.05, 0.15), crossMat);
-              crossH.position.set(0, bodyH + 0.05, 0.51);
-              eGrp.add(crossH);
-              var crossV = new T.Mesh(new T.BoxGeometry(0.15, 0.05, 0.6), crossMat);
-              crossV.position.set(0, bodyH + 0.05, 0.51);
-              eGrp.add(crossV);
-            } else if (em.kind === 'police') {
-              var stripeMat = new T.MeshBasicMaterial({ color: 0x3b82f6 });
-              var stripe = new T.Mesh(new T.BoxGeometry(bodyLen * 0.8, 0.04, 0.2), stripeMat);
-              stripe.position.set(0, bodyH * 0.6, 0.51);
-              eGrp.add(stripe);
+              eGroup.add(eGrp);
+              s3._emKey = em.kind;
+              s3._emRig = { grp: eGrp, pods: emPods, spotL: spotL, spotR: spotR, lc1: lc1, lc2: lc2 };
             }
-            var emRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline) ? infiniteWorldRef.current.spline.heightAt(em.y) : 0;
-            eGrp.position.set(em.x - MAP_SIZE / 2, emRoadH, em.y - MAP_SIZE / 2);
-            eGrp.rotation.y = -em.heading;
-            eGroup.add(eGrp);
+            // Per-frame: pose + flash animation on the cached rig.
+            var rig = s3._emRig;
+            if (rig) {
+              var flashPhase = Math.floor(timeRef.current * 8) % 4;
+              rig.pods.forEach(function(p) {
+                var isOn = (p.idx % 2 === 0) ? (flashPhase < 2) : (flashPhase >= 2);
+                p.mat.color.setHex(isOn ? p.podColor : 0x222222);
+                p.glow.visible = isOn;
+              });
+              var flashOn = flashPhase < 2;
+              rig.spotL.color.setHex(flashOn ? rig.lc1 : 0x000000);
+              rig.spotL.target.position.set(flashOn ? -3 : 3, 0, -4);
+              rig.spotR.color.setHex(!flashOn ? rig.lc2 : 0x000000);
+              rig.spotR.target.position.set(!flashOn ? 3 : -3, 0, 4);
+              var emRoadH = (infiniteWorldRef.current && infiniteWorldRef.current.spline) ? infiniteWorldRef.current.spline.heightAt(em.y) : 0;
+              rig.grp.position.set(em.x - MAP_SIZE / 2, emRoadH, em.y - MAP_SIZE / 2);
+              rig.grp.rotation.y = -em.heading;
+            }
           }
 
           // ── Tire spray in rain — dynamically toggled by current weather ──
@@ -13078,7 +13442,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // LIGHTNING: during rain only, roll for a flash every few seconds.
           if (s3.lightningLight && !rmActiveW) {
             if (weatherNow === 'rain') {
-              s3._lightningTimer = (s3._lightningTimer || 0) + dt;
+              // dt is NOT in scope here (this is the render function, not the sim
+              // update — see the wheel-anim note above). Referencing it threw a
+              // ReferenceError on the first qualifying rain frame, which killed
+              // the entire render/step loop. Derive a local delta from the sim clock.
+              var lnNow = timeRef.current;
+              var lnDt = (s3._lastLightningT != null) ? Math.max(0, Math.min(0.1, lnNow - s3._lastLightningT)) : 0.016;
+              s3._lastLightningT = lnNow;
+              s3._lightningTimer = (s3._lightningTimer || 0) + lnDt;
               if (s3._lightningTimer > (s3._lightningNext || 5)) {
                 s3._lightningTimer = 0;
                 s3._lightningNext = 6 + Math.random() * 14;
@@ -14896,8 +15267,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var biomeLimit = getBiomeSpeedLimitMph(chunk.biome, 25);
                 var speedZ = chunkWorldZ + 3;
                 var speedSide = ci % 4 < 2 ? 1 : -1;
+                // SPLINE-RELATIVE placement (same pattern as mile markers and the
+                // ambient details below). This sign was the last roadside object
+                // pinned to absolute world X/Y=0 — on curved chunks it floated in
+                // the fields or sat in the middle of the road, and on rural hills
+                // it hovered/sank.
+                var spSplineCX = iw.spline ? (iw.spline.centerAt(speedZ + MAP_SIZE / 2) - MAP_SIZE / 2) : 0;
+                var spGroundY = iw.spline ? iw.spline.heightAt(speedZ + MAP_SIZE / 2) : 0;
+                var spSignX = spSplineCX + speedSide * (MAX_ROAD_WIDTH + 1.2);
                 var spPost = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.4, 6), new T.MeshLambertMaterial({ color: 0xd1d5db }));
-                spPost.position.set(speedSide * (MAX_ROAD_WIDTH + 1.2), 1.2, speedZ);
+                spPost.position.set(spSignX, spGroundY + 1.2, speedZ);
                 chunkGroup.add(spPost);
                 try {
                   var spCan = document.createElement('canvas');
@@ -14916,7 +15295,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var spTex = new T.CanvasTexture(spCan);
                   var spMat = new T.MeshBasicMaterial({ map: spTex, transparent: true, side: T.DoubleSide });
                   var spFace = new T.Mesh(new T.PlaneGeometry(0.9, 1.15), spMat);
-                  spFace.position.set(speedSide * (MAX_ROAD_WIDTH + 1.2), 2.3, speedZ);
+                  spFace.position.set(spSignX, spGroundY + 2.3, speedZ);
                   spFace.rotation.y = speedSide === 1 ? -Math.PI / 2 : Math.PI / 2;
                   chunkGroup.add(spFace);
                 } catch (spErr) { /* fallback: post-only */ }
@@ -16290,7 +16669,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // Twin red warning lamps below the crossbuck. The 0.35 lampOff is a
                   // small lateral offset along the pole's mounting bracket (across-road
                   // direction), so it also projects through the perpendicular basis.
-                  [-0.35, 0.35].forEach(function(lampOff) {
+                  // Registered with the flashingBeacons animator (alternating phases,
+                  // red palette) — they used to be static dark maroon forever, which
+                  // read as burnt-out hardware at an active-style crossing.
+                  s3.flashingBeacons = s3.flashingBeacons || [];
+                  [-0.35, 0.35].forEach(function(lampOff, cbIdx) {
                     var cbLampMat = new T.MeshBasicMaterial({ color: 0x660000, transparent: true, opacity: 0.5 });
                     var cbLamp = new T.Mesh(new T.SphereGeometry(0.14, 10, 10), cbLampMat);
                     cbLamp.position.set(
@@ -16299,6 +16682,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       cbWorldZ + lampOff * rrPerpZ
                     );
                     chunkGroup.add(cbLamp);
+                    s3.flashingBeacons.push({ mesh: cbLamp, phase: cbIdx % 2, onColor: 0xff2020, offColor: 0x3a0000 });
                   });
                   // Small "RR XING" placard below the lamps. Box geometry rotates around
                   // Y so its face stays perpendicular to the road tangent.
@@ -17556,6 +17940,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (s3.trafficLampsByChunk && s3.trafficLampsByChunk[ki]) {
                   delete s3.trafficLampsByChunk[ki];
                 }
+                // School-zone beacon bookkeeping for this chunk. The animator only
+                // prunes this map during DAYTIME frames (its whole block is gated
+                // on scn.time !== 'night'), so night drives accumulated entries.
+                if (s3.schoolBeaconsByChunk && s3.schoolBeaconsByChunk[ki]) {
+                  delete s3.schoolBeaconsByChunk[ki];
+                }
+                if (s3.pedSigsByChunk && s3.pedSigsByChunk[ki]) {
+                  delete s3.pedSigsByChunk[ki];
+                }
+                // Speed-bump registry: the physics loop scans this list every
+                // frame; entries were pushed per residential chunk but never
+                // removed, so long Free Explore drives grew it without bound.
+                if (iw._speedBumps) {
+                  iw._speedBumps = iw._speedBumps.filter(function(b) { return b.chunkIdx !== ki; });
+                }
               }
             });
           }
@@ -18036,6 +18435,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
         // ── 2D HUD overlay (drawn on the separate 2D canvas) ──
         var drawHUD = function(W, H) {
+          // Shadow the effect-captured `d` with the live ref, exactly as `step`
+          // does. Without this, every d.X read below (highBeams, rideshareMode…)
+          // was frozen at drive start — pressing L updated the score logic but
+          // the headlight cone, beam label, and warning strip never changed.
+          var d = dataRef.current || {};
           var gfx = canvas.getContext('2d');
           gfx.clearRect(0, 0, W, H);
           // Impact flash: red vignette right after a collision. We look at the most
@@ -18360,8 +18764,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillText(veh.type === 'electric' ? 'MPGe AVG' : 'MPG AVG', W / 2, H - 22);
 
           // ── Fuel gauge — vertical bar on the right side of MPG readout ──
-          // fuelCap is in gallons; fuelUsed is cumulative gallons consumed this drive.
-          var tankCap = veh.fuelCap || 48;
+          // fuelUsed accumulates GALLONS (miles/MPG + idle gal/h), but fuelCap is
+          // spec-sheet units: LITERS for combustion vehicles (sedan 48 L ≈ 12.7 gal
+          // — a 48 GALLON compact tank would be absurd) and kWh for the EV.
+          // Convert to gallons(-equivalent) here or the tank reads ~3.8× too big
+          // (and ~34× for the EV) and the low-fuel lesson never fires.
+          var tankCap = veh.type === 'electric'
+            ? (veh.fuelCap || 75) / 33.7          // kWh → gal-equivalent (33.7 kWh/gal, EPA MPGe)
+            : (veh.fuelCap || 48) / 3.78541;      // liters → gallons
           var fuelRemaining = Math.max(0, tankCap - (stats.fuelUsed || 0));
           var fuelFrac = fuelRemaining / tankCap;
           var fuelLabel = veh.type === 'electric' ? 'BAT' : 'FUEL';
@@ -18652,9 +19062,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             });
             var ownSpd = Math.abs(car.speed); // m/s
             if (closestAhead && ownSpd > 2) {
-              // Convert cell-distance to feet then to seconds at current speed.
-              var distFt = closestAheadDist * 10; // ~10ft per cell
-              var secsGap = distFt / (ownSpd * 3.28084); // time to reach that car at current speed
+              // Convert cell-distance to feet (display) and to seconds at current speed.
+              var distFt = closestAheadDist * 10; // ~10ft per cell (display convention)
+              // TRUE time-to-reach in world terms: the car covers ownSpd/5 cells
+              // per second (movement integrates speed*dt/5), so gap seconds =
+              // cells / (ownSpd/5). The old distFt/(ownSpd·3.28) mixed the 10ft
+              // display convention with real m/s and under-read the gap ~1.6×,
+              // flagging "close follow" at genuinely safe distances.
+              var secsGap = (closestAheadDist * 5) / ownSpd;
               // Color: red < 2, amber 2-3, green ≥ 3
               var gapColor = secsGap < 2 ? '#ef4444' : secsGap < 3 ? '#f59e0b' : '#4ade80';
               var barW = 150, barH = 32;
@@ -19028,13 +19443,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.strokeStyle = '#334155'; gfx.lineWidth = 1;
           gfx.strokeRect(mmX, mmY, mmSize, mmSize);
           // Helper: rotate world point into car-relative minimap space.
+          // Heading-up convention: a point AHEAD of the car must plot ABOVE the
+          // (up-pointing) player marker and a point to the driver's RIGHT must
+          // plot to the marker's right. With the previous `-h + π/2` basis both
+          // axes came out negated — the whole minimap was rotated 180° (the road
+          // ahead rendered behind the marker). Negating both terms fixes it;
+          // verify: ahead = (cos h, sin h)·d → x' 0, y' −d (up ✓); driver-right
+          // = (−sin h, cos h)·d → x' +d (right ✓).
           var _cosH = Math.cos(-car.heading + Math.PI / 2);
           var _sinH = Math.sin(-car.heading + Math.PI / 2);
           var mmCx = mmX + mmSize / 2, mmCy = mmY + mmSize / 2;
           var worldToMM = function(wx, wy) {
             var relX = (wx - car.x) / mmScale;
             var relY = (wy - car.y) / mmScale;
-            return { x: mmCx + relX * _cosH - relY * _sinH, y: mmCy + relX * _sinH + relY * _cosH };
+            return { x: mmCx - (relX * _cosH - relY * _sinH), y: mmCy - (relX * _sinH + relY * _cosH) };
           };
           // Draw road on minimap — branches on finite map vs infinite world.
           var map = mapRef.current;
@@ -19078,26 +19500,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
             }
           }
-          // Draw traffic dots on minimap
+          // Draw traffic dots on minimap (via worldToMM — the previous inline
+          // copies of the transform carried the same 180° flip it had)
           trafficRef.current.forEach(function(t) {
-            var relX = (t.x - car.x) / mmScale;
-            var relY = (t.y - car.y) / mmScale;
-            var cosH = Math.cos(-car.heading + Math.PI / 2);
-            var sinH = Math.sin(-car.heading + Math.PI / 2);
-            var mx = mmX + mmSize / 2 + relX * cosH - relY * sinH;
-            var my = mmY + mmSize / 2 + relX * sinH + relY * cosH;
+            var tp = worldToMM(t.x, t.y);
+            var mx = tp.x, my = tp.y;
             if (mx < mmX || mx > mmX + mmSize || my < mmY || my > mmY + mmSize) return;
             gfx.fillStyle = t.color;
             gfx.fillRect(mx - 1.5, my - 1.5, 3, 3);
           });
           // Draw signals on minimap
           signalsRef.current.forEach(function(s) {
-            var relX = (s.x - car.x) / mmScale;
-            var relY = (s.y - car.y) / mmScale;
-            var cosH = Math.cos(-car.heading + Math.PI / 2);
-            var sinH = Math.sin(-car.heading + Math.PI / 2);
-            var mx = mmX + mmSize / 2 + relX * cosH - relY * sinH;
-            var my = mmY + mmSize / 2 + relX * sinH + relY * cosH;
+            var sp = worldToMM(s.x, s.y);
+            var mx = sp.x, my = sp.y;
             if (mx < mmX || mx > mmX + mmSize || my < mmY || my > mmY + mmSize) return;
             gfx.fillStyle = s.type === 'stop' ? '#ef4444' : s.state === 'green' ? '#22c55e' : s.state === 'yellow' ? '#fbbf24' : '#ef4444';
             gfx.beginPath(); gfx.arc(mx, my, 2.5, 0, Math.PI * 2); gfx.fill();
@@ -19105,12 +19520,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Quest destination marker on minimap
           if (questRef.current && !questRef.current.completed && d.freeExplore) {
             var qm = questRef.current;
-            var qRelX = (qm.x - car.x) / mmScale;
-            var qRelY = (qm.y - car.y) / mmScale;
-            var qCosH = Math.cos(-car.heading + Math.PI / 2);
-            var qSinH = Math.sin(-car.heading + Math.PI / 2);
-            var qmx = mmX + mmSize / 2 + qRelX * qCosH - qRelY * qSinH;
-            var qmy = mmY + mmSize / 2 + qRelX * qSinH + qRelY * qCosH;
+            var qmp = worldToMM(qm.x, qm.y);
+            var qmx = qmp.x, qmy = qmp.y;
             // Clamp to minimap edge if destination is far
             qmx = Math.max(mmX + 4, Math.min(mmX + mmSize - 4, qmx));
             qmy = Math.max(mmY + 4, Math.min(mmY + mmSize - 4, qmy));
@@ -19335,7 +19746,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 gfx.font = 'bold 10px monospace'; gfx.textAlign = 'right';
                 gfx.fillText('Comfort ' + Math.round(liveComfort), rsX + rsW - 8, starBaseY);
                 // Distance remaining + fare preview. Surge mirrors dropoff math.
-                var rsRemaining = Math.hypot(carRef.current.x - rsTarget.x, carRef.current.y - rsTarget.y) * 0.1;
+                // ×10 = the HUD's cells→feet convention (was ×0.1: 100× short, so
+                // a far dropoff read "3 ft left").
+                var rsRemaining = Math.hypot(carRef.current.x - rsTarget.x, carRef.current.y - rsTarget.y) * 10;
                 var distSoFar = ((statsRef.current.distance || 0) - rsHud.startSnapshot.distance) / METERS_PER_MILE;
                 var rsWHud = (scn && scn.weather) || 'clear';
                 var rsSurgeHud = rsWHud === 'snow' ? 1.5 : rsWHud === 'fog' ? 1.3 : rsWHud === 'rain' ? 1.2 : 1.0;
@@ -19386,8 +19799,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   }
                 }
               } else {
-                // Pickup phase — show distance + a little guidance
-                var pickRem = Math.hypot(carRef.current.x - rsTarget.x, carRef.current.y - rsTarget.y) * 0.1;
+                // Pickup phase — show distance + a little guidance (×10 = cells→ft,
+                // matching every other HUD distance readout)
+                var pickRem = Math.hypot(carRef.current.x - rsTarget.x, carRef.current.y - rsTarget.y) * 10;
                 gfx.fillStyle = '#94a3b8';
                 gfx.font = '9px monospace'; gfx.textAlign = 'right';
                 gfx.fillText(pickRem.toFixed(0) + ' ft to pickup', rsX + rsW - 8, rsY + 64);
@@ -19436,11 +19850,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.lineWidth = 2;
             gfx.fillRect(navX - navW / 2, navY, navW, navH);
             gfx.strokeRect(navX - navW / 2, navY, navW, navH);
-            // Big direction arrow (rotates based on relative angle)
-            // -PI/2 = forward, 0 = right, PI/2 = backward, etc.
+            // Big direction arrow (rotates based on relative angle).
+            // relativeAngle 0 = destination dead AHEAD (not -PI/2 — the old
+            // "+PI/2 so forward = up" comment was wrong and pointed the arrow
+            // 90° right of the true direction). Tip is drawn at (0,-14) = up,
+            // and canvas rotate is clockwise in y-down screen space, so
+            // rotate(relativeAngle) maps ahead→up, right→right.
             gfx.save();
             gfx.translate(navX - 75, navY + navH / 2);
-            gfx.rotate(relativeAngle + Math.PI / 2); // +PI/2 so forward = up
+            gfx.rotate(relativeAngle);
             gfx.fillStyle = '#fbbf24';
             gfx.beginPath();
             gfx.moveTo(0, -14);
@@ -19460,9 +19878,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var distFeet = Math.round(navDistToQuest * 10);
             var distLabel = distFeet > 5280 ? (distFeet / 5280).toFixed(1) + ' mi' : distFeet + ' ft';
             gfx.fillText(distLabel, navX - 55, navY + 34);
-            // Turn hint
+            // Turn hint. Straight ahead = relativeAngle ≈ 0 (the old test centered
+            // on -PI/2, so "Straight ahead" showed when the target was 90° left
+            // and driving straight at it said "Turn right").
             var turnHint = '';
-            if (Math.abs(relativeAngle + Math.PI / 2) < 0.3) turnHint = 'Straight ahead';
+            if (Math.abs(relativeAngle) < 0.3) turnHint = 'Straight ahead';
             else if (relativeAngle > 0) turnHint = 'Turn right';
             else if (relativeAngle < 0) turnHint = 'Turn left';
             if (navDistToQuest < 10) turnHint = 'Arriving...';
@@ -19489,10 +19909,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Distance
             gfx.fillStyle = '#94a3b8'; gfx.font = '10px monospace';
             gfx.fillText(qDistFt > 5280 ? qDistMi + ' mi' : qDistFt + ' ft', 18, 100);
-            // Direction arrow (rotated triangle pointing toward destination)
+            // Direction arrow (rotated triangle pointing toward destination).
+            // rotate(+qAngle): tip-up triangle, clockwise-positive canvas rotation
+            // — rotate(-qAngle) mirrored left/right targets.
             gfx.save();
             gfx.translate(210, 88);
-            gfx.rotate(-qAngle);
+            gfx.rotate(qAngle);
             gfx.fillStyle = '#fbbf24';
             gfx.beginPath(); gfx.moveTo(0, -8); gfx.lineTo(-5, 5); gfx.lineTo(5, 5); gfx.closePath(); gfx.fill();
             gfx.restore();
@@ -19650,6 +20072,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               });
             }
           } catch (eAud) {}
+          // Radio nodes are NOT in the list above (they live on radioRef) — a
+          // tuned station kept feeding ac.destination after unmount/menu jumps;
+          // only the End Drive button used to stop it.
+          try { stopRadio(); } catch (eRad) {}
           if (threeRef.current && threeRef.current.renderer) {
             // Dispose all geometries and materials in the scene to free GPU memory
             if (threeRef.current.scene) {
@@ -19663,6 +20089,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             try{ if(threeRef.current.renderer && threeRef.current.renderer._alloComposer){ (threeRef.current.renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); threeRef.current.renderer._alloComposer=null; } }catch(e){}
             threeRef.current.renderer.dispose();
+            // dispose() alone doesn't reliably release the WebGL context, and this
+            // effect re-runs on every scenario/vehicle switch. Browsers cap live
+            // contexts (~16); a classroom session of switching scenarios could hit
+            // "oldest context lost" and blank the canvas.
+            try { threeRef.current.renderer.forceContextLoss(); } catch (eCtx) {}
           }
         };
       // Depend on the PRIMITIVE IDs, not the scenario/vehicle objects. currentScenario is
@@ -20018,7 +20449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ),
             // ── Daily Challenge: highlighted hero tile (always on top) ──
             (function() {
-              var today = new Date().toISOString().slice(0, 10);
+              var today = localDayKey();
               var dailyState = d.dailyChallenge || {};
               var doneToday = dailyState.date === today && dailyState.done;
               var streak = dailyState.streak || 0;
@@ -20258,7 +20689,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px' } },
               // Scenarios explored
               (function() {
-                var pct = Math.round(Object.keys(scenariosDriven).length / 14 * 100);
+                // Derive from SCENARIOS.length (a hardcoded /14 silently desyncs
+                // when scenarios are added) and clamp — scenariosDriven can pick
+                // up ids outside the canonical list (Free Explore variants).
+                var pct = Math.min(100, Math.round(Object.keys(scenariosDriven).length / SCENARIOS.length * 100));
                 return h('div', { style: { textAlign: 'center' } },
                   h('div', { style: { height: '4px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))', borderRadius: '2px', marginBottom: '4px' } },
                     h('div', { style: { height: '100%', background: '#22d3ee', borderRadius: '2px', width: pct + '%', transition: 'width 0.8s ease-out' } })
@@ -20412,6 +20846,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     lastReflection: d.lastReflection || null,
                     pledgeSigned: d.pledgeSigned || null,
                     permitFlashHistory: d.permitFlashHistory || {},
+                    // Permit progress proper — these two are the panel's headline
+                    // promise ("pick up where you left off"): per-category tallies
+                    // and the cross-attempt Permit Mastery set. They were missing
+                    // from the export, so a device transfer silently dropped all
+                    // permit-test progress while keeping badges/logbook.
+                    permitStats: d.permitStats || {},
+                    permitMastery: d.permitMastery || {},
                     tourCompleted: !!d.tourCompleted,
                     gdlBirthDate: d.gdlBirthDate || '',
                     gdlPermitDate: d.gdlPermitDate || '',
@@ -20422,7 +20863,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var json = JSON.stringify(payload, null, 2);
                     var blob = new Blob([json], { type: 'application/json' });
                     var url = URL.createObjectURL(blob);
-                    var stamp = new Date().toISOString().slice(0, 10);
+                    var stamp = localDayKey();
                     var a = document.createElement('a');
                     a.href = url; a.download = 'roadready_progress_' + stamp + '.json'; a.click();
                     URL.revokeObjectURL(url);
@@ -20466,7 +20907,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var md = lines.join('\n');
                     var blob = new Blob([md], { type: 'text/markdown' });
                     var url = URL.createObjectURL(blob);
-                    var stamp = new Date().toISOString().slice(0, 10);
+                    var stamp = localDayKey();
                     var a = document.createElement('a');
                     a.href = url; a.download = 'roadready_journal_' + stamp + '.md'; a.click();
                     URL.revokeObjectURL(url);
@@ -20516,6 +20957,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         if (parsed.lastReflection) toApply.lastReflection = parsed.lastReflection;
                         if (parsed.pledgeSigned) toApply.pledgeSigned = parsed.pledgeSigned;
                         if (parsed.permitFlashHistory) toApply.permitFlashHistory = parsed.permitFlashHistory;
+                        if (parsed.permitStats) {
+                          toApply.permitStats = parsed.permitStats;
+                          lsSet('roadReady.permitStats.v1', parsed.permitStats);
+                        }
+                        if (parsed.permitMastery) {
+                          toApply.permitMastery = parsed.permitMastery;
+                          lsSet('roadReady.permitMastery.v1', parsed.permitMastery);
+                        }
                         if (typeof parsed.tourCompleted === 'boolean') toApply.tourCompleted = parsed.tourCompleted;
                         if (parsed.gdlBirthDate) toApply.gdlBirthDate = parsed.gdlBirthDate;
                         if (parsed.gdlPermitDate) toApply.gdlPermitDate = parsed.gdlPermitDate;
@@ -20797,9 +21246,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'aria-label': __alloT('stem.roadready.end_drive_and_return_to_menu', 'End drive and return to menu'), 'aria-keyshortcuts': 'Escape',
               'data-rr-focusable': 'true',
               style: { padding: '6px 10px', minHeight: 28, borderRadius: '6px', background: 'rgba(239,68,68,0.8)', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.roadready.end_drive', '✕ End Drive')),
-            h('button', { onClick: function() { pausedRef.current = !pausedRef.current; },
-              'aria-label': pausedRef.current ? 'Resume the drive' : 'Pause the drive',
-              'aria-pressed': !!pausedRef.current, 'aria-keyshortcuts': 'Space',
+            h('button', { onClick: function() { togglePause(); },
+              'aria-label': isPaused ? 'Resume the drive' : 'Pause the drive',
+              'aria-pressed': !!isPaused, 'aria-keyshortcuts': 'Space',
               'data-rr-focusable': 'true',
               style: { padding: '6px 10px', minHeight: 28, borderRadius: '6px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.roadready.pause', '⏸ Pause')),
             h('button', { onClick: function() {
@@ -20822,8 +21271,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { position: 'absolute', bottom: '100px', left: '10px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(0,0,0,0.6)', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', fontSize: '10px', zIndex: 10 } },
             __alloT('stem.roadready.w_accel_s_brake_a_d_steer_f_drive_g_re', 'W Accel · S Brake · A/D Steer · F Drive · G Reverse · P Park · E/V Signal · C Cam · L Beams · K Photo · Q Horn · SPACE Pause')
           ),
-          // ── Pause screen overlay — visible while paused ──
-          pausedRef.current ? h('div', {
+          // ── Pause screen overlay — visible while paused (isPaused state
+          // mirror, not the ref — see the togglePause declaration) ──
+          isPaused ? h('div', {
             style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.75)', zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'rr-fade-in 0.3s ease-out', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }
           },
             h('div', { style: { background: 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(2,6,23,0.95))', borderRadius: '18px', padding: '36px 44px', border: '2px solid #22d3ee', boxShadow: '0 20px 60px rgba(34,211,238,0.3)', textAlign: 'center', maxWidth: '420px' } },
@@ -20844,7 +21294,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   h('span', { style: { marginLeft: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, __alloT('stem.roadready.take_a_photo', 'Take a photo'))
                 )
               ),
-              h('button', { onClick: function() { pausedRef.current = false; },
+              h('button', { onClick: function() { togglePause(false); },
                 style: { marginTop: '24px', padding: '10px 24px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #22d3ee, #0891b2)', color: '#0f172a', fontSize: '13px', fontWeight: 900, cursor: 'pointer', boxShadow: '0 4px 12px rgba(34,211,238,0.4)' }
               }, __alloT('stem.roadready.resume_driving', '▶ Resume Driving'))
             )
@@ -20859,8 +21309,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '15px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.fasten_your_seatbelt', 'Fasten Your Seatbelt')),
             h('div', { style: { fontSize: '11px', color: '#fecaca', lineHeight: '1.5' } }, __alloT('stem.roadready.press', 'Press '), h('kbd', { style: { padding: '2px 6px', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', fontFamily: 'monospace', fontWeight: 900 } }, 'B'), __alloT('stem.roadready.or_any_movement_key_to_fasten_the_car_', ' or any movement key to fasten. The car will not move until you do.'))
           ) :
-          // ── Grace period banner: visible for the first ~4s after belt is fastened ──
-          (timeRef.current > 0 && timeRef.current < (graceRef.current && graceRef.current.until || 4)) ? h('div', {
+          // ── Grace period banner: visible for ~4s after belt is fastened
+          // (graceVisible state, set + timed out at the fasten site) ──
+          graceVisible ? h('div', {
             style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '12px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(22,163,74,0.95), rgba(21,128,61,0.95))', border: '2px solid #4ade80', color: '#fff', zIndex: 27, textAlign: 'center', maxWidth: '420px', boxShadow: '0 6px 20px rgba(74,222,128,0.4)', animation: 'rr-fade-in 0.5s ease-out' }
           },
             h('div', { style: { fontSize: '20px', marginBottom: '6px' } }, __alloT('stem.roadready.check_your_mirrors', '🪞 Check Your Mirrors')),
@@ -20873,12 +21324,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // visual clutter for no benefit (keyboard handles all input).
           isTouchDeviceRef.current ? h('div', { style: { position: 'absolute', bottom: '110px', right: d.freeExplore ? '180px' : '10px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 20 },
             className: 'touch-controls' },
-            // Throttle (big green button)
+            // Throttle (big green button). onTouchCancel mirrors onTouchEnd on
+            // all four hold-buttons: the browser fires touchcancel (NOT touchend)
+            // when it hijacks the gesture — edge swipe, notification, finger
+            // sliding off — which used to leave the throttle/brake/steer stuck ON.
+            // onMouseLeave releases a mouse press dragged off the button.
             h('button', {
               onTouchStart: function(e) { e.preventDefault(); keysRef.current['w'] = true; },
               onTouchEnd: function(e) { e.preventDefault(); keysRef.current['w'] = false; },
+              onTouchCancel: function(e) { e.preventDefault(); keysRef.current['w'] = false; },
               onMouseDown: function() { keysRef.current['w'] = true; },
               onMouseUp: function() { keysRef.current['w'] = false; },
+              onMouseLeave: function() { keysRef.current['w'] = false; },
               'aria-label': __alloT('stem.roadready.accelerate_touch_and_hold', 'Accelerate (touch and hold)'),
               style: { width: '60px', height: '60px', borderRadius: '50%', border: '2px solid #4ade80', background: 'rgba(34,197,94,0.3)', color: '#fff', fontSize: '20px', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
             }, '▲'),
@@ -20887,8 +21344,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('button', {
                 onTouchStart: function(e) { e.preventDefault(); keysRef.current['a'] = true; },
                 onTouchEnd: function(e) { e.preventDefault(); keysRef.current['a'] = false; },
+                onTouchCancel: function(e) { e.preventDefault(); keysRef.current['a'] = false; },
                 onMouseDown: function() { keysRef.current['a'] = true; },
                 onMouseUp: function() { keysRef.current['a'] = false; },
+                onMouseLeave: function() { keysRef.current['a'] = false; },
                 'aria-label': __alloT('stem.roadready.steer_left_touch_and_hold', 'Steer left (touch and hold)'),
                 style: { width: '48px', height: '48px', borderRadius: '50%', border: '2px solid #60a5fa', background: 'rgba(96,165,250,0.3)', color: '#fff', fontSize: '18px', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
               }, '◄'),
@@ -20896,8 +21355,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('button', {
                 onTouchStart: function(e) { e.preventDefault(); keysRef.current['d'] = true; },
                 onTouchEnd: function(e) { e.preventDefault(); keysRef.current['d'] = false; },
+                onTouchCancel: function(e) { e.preventDefault(); keysRef.current['d'] = false; },
                 onMouseDown: function() { keysRef.current['d'] = true; },
                 onMouseUp: function() { keysRef.current['d'] = false; },
+                onMouseLeave: function() { keysRef.current['d'] = false; },
                 'aria-label': __alloT('stem.roadready.steer_right_touch_and_hold', 'Steer right (touch and hold)'),
                 style: { width: '48px', height: '48px', borderRadius: '50%', border: '2px solid #60a5fa', background: 'rgba(96,165,250,0.3)', color: '#fff', fontSize: '18px', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
               }, '►')
@@ -20906,8 +21367,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('button', {
               onTouchStart: function(e) { e.preventDefault(); keysRef.current['s'] = true; },
               onTouchEnd: function(e) { e.preventDefault(); keysRef.current['s'] = false; },
+              onTouchCancel: function(e) { e.preventDefault(); keysRef.current['s'] = false; },
               onMouseDown: function() { keysRef.current['s'] = true; },
               onMouseUp: function() { keysRef.current['s'] = false; },
+              onMouseLeave: function() { keysRef.current['s'] = false; },
               'aria-label': __alloT('stem.roadready.brake_touch_and_hold', 'Brake (touch and hold)'),
               style: { width: '60px', height: '60px', borderRadius: '50%', border: '2px solid #ef4444', background: 'rgba(239,68,68,0.3)', color: '#fff', fontSize: '20px', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
             }, '▼')
@@ -21044,7 +21507,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         if (!cr.offered) return;
                         var def = cr.offered.def;
                         cr.active = { def: def, elapsed: 0, progress: 0 };
-                        if (def.onArm) def.onArm(cr.active);
+                        // Guarded: onArm hooks receive cr.active (no .stats). No current
+                        // challenge uses onArm — baselines are captured inside check()
+                        // where the full tick ctx is available. try/catch so a future
+                        // malformed hook can't abort the Accept handler mid-way.
+                        if (def.onArm) { try { def.onArm(cr.active); } catch (e) {} }
                         cr.offered = null;
                         addToast('🎯 Accepted: ' + def.title);
                       },
@@ -21829,14 +22296,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var gradeLabel, gradeColor, gradeLetter, gradeXP;
         var combined = (drivingStats.safetyScore + drivingStats.efficiencyScore) / 2;
         var isFreeExplore = d.freeExplore;
+        // Letter comes from the shared rrGradeLetter helper (also used by the
+        // certificate view) so the two can't drift.
         if (isFreeExplore) {
           gradeLabel = '🌎 Free Explore — No Grade'; gradeColor = '#a78bfa'; gradeLetter = '—'; gradeXP = 15;
-        } else if (combined >= 95) { gradeLabel = '🏆 Outstanding — Instructor Ready'; gradeColor = '#fbbf24'; gradeLetter = 'A+'; gradeXP = 50; }
-        else if (combined >= 90) { gradeLabel = '🏆 Excellent'; gradeColor = '#fbbf24'; gradeLetter = 'A'; gradeXP = 40; }
-        else if (combined >= 80) { gradeLabel = '🌟 Great Drive'; gradeColor = '#4ade80'; gradeLetter = 'B'; gradeXP = 30; }
-        else if (combined >= 70) { gradeLabel = '👍 Good — Room to Improve'; gradeColor = '#60a5fa'; gradeLetter = 'C'; gradeXP = 20; }
-        else if (combined >= 55) { gradeLabel = '📝 Fair — Study the Lessons'; gradeColor = '#f59e0b'; gradeLetter = 'D'; gradeXP = 10; }
-        else { gradeLabel = '⚠️ Fail — More Training Needed'; gradeColor = '#ef4444'; gradeLetter = 'F'; gradeXP = 5; }
+        } else {
+          gradeLetter = rrGradeLetter(combined);
+          if (combined >= 95) { gradeLabel = '🏆 Outstanding — Instructor Ready'; gradeColor = '#fbbf24'; gradeXP = 50; }
+          else if (combined >= 90) { gradeLabel = '🏆 Excellent'; gradeColor = '#fbbf24'; gradeXP = 40; }
+          else if (combined >= 80) { gradeLabel = '🌟 Great Drive'; gradeColor = '#4ade80'; gradeXP = 30; }
+          else if (combined >= 70) { gradeLabel = '👍 Good — Room to Improve'; gradeColor = '#60a5fa'; gradeXP = 20; }
+          else if (combined >= 55) { gradeLabel = '📝 Fair — Study the Lessons'; gradeColor = '#f59e0b'; gradeXP = 10; }
+          else { gradeLabel = '⚠️ Fail — More Training Needed'; gradeColor = '#ef4444'; gradeXP = 5; }
+        }
 
         return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('div', { style: { background: 'linear-gradient(135deg, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)), #1e1b4b)', borderRadius: '14px', padding: '24px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
@@ -22615,7 +23087,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('button', {
             onClick: function() {
               try {
-                var lines = ['# RoadReady — Parent Ride Check Report', '', 'Date: ' + new Date(pr.endedAt).toLocaleString(), 'Scenario: ' + pr.scenario, 'Duration: ' + pr.durationSec + ' seconds', 'Total events: ' + totalErrs, ''];
+                var lines = ['# RoadReady — Parent Ride Check Report', '', 'Date: ' + new Date(pr.endedAt || pr.startedAt || Date.now()).toLocaleString(), 'Scenario: ' + pr.scenario, 'Duration: ' + pr.durationSec + ' seconds', 'Total events: ' + totalErrs, ''];
                 lines.push('## Errors by Category');
                 Object.keys(catLabels).forEach(function(c) { lines.push('- ' + catLabels[c] + ': ' + (byCategory[c] || 0)); });
                 lines.push('', '## Coaching Priority', topCat ? catLabels[topCat] + ' (' + byCategory[topCat] + ' events)' : 'No errors recorded');
@@ -22802,7 +23274,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             onClick: function() {
               var lines = ['# RoadReady Full Logbook', '', 'Total sessions: ' + logbook.length, 'Total supervised hours: ' + totalHrs, 'Date range: ' + new Date(logbook[logbook.length - 1].startedAt || Date.now()).toLocaleDateString() + ' — ' + new Date(logbook[0].endedAt || Date.now()).toLocaleDateString(), ''];
               logbook.forEach(function(j, i) {
-                var dt = new Date(j.endedAt || j.startedAt);
+                // Same fallback chain as the on-screen list — a legacy session
+                // missing both timestamps rendered "Session N — Invalid Date".
+                var dt = new Date(j.endedAt || j.startedAt || Date.now());
                 lines.push('## Session ' + (logbook.length - i) + ' — ' + dt.toLocaleString());
                 lines.push('**Scenario:** ' + j.scenario + ' · **Vehicle:** ' + j.vehicle);
                 lines.push('**Duration:** ' + Math.floor((j.durationSec || 0) / 60) + 'm ' + ((j.durationSec || 0) % 60) + 's');
@@ -25400,7 +25874,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // DAILY CHALLENGE (rotating task + streak counter)
       // ══════════════════════════════════════════════════════════
       if (view === 'dailyChallenge') {
-        var today = new Date().toISOString().slice(0, 10);
+        var today = localDayKey();
         var dayOfYear = (function() {
           var dt = new Date();
           var start = new Date(dt.getFullYear(), 0, 0);
@@ -25432,7 +25906,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (lastDate) {
           var yd = new Date();
           yd.setDate(yd.getDate() - 1);
-          var yesterday = yd.toISOString().slice(0, 10);
+          var yesterday = localDayKey(yd); // LOCAL day, matching `today`
           isConsecutive = lastDate === today || lastDate === yesterday;
         }
         return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
@@ -25441,10 +25915,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '48px' } }, '⭐'),
             h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.daily_challenge_2', 'Daily Challenge')),
             h('div', { style: { fontSize: '12px', color: '#fde68a' } }, new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })),
-            // Streak display
-            h('div', { style: { marginTop: '10px', display: 'inline-flex', gap: '8px', alignItems: 'center', background: streak >= 3 ? 'rgba(239,68,68,0.2)' : 'rgba(251,191,36,0.15)', padding: '6px 14px', borderRadius: '20px', border: '1px solid ' + (streak >= 3 ? '#ef4444' : '#fbbf24') } },
-              h('span', { style: { fontSize: '18px' } }, streak >= 3 ? '🔥' : '✨'),
-              h('span', { style: { fontSize: '12px', fontWeight: 800, color: streak >= 3 ? '#fca5a5' : '#fde68a' } }, streak + '-day streak')
+            // Streak display — show 0 when the chain is broken (last completion
+            // was before yesterday); the stored streak only resets on the next
+            // "Mark Done", so the raw value showed dead streaks as alive.
+            h('div', { style: { marginTop: '10px', display: 'inline-flex', gap: '8px', alignItems: 'center', background: (isConsecutive || doneToday) && streak >= 3 ? 'rgba(239,68,68,0.2)' : 'rgba(251,191,36,0.15)', padding: '6px 14px', borderRadius: '20px', border: '1px solid ' + ((isConsecutive || doneToday) && streak >= 3 ? '#ef4444' : '#fbbf24') } },
+              h('span', { style: { fontSize: '18px' } }, (isConsecutive || doneToday) && streak >= 3 ? '🔥' : '✨'),
+              h('span', { style: { fontSize: '12px', fontWeight: 800, color: (isConsecutive || doneToday) && streak >= 3 ? '#fca5a5' : '#fde68a' } },
+                ((isConsecutive || doneToday) ? streak : 0) + '-day streak' + ((!isConsecutive && !doneToday && streak > 0) ? ' (reset — complete today to restart)' : ''))
             )
           ),
           // Today's challenge card
@@ -26304,7 +26781,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (rtPhase === 'final') {
           var baseline = avgOf(d.rtBaselineTrials || []);
           var impaired = avgOf(d.rtImpairedTrials || []);
-          var diff = impaired - baseline;
+          // Clamp at 0 — a slow baseline run could make the difference negative
+          // and render "+-4 ft" on the results card.
+          var diff = Math.max(0, impaired - baseline);
           // Extra stopping distance at 55 mph from the lag
           var extraFt = Math.round(55 * 1.467 * (diff / 1000));
           return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
@@ -26479,7 +26958,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // Per-scenario personal bests (safety)
         var bests = {};
         anaLog.forEach(function(j) {
-          if (!bests[j.scenario] || j.safetyScore > bests[j.scenario]) bests[j.scenario] = j.safetyScore;
+          // Default missing scores to 0 — an undefined "best" rendered as the
+          // top score and produced `width: undefined%` in the bar style.
+          var jSafety = j.safetyScore || 0;
+          if (!(j.scenario in bests) || jSafety > bests[j.scenario]) bests[j.scenario] = jSafety;
         });
         var bestsEntries = Object.keys(bests).map(function(k) { return { scenario: k, best: bests[k] }; }).sort(function(a, b) { return b.best - a.best; });
         // Hours by weekday
@@ -26871,7 +27353,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (view === 'achievementGallery') {
         // Tier assignment: first 10 = bronze, 11-20 = silver, 21+ = gold.
         // Using order in ACHIEVEMENTS array — earlier = easier, later = harder.
-        var tierOf = function(idx) { return idx < 10 ? 'bronze' : idx < 22 ? 'silver' : 'gold'; };
+        var tierOf = function(idx) { return idx < 10 ? 'bronze' : idx < 20 ? 'silver' : 'gold'; };
         var tierColors = {
           bronze: { ring: '#b45309', glow: 'rgba(180,83,9,0.7)', bg: 'radial-gradient(circle, #fcd34d, #b45309)' },
           silver: { ring: '#9ca3af', glow: 'rgba(156,163,175,0.7)', bg: 'radial-gradient(circle, #e5e7eb, #9ca3af)' },
@@ -27327,9 +27809,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('h2', { style: { fontSize: '20px', fontWeight: 900, textAlign: 'center' } }, __alloT('stem.roadready.stopping_distance_lab_3', 'Stopping Distance Lab')),
             h('div', { style: { fontSize: '11px', color: '#fecaca', textAlign: 'center', marginBottom: '14px' } }, __alloT('stem.roadready.play_with_speed_weather_and_reaction_t', 'Play with speed, weather, and reaction time. Watch the physics.'))
           ),
-          // Vehicle chip
+          // Vehicle chip — with an honesty note: the lab's stopping model is the
+          // ideal-friction formula d = v²/(2μg), which is MASS-INDEPENDENT, so
+          // switching vehicles doesn't change the numbers. Without the note the
+          // chip reads like an input and quietly contradicts the Vehicle
+          // Comparison screen's "heavier = longer stops" teaching.
           h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '10px', textAlign: 'center' } },
-            'Vehicle: ' + currentVehicle.icon + ' ' + currentVehicle.name + ' (' + currentVehicle.mass + ' kg, Cd ' + currentVehicle.cd + ')'
+            'Vehicle: ' + currentVehicle.icon + ' ' + currentVehicle.name + ' (' + currentVehicle.mass + ' kg, Cd ' + currentVehicle.cd + ')',
+            h('div', { style: { fontSize: '9px', marginTop: '3px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #64748b))' } },
+              __alloT('stem.roadready.ideal_tire_model_note', 'Ideal-tire model: braking distance here depends on speed and friction only. Real heavy vehicles stop longer (brake fade, tire loading) — see Vehicle Comparison.'))
           ),
           // Speed slider
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '10px' } },
@@ -27423,24 +27911,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', null, h('span', { style: { color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, __alloT('stem.roadready.cruise_mpg', 'Cruise MPG: ')), h('b', { style: { color: '#4ade80' } }, cruise < 999 ? cruise.toFixed(1) : '—'))
             )
           ),
-          // Visual: distance bar
-          h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
+          // Visual: distance bar. Axis max grows with the result (min 400 ft) —
+          // the old fixed 0-400 axis silently pinned at 100% for ice/high-speed
+          // cases (90 mph on ice is 1,000+ ft), flattening exactly the extremes
+          // the lab exists to teach.
+          (function() {
+            var labAxisMax = Math.max(400, Math.ceil(sd.total_ft / 100) * 100);
+            var labReactPct = Math.min(100, sd.reaction_ft / labAxisMax * 100);
+            var labBrakePct = Math.min(100 - labReactPct, sd.braking_ft / labAxisMax * 100);
+            return h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.visual_scale', 'Visual Scale')),
             h('div', { style: { position: 'relative', height: '32px', background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '6px', overflow: 'hidden' } },
-              h('div', { style: { position: 'absolute', left: 0, top: 0, height: '100%', width: Math.min(100, sd.reaction_ft / 400 * 100) + '%', background: '#fbbf24' } }),
-              h('div', { style: { position: 'absolute', left: Math.min(100, sd.reaction_ft / 400 * 100) + '%', top: 0, height: '100%', width: Math.min(100 - Math.min(100, sd.reaction_ft / 400 * 100), sd.braking_ft / 400 * 100) + '%', background: '#ef4444' } }),
+              h('div', { style: { position: 'absolute', left: 0, top: 0, height: '100%', width: labReactPct + '%', background: '#fbbf24' } }),
+              h('div', { style: { position: 'absolute', left: labReactPct + '%', top: 0, height: '100%', width: labBrakePct + '%', background: '#ef4444' } }),
               h('div', { style: { position: 'absolute', left: '50%', top: 0, bottom: 0, width: '1px', background: 'rgba(255,255,255,0.3)' } }),
-              h('div', { style: { position: 'absolute', left: '50%', bottom: '-14px', transform: 'translateX(-50%)', fontSize: '9px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, __alloT('stem.roadready.200_ft', '200 ft'))
+              h('div', { style: { position: 'absolute', left: '50%', bottom: '-14px', transform: 'translateX(-50%)', fontSize: '9px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, Math.round(labAxisMax / 2) + ' ft')
             ),
             h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px' } },
               h('span', null, '0'),
-              h('span', null, __alloT('stem.roadready.400_ft', '400 ft'))
+              h('span', null, labAxisMax + ' ft')
             ),
             h('div', { style: { display: 'flex', gap: '14px', fontSize: '10px', marginTop: '6px' } },
               h('span', null, h('span', { style: { color: '#fbbf24' } }, '█ '), 'reaction'),
               h('span', null, h('span', { style: { color: '#ef4444' } }, '█ '), 'braking')
             )
-          )
+          );
+          })()
         );
       }
 
@@ -28032,7 +28528,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'has completed the RoadReady driver\'s education curriculum including physics of stopping distance, Maine state laws, hazard recognition, and ' + certHours + ' hours of simulated supervised driving practice.'
             ),
             h('div', { style: { fontSize: '10px', color: '#a07830', fontWeight: 700, letterSpacing: '2px', marginBottom: '4px' } }, __alloT('stem.roadready.final_grade', 'FINAL GRADE')),
-            h('div', { style: { fontSize: '48px', fontWeight: 900, color: '#a07830', marginBottom: '12px', lineHeight: '1' } }, gradeLetter),
+            // Computed HERE — the debrief's local gradeLetter is unassigned in
+            // this view branch and rendered as a blank grade on the certificate.
+            h('div', { style: { fontSize: '48px', fontWeight: 900, color: '#a07830', marginBottom: '12px', lineHeight: '1' } },
+              rrGradeLetter((drivingStats.safetyScore + drivingStats.efficiencyScore) / 2)),
             // Stats grid
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', margin: '12px auto', maxWidth: '520px' } },
               [['🛡️', drivingStats.safetyScore, 'Safety'],
@@ -28134,11 +28633,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '12px', color: '#fda4af', marginBottom: '14px' } }, __alloT('stem.roadready.you_will_see_driving_scenarios_click_t', 'You will see driving scenarios. Click/tap as FAST as possible when you spot the hazard. Your reaction time is measured.')),
               htState.total > 0 ? h('div', { style: { fontSize: '14px', color: '#fbbf24', marginBottom: '10px' } }, 'Score: ' + htState.score + '/' + htState.total + ' (' + Math.round(htState.score / htState.total * 100) + '%)') : null,
               h('button', { onClick: function() {
-                var hz = hazards[htState.round % hazards.length];
-                upd('htState', Object.assign({}, htState, { active: true, hazard: hz, startTime: Date.now(), responded: false }));
+                // A completed run (round >= length) starts FRESH. Without the
+                // reset, replaying from this card continued at "(11/10)", the
+                // score denominator grew forever, and the results/badge check
+                // re-fired after every additional answer.
+                var htDone = htState.round >= hazards.length;
+                var htBase = htDone ? { round: 0, score: 0, total: 0 } : htState;
+                var hz = hazards[htBase.round % hazards.length];
+                upd('htState', Object.assign({}, htBase, { active: true, hazard: hz, startTime: Date.now(), responded: false }));
               },
                 style: { padding: '14px 28px', borderRadius: '10px', border: 'none', background: '#f43f5e', color: '#fff', fontSize: '15px', fontWeight: 800, cursor: 'pointer' }
-              }, htState.total > 0 ? '⚡ Next Hazard (' + (htState.round + 1) + '/' + hazards.length + ')' : '⚡ Start Test')
+              }, htState.total > 0 && htState.round < hazards.length ? '⚡ Next Hazard (' + (htState.round + 1) + '/' + hazards.length + ')' : htState.total > 0 ? '🔁 Retake Test' : '⚡ Start Test')
             )
           ) : h('div', null,
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '14px', padding: '30px', border: '2px solid #f43f5e', textAlign: 'center', minHeight: '200px', display: 'flex', flexDirection: 'column', justifyContent: 'center', cursor: 'pointer' },
@@ -28180,8 +28685,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('button', { onClick: function() {
                   if (htState.round >= hazards.length) {
                     upd('htState', Object.assign({}, htState, { active: false }));
-                    // Award hazard_ace badge if 8/10+
-                    if (htState.score >= 8) {
+                    // Award hazard_ace badge if 8/10+ (once — the guard keeps a
+                    // completed-run replay from re-firing the toast)
+                    if (htState.score >= 8 && !earnedBadges.hazard_ace) {
                       var hb = Object.assign({}, earnedBadges);
                       hb.hazard_ace = true;
                       upd('badges', hb);
@@ -28600,7 +29106,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', lineHeight: '1.6' } },
             h('div', { style: { fontWeight: 700, color: '#818cf8', marginBottom: '4px' } }, __alloT('stem.roadready.the_physics_2', '📏 The Physics')),
             h('div', null, 'F_drag = ½ρv²CdA = ½ × 1.225 × ' + v_ms.toFixed(1) + '² × ' + fdVeh.cd + ' × ' + fdVeh.area + ' = ', h('b', null, Math.round(Fd) + ' N')),
-            h('div', null, 'F_roll = Crr × m × g = 0.012 × ' + fdVeh.mass + ' × 9.81 = ', h('b', null, Math.round(Fr) + ' N')),
+            // Show the ACTUAL weather-adjusted Crr (0.012 dry, 0.014 rain, 0.020
+            // snow) — a hardcoded "0.012" made the printed arithmetic wrong on
+            // rain/snow, in a physics widget a student can check by hand.
+            h('div', null, 'F_roll = Crr × m × g = ' + rollingCoef(fwfd, true).toFixed(3) + ' × ' + fdVeh.mass + ' × 9.81 = ', h('b', null, Math.round(Fr) + ' N')),
             h('div', null, 'Net = Thrust - Drag - Roll = ' + Math.round(thrust) + ' - ' + Math.round(Fd) + ' - ' + Math.round(Fr) + ' = ', h('b', { style: { color: netF > 0 ? '#4ade80' : '#ef4444' } }, Math.round(netF) + ' N')),
             h('div', null, 'a = F/m = ' + Math.round(netF) + '/' + fdVeh.mass + ' = ', h('b', null, accel.toFixed(2) + ' m/s²'))
           )
@@ -28792,7 +29301,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { id: 'dry', label: __alloT('stem.roadready.dry_2', '☀️ Dry'), mu: 0.72, vis: '500+ ft', following: 3, color: '#4ade80' },
           { id: 'rain', label: __alloT('stem.roadready.rain_2', '🌧️ Rain'), mu: 0.42, vis: '300 ft', following: 4, color: '#60a5fa' },
           { id: 'snow', label: __alloT('stem.roadready.snow_2', '❄️ Snow'), mu: 0.22, vis: '150 ft', following: 6, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' },
-          { id: 'ice', label: __alloT('stem.roadready.ice_2', '🧊 Ice'), mu: 0.10, vis: '200 ft', following: 8, color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' }
+          // Black ice's danger is that it's INVISIBLE — the road looks merely wet.
+          // (A previous '200 ft' visibility read as ice being easier to see through
+          // than snow, muddling the table's message.)
+          { id: 'ice', label: __alloT('stem.roadready.ice_2', '🧊 Ice'), mu: 0.10, vis: __alloT('stem.roadready.ice_vis_looks_clear', 'looks clear!'), following: 8, color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' }
         ];
         return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_69', '← Menu')),
