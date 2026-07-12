@@ -1809,6 +1809,9 @@
         };
         s.onerror = function () {
           console.error('[StemLab] Three.js failed to load');
+          setLabToolData(function (p) {
+            return Object.assign({}, p, { _threeLoadError: 'The 3D engine could not load. The 2D Water Cycle remains available.' });
+          });
           if (typeof addToast === 'function') addToast('\u274c 3D engine failed to load', 'error');
         };
         document.head.appendChild(s);
