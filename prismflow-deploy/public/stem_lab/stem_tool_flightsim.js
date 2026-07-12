@@ -5017,6 +5017,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     },
     {
       situation: 'You\'re on approach. Tower says "wake turbulence caution, 747 ahead."',
+      whatToSay: '"Cessna N12345, wake turbulence caution acknowledged, we\'ll land long."',
       action: 'Stay above the 747\'s flight path. Touch down past their touchdown point. Wait 2-3 minutes if departing after them.',
     },
     {
@@ -8956,6 +8957,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       // render loop so it can latch onto the first computed target.
       var horizonYRef = useRef(null);
 
+      // ── Test hook (no overhead unless window.__testHooks is set by a test
+      // harness) ── same repo pattern as roadReady: exposes the live sim refs
+      // so dev-tools/check_stem_behavior.cjs can assert invariants (physics
+      // state sane, controls wired, pause actually pauses) without scraping
+      // the canvas. Removed on unmount so it can't pin a dead instance.
+      useEffect(function() {
+        if (typeof window !== 'undefined' && window.__testHooks) {
+          window.__testHooks.flightSim = {
+            flightRef: flightRef,
+            controlsRef: controlsRef,
+            keysRef: keysRef,
+            timeRef: timeRef,
+            pausedRef: pausedRef,
+            flyingRef: flyingRef
+          };
+        }
+        return function() {
+          if (typeof window !== 'undefined' && window.__testHooks && window.__testHooks.flightSim) {
+            delete window.__testHooks.flightSim;
+          }
+        };
+      }, []);
+
       var [threeLoaded, setThreeLoaded] = useState(false);
       var webglCanvasRef = useRef(null);
       var threeSceneRef = useRef(null);
@@ -10197,10 +10221,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         canvas.addEventListener('touchstart', onTouchStart, { passive: false });
         canvas.addEventListener('touchmove', onTouchMove, { passive: false });
         canvas.addEventListener('touchend', onTouchEnd);
+        // touchcancel fires INSTEAD of touchend when the OS hijacks the gesture
+        // (incoming call, palm rejection, edge-swipe). Without it the on-screen
+        // stick stayed deflected with no way to release. Reuses the end handler.
+        canvas.addEventListener('touchcancel', onTouchEnd);
         return function() {
           canvas.removeEventListener('touchstart', onTouchStart);
           canvas.removeEventListener('touchmove', onTouchMove);
           canvas.removeEventListener('touchend', onTouchEnd);
+          canvas.removeEventListener('touchcancel', onTouchEnd);
         };
       }, [view]);
 
@@ -10228,9 +10257,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         gfx.save(); gfx.beginPath(); gfx.rect(x, y, w, h2); gfx.clip();
         var pxPerKt = 2;
         var centerY = y + h2 / 2;
-        // Rotation speed (Vr) ~ 55 kts for a Cessna 172. Marker line + label so the
-        // student knows exactly when to pull back on the yoke.
-        var vrSpeed = 55;
+        // Rotation speed (Vr) derived from the CURRENT aircraft's stall speed
+        // (Vr ≈ 1.1 × Vs — the standard rule of thumb). The old hardcoded 55 kts
+        // was Cessna-only: the 737 showed a rotate cue at less than half its
+        // real Vr, and the glider showed one at all. stallSpeed already arrives
+        // as a parameter in the aircraft's own units.
+        var vrSpeed = Math.round(stallSpeed * 1.1);
         for (var spd = Math.max(0, Math.floor(speed / 10) * 10 - 60); spd <= speed + 60; spd += 10) {
           var tickY = centerY - (spd - speed) * pxPerKt;
           if (tickY < y || tickY > y + h2) continue;
@@ -10248,7 +10280,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.fillText(spd, x + w - 14, tickY + 3);
           }
         }
-        // Vr (rotation speed) line — bright cyan band right at 55 kts
+        // Vr (rotation speed) line — bright cyan band at the derived Vr
         var vrY = centerY - (vrSpeed - speed) * pxPerKt;
         if (vrY >= y && vrY <= y + h2) {
           gfx.strokeStyle = '#22d3ee';
@@ -11831,7 +11863,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var sunY = Math.max(20, horizonY * (0.15 + Math.abs(sunT - 0.5) * 0.6));
         // Fade rays out at noon (when sun is high overhead, less of an effect)
         // and at extreme dawn/dusk (when sky already dramatic).
-        var rayStrength = 0.18 * (1 - Math.abs(sunT - 0.5) * 1.6);
+        // Crepuscular rays are a LOW-SUN phenomenon: strongest around golden
+        // hour, absent with the sun overhead. The previous curve was inverted —
+        // it peaked at exactly noon and fell below the render gate at golden
+        // hour. Band-pass: ramps up as the sun descends, eases at the extremes.
+        var sunLowness = Math.min(1, Math.abs(sunT - 0.5) * 2);   // 0 = noon, 1 = horizon
+        var rayStrength = 0.18 * sunLowness * (1 - Math.max(0, sunLowness - 0.85) * 3);
         if (rayStrength <= 0.04) return;
         gfx.save();
         // Clip to the sky so 'lighter' composite rays do not bleach the
@@ -11977,9 +12014,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var seedHash = (stormSeed * 9301 + 49297) % 233280 / 233280;
         if (seedHash < 0.45) return; // ~55% of moments have NO storm visible
         for (var sc = 0; sc < 2; sc++) {
-          // Each cell drifts slowly across horizon
+          // Each cell drifts slowly across horizon. Position deliberately does
+          // NOT include seedHash: the seed re-rolls as lat/lon drift (and every
+          // 240s), which used to snap each cell to an unrelated screen spot —
+          // storms teleported mid-view. seedHash still gates existence/variety.
           var period = 320 + sc * 90;
-          var phase = ((time / period) + sc * 0.61 + seedHash) % 1;
+          var phase = ((time / period) + sc * 0.61) % 1;
           var sx = phase * (W + 200) - 100;
           var sy = horizonY + (sc === 0 ? -8 : -14); // slight stack
           // Skip second cell some sessions for variety
@@ -12944,7 +12984,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 // cluster near the top. Real skylines read this way at night —
                 // most of the building is dark with glowing upper floors and a
                 // blinking red beacon (aviation obstruction light) on the mast.
-                if (depth > 0.3 && alt < 14000 && r < 6) {
+                // depth = ((r+1)/16)² which for r < 6 maxes at 0.14 — the old
+                // `depth > 0.3` gate was IMPOSSIBLE alongside `r < 6`, so the
+                // whole night skyline (silhouettes, lit windows, beacons) was
+                // dead code. 0.05 keeps the skyline to the nearer rows (r 3-5)
+                // where the city-glow block below expects it.
+                if (depth > 0.05 && alt < 14000 && r < 6) {
                   var litSkyN = Math.min(6, Math.floor(3 + depth * 5));
                   var litBase = terrainHash(scanLat * 19, scanLon * 19) * W * 0.3;
                   for (var lsb = 0; lsb < litSkyN; lsb++) {
@@ -13366,6 +13411,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         GEO_PLACES.forEach(function(place) {
           var dist = haversineNm(state.lat, state.lon, place.lat, place.lon);
           if (dist < visRange) nearby.push({ place: place, dist: dist });
+          // Discovery tracking lives HERE, in the pre-cull pass. It used to sit
+          // inside the label loop below, AFTER the front ±80° field-of-view cull
+          // and the 8-label cap — so flying directly abeam a landmark (or past
+          // the 9th-nearest) never discovered it. Discovery is proximity, not
+          // "was a label drawn this frame".
+          if (dist < 15 && !discovered[place.name]) {
+            discovered[place.name] = { time: time, place: place };
+            skyAnnounce('Discovered ' + place.name + ', ' + place.country + '. ' + place.fact);
+          }
         });
         nearby.sort(function(a, b) { return a.dist - b.dist; });
 
@@ -13444,12 +13498,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           }
 
           gfx.globalAlpha = 1;
-
-          // Discovery tracking
-          if (dist < 15 && !discovered[p.name]) {
-            discovered[p.name] = { time: time, place: p };
-            skyAnnounce('Discovered ' + p.name + ', ' + p.country + '. ' + p.fact);
-          }
+          // (Discovery tracking moved to the pre-cull pass above — see note there.)
         });
 
         // Discovery notification (bottom-center area)
@@ -15814,7 +15863,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Sock — orange chevron cone, stretched by wind
           var sockLen = 10 + fullness * 22;
           var sockBaseY = wsY;
-          var sockDx = crossComp * sockLen * 0.9;
+          // NEGATED: the sock's free end streams DOWNWIND. Screen +x is toward
+          // sin(bearing − heading); downwind = wind FROM dir + 180°, whose
+          // lateral projection is −sin(relWind) = −crossComp. The old +crossComp
+          // pointed the sock INTO the wind — backwards from every real windsock.
+          var sockDx = -crossComp * sockLen * 0.9;
           var sockDy = (1 - fullness) * sockLen * 0.6 - Math.abs(headComp) * 1.5;
           // Cone body
           gfx.fillStyle = 'rgba(249,115,22,0.92)';
@@ -16992,17 +17045,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         gfx.beginPath(); gfx.arc(x + r, y + r, r - 2, 0, Math.PI * 2); gfx.clip();
 
         var scale = Math.max(0.5, Math.min(3, state.altitude / 10000)); // zoom based on altitude
+        // cos(latitude): a degree of longitude shrinks toward the poles. All
+        // lon deltas on this map are scaled by this so shapes/bearings stay
+        // true at high latitude (previously Reykjavik-area maps were stretched
+        // ~2x east-west). Clamped away from 0 near the poles.
+        var cosLatMM = Math.max(0.05, Math.cos(state.lat * Math.PI / 180));
 
-        // Draw simplified land masses
+        // Draw simplified land masses.
+        // isWater lookups are memoized on quantized 0.25° cells: this loop made
+        // 289 fresh terrain-hash evaluations per FRAME; consecutive frames
+        // sample nearly identical coordinates, so the memo hit rate is ~100%.
+        var wMemo = drawMiniMapEnhanced._waterMemo || (drawMiniMapEnhanced._waterMemo = new Map());
+        if (wMemo.size > 6000) wMemo.clear();
+        var isWaterMemo = function(la, lo) {
+          var mk = Math.round(la * 4) + ':' + Math.round(lo * 4);
+          var hit = wMemo.get(mk);
+          if (hit === undefined) { hit = isWater(la, lo); wMemo.set(mk, hit); }
+          return hit;
+        };
         var mapRes = 8;
         for (var my = -mapRes; my <= mapRes; my++) {
           for (var mx = -mapRes; mx <= mapRes; mx++) {
             var mLat = state.lat + my * scale / mapRes * 2;
-            var mLon = state.lon + mx * scale / mapRes * 2;
+            var mLon = state.lon + (mx * scale / mapRes * 2) / cosLatMM;
             var dx = mx / mapRes * r;
             var dy = -my / mapRes * r;
             if (dx * dx + dy * dy > r * r) continue;
-            var w = isWater(mLat, mLon);
+            var w = isWaterMemo(mLat, mLon);
             gfx.fillStyle = w ? 'rgba(30,60,120,0.5)' : 'rgba(40,100,40,0.4)';
             var cellSize = r / mapRes;
             gfx.fillRect(x + r + dx - cellSize / 2, y + r + dy - cellSize / 2, cellSize, cellSize);
@@ -17012,9 +17081,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // Flight plan route line
         var fp = flightPlanRef.current;
         if (fp.departure && fp.destination) {
-          var depDx = (fp.departure.lon - state.lon) / scale * (r / 2);
+          var depDx = (fp.departure.lon - state.lon) * cosLatMM / scale * (r / 2);
           var depDy = -(fp.departure.lat - state.lat) / scale * (r / 2);
-          var destDx = (fp.destination.lon - state.lon) / scale * (r / 2);
+          var destDx = (fp.destination.lon - state.lon) * cosLatMM / scale * (r / 2);
           var destDy = -(fp.destination.lat - state.lat) / scale * (r / 2);
           gfx.strokeStyle = 'rgba(251,191,36,0.5)'; gfx.lineWidth = 1.5;
           gfx.setLineDash([3, 3]);
@@ -17024,7 +17093,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
         // Waypoints
         WAYPOINTS.forEach(function(wp) {
-          var dx2 = (wp.lon - state.lon) / scale * (r / 2);
+          var dx2 = (wp.lon - state.lon) * cosLatMM / scale * (r / 2);
           var dy2 = -(wp.lat - state.lat) / scale * (r / 2);
           if (dx2 * dx2 + dy2 * dy2 > (r - 5) * (r - 5)) return;
           var isDestination = fp.destination && fp.destination.id === wp.id;
@@ -17040,7 +17109,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
         // Geography places on minimap
         GEO_PLACES.forEach(function(place) {
-          var dx3 = (place.lon - state.lon) / scale * (r / 2);
+          var dx3 = (place.lon - state.lon) * cosLatMM / scale * (r / 2);
           var dy3 = -(place.lat - state.lat) / scale * (r / 2);
           if (dx3 * dx3 + dy3 * dy3 > (r - 5) * (r - 5)) return;
           gfx.fillStyle = place.type === 'capital' ? 'rgba(251,191,36,0.4)' : 'rgba(148,163,184,0.25)';
@@ -17311,8 +17380,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // rendering AND the 2D fallback terrain/clouds being drawn ON
           // TOP of the (correctly-mounted) WebGL canvas.
           var threeLoaded = !!(window.THREE && webglCanvasRef.current);
-          var W = canvas.width = canvas.clientWidth || canvas.parentElement?.clientWidth || 800;
-          var H = canvas.height = canvas.clientHeight || canvas.parentElement?.clientHeight || 500;
+          // HiDPI: back the canvas at devicePixelRatio (capped at 2, matching
+          // the THREE.js path) and scale the context so ALL drawing below stays
+          // in CSS pixels — W/H remain CSS px. The width/height assignment is
+          // ALSO the per-frame full reset (it wipes every ctx state including
+          // the save stack), which the old code relied on; setTransform then
+          // re-establishes the DPR scale each frame. Previously the 2D layer
+          // rendered at 1x and was visibly blurry on every HiDPI screen.
+          var cssW = canvas.clientWidth || canvas.parentElement?.clientWidth || 800;
+          var cssH = canvas.clientHeight || canvas.parentElement?.clientHeight || 500;
+          var dpr = Math.min(2, (typeof window !== 'undefined' && window.devicePixelRatio) || 1);
+          canvas.width = Math.round(cssW * dpr);
+          canvas.height = Math.round(cssH * dpr);
+          gfx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          var W = cssW;
+          var H = cssH;
+          // Ignition camera shake — composes onto the DPR transform so the
+          // WHOLE frame (world + HUD) shakes. The old shake lived at the END of
+          // the frame wrapped in save()/restore() with nothing drawn inside —
+          // a literal no-op. No restore needed: next frame's width reset wipes it.
+          var igShakeT0 = flightRef.current && flightRef.current._ignitionTime;
+          if (igShakeT0 && !d.thirdPerson) {
+            var igShakeAge = timeRef.current - igShakeT0;
+            if (igShakeAge >= 0 && igShakeAge < 0.4) {
+              var igShakeAmp = (0.4 - igShakeAge) * 4;
+              gfx.translate(Math.sin(timeRef.current * 60) * igShakeAmp, Math.cos(timeRef.current * 55) * igShakeAmp * 0.5);
+            }
+          }
           // Real elapsed time, not a fixed 1/30 s per RAF frame. RAF fires at
           // the display refresh rate, so the old constant ran the entire sim
           // (speeds, climb rates, timers, missions) 2x too fast on a 60 Hz
@@ -17499,6 +17593,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // Physics step
           var state = Physics.step(flightRef.current, dt, ctrl);
+          // ── Wind drift on the GROUND TRACK ──
+          // The airmass carries the aircraft: wind (kts, FROM windDir) displaces
+          // lat/lon each frame, exactly like the helicopter drift math in
+          // Physics.step. Previously wind only nudged bank by a hidden ×0.001
+          // factor — the ground track ignored wind entirely, so the crosswind /
+          // headwind lesson the weather panel teaches never showed up in the
+          // navigation. Suppressed on the ground (tires hold the pavement).
+          var wxDrift = weatherRef.current;
+          if (wxDrift && wxDrift.wind > 0 && !state.onGround) {
+            var windToRad = ((wxDrift.windDir + 180) % 360) * Math.PI / 180; // FROM dir → TO dir
+            var windNmPerSec = (wxDrift.wind * 1.68781) / 6076.12;           // kts → ft/s → nm/s
+            state.lat += windNmPerSec * Math.cos(windToRad) / 60 * dt;
+            state.lon += windNmPerSec * Math.sin(windToRad) / (60 * Math.max(0.05, Math.cos(state.lat * Math.PI / 180))) * dt;
+          }
           flightRef.current = state;
           // Advance integrated scroll phases with the frame's actual dt
           scrollAccumRef.current.rwy = (scrollAccumRef.current.rwy + (state.speed * 0.045 + 0.02) * dt) % 1;
@@ -18986,7 +19094,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               var shLongMult = 1 + (1 - shSunArc) * 1.8;
               shW *= shLongMult;
               // Centered on the perceived runway centerline
-              var shX = W / 2 - shRelBrg * 2;
+              // + not −: positive relative bearing = runway to the RIGHT, and
+              // every other bearing→screen projection in this file adds it.
+              // The minus sign mirrored the shadow to the wrong side of the nose.
+              var shX = W / 2 + shRelBrg * 2;
               gfx.save();
               var shGrad = gfx.createRadialGradient(shX, shY, shH * 0.4, shX, shY, shW);
               shGrad.addColorStop(0, 'rgba(0,0,0,' + (0.55 * shScaleIn) + ')');
@@ -19024,7 +19135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               var gsLong = 1 + (1 - gsSunArc) * 1.6;
               gsW *= gsLong;
               // Morning shadow falls to the west (left of craft); evening to the east
-              var gsSunDir = gsSunT < 0.5 ? 1 : -1; // sun east in AM → shadow goes left
+              var gsSunDir = gsSunT < 0.5 ? 1 : -1; // AM: sun renders screen-LEFT, so the shadow falls screen-RIGHT (+1); PM mirrors. Code is correct — an older comment claimed the opposite.
               var gsOffX = (1 - gsSunArc) * 40 * gsSunDir;
               gsX += gsOffX;
               gfx.save();
@@ -19238,10 +19349,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             if (visited.indexOf(nearWp.id) < 0) { upd('visitedAirports', visited.concat([nearWp.id])); }
           }
 
-          // Flight time display
+          // Flight time display. Sits ABOVE the first-person glareshield (a
+          // 58px near-opaque bar drawn later in the frame used to paint clean
+          // over y=H−8, hiding the log entirely in cockpit view), and in a
+          // light color — the old 40% black was invisible on the dark panel.
           var ft = Math.round(timeRef.current - log.startTime);
-          gfx.fillStyle = 'rgba(0,0,0,0.4)'; gfx.font = '9px system-ui'; gfx.textAlign = 'left';
-          gfx.fillText('Flight: ' + Math.floor(ft / 60) + ':' + String(ft % 60).padStart(2, '0') + '  |  Dist: ' + Math.round(log.distance) + ' nm  |  Max Alt: ' + Math.round(log.maxAlt).toLocaleString() + ' ft  |  Airports: ' + log.airports.length, 10, H - 8);
+          var logLineY = d.thirdPerson ? H - 16 : H - 64;
+          gfx.fillStyle = 'rgba(226,232,240,0.75)'; gfx.font = '9px system-ui'; gfx.textAlign = 'left';
+          gfx.fillText('Flight: ' + Math.floor(ft / 60) + ':' + String(ft % 60).padStart(2, '0') + '  |  Dist: ' + Math.round(log.distance) + ' nm  |  Max Alt: ' + Math.round(log.maxAlt).toLocaleString() + ' ft  |  Airports: ' + log.airports.length, 10, logLineY);
 
           // ═══ VISUAL EFFECTS LAYER ═══
 
@@ -19504,15 +19619,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
               gfx.fillText(igLbl, W / 2, H * 0.35 - 2);
               gfx.restore();
-              // Small camera shake in the first 0.4 s — the prop catching
-              if (igAge < 0.4 && !d.thirdPerson) {
-                var shakeAmp = (0.4 - igAge) * 4;
-                gfx.save();
-                gfx.translate(Math.sin(timeRef.current * 60) * shakeAmp, Math.cos(timeRef.current * 55) * shakeAmp * 0.5);
-                // no-op — the shake will affect anything drawn afterward this
-                // frame only; we restore at end of block
-                gfx.restore();
-              }
+              // (Ignition camera shake moved to the TOP of the frame, right
+              // after the DPR transform — a translate here at the end of the
+              // frame, wrapped in save/restore with nothing drawn between,
+              // shook nothing.)
             } else {
               // Age out the flag after the callout fades
               flightRef.current._ignitionTime = 0;
@@ -19532,12 +19642,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             if (!fl._callouts) fl._callouts = { v1: 0, vr: 0, climb: 0 };
             // Reset when solidly airborne
             if (vAgl > 500 && !state.onGround) fl._callouts = { v1: 0, vr: 0, climb: 0 };
+            // Per-aircraft speeds derived from the live stall speed (same rule
+            // as the tape's Vr marker) — the old fixed 45/55 kts was Cessna-only.
+            var _vrCallKts = Math.round(Physics.stallSpeed(state.altitude) * 0.5924838 * 1.1);
+            var _v1CallKts = Math.round(_vrCallKts * 0.82);
             var calloutMsg = null, calloutColor = '#38bdf8';
-            if (state.onGround && vKts >= 45 && vKts < 55 && !fl._callouts.v1) {
+            if (state.onGround && vKts >= _v1CallKts && vKts < _vrCallKts && !fl._callouts.v1) {
               calloutMsg = 'V1 — committed to takeoff';
               fl._callouts.v1 = timeRef.current;
               if (typeof skyAnnounce === 'function') skyAnnounce('V one');
-            } else if (state.onGround && vKts >= 55 && !fl._callouts.vr) {
+            } else if (state.onGround && vKts >= _vrCallKts && !fl._callouts.vr) {
               calloutMsg = 'ROTATE — pitch up (W)';
               calloutColor = '#fbbf24';
               fl._callouts.vr = timeRef.current;
@@ -19622,7 +19736,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // back above 600 ft AGL. The voice synthesis is optional (skipped if
           // skyAnnounce is unavailable). On-screen: small HUD pill bottom-right.
           if (!pausedRef.current && !state.onGround && state.vsi < 0) {
-            var raAgl = Math.max(0, state.altitude - (state.fieldElev || 0));
+            // Radar altitude = height above the TERRAIN under the aircraft, not
+            // above the departure airport. fieldElev is a single scalar frozen at
+            // takeoff — over hills the old callouts fired hundreds of feet off
+            // (same two-ground-models split the glideslope block already fixed).
+            var raGround = isWater(state.lat, state.lon) ? 0 : (terrainHeight(state.lat, state.lon) || 0);
+            var raAgl = Math.max(0, state.altitude - Math.max(raGround, 0));
             var flRa = flightRef.current;
             if (!flRa._raCallouts) flRa._raCallouts = {};
             if (raAgl > 600) flRa._raCallouts = {};
@@ -19665,7 +19784,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // MSL altitude tape. Pilots use AGL on approach; MSL alone makes the
           // student guess how high they actually are above the runway.
           if (!state.onGround) {
-            var aglNow = Math.max(0, state.altitude - (state.fieldElev || 0));
+            // Terrain-relative AGL (see radar-callout note above) — the readout
+            // pilots actually use on approach.
+            var aglGround = isWater(state.lat, state.lon) ? 0 : (terrainHeight(state.lat, state.lon) || 0);
+            var aglNow = Math.max(0, state.altitude - Math.max(aglGround, 0));
             if (aglNow < 2000) {
               var aglColor = aglNow < 100 ? '#ef4444' : aglNow < 500 ? '#fbbf24' : '#4ade80';
               gfx.font = 'bold 11px monospace';
@@ -20419,7 +20541,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             ),
             h('button', { onClick: function() { startFlying('kpwm'); },
               style: { width: '100%', marginTop: '16px', padding: '12px', borderRadius: '10px', border: 'none', background: '#3b82f6', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }
-            }, __alloT('stem.flightsim.try_it_free_flight', '✈️ Try It — Free Flight'))
+            }, __alloT('stem.flightsim.try_it_free_flight', '✈️ Try It — Free Flight')),
+            // Completion affordance — the 'complete_lesson' quest hook reads
+            // d.lessonsCompleted, which previously had NO writer anywhere: the
+            // quest was unwinnable. Distinct lessons tracked by id so re-marking
+            // can't inflate the count.
+            (function() {
+              var _doneMap = d.completedLessons || {};
+              var _isDone = !!_doneMap[selectedLesson];
+              return h('button', {
+                onClick: function() {
+                  if (_isDone) return;
+                  var next = Object.assign({}, _doneMap);
+                  next[selectedLesson] = true;
+                  updMulti({ completedLessons: next, lessonsCompleted: Object.keys(next).length });
+                },
+                disabled: _isDone,
+                'aria-pressed': _isDone,
+                style: { width: '100%', marginTop: '8px', padding: '10px', borderRadius: '10px', border: '1px solid ' + (_isDone ? '#22c55e' : '#475569'), background: _isDone ? 'rgba(34,197,94,0.15)' : 'rgba(15,23,42,0.6)', color: _isDone ? '#4ade80' : '#cbd5e1', fontSize: '13px', fontWeight: 700, cursor: _isDone ? 'default' : 'pointer' }
+              }, _isDone ? __alloT('stem.flightsim.lesson_completed', '✓ Lesson completed') : __alloT('stem.flightsim.mark_lesson_complete', '📚 Mark lesson complete'));
+            })()
           )
         );
       }
@@ -20629,7 +20770,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
       // ── DEBRIEF VIEW ──
       if (view === 'debrief' && d.lastDebrief) {
-        var db = d.lastDebrief;
+        // Default-fill: an old/partial saved shape (missing maxAlt etc.) threw
+        // TypeError on maxAlt.toLocaleString() and rendered NaN elsewhere.
+        var db = Object.assign({ flightTime: 0, distance: 0, maxAlt: 0, maxSpeed: 0, airports: 0, discovered: 0, badges: 0, bestLanding: null, aircraft: '—' }, d.lastDebrief);
         var mins = Math.floor(db.flightTime / 60);
         var secs = db.flightTime % 60;
         var gradeIcon, gradeText, gradeColor, gradeXP;
@@ -21554,6 +21697,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       return h('div', { style: { padding: '24px', textAlign: 'center', color: '#94a3b8' } }, __alloT('stem.flightsim.loading_skyschool', 'Loading SkySchool...'));
     }
   });
+
+  // ── Test-only exports ─────────────────────────────────────────────────
+  // Exposes module-scope pure functions + data tables to the vitest suites
+  // (tests/flightsim_logic.test.js). INERT IN PRODUCTION: only runs when a
+  // test harness pre-sets window.__RR_TEST_EXPORTS__ BEFORE this script loads
+  // — the app never does. Same pattern as stem_tool_roadready.js.
+  if (typeof window !== 'undefined' && window.__RR_TEST_EXPORTS__) {
+    window.__RR_TEST_EXPORTS__.flightSim = {
+      Physics: Physics,
+      haversineNm: haversineNm,
+      bearing: bearing,
+      WAYPOINTS: WAYPOINTS, LESSONS: LESSONS, GEO_PLACES: GEO_PLACES,
+      CHALLENGES: CHALLENGES, SPRINT_ROUTES: SPRINT_ROUTES, AIRCRAFT: AIRCRAFT,
+      ACHIEVEMENTS: ACHIEVEMENTS, WORLD_LABELS: WORLD_LABELS,
+      FLIGHT_QUIZ: FLIGHT_QUIZ, FLIGHT_QUIZ_EXTENDED: FLIGHT_QUIZ_EXTENDED,
+      ATC_QUIZ_SCENARIOS: ATC_QUIZ_SCENARIOS,
+      PREFLIGHT_CHECKLIST: PREFLIGHT_CHECKLIST,
+      FORCE_CALCULATOR_PRESETS: FORCE_CALCULATOR_PRESETS,
+      AVIATION_GLOSSARY: AVIATION_GLOSSARY, ATMOSPHERE_LAYERS: ATMOSPHERE_LAYERS
+    };
+  }
 
 })();
 } // end duplicate guard
