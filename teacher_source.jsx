@@ -334,7 +334,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                       <div className="flex gap-1">
                         {COLORS.map(c => (
                           <button key={c} onClick={() => handleUpdateGroupMeta(gId, 'color', c)}
-                            className={`w-5 h-5 rounded-full border-2 transition-all ${group.color === c ? 'border-slate-800 scale-110' : 'border-transparent hover:scale-105'}`}
+                            className={`w-6 h-6 rounded-full border-2 transition-all ${group.color === c ? 'border-slate-800 scale-110' : 'border-transparent hover:scale-105'}`}
                             style={{ backgroundColor: c }}
                             aria-label={(t('roster.set_group_color') || 'Set group color') + ' ' + c}
                             aria-pressed={group.color === c} />
@@ -363,7 +363,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                                 {rosterKey.progressHistory[name].length}s
                               </span>
                             )}
-                            <button onClick={() => handleMoveStudent(name, '')} className="hover:text-red-500 transition-colors ml-0.5" aria-label={'Remove ' + name}>
+                            <button onClick={() => handleMoveStudent(name, '')} className="w-6 h-6 inline-flex items-center justify-center hover:text-red-500 transition-colors ml-0.5 rounded-full" aria-label={'Remove ' + name}>
                               <X size={12} />
                             </button>
                           </span>
@@ -393,7 +393,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             <div className="flex gap-1">
               {COLORS.slice(0, 4).map(c => (
                 <button key={c} onClick={() => setNewGroupColor(c)}
-                  className={`w-4 h-4 rounded-full border-2 ${newGroupColor === c ? 'border-slate-800' : 'border-transparent'}`}
+                  className={`w-6 h-6 rounded-full border-2 ${newGroupColor === c ? 'border-slate-800' : 'border-transparent'}`}
                   style={{ backgroundColor: c }}
                   aria-label={(t('roster.new_group_color') || 'New group color') + ' ' + c}
                   aria-pressed={newGroupColor === c} />
