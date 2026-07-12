@@ -329,6 +329,25 @@ describe('Lumen — export, FERPA gate & L3 sign-off (Phase 1, §7/§8)', () => 
     expect(L.assertDefensible({ audience: 'iep-team', aiHyps: null, signoff: null }).blocked).toBe(false); // no L3 content
   });
 
+  it('a sign-off is bound to the DATA (claim hash): editing an observation re-blocks the formal export', () => {
+    // Sign off over the CURRENT data — the hash spans hypotheses AND the claim's data hash.
+    const sig = L.signoffHash(hyps, claim._hash);
+    expect(L.assertDefensible({ audience: 'iep-team', aiHyps: hyps, signoff: sig, claimHash: claim._hash }).blocked).toBe(false);
+    // Now "edit the data": one added point re-derives the claim => a different _hash.
+    const { comp: comp2 } = buildReyna(REYNA.concat([{ x: 11, y: 70, phase: 'tier2' }]));
+    const claim2 = L.deriveTrendClaim(comp2, { id: 'full' });
+    expect(claim2._hash).not.toBe(claim._hash);
+    // The OLD sign-off no longer clears the export over the NEW data (the stale-signoff hole).
+    expect(L.assertDefensible({ audience: 'iep-team', aiHyps: hyps, signoff: sig, claimHash: claim2._hash }).blocked).toBe(true);
+    // assertExportClean threads claimHash through to the same gate.
+    expect(L.assertExportClean({ audience: 'iep-team', aiHyps: hyps, signoff: sig, claimHash: claim2._hash }).blocked).toBe(true);
+    expect(L.assertExportClean({ audience: 'iep-team', aiHyps: hyps, signoff: sig, claimHash: claim._hash }).blocked).toBe(false);
+    // Legacy (no claimHash) behavior is byte-identical — stored hyps-only sign-offs still verify.
+    expect(L.signoffHash(hyps)).toBe(L.signoffHash(hyps, null));
+    expect(L.signoffHash(hyps)).toBe(L.signoffHash(hyps, undefined));
+    expect(L.signoffHash(hyps, claim._hash)).not.toBe(L.signoffHash(hyps));
+  });
+
   it('CSV is aggregate-only by default; identifiable rows require the FERPA opt-in', () => {
     const agg = L.buildExportCsv(comp, claim, {});
     expect(agg.csv).toMatch(/aggregate only/);
