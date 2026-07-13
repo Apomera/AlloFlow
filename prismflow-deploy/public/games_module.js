@@ -234,6 +234,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
   const gridRef = useRef(null);
   const modeSelectRef = useRef(null);
   const modeDialogRef = useRef(null);
+  const memoryPlayAgainRef = useRef(null);
   const scoreDeltaTimerRef = useRef(null);
   const flashScoreDelta = (delta) => {
     if (scoreDeltaTimerRef.current) clearTimeout(scoreDeltaTimerRef.current);
@@ -413,6 +414,8 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
   useEffect(() => {
     if (!isWon && cards.length > 0 && matchedPairs.size === cards.length / 2) {
       setIsWon(true);
+      setAnnouncement(t("memory.victory"));
+      requestAnimationFrame(() => memoryPlayAgainRef.current?.focus());
       if (onScoreUpdate) onScoreUpdate(score, "Memory Match Complete");
       if (onGameComplete) {
         onGameComplete("memory", {
@@ -426,14 +429,14 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
   }, [matchedPairs, cards.length, isWon, onScoreUpdate, onGameComplete, score, moves]);
   const totalPairs = cards.length / 2;
   const progressPct = totalPairs > 0 ? Math.round(matchedPairs.size / totalPairs * 100) : 0;
-  return /* @__PURE__ */ React.createElement("div", { className: `p-6 transition-all duration-300 ${isFullscreen ? "fixed inset-0 z-[100] overflow-y-auto h-screen w-screen rounded-none bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900" : "rounded-xl border-2 border-indigo-200 shadow-inner mb-6 relative bg-slate-100"}` }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: `flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 ${isFullscreen ? "sticky top-0 z-30 bg-slate-900/70 backdrop-blur-md py-3 px-2 -mx-2 rounded-xl border border-white/10" : ""}` }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: `font-bold text-lg flex items-center gap-2 ${isFullscreen ? "text-white" : "text-indigo-900"}` }, /* @__PURE__ */ React.createElement(Brain, { size: 20 }), " ", t("memory.title")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 mt-1.5" }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? "bg-white/10 text-slate-100 border-white/20" : "bg-slate-100 text-slate-700 border-slate-200"}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: isFullscreen ? "text-slate-300" : "text-slate-600" }), " ", t("memory.moves"), ": ", moves), /* @__PURE__ */ React.createElement("span", { className: `relative inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full transition-all ${scoreDelta !== null ? scoreDelta > 0 ? "ring-2 ring-emerald-400 scale-105" : "ring-2 ring-red-400 scale-105" : ""} ${isFullscreen ? "bg-indigo-500/20 text-indigo-100 border-indigo-400/40" : "bg-indigo-100 text-indigo-700 border-indigo-200"}` }, /* @__PURE__ */ React.createElement(Trophy, { size: 10, className: "text-yellow-500" }), " ", t("memory.score"), ": ", score, scoreDelta !== null && /* @__PURE__ */ React.createElement("span", { className: `absolute -top-5 right-0 text-[11px] font-black pointer-events-none ${scoreDelta > 0 ? "text-emerald-500" : "text-red-500"} ${!useReducedMotion() ? "animate-in fade-in slide-in-from-bottom-1 duration-300" : ""}` }, scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta)), /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? "bg-emerald-500/20 text-emerald-100 border-emerald-400/40" : "bg-emerald-100 text-emerald-700 border-emerald-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 10, className: "text-emerald-500" }), " ", t("memory.pairs"), ": ", matchedPairs.size, "/", totalPairs))), /* @__PURE__ */ React.createElement("div", { className: `flex flex-wrap items-center gap-1 p-1 rounded-full shadow-sm ${isFullscreen ? "bg-white/10 border border-white/20 backdrop-blur-md" : "bg-white border border-slate-400"}` }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("section", { role: "region", "aria-labelledby": "memory-game-title", className: `p-6 motion-safe:transition-all motion-safe:duration-300 ${isFullscreen ? "fixed inset-0 z-[100] overflow-y-auto h-screen w-screen rounded-none bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900" : "rounded-xl border-2 border-indigo-200 shadow-inner mb-6 relative bg-slate-100"}` }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: `flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 ${isFullscreen ? "sticky top-0 z-30 bg-slate-900/70 backdrop-blur-md py-3 px-2 -mx-2 rounded-xl border border-white/10" : ""}` }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "memory-game-title", className: `font-bold text-lg flex items-center gap-2 ${isFullscreen ? "text-white" : "text-indigo-900"}` }, /* @__PURE__ */ React.createElement(Brain, { size: 20, "aria-hidden": "true" }), " ", t("memory.title")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 mt-1.5" }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? "bg-white/10 text-slate-100 border-white/20" : "bg-slate-100 text-slate-700 border-slate-200"}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: isFullscreen ? "text-slate-300" : "text-slate-600", "aria-hidden": "true" }), " ", t("memory.moves"), ": ", moves), /* @__PURE__ */ React.createElement("span", { className: `relative inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${!useReducedMotion() ? "transition-all" : ""} ${scoreDelta !== null ? scoreDelta > 0 ? `ring-2 ring-emerald-400 ${!useReducedMotion() ? "scale-105" : ""}` : `ring-2 ring-red-400 ${!useReducedMotion() ? "scale-105" : ""}` : ""} ${isFullscreen ? "bg-indigo-500/20 text-indigo-100 border-indigo-400/40" : "bg-indigo-100 text-indigo-700 border-indigo-200"}` }, /* @__PURE__ */ React.createElement(Trophy, { size: 10, className: "text-yellow-500", "aria-hidden": "true" }), " ", t("memory.score"), ": ", score, scoreDelta !== null && /* @__PURE__ */ React.createElement("span", { className: `absolute -top-5 right-0 text-[11px] font-black pointer-events-none ${scoreDelta > 0 ? "text-emerald-500" : "text-red-500"} ${!useReducedMotion() ? "animate-in fade-in slide-in-from-bottom-1 duration-300" : ""}` }, scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta)), /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? "bg-emerald-500/20 text-emerald-100 border-emerald-400/40" : "bg-emerald-100 text-emerald-700 border-emerald-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 10, className: "text-emerald-500", "aria-hidden": "true" }), " ", t("memory.pairs"), ": ", matchedPairs.size, "/", totalPairs))), /* @__PURE__ */ React.createElement("div", { className: `flex flex-wrap items-center gap-1 p-1 rounded-full shadow-sm ${isFullscreen ? "bg-white/10 border border-white/20 backdrop-blur-md" : "bg-white border border-slate-400"}` }, /* @__PURE__ */ React.createElement(
     "select",
     {
       ref: modeSelectRef,
       "aria-label": t("common.selection"),
       value: gameMode,
       onChange: requestModeChange,
-      className: `text-xs font-bold rounded-full px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer ${isFullscreen ? "bg-white/10 text-white border-0 [&>option]:text-slate-800" : "bg-transparent text-indigo-700 border-0"}`,
+      className: `min-h-11 text-xs font-bold rounded-full px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer ${isFullscreen ? "bg-white/10 text-white border-0 [&>option]:text-slate-800" : "bg-transparent text-indigo-700 border-0"}`,
       "data-help-key": "memory_mode_select"
     },
     /* @__PURE__ */ React.createElement("option", { value: "smart" }, t("memory.modes.smart")),
@@ -445,24 +448,25 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
     "button",
     {
       onClick: initializeGame,
-      className: `text-xs flex items-center gap-1 px-3 py-1.5 rounded-full font-bold transition-colors ${isFullscreen ? "text-white hover:bg-white/10" : "text-indigo-600 hover:bg-indigo-50"}`,
+      className: `min-h-11 text-xs flex items-center gap-1 px-3 py-1.5 rounded-full font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${isFullscreen ? "text-white hover:bg-white/10" : "text-indigo-600 hover:bg-indigo-50"}`,
       "aria-label": t("memory.reset"),
       "data-help-key": "memory_reset_btn"
     },
-    /* @__PURE__ */ React.createElement(RefreshCw, { size: 14 }),
+    /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, "aria-hidden": "true" }),
     " ",
     t("memory.reset")
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setIsFullscreen((prev) => !prev),
-      className: `p-1.5 rounded-full transition-colors ${isFullscreen ? "text-white hover:bg-white/10" : "text-slate-600 hover:text-indigo-600 hover:bg-indigo-50"}`,
+      className: `min-w-11 min-h-11 p-1.5 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${isFullscreen ? "text-white hover:bg-white/10" : "text-slate-600 hover:text-indigo-600 hover:bg-indigo-50"}`,
       title: isFullscreen ? t("memory.exit_fullscreen") : t("memory.fullscreen"),
+      "aria-pressed": isFullscreen,
       "aria-label": isFullscreen ? t("memory.exit_fullscreen") : t("memory.fullscreen"),
       "data-help-key": "memory_fullscreen_btn"
     },
-    isFullscreen ? /* @__PURE__ */ React.createElement(Minimize, { size: 18 }) : /* @__PURE__ */ React.createElement(Maximize, { size: 18 })
-  ), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: `p-1.5 rounded-full transition-colors ${isFullscreen ? "text-white hover:bg-white/10" : "text-slate-600 hover:text-slate-700 hover:bg-slate-100"}`, "aria-label": t("memory.close_aria") }, /* @__PURE__ */ React.createElement(X, { size: 18 })))), !isWon && totalPairs > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-5" }, /* @__PURE__ */ React.createElement("div", { className: `flex items-center justify-between text-[11px] font-bold uppercase tracking-wider mb-1.5 ${isFullscreen ? "text-slate-300" : "text-slate-600"}` }, /* @__PURE__ */ React.createElement("span", null, t("memory.pairs")), /* @__PURE__ */ React.createElement("span", null, progressPct, "%")), /* @__PURE__ */ React.createElement("div", { className: `h-2 w-full rounded-full overflow-hidden ${isFullscreen ? "bg-white/10" : "bg-slate-200"}` }, /* @__PURE__ */ React.createElement(
+    isFullscreen ? /* @__PURE__ */ React.createElement(Minimize, { size: 18, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Maximize, { size: 18, "aria-hidden": "true" })
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: `min-w-11 min-h-11 p-1.5 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${isFullscreen ? "text-white hover:bg-white/10" : "text-slate-600 hover:text-slate-700 hover:bg-slate-100"}`, "aria-label": t("memory.close_aria") }, /* @__PURE__ */ React.createElement(X, { size: 18, "aria-hidden": "true" })))), !isWon && totalPairs > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-5" }, /* @__PURE__ */ React.createElement("div", { className: `flex items-center justify-between text-[11px] font-bold uppercase tracking-wider mb-1.5 ${isFullscreen ? "text-slate-300" : "text-slate-600"}` }, /* @__PURE__ */ React.createElement("span", null, t("memory.pairs")), /* @__PURE__ */ React.createElement("span", null, progressPct, "%")), /* @__PURE__ */ React.createElement("div", { className: `h-2 w-full rounded-full overflow-hidden ${isFullscreen ? "bg-white/10" : "bg-slate-200"}` }, /* @__PURE__ */ React.createElement(
     "div",
     {
       className: `h-full rounded-full bg-gradient-to-r from-indigo-500 via-indigo-500 to-emerald-500 ${!useReducedMotion() ? "transition-all duration-500 ease-out" : ""}`,
@@ -480,20 +484,23 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
     const cardBg = isFullscreen ? "bg-white/10 border-white/20 backdrop-blur-md" : "bg-white border-slate-200";
     const labelColor = isFullscreen ? "text-slate-300" : "text-slate-600";
     const valueColor = isFullscreen ? "text-white" : "text-slate-900";
-    return /* @__PURE__ */ React.createElement("div", { className: `flex flex-col items-center justify-center py-8 px-4 text-center${useReducedMotion() ? "" : " animate-in zoom-in duration-300"}` }, !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null), /* @__PURE__ */ React.createElement("div", { className: `w-20 h-20 rounded-full flex items-center justify-center mb-4 shadow-lg ${isFullscreen ? "bg-yellow-400/20 text-yellow-300 ring-2 ring-yellow-400/40" : "bg-yellow-100 text-yellow-600"}` }, /* @__PURE__ */ React.createElement(Trophy, { size: 40, className: "fill-current" })), /* @__PURE__ */ React.createElement("h2", { className: `text-2xl font-black mb-3 ${isFullscreen ? "text-white" : "text-slate-800"}` }, t("memory.victory")), /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-1 mb-4 ${!useReducedMotion() ? "animate-in zoom-in duration-500" : ""}`, "aria-label": `${stars} out of 3 stars` }, [0, 1, 2].map((i) => /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { role: "status", className: `flex flex-col items-center justify-center py-8 px-4 text-center${useReducedMotion() ? "" : " animate-in zoom-in duration-300"}` }, !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null), /* @__PURE__ */ React.createElement("div", { className: `w-20 h-20 rounded-full flex items-center justify-center mb-4 shadow-lg ${isFullscreen ? "bg-yellow-400/20 text-yellow-300 ring-2 ring-yellow-400/40" : "bg-yellow-100 text-yellow-600"}` }, /* @__PURE__ */ React.createElement(Trophy, { size: 40, className: "fill-current", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("h2", { className: `text-2xl font-black mb-3 ${isFullscreen ? "text-white" : "text-slate-800"}` }, t("memory.victory")), /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-1 mb-4 ${!useReducedMotion() ? "animate-in zoom-in duration-500" : ""}`, "aria-label": `${stars} out of 3 stars` }, [0, 1, 2].map((i) => /* @__PURE__ */ React.createElement(
       Star,
       {
         key: i,
         size: 32,
         className: i < stars ? "text-yellow-400 fill-yellow-400 drop-shadow-md" : isFullscreen ? "text-white/20" : "text-slate-300",
-        strokeWidth: 1.5
+        strokeWidth: 1.5,
+        "aria-hidden": "true"
       }
     ))), /* @__PURE__ */ React.createElement("div", { className: `grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-md mb-6` }, /* @__PURE__ */ React.createElement("div", { className: `rounded-xl border p-3 ${cardBg}` }, /* @__PURE__ */ React.createElement("div", { className: `text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}` }, t("memory.score")), /* @__PURE__ */ React.createElement("div", { className: `text-xl font-black ${valueColor}` }, score)), /* @__PURE__ */ React.createElement("div", { className: `rounded-xl border p-3 ${cardBg}` }, /* @__PURE__ */ React.createElement("div", { className: `text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}` }, t("memory.moves")), /* @__PURE__ */ React.createElement("div", { className: `text-xl font-black ${valueColor}` }, moves)), /* @__PURE__ */ React.createElement("div", { className: `rounded-xl border p-3 ${cardBg}` }, /* @__PURE__ */ React.createElement("div", { className: `text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}` }, "Accuracy"), /* @__PURE__ */ React.createElement("div", { className: `text-xl font-black ${valueColor}` }, accuracy, "%"))), /* @__PURE__ */ React.createElement("p", { className: `text-sm mb-6 ${isFullscreen ? "text-slate-300" : "text-slate-600"}` }, t("memory.cleared_message", { moves })), /* @__PURE__ */ React.createElement(
       "button",
       {
+        ref: memoryPlayAgainRef,
+        type: "button",
         "aria-label": t("common.start_game"),
         onClick: initializeGame,
-        className: "bg-gradient-to-br from-indigo-600 to-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-105 transition-all active:scale-95"
+        className: "min-h-11 bg-gradient-to-br from-indigo-600 to-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-indigo-500/30 motion-safe:hover:shadow-indigo-500/50 motion-safe:hover:scale-105 motion-safe:transition-all motion-safe:active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
       },
       t("memory.play_again")
     ));
@@ -503,7 +510,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
       ref: gridRef,
       className: "grid gap-2 sm:gap-3",
       style: { gridTemplateColumns: `repeat(auto-fill, minmax(${isFullscreen ? "130px" : "110px"}, 1fr))` },
-      role: "grid",
+      role: "group",
       "aria-label": t("memory.board_aria")
     },
     cards.map((card, index) => {
@@ -529,12 +536,12 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
           role: "button",
           "aria-label": ariaLabel,
           "aria-disabled": isFlipped || isMatched,
-          className: `aspect-square cursor-pointer perspective-1000 group relative ${isMatched ? "opacity-100 cursor-default" : ""} ${isMismatch && !useReducedMotion() ? "animate-shake" : ""} ${isMatched && !useReducedMotion() ? "animate-[pop_0.45s_ease-out]" : ""} focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2 rounded-xl transition-transform ${!isFlipped && !isMatched ? "hover:-translate-y-1 hover:scale-[1.03]" : ""}`,
+          className: `aspect-square cursor-pointer perspective-1000 group relative ${isMatched ? "opacity-100 cursor-default" : ""} ${isMismatch && !useReducedMotion() ? "animate-shake" : ""} ${isMatched && !useReducedMotion() ? "animate-[pop_0.45s_ease-out]" : ""} focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-2 rounded-xl ${!useReducedMotion() ? "transition-transform" : ""} ${!isFlipped && !isMatched && !useReducedMotion() ? "hover:-translate-y-1 hover:scale-[1.03]" : ""}`,
           "data-help-key": "memory_card_item"
         },
-        /* @__PURE__ */ React.createElement("div", { className: `w-full h-full transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] transform-style-3d rounded-xl border-2 ${isFlipped ? `rotate-y-180 ${isMismatch ? "border-red-400 shadow-lg shadow-red-200" : isMatched ? "border-green-400 shadow-lg shadow-green-200" : "border-indigo-300 shadow-md"}` : "rotate-y-0 border-slate-200 bg-white shadow-sm group-hover:shadow-md"}` }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 backface-hidden flex items-center justify-center rounded-xl overflow-hidden bg-gradient-to-br from-indigo-100 via-indigo-100 to-indigo-200 group-hover:from-indigo-200 group-hover:to-indigo-300 transition-colors" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 opacity-40", style: {
+        /* @__PURE__ */ React.createElement("div", { className: `w-full h-full ${!useReducedMotion() ? "transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]" : ""} transform-style-3d rounded-xl border-2 ${isFlipped ? `rotate-y-180 ${isMismatch ? "border-red-400 shadow-lg shadow-red-200" : isMatched ? "border-green-400 shadow-lg shadow-green-200" : "border-indigo-300 shadow-md"}` : "rotate-y-0 border-slate-200 bg-white shadow-sm group-hover:shadow-md"}` }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 backface-hidden flex items-center justify-center rounded-xl overflow-hidden bg-gradient-to-br from-indigo-100 via-indigo-100 to-indigo-200 group-hover:from-indigo-200 group-hover:to-indigo-300 transition-colors" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 opacity-40", style: {
           backgroundImage: "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.6) 0, transparent 40%), radial-gradient(circle at 80% 80%, rgba(99,102,241,0.25) 0, transparent 45%)"
-        } }), /* @__PURE__ */ React.createElement("div", { className: "relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-indigo-600 shadow-inner ring-1 ring-indigo-200/60" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 20, strokeWidth: 2.25 }))), /* @__PURE__ */ React.createElement("div", { className: `absolute inset-0 backface-hidden rotate-y-180 rounded-xl flex items-center justify-center p-2 text-center overflow-hidden ${isMismatch ? "bg-red-50" : isMatched ? "bg-green-50" : "bg-white"}` }, card.type === "image" ? /* @__PURE__ */ React.createElement(
+        } }), /* @__PURE__ */ React.createElement("div", { className: "relative w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-indigo-600 shadow-inner ring-1 ring-indigo-200/60" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 20, strokeWidth: 2.25, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { className: `absolute inset-0 backface-hidden rotate-y-180 rounded-xl flex items-center justify-center p-2 text-center overflow-hidden ${isMismatch ? "bg-red-50" : isMatched ? "bg-green-50" : "bg-white"}` }, card.type === "image" ? /* @__PURE__ */ React.createElement(
           "img",
           {
             loading: "lazy",
