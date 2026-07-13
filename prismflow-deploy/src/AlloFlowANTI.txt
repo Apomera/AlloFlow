@@ -19321,11 +19321,28 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     return ok;
   };
   if (typeof window !== 'undefined') window.__alloWebGpuAdapterCheck = _webGpuAdapterOk;
+  // TRANSIENT-ERROR DEBOUNCE: a lone 401/429/503 is usually a momentary cloud
+  // blip that clears on its own — not a reason to interrupt with a ~2GB model
+  // download offer. Rate-limit-class failures must persist (several eligible
+  // failures spanning SD_OFFER_PERSIST_MS with no cloud success in between)
+  // before the offer modal shows. Config states (no key / rejected key) stay
+  // immediate: they never self-heal without user action.
+  const SD_OFFER_PERSIST_MS = 5 * 60 * 1000;
+  const SD_OFFER_MIN_FAILURES = 3;
+  const _sdTurboNoteCloudImageSuccess = () => { window.__sdTurboTransientStreak = null; };
+  const _sdTurboTransientPersisting = () => {
+    const now = Date.now();
+    const streak = window.__sdTurboTransientStreak;
+    if (!streak) { window.__sdTurboTransientStreak = { firstAt: now, count: 1 }; return false; }
+    streak.count += 1;
+    return streak.count >= SD_OFFER_MIN_FAILURES && (now - streak.firstAt) >= SD_OFFER_PERSIST_MS;
+  };
   const _sdTurboMaybeOffer = (err) => {
     if (sdTurboOfferedRef.current || window.__sdTurboOfferDeclined || window.__sdTurboDownloading) return;
     if (window._sdTurbo?.ready) return;
     if (typeof navigator === 'undefined' || !navigator.gpu) return; // no WebGPU API: never offer what can't run
     if (!_sdTurboEligibleError(err)) return;
+    if (!err.isConfigState && !_sdTurboTransientPersisting()) return; // transient blip: wait for persistence
     _webGpuAdapterOk().then((ok) => {
       if (!ok || sdTurboOfferedRef.current) return; // API present but no real adapter → stay silent
       sdTurboOfferedRef.current = true;
@@ -19409,6 +19426,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         throw new Error("No image generated (Likely Safety Block)");
       }
       console.log("[Imagen] ✅ Image generated successfully!", base64.length, "chars");
+      _sdTurboNoteCloudImageSuccess();
       if (imagenRateLimitedRef.current) {
         setTimeout(() => { imagenRateLimitedRef.current = false; }, 30000);
       }
