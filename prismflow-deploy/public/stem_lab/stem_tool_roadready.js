@@ -19814,23 +19814,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           }
 
-          // Compass heading indicator (top center)
-          var headingDeg = ((car.heading * 180 / Math.PI) % 360 + 360) % 360;
+          // Compass heading indicator (top center).
+          // Convert the internal math angle (y-down world: -π/2 = north, 0 = east)
+          // to a TRUE compass bearing (000 = N, 090 = E) before display. The old
+          // code showed the raw math angle with a hand-mirrored letter table that
+          // had every N/S-containing direction flipped — driving due NORTH read
+          // "S 270°" (caught by the Playwright screenshot pass). Students are
+          // taught 000 = north; the readout now matches driver's-ed convention.
+          var compassDeg = (((car.heading * 180 / Math.PI) + 90) % 360 + 360) % 360;
           var compassDirs = [
-            [0, 'E'], [45, 'NE'], [90, 'N'], [135, 'NW'],
-            [180, 'W'], [225, 'SW'], [270, 'S'], [315, 'SE']
+            [0, 'N'], [45, 'NE'], [90, 'E'], [135, 'SE'],
+            [180, 'S'], [225, 'SW'], [270, 'W'], [315, 'NW']
           ];
           // Find nearest cardinal
           var nearestDir = 'N';
           var nearestDiff = 999;
           compassDirs.forEach(function(cd) {
-            var diff = Math.abs(((headingDeg - cd[0]) + 180) % 360 - 180);
+            var diff = Math.abs(((compassDeg - cd[0]) + 180) % 360 - 180);
             if (diff < nearestDiff) { nearestDiff = diff; nearestDir = cd[1]; }
           });
           gfx.fillStyle = 'rgba(0,0,0,0.5)';
           gfx.fillRect(W / 2 - 40, 2, 80, 18);
           gfx.fillStyle = '#22d3ee'; gfx.font = 'bold 11px monospace'; gfx.textAlign = 'center';
-          gfx.fillText(nearestDir + '  ' + Math.round(headingDeg) + '°', W / 2, 15);
+          gfx.fillText(nearestDir + '  ' + String(Math.round(compassDeg) % 360).padStart(3, '0') + '°', W / 2, 15);
 
           // ─── TURN-BY-TURN NAVIGATION ARROW (when quest active) ───
           if (questRef.current && !questRef.current.completed && d.freeExplore) {

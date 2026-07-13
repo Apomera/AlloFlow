@@ -8970,7 +8970,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             keysRef: keysRef,
             timeRef: timeRef,
             pausedRef: pausedRef,
-            flyingRef: flyingRef
+            flyingRef: flyingRef,
+            getWeatherRef: function() { return weatherRef; }
           };
         }
         return function() {
@@ -10572,6 +10573,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (lat > -10 && lat < 10) return true; // tropical oceans
         }
         return terrainHash(lat * 2, lon * 2) > 0.45; // noise-based coastlines
+      };
+      // Ground elevation under the aircraft for the RADAR ALTIMETER.
+      // Water = sea level; land = synthetic terrain — but the noise model
+      // knows nothing about runways (its floor alone is 0-780 ft anywhere),
+      // so within 6 nm of the nearest airport the ground blends toward that
+      // airport's TRUE field elevation. Without the blend, approach callouts
+      // fired against phantom noise-hills right off the threshold (caught by
+      // the screenshot pass: "AGL 0 ft" while visibly airborne near PWM).
+      var groundBelowAircraft = function(latA, lonA) {
+        var g = isWater(latA, lonA) ? 0 : (terrainHeight(latA, lonA) || 0);
+        var gBest = null, gBestD = 1e9;
+        for (var gwi = 0; gwi < WAYPOINTS.length; gwi++) {
+          var gwd = haversineNm(latA, lonA, WAYPOINTS[gwi].lat, WAYPOINTS[gwi].lon);
+          if (gwd < gBestD) { gBestD = gwd; gBest = WAYPOINTS[gwi]; }
+        }
+        if (gBest && gBestD < 6) {
+          var wAir = Math.max(0, Math.min(1, 1 - gBestD / 6)); // 1 at the field, 0 at 6 nm out
+          g = g * (1 - wAir) + gBest.alt * wAir;
+        }
+        return Math.max(0, g);
       };
 
       // ── Low-altitude scrolling detail layer ──
@@ -12911,6 +12932,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
           }
 
+          // ── Night HORIZON effects: skyline silhouettes + city glow dome ──
+          // These belong to the far rows (r < 6, near the horizon line). They
+          // used to live INSIDE the `depth > 0.15` ground-detail block below,
+          // whose gate needs r ≥ 6 — both were permanently dead code (the
+          // original bug shipped as `depth > 0.3 && r < 6`, impossible since
+          // depth = ((r+1)/16)² caps at 0.14 for r < 6; hoisting them out is
+          // the actual fix). Verified live via the Playwright screenshot pass.
+          if (!water && r < 6 && alt < 14000) {
+            var skyNearCity = false;
+            for (var ski = 0; ski < WAYPOINTS.length; ski++) {
+              var skd = Math.abs(scanLat - WAYPOINTS[ski].lat) + Math.abs(scanLon - WAYPOINTS[ski].lon);
+              if (skd < 3) { skyNearCity = true; break; }
+            }
+            var skyNight = typeof dayNight2 !== 'undefined' && dayNight2 && dayNight2.isNight;
+            if (skyNearCity && skyNight && elev < 1500) {
+              // Sizes/alphas use a boosted depth so distant rows still read —
+              // raw depth at the horizon rows is 0.004-0.14.
+              var skyDepth = 0.25 + depth;
+              var litSkyN = Math.min(6, Math.floor(3 + skyDepth * 5));
+              var litBase = terrainHash(scanLat * 19, scanLon * 19) * W * 0.3;
+              for (var lsb = 0; lsb < litSkyN; lsb++) {
+                var lsX = litBase + terrainHash(scanLat * 44 + lsb, scanLon * 44) * W * 0.45;
+                var lsW = 3 + terrainHash(lsb + 3, r) * 4;
+                var lsH = 7 + terrainHash(lsb + r, scanLat * 13) * (24 * skyDepth);
+                var lsTopY = y - elevBump - lsH;
+                // Dark silhouette
+                gfx.fillStyle = 'rgba(12,18,32,' + (0.55 + skyDepth * 0.25) + ')';
+                gfx.fillRect(lsX, lsTopY, lsW, lsH);
+                // Scattered lit windows (only ~30% of windows are lit at night)
+                var lsCols = Math.max(2, Math.floor(lsW / 1.3));
+                var lsRows = Math.max(3, Math.floor(lsH / 1.6));
+                for (var lrR = 0; lrR < lsRows; lrR++) {
+                  for (var lrC = 0; lrC < lsCols; lrC++) {
+                    var lOn = terrainHash(lsb * 50 + lrR * 7 + lrC, scanLon * 37);
+                    if (lOn < 0.35) {
+                      var lwX = lsX + 0.3 + lrC * ((lsW - 0.6) / lsCols);
+                      var lwY = lsTopY + 0.4 + lrR * ((lsH - 0.8) / lsRows);
+                      // Lit crown: top 3 rows brighter
+                      var crownBoost = lrR < 3 ? 1.4 : 1;
+                      gfx.fillStyle = 'rgba(255,230,160,' + (0.35 * crownBoost + skyDepth * 0.25) + ')';
+                      gfx.fillRect(lwX, lwY, Math.max(0.5, (lsW - 0.6) / lsCols - 0.3), 0.6);
+                    }
+                  }
+                }
+                // Blinking red obstruction beacon on tallest
+                if (lsH > 13) {
+                  var lsBeacon = Math.sin(time * 2.2 + lsb * 1.7) > 0;
+                  gfx.fillStyle = lsBeacon
+                    ? 'rgba(255,60,60,' + Math.min(0.9, 0.9 * skyDepth) + ')'
+                    : 'rgba(120,30,30,' + (0.3 * skyDepth) + ')';
+                  gfx.fillRect(lsX + lsW / 2 - 0.5, lsTopY - 1.2, 1, 1);
+                }
+              }
+              // City glow on horizon (orange dome of light)
+              if (r < 3) {
+                var glowGrad = gfx.createRadialGradient(W / 2, y, 0, W / 2, y, W * 0.4);
+                glowGrad.addColorStop(0, 'rgba(255,150,30,0.08)');
+                glowGrad.addColorStop(1, 'rgba(255,100,0,0)');
+                gfx.fillStyle = glowGrad;
+                gfx.fillRect(0, y - 20, W, 40);
+              }
+            }
+          }
+
           // City lights at night (near known waypoints)
           if (!water && depth > 0.15 && alt < 20000) {
             var isNearCity = false;
@@ -12979,53 +13064,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                     }
                   }
                 }
-                // ── Lit skyscraper silhouettes with illuminated crowns ──
-                // A few tall dark rectangles against the sky with a bright window
-                // cluster near the top. Real skylines read this way at night —
-                // most of the building is dark with glowing upper floors and a
-                // blinking red beacon (aviation obstruction light) on the mast.
-                // depth = ((r+1)/16)² which for r < 6 maxes at 0.14 — the old
-                // `depth > 0.3` gate was IMPOSSIBLE alongside `r < 6`, so the
-                // whole night skyline (silhouettes, lit windows, beacons) was
-                // dead code. 0.05 keeps the skyline to the nearer rows (r 3-5)
-                // where the city-glow block below expects it.
-                if (depth > 0.05 && alt < 14000 && r < 6) {
-                  var litSkyN = Math.min(6, Math.floor(3 + depth * 5));
-                  var litBase = terrainHash(scanLat * 19, scanLon * 19) * W * 0.3;
-                  for (var lsb = 0; lsb < litSkyN; lsb++) {
-                    var lsX = litBase + terrainHash(scanLat * 44 + lsb, scanLon * 44) * W * 0.45;
-                    var lsW = 3 + terrainHash(lsb + 3, r) * 4;
-                    var lsH = 7 + terrainHash(lsb + r, scanLat * 13) * (24 * depth);
-                    var lsTopY = y - elevBump - lsH;
-                    // Dark silhouette
-                    gfx.fillStyle = 'rgba(12,18,32,' + (0.55 + depth * 0.25) + ')';
-                    gfx.fillRect(lsX, lsTopY, lsW, lsH);
-                    // Scattered lit windows (only ~30% of windows are lit at night)
-                    var lsCols = Math.max(2, Math.floor(lsW / 1.3));
-                    var lsRows = Math.max(3, Math.floor(lsH / 1.6));
-                    for (var lrR = 0; lrR < lsRows; lrR++) {
-                      for (var lrC = 0; lrC < lsCols; lrC++) {
-                        var lOn = terrainHash(lsb * 50 + lrR * 7 + lrC, scanLon * 37);
-                        if (lOn < 0.35) {
-                          var lwX = lsX + 0.3 + lrC * ((lsW - 0.6) / lsCols);
-                          var lwY = lsTopY + 0.4 + lrR * ((lsH - 0.8) / lsRows);
-                          // Lit crown: top 3 rows brighter
-                          var crownBoost = lrR < 3 ? 1.4 : 1;
-                          gfx.fillStyle = 'rgba(255,230,160,' + (0.35 * crownBoost + depth * 0.25) + ')';
-                          gfx.fillRect(lwX, lwY, Math.max(0.5, (lsW - 0.6) / lsCols - 0.3), 0.6);
-                        }
-                      }
-                    }
-                    // Blinking red obstruction beacon on tallest
-                    if (lsH > 18) {
-                      var lsBeacon = Math.sin(time * 2.2 + lsb * 1.7) > 0;
-                      gfx.fillStyle = lsBeacon
-                        ? 'rgba(255,60,60,' + (0.9 * depth) + ')'
-                        : 'rgba(120,30,30,' + (0.3 * depth) + ')';
-                      gfx.fillRect(lsX + lsW / 2 - 0.5, lsTopY - 1.2, 1, 1);
-                    }
-                  }
-                }
+                // (Skyline silhouettes moved OUT of this depth>0.15 block to the
+                // horizon-effects section above — the gates were contradictory
+                // here and the block never ran.)
                 // ── Sports stadium: bright floodlit oval ──
                 // Rare but unmistakable — a warm dome of bright white light
                 // offset from downtown with a ring of floodlight poles.
@@ -13056,14 +13097,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                     gfx.fillRect(stpX - 0.5, stpY - 0.5, 1, 1);
                   }
                 }
-                // City glow on horizon (orange dome of light)
-                if (r < 3) {
-                  var glowGrad = gfx.createRadialGradient(W / 2, y, 0, W / 2, y, W * 0.4);
-                  glowGrad.addColorStop(0, 'rgba(255,150,30,0.04)');
-                  glowGrad.addColorStop(1, 'rgba(255,100,0,0)');
-                  gfx.fillStyle = glowGrad;
-                  gfx.fillRect(0, y - 20, W, 40);
-                }
+                // (City glow dome also moved to the horizon-effects section —
+                // r < 3 could never satisfy this block's depth > 0.15 gate.)
               } else {
                 // Daytime: proximity to nearest city center determines density
                 var minCityDist = 99;
@@ -19736,12 +19771,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // back above 600 ft AGL. The voice synthesis is optional (skipped if
           // skyAnnounce is unavailable). On-screen: small HUD pill bottom-right.
           if (!pausedRef.current && !state.onGround && state.vsi < 0) {
-            // Radar altitude = height above the TERRAIN under the aircraft, not
-            // above the departure airport. fieldElev is a single scalar frozen at
-            // takeoff — over hills the old callouts fired hundreds of feet off
-            // (same two-ground-models split the glideslope block already fixed).
-            var raGround = isWater(state.lat, state.lon) ? 0 : (terrainHeight(state.lat, state.lon) || 0);
-            var raAgl = Math.max(0, state.altitude - Math.max(raGround, 0));
+            // Radar altitude = height above the ground under the aircraft (terrain
+            // en-route, blended to the airport's true field elevation on approach —
+            // see groundBelowAircraft). fieldElev alone was a scalar frozen at
+            // takeoff and read hundreds of feet off over hills.
+            var raAgl = Math.max(0, state.altitude - groundBelowAircraft(state.lat, state.lon));
             var flRa = flightRef.current;
             if (!flRa._raCallouts) flRa._raCallouts = {};
             if (raAgl > 600) flRa._raCallouts = {};
@@ -19784,10 +19818,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // MSL altitude tape. Pilots use AGL on approach; MSL alone makes the
           // student guess how high they actually are above the runway.
           if (!state.onGround) {
-            // Terrain-relative AGL (see radar-callout note above) — the readout
+            // Ground-relative AGL (see groundBelowAircraft) — the readout
             // pilots actually use on approach.
-            var aglGround = isWater(state.lat, state.lon) ? 0 : (terrainHeight(state.lat, state.lon) || 0);
-            var aglNow = Math.max(0, state.altitude - Math.max(aglGround, 0));
+            var aglNow = Math.max(0, state.altitude - groundBelowAircraft(state.lat, state.lon));
             if (aglNow < 2000) {
               var aglColor = aglNow < 100 ? '#ef4444' : aglNow < 500 ? '#fbbf24' : '#4ade80';
               gfx.font = 'bold 11px monospace';
