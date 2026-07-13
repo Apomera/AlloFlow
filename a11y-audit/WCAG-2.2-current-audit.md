@@ -165,6 +165,7 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Remediated Adventure Cast Lobby as a named, focus-contained modal with deliberate heading focus and focus restoration after beginning the adventure; added narrow-width padding and wrapping primary actions; announced portrait-generation status; strengthened remove/action focus indicators, targets, text and component contrast; and hid decorative cast/action symbols (WCAG 1.1.1, 1.3.1, 1.4.3, 1.4.10, 1.4.11, 2.1.1, 2.1.2, 2.4.3, 2.4.7, 2.5.8, 4.1.2, 4.1.3).
 
+- Remediated Adventure's persistent HUD: the climax meter now exposes a localized, bounded progressbar whose programmatic and visual values accurately clamp from 0–100%; decorative meter graphics are hidden and motion respects reduced-motion preferences. Inventory items are semantic, named buttons in a list with nonoverlapping 44 CSS-pixel targets, visible focus, current loading state, decorative-image suppression, and descriptions available on hover and focus with Escape dismissal; accessible item data now rerenders when names, effects, icons, or descriptions change (WCAG 1.1.1, 1.3.1, 1.4.11, 1.4.13, 2.1.1, 2.3.3, 2.4.7, 2.5.8, 4.1.2).
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

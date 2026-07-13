@@ -369,66 +369,67 @@ const ClimaxProgressBar = React.memo(({ climaxState }) => {
   const { masteryScore, archetype } = climaxState;
   let typeKey = (archetype || 'default').toLowerCase();
   if (typeKey === 'auto') typeKey = 'default';
-  const label = t(`adventure.climax_archetypes.${typeKey}.label`) || t('adventure.climax_archetypes.default.label');
-  const leftLabel = t(`adventure.climax_archetypes.${typeKey}.left`) || t('adventure.climax_archetypes.default.left');
-  const rightLabel = t(`adventure.climax_archetypes.${typeKey}.right`) || t('adventure.climax_archetypes.default.right');
-  let icon = "⚔️";
+  const label = t('adventure.climax_archetypes.' + typeKey + '.label') || t('adventure.climax_archetypes.default.label');
+  const leftLabel = t('adventure.climax_archetypes.' + typeKey + '.left') || t('adventure.climax_archetypes.default.left');
+  const rightLabel = t('adventure.climax_archetypes.' + typeKey + '.right') || t('adventure.climax_archetypes.default.right');
+  const normalizedScore = Math.max(0, Math.min(100, Number(masteryScore) || 0));
+  let icon = "\u2694\uFE0F";
   switch (archetype) {
-    case 'Antagonist':
-      icon = "⚔️";
-      break;
-    case 'Catastrophe':
-      icon = "⚠️";
-      break;
-    case 'Masterpiece':
-      icon = "🎨";
-      break;
-    case 'Discovery':
-      icon = "🗺️";
-      break;
+    case 'Antagonist': icon = "\u2694\uFE0F"; break;
+    case 'Catastrophe': icon = "\u26A0\uFE0F"; break;
+    case 'Masterpiece': icon = "\uD83C\uDFA8"; break;
+    case 'Discovery': icon = "\uD83D\uDDFA\uFE0F"; break;
   }
   let barColor = "bg-yellow-500";
   let textColor = "text-yellow-400";
   let borderColor = "border-yellow-600";
-  if (masteryScore >= 80) {
+  if (normalizedScore >= 80) {
       barColor = "bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.6)]";
       textColor = "text-green-400";
       borderColor = "border-green-600";
-  } else if (masteryScore <= 30) {
+  } else if (normalizedScore <= 30) {
       barColor = "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.6)]";
       textColor = "text-red-400";
       borderColor = "border-red-600";
   }
   return (
-    <div className={`w-full bg-slate-900/95 backdrop-blur-md border-y-4 ${borderColor} p-4 shadow-2xl animate-in slide-in-from-top-4 relative z-40 mb-2 transition-colors duration-500`}>
+    <div className={'w-full bg-slate-900/95 backdrop-blur-md border-y-4 ' + borderColor + ' p-4 shadow-2xl animate-in slide-in-from-top-4 motion-reduce:animate-none relative z-40 mb-2 transition-colors duration-500 motion-reduce:transition-none'}>
       <div className="flex justify-between items-end mb-2 px-1">
         <div className="flex items-center gap-2">
-            <span className="text-xl animate-pulse">{icon}</span>
+            <span className="text-xl animate-pulse motion-reduce:animate-none" aria-hidden="true">{icon}</span>
             <span className="text-xs font-black text-indigo-200 uppercase tracking-widest">{label}</span>
         </div>
-        <span className={`text-2xl font-black ${textColor} drop-shadow-sm font-mono transition-colors duration-500`}>
-          {Math.round(masteryScore)}%
+        <span className={'text-2xl font-black ' + textColor + ' drop-shadow-sm font-mono transition-colors duration-500 motion-reduce:transition-none'}>
+          {Math.round(normalizedScore)}%
         </span>
       </div>
-      <div className="relative h-6 w-full bg-slate-800 rounded-full border-2 border-slate-600 overflow-hidden shadow-inner">
+      <div
+        className="relative h-6 w-full bg-slate-800 rounded-full border-2 border-slate-600 overflow-hidden shadow-inner"
+        role="progressbar"
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(normalizedScore)}
+        aria-valuetext={Math.round(normalizedScore) + '%; ' + leftLabel + ' to ' + rightLabel}
+      >
         <div
-          className={`h-full ${barColor} transition-all duration-1000 ease-out relative`}
-          style={{ width: `${Math.max(5, Math.min(100, masteryScore))}%` }}
+          className={'h-full ' + barColor + ' transition-all duration-1000 ease-out motion-reduce:transition-none relative'}
+          style={{ width: normalizedScore + '%' }}
+          aria-hidden="true"
         >
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_infinite]"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_infinite] motion-reduce:animate-none"></div>
         </div>
-        <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/30 z-10 border-l border-black/20"></div>
-        <div className="absolute top-0 bottom-0 left-[25%] w-px bg-white/10 z-0"></div>
-        <div className="absolute top-0 bottom-0 left-[75%] w-px bg-white/10 z-0"></div>
+        <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/30 z-10 border-l border-black/20" aria-hidden="true"></div>
+        <div className="absolute top-0 bottom-0 left-[25%] w-px bg-white/10 z-0" aria-hidden="true"></div>
+        <div className="absolute top-0 bottom-0 left-[75%] w-px bg-white/10 z-0" aria-hidden="true"></div>
       </div>
-      <div className="flex justify-between text-[11px] font-bold text-slate-600 uppercase mt-1.5 px-1">
-        <span className="text-red-400">{leftLabel} (0%)</span>
+      <div className="flex justify-between text-[11px] font-bold uppercase mt-1.5 px-1">
+        <span className="text-red-300">{leftLabel} (0%)</span>
         <span className="text-green-400">{rightLabel} (100%)</span>
       </div>
     </div>
   );
 });
-
 // ═══ AdventureAmbience (lines 9565-9642) ═══
 const AdventureAmbience = React.memo(({ sceneText, soundParams, active, volume = 0.3 }) => {
     const ctxRef = useRef(null);
@@ -565,44 +566,57 @@ const getD20Rotation = (result, spins = 5) => {
 
 // ═══ InventoryGrid (lines 10813-10867) ═══
 const InventoryGrid = React.memo(({ inventory, onSelect }) => {
+  const [dismissedTooltip, setDismissedTooltip] = useState(null);
   if (!inventory || inventory.length === 0) return null;
   return (
-    <div className="flex items-center gap-2 bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-600/50">
-      <Backpack size={16} className="text-yellow-700" />
-      <div className="flex -space-x-2">
+    <div className="flex items-center gap-2 bg-indigo-800/50 px-3 py-1.5 rounded-2xl border border-indigo-500">
+      <Backpack size={18} className="text-yellow-300 shrink-0" aria-hidden="true" />
+      <ul className="flex flex-wrap gap-2">
         {inventory.map((item, idx) => (
-          <div
-            key={item.id || idx}
-            data-help-key="inventory_item" onClick={() => onSelect(item)}
-            className="group relative transition-transform hover:z-20 hover:scale-110 cursor-pointer"
-          >
-            <div className="w-8 h-8 rounded-lg bg-indigo-950 border-2 border-indigo-400 flex items-center justify-center overflow-hidden shadow-sm relative">
+          <li key={item.id || idx} className="group relative hover:z-20 focus-within:z-20">
+            <button
+              type="button"
+              data-help-key="inventory_item"
+              onClick={() => onSelect(item)}
+              onMouseEnter={() => setDismissedTooltip(null)}
+              onFocus={() => setDismissedTooltip(null)}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                  event.stopPropagation();
+                  setDismissedTooltip(idx);
+                }
+              }}
+              className="w-11 h-11 rounded-lg bg-indigo-950 border-2 border-indigo-300 flex items-center justify-center overflow-hidden shadow-sm relative transition-transform hover:scale-105 motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900"
+              aria-label={item.name}
+              aria-describedby={item.effectType && item.description ? 'inventory-item-description-' + idx : undefined}
+              aria-busy={item.isLoading || undefined}
+            >
               {item.image ? (
                 <img loading="lazy"
                   src={item.image}
-                  alt={item.name}
+                  alt=""
                   className="w-full h-full object-contain pixelated"
                   style={STYLE_IMAGE_PIXELATED}
                   decoding="async"
                 />
               ) : item.icon ? (
-                <span className="text-lg">{item.icon}</span>
+                <span className="text-lg" aria-hidden="true">{item.icon}</span>
               ) : item.isLoading ? (
-                <RefreshCw size={10} className="text-indigo-600 animate-spin"/>
+                <RefreshCw size={16} className="text-indigo-200 animate-spin motion-reduce:animate-none" aria-hidden="true"/>
               ) : (
-                <span className="text-[11px] font-bold text-indigo-300">{item.name.charAt(0)}</span>
+                <span className="text-sm font-bold text-indigo-200" aria-hidden="true">{item.name.charAt(0)}</span>
               )}
-            </div>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:flex flex-col items-center z-50 w-32">
-              <div className="w-2 h-2 bg-black/90 rotate-45 -mb-1 border-t border-l border-white/20"></div>
-              <div className="bg-black/90 text-white text-[11px] px-2 py-1 rounded shadow-lg font-bold border border-white/20 text-center">
+            </button>
+            <div className={dismissedTooltip === idx ? 'hidden' : 'absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:flex group-focus-within:flex flex-col items-center z-50 w-36'} role="tooltip">
+              <div className="w-2 h-2 bg-black/95 rotate-45 -mb-1 border-t border-l border-white/30" aria-hidden="true"></div>
+              <div className="bg-black/95 text-white text-xs px-2 py-1.5 rounded shadow-lg font-bold border border-white/30 text-center">
                 {item.name}
-                {item.effectType && <div className="font-normal opacity-80 text-[11px] mt-0.5 border-t border-white/10 pt-0.5">{item.description}</div>}
+                {item.effectType && item.description && <div id={'inventory-item-description-' + idx} className="font-normal text-slate-100 text-xs mt-1 border-t border-white/20 pt-1">{item.description}</div>}
               </div>
             </div>
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }, (prevProps, nextProps) => {
@@ -615,11 +629,14 @@ const InventoryGrid = React.memo(({ inventory, onSelect }) => {
       if (!prev || !next) return false;
       if (prev.id !== next.id) return false;
       if (prev.image !== next.image) return false;
+      if (prev.icon !== next.icon) return false;
+      if (prev.name !== next.name) return false;
+      if (prev.description !== next.description) return false;
+      if (prev.effectType !== next.effectType) return false;
       if (prev.isLoading !== next.isLoading) return false;
   }
   return true;
 });
-
 // ═══ DiceOverlay (lines 10868-10922) ═══
 const DiceOverlay = React.memo(({ result, onComplete }) => {
   const { t } = useContext(LanguageContext);
