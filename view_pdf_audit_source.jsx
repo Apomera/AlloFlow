@@ -265,6 +265,13 @@ async function _viewBindValidationToHtml(validation, html, pipeline) {
   }
   return next;
 }
+// C2 perf memo (2026-07-13): _currentTaggedValidation runs this on EVERY render
+// of the 15k-line component once a tagged validation exists, and the old body
+// UTF-8-encoded the full document each time (multi-MB doc = visible Chromebook
+// jank for the rest of the session). The byteLength of a given (validation,
+// exact-html) pair is immutable — memo on validation identity; a different html
+// string misses and re-encodes.
+const _viewUtf8LenMemo = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
 function _viewValidationMatchesHtml(validation, html) {
   if (!validation || !_viewValidVerificationHtmlBinding(validation.sourceHtmlBinding)) return false;
   const exact = String(html == null ? '' : html);
@@ -277,8 +284,14 @@ function _viewValidationMatchesHtml(validation, html) {
   if (!descriptor || descriptor.enumerable !== false || descriptor.value !== exact
       || !digestDescriptor || digestDescriptor.enumerable !== false
       || digestDescriptor.value !== validation.sourceHtmlBinding.digest) return false;
-  try { return typeof TextEncoder !== 'undefined' && new TextEncoder().encode(exact).byteLength === validation.sourceHtmlBinding.utf8ByteLength; }
-  catch (_) { return false; }
+  const memo = _viewUtf8LenMemo ? _viewUtf8LenMemo.get(validation) : null;
+  if (memo && memo.html === exact) return memo.len === validation.sourceHtmlBinding.utf8ByteLength;
+  try {
+    if (typeof TextEncoder === 'undefined') return false;
+    const len = new TextEncoder().encode(exact).byteLength;
+    try { if (_viewUtf8LenMemo) _viewUtf8LenMemo.set(validation, { html: exact, len }); } catch (_) {}
+    return len === validation.sourceHtmlBinding.utf8ByteLength;
+  } catch (_) { return false; }
 }
 function _viewAttachTaggedArtifactProof(value, ticket) {
   if (!value || typeof value !== 'object' || !ticket || !ticket.bytes || !Number.isSafeInteger(ticket.generation)) return value;

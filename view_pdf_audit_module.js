@@ -346,6 +346,7 @@ async function _viewBindValidationToHtml(validation, html, pipeline) {
   }
   return next;
 }
+const _viewUtf8LenMemo = typeof WeakMap !== "undefined" ? /* @__PURE__ */ new WeakMap() : null;
 function _viewValidationMatchesHtml(validation, html) {
   if (!validation || !_viewValidVerificationHtmlBinding(validation.sourceHtmlBinding)) return false;
   const exact = String(html == null ? "" : html);
@@ -357,8 +358,16 @@ function _viewValidationMatchesHtml(validation, html) {
   } catch (_) {
   }
   if (!descriptor || descriptor.enumerable !== false || descriptor.value !== exact || !digestDescriptor || digestDescriptor.enumerable !== false || digestDescriptor.value !== validation.sourceHtmlBinding.digest) return false;
+  const memo = _viewUtf8LenMemo ? _viewUtf8LenMemo.get(validation) : null;
+  if (memo && memo.html === exact) return memo.len === validation.sourceHtmlBinding.utf8ByteLength;
   try {
-    return typeof TextEncoder !== "undefined" && new TextEncoder().encode(exact).byteLength === validation.sourceHtmlBinding.utf8ByteLength;
+    if (typeof TextEncoder === "undefined") return false;
+    const len = new TextEncoder().encode(exact).byteLength;
+    try {
+      if (_viewUtf8LenMemo) _viewUtf8LenMemo.set(validation, { html: exact, len });
+    } catch (_) {
+    }
+    return len === validation.sourceHtmlBinding.utf8ByteLength;
   } catch (_) {
     return false;
   }

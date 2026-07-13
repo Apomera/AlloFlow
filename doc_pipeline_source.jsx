@@ -120,6 +120,12 @@ function _alloStripVerificationHtmlSnapshot(result) {
   try { delete clean._verificationHtmlBindingDigest; } catch (_) {}
   return clean;
 }
+// C1 perf memo (2026-07-13): batch-end summary/ZIP/CSV/telemetry each re-derive
+// the binding check, and each check UTF-8-encoded the FULL document (~9 encodes
+// × N files × MBs on the main thread at ZIP time). The byteLength of a given
+// (result, exact-html) pair is immutable — memo it on result identity. A result
+// whose html changed misses (string value compare) and re-encodes.
+var _alloUtf8LenMemo = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
 function _alloIsLiveVerificationHtmlBound(result, html) {
   if (!result || typeof result !== 'object' || !_alloIsVerificationHtmlBindingShape(result.verificationHtmlBinding)) return false;
   var liveHtml = arguments.length > 1 ? html : result.accessibleHtml;
@@ -135,8 +141,17 @@ function _alloIsLiveVerificationHtmlBound(result, html) {
   if (!descriptor || descriptor.enumerable !== false || descriptor.value !== liveHtml
       || !digestDescriptor || digestDescriptor.enumerable !== false
       || digestDescriptor.value !== result.verificationHtmlBinding.digest) return false;
-  var bytes = _alloUtf8Bytes(liveHtml);
-  return !!(bytes && bytes.byteLength === result.verificationHtmlBinding.utf8ByteLength);
+  var memo = _alloUtf8LenMemo ? _alloUtf8LenMemo.get(result) : null;
+  var byteLen;
+  if (memo && memo.html === liveHtml) {
+    byteLen = memo.len;
+  } else {
+    var bytes = _alloUtf8Bytes(liveHtml);
+    if (!bytes) return false;
+    byteLen = bytes.byteLength;
+    try { if (_alloUtf8LenMemo) _alloUtf8LenMemo.set(result, { html: liveHtml, len: byteLen }); } catch (_) {}
+  }
+  return byteLen === result.verificationHtmlBinding.utf8ByteLength;
 }
 function _alloApplyVerificationHtmlBinding(verification, isBound, reason) {
   verification = verification || _alloDeriveVerificationState({});
