@@ -103,6 +103,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Made Timeline Game a named focus-managed full-screen dialog using the shared game-workspace hook; focused its named 44 CSS-pixel Close control, contained Tab, supported Escape closing, restored focus to the launcher, hid the Close icon, retained reduced-motion-aware entry, and verified its existing keyboard lift/drop and move alternatives to dragging (WCAG 1.1.1, 2.1.1, 2.3.3, 2.4.3, 2.4.6, 2.4.7, 2.5.7, 2.5.8, 4.1.2).
 
+- Made Concept Sort a named focus-managed full-screen dialog using the shared game-workspace hook; focused its named 44 CSS-pixel Close control, contained Tab, supported Escape closing, restored focus to the launcher, hid the Close icon, added reduced-motion-aware entry, and verified its existing keyboard select-and-place alternative to dragging (WCAG 1.1.1, 2.1.1, 2.3.3, 2.4.3, 2.4.6, 2.4.7, 2.5.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

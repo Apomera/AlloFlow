@@ -1627,6 +1627,9 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   const [deckCanScrollRight, setDeckCanScrollRight] = useState(false);
   const [deckCanScrollLeft, setDeckCanScrollLeft] = useState(false);
   const menuRef = useRef(null);
+  const conceptSortDialogRef = useRef(null);
+  const conceptSortCloseRef = useRef(null);
+  useGameDialogFocus(conceptSortDialogRef, conceptSortCloseRef, onClose);
   const isWon = isChecked && items.length > 0 && items.every(i => i.currentContainer === i.categoryId);
   const pastelColors = [
     'bg-blue-50 border-blue-200 hover:border-blue-300',
@@ -1982,11 +1985,11 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       return () => clearTimeout(id);
   }, [hasUsedKeyboardCard, hintAutoHidden]);
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-50 flex flex-col animate-in fade-in duration-300" data-help-key="concept_sort_game">
+    <div ref={conceptSortDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="concept-sort-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`} data-help-key="concept_sort_game">
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</div>
       <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20">
         <div>
-            <h3 className="font-bold text-lg flex items-center gap-2" data-help-key="concept_sort_header">
+            <h3 id="concept-sort-game-title" className="font-bold text-lg flex items-center gap-2" data-help-key="concept_sort_header">
                 <Filter size={20} className="text-yellow-300"/> {t('concept_sort.title')}
             </h3>
             <p className="text-xs text-indigo-200">{t('concept_sort.subtitle')}</p>
@@ -1997,7 +2000,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                 <span className="font-bold text-sm">{score} pts</span>
             </div>
             <GameThemeToggle />
-            <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white" aria-label={t('concept_sort.close_aria')}><X size={24}/></button>
+            <button ref={conceptSortCloseRef} type="button" onClick={onClose} className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white" aria-label={t('concept_sort.close_aria')}><X size={24} aria-hidden="true"/></button>
         </div>
       </div>
       <div className="flex-grow overflow-y-auto p-6 relative">
