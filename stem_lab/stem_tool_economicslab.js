@@ -661,11 +661,15 @@ var d = labToolData || {};
 
               ctx.restore(); ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 24px Inter, system-ui';
 
-              // Label sits at the demand curve's RIGHT END (price = 10 + 5*shift
-              // at q=100) — it used to float at the top of the plot, which is
-              // where the SUPPLY curve ends, so D and S read as swapped.
+              // Label sits at the demand curve's VISIBLE right end. With steep
+              // slopes the curve is clipped where price hits 0 mid-chart, so the
+              // anchor follows that exit point instead of floating at q=100.
 
-              ctx.fillText('D' + (sdDemandShift !== 0 ? '\'' : ''), gx + gw - 34, Math.max(gy + 24, Math.min(gy + gh - 10, gy + (100 - (90 - 100 * sdDemSlope + sdDemandShift * 5)) / 100 * gh - 12)));
+              var dExitQ = Math.max(2, Math.min(100, (90 + sdDemandShift * 5) / sdDemSlope));
+
+              var dEndP = 90 - dExitQ * sdDemSlope + sdDemandShift * 5;
+
+              ctx.fillText('D' + (sdDemandShift !== 0 ? '\'' : ''), Math.max(gx + 8, gx + dExitQ / 100 * gw - 34), Math.max(gy + 24, Math.min(gy + gh - 10, gy + (100 - dEndP) / 100 * gh - 12)));
 
 
 
@@ -693,7 +697,11 @@ var d = labToolData || {};
 
               ctx.restore(); ctx.fillStyle = '#ef4444';
 
-              ctx.fillText('S' + (sdSupplyShift !== 0 ? '\'' : ''), gx + gw - 34, Math.max(gy + 24, Math.min(gy + gh - 10, gy + (100 - (10 + 100 * sdSupSlope + sdSupplyShift * 5)) / 100 * gh - 12)));
+              var sExitQ = Math.max(2, Math.min(100, (90 - sdSupplyShift * 5) / sdSupSlope));
+
+              var sEndP = 10 + sExitQ * sdSupSlope + sdSupplyShift * 5;
+
+              ctx.fillText('S' + (sdSupplyShift !== 0 ? '\'' : ''), Math.max(gx + 8, gx + sExitQ / 100 * gw - 34), Math.max(gy + 24, Math.min(gy + gh - 10, gy + (100 - sEndP) / 100 * gh - 12)));
 
 
 
