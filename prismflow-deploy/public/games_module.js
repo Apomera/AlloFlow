@@ -3315,6 +3315,14 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   const { t } = useContext(LanguageContext);
   const containerRef = useRef(null);
   const nodeRefs = useRef({});
+  const pipelineDialogRef = useRef(null);
+  const pipelineCloseRef = useRef(null);
+  const pipelineWinRef = useRef(null);
+  const pipelinePlayAgainRef = useRef(null);
+  useGameDialogFocus(pipelineDialogRef, pipelineCloseRef, onClose);
+  useEffect(() => {
+    if (isComplete) pipelinePlayAgainRef.current?.focus();
+  }, [isComplete]);
   const [shuffledSteps, setShuffledSteps] = useState([]);
   const [connections, setConnections] = useState([]);
   const [connectingFrom, setConnectingFrom] = useState(null);
@@ -3534,6 +3542,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     setIsComplete(false);
     setKeyboardSelectedId(null);
     setNodePositions({});
+    window.setTimeout(() => pipelineDialogRef.current?.focus(), 0);
   };
   const handleGripDown = (e, stepId) => {
     e.stopPropagation();
@@ -3575,17 +3584,54 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   const isConnectedFrom = (nodeId) => connections.some((c) => c.fromId === nodeId);
   const isConnectedTo = (nodeId) => connections.some((c) => c.toId === nodeId);
   if (shuffledSteps.length === 0) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[200] bg-slate-50 flex flex-col animate-in zoom-in-95" }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-indigo-700 via-purple-600 to-indigo-700 p-4 text-white flex justify-between items-center shadow-md z-30" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-xl flex items-center gap-2" }, /* @__PURE__ */ React.createElement(GitMerge, { size: 24 }), " ", t("games.pipeline.title") || "Pipeline Builder"), topicTitle && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-white/70 mt-0.5" }, topicTitle)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40" }, t("common.score") || "Score", ": ", score), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-white/70 font-bold" }, connections.length, "/", totalRequired, " connections"), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: pipelineDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "pipeline-game-title", className: `fixed inset-0 z-[200] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? "" : " animate-in zoom-in-95"}` }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-indigo-700 via-purple-600 to-indigo-700 p-4 text-white flex justify-between items-center shadow-md z-30" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "pipeline-game-title", className: "font-bold text-xl flex items-center gap-2" }, /* @__PURE__ */ React.createElement(GitMerge, { size: 24 }), " ", t("games.pipeline.title") || "Pipeline Builder"), topicTitle && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-white/70 mt-0.5" }, topicTitle)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40" }, t("common.score") || "Score", ": ", score), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-white/70 font-bold" }, connections.length, "/", totalRequired, " connections"), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement(
     "button",
     {
+      ref: pipelineCloseRef,
+      type: "button",
       "aria-label": t("common.close") || "Close",
       onClick: onClose,
-      className: "flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30"
+      className: "min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:outline-none focus:ring-2 focus:ring-white"
     },
     /* @__PURE__ */ React.createElement(ArrowDown, { className: "rotate-90", size: 14 }),
     " ",
     t("concept_map.venn.back_to_editor") || "Back"
-  ))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow relative overflow-auto" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none" }), isComplete && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm", role: "dialog", "aria-modal": "true", "aria-labelledby": "pipeline-victory-title" }, /* @__PURE__ */ React.createElement("div", { className: `bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? "animate-bounce" : ""}` }, /* @__PURE__ */ React.createElement("h2", { id: "pipeline-victory-title", className: "text-4xl font-black text-indigo-600 mb-2" }, "\u{1F3D7}\uFE0F Pipeline Complete!"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600" }, t("games.pipeline.victory_desc") || "You built the entire process flow correctly!"), /* @__PURE__ */ React.createElement("p", { className: "text-2xl font-black text-yellow-500 mt-2" }, score, " pts"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 mt-4 justify-center" }, /* @__PURE__ */ React.createElement("button", { onClick: handleReset, className: "px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14 }), " Play Again"), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors" }, "Close"))), !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null)), connectingFrom && /* @__PURE__ */ React.createElement("div", { className: "absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-indigo-600 text-white px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: !useReducedMotion() ? "animate-pulse" : "" }), " Click the NEXT step to connect"), keyboardSelectedId && /* @__PURE__ */ React.createElement("div", { className: "absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-purple-600 text-white px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 16 }), " Press Enter on another step to connect"), /* @__PURE__ */ React.createElement("div", { ref: containerRef, className: "relative p-6 min-h-full" }, /* @__PURE__ */ React.createElement("svg", { className: "absolute inset-0 w-full h-full pointer-events-none z-10", style: { overflow: "visible" } }, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("marker", { id: "pb-arw", viewBox: "0 0 10 7", refX: "9", refY: "3.5", markerWidth: "8", markerHeight: "6", orient: "auto-start-reverse" }, /* @__PURE__ */ React.createElement("polygon", { points: "0 0, 10 3.5, 0 7", fill: "#6366f1" })), /* @__PURE__ */ React.createElement("marker", { id: "pb-arw-ok", viewBox: "0 0 10 7", refX: "9", refY: "3.5", markerWidth: "8", markerHeight: "6", orient: "auto-start-reverse" }, /* @__PURE__ */ React.createElement("polygon", { points: "0 0, 10 3.5, 0 7", fill: "#22c55e" })), /* @__PURE__ */ React.createElement("marker", { id: "pb-arw-err", viewBox: "0 0 10 7", refX: "9", refY: "3.5", markerWidth: "8", markerHeight: "6", orient: "auto-start-reverse" }, /* @__PURE__ */ React.createElement("polygon", { points: "0 0, 10 3.5, 0 7", fill: "#ef4444" }))), arrowCoords.map((arrow) => {
+  ))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow relative overflow-auto" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none" }), isComplete && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" }, /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      ref: pipelineWinRef,
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": "pipeline-victory-title",
+      "aria-describedby": "pipeline-victory-description",
+      onKeyDown: (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          onClose();
+          return;
+        }
+        if (event.key !== "Tab") return;
+        const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+        if (!focusable.length) {
+          event.preventDefault();
+          return;
+        }
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      },
+      className: `relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? "animate-bounce" : ""}`
+    },
+    /* @__PURE__ */ React.createElement("h2", { id: "pipeline-victory-title", className: "text-4xl font-black text-indigo-600 mb-2" }, t("games.pipeline.complete_title") || "Pipeline Complete!"),
+    /* @__PURE__ */ React.createElement("p", { id: "pipeline-victory-description", className: "text-slate-600" }, t("games.pipeline.victory_desc") || "You built the entire process flow correctly!"),
+    /* @__PURE__ */ React.createElement("p", { className: "text-2xl font-black text-yellow-500 mt-2" }, score, " pts"),
+    /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 mt-4 justify-center" }, /* @__PURE__ */ React.createElement("button", { ref: pipelinePlayAgainRef, type: "button", onClick: handleReset, className: "min-h-11 px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, "aria-hidden": "true" }), " ", t("games.bucket_sort.play_again") || "Play Again"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-h-11 px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" }, t("common.close") || "Close"))
+  ), !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null)), connectingFrom && /* @__PURE__ */ React.createElement("div", { className: "absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-indigo-600 text-white px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: !useReducedMotion() ? "animate-pulse" : "" }), " Click the NEXT step to connect"), keyboardSelectedId && /* @__PURE__ */ React.createElement("div", { className: "absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-purple-600 text-white px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 16 }), " Press Enter on another step to connect"), /* @__PURE__ */ React.createElement("div", { ref: containerRef, className: "relative p-6 min-h-full" }, /* @__PURE__ */ React.createElement("svg", { className: "absolute inset-0 w-full h-full pointer-events-none z-10", style: { overflow: "visible" } }, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("marker", { id: "pb-arw", viewBox: "0 0 10 7", refX: "9", refY: "3.5", markerWidth: "8", markerHeight: "6", orient: "auto-start-reverse" }, /* @__PURE__ */ React.createElement("polygon", { points: "0 0, 10 3.5, 0 7", fill: "#6366f1" })), /* @__PURE__ */ React.createElement("marker", { id: "pb-arw-ok", viewBox: "0 0 10 7", refX: "9", refY: "3.5", markerWidth: "8", markerHeight: "6", orient: "auto-start-reverse" }, /* @__PURE__ */ React.createElement("polygon", { points: "0 0, 10 3.5, 0 7", fill: "#22c55e" })), /* @__PURE__ */ React.createElement("marker", { id: "pb-arw-err", viewBox: "0 0 10 7", refX: "9", refY: "3.5", markerWidth: "8", markerHeight: "6", orient: "auto-start-reverse" }, /* @__PURE__ */ React.createElement("polygon", { points: "0 0, 10 3.5, 0 7", fill: "#ef4444" }))), arrowCoords.map((arrow) => {
     const result = results && results.find((r) => r.fromId === arrow.fromId && r.toId === arrow.toId);
     const color = result ? result.correct ? "#22c55e" : "#ef4444" : "#6366f1";
     const markerId = result ? result.correct ? "pb-arw-ok" : "pb-arw-err" : "pb-arw";

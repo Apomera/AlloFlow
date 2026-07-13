@@ -113,6 +113,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Consolidated the shared Multi-Bucket Sort component onto the focus-managed full-screen dialog pattern and made its completion overlay a named/described nested dialog; added initial Play again focus, Tab containment, Escape closing, replay focus return, reduced-motion-aware entry, 44 CSS-pixel controls, and retained keyboard select-and-place alternatives to dragging across all themed bucket variants (WCAG 2.1.1, 2.3.3, 2.4.3, 2.4.6, 2.4.7, 2.5.7, 2.5.8, 4.1.2).
 
+- Made Pipeline Builder a named focus-managed full-screen dialog and its completion overlay a named/described nested dialog; added initial Play again focus, Tab containment, Escape closing, replay focus return, reduced-motion-aware entry, 44 CSS-pixel controls, and retained the keyboard node-selection workflow for building connections without pointer dragging (WCAG 2.1.1, 2.3.3, 2.4.3, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
