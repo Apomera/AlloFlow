@@ -145,6 +145,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Completed a second shared Multi-Bucket Sort interaction pass for Concept Map, Problem/Solution, Fishbone, and Outline: replaced simulated item controls and nested speech buttons with native 44 CSS-pixel move buttons plus separate speech actions; changed bucket destinations to labeled noninteractive groups; contained and named the dynamic destination dialog with initial focus, Escape and Tab handling, backdrop cancellation, and origin-item focus restoration; announced initialization and the correct destination after errors; reset selection and confirmation state; wrapped header controls and changed four-or-more bucket layouts to one column at narrow widths; retained a keyboard alternative to dragging; and preserved reduced-motion handling and timer cleanup (WCAG 1.3.1, 1.4.10, 2.1.1, 2.3.3, 2.4.3, 2.4.7, 2.5.7, 2.5.8, 3.3.1, 4.1.2, 4.1.3).
 
+- Closed the residual Cause/Effect Sort destination-semantics gap: the Causes and Effects drop areas are now labeled noninteractive groups rather than simulated buttons that wrap native item and speech controls. Keyboard placement remains fully available through the contained destination dialog, while pointer dragging continues as an optional input method (WCAG 1.3.1, 2.1.1, 2.5.7, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

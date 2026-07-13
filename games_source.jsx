@@ -3001,17 +3001,14 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   onDrop={(e) => handleDrop(e, 'causes')}
                   onDragOver={(e) => handleDragOver(e, 'causes')}
                   onDragLeave={handleDragLeave}
-                  onClick={keyboardSelectedItemId ? () => handleKeyboardMove('causes') : undefined}
-                  role={keyboardSelectedItemId ? 'button' : undefined}
-                  tabIndex={keyboardSelectedItemId ? 0 : undefined}
-                  aria-label={keyboardSelectedItemId ? 'Place selected item into Causes' : undefined}
-                  onKeyDown={keyboardSelectedItemId ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleKeyboardMove('causes'); } } : undefined}
+                  role="group"
+                  aria-label="Causes drop zone"
                   className={`flex-1 flex flex-col items-center justify-start p-6 relative z-10 ${reducedMotion ? '' : 'transition-all duration-300'}
                     ${activeDropZone === 'causes' ? `bg-orange-200/60 ${reducedMotion ? '' : 'scale-[1.01]'} shadow-[inset_0_0_40px_rgba(251,146,60,0.3)]` : 'bg-gradient-to-b from-orange-50/80 to-orange-100/40'}
-                    ${keyboardSelectedItemId ? 'cursor-pointer ring-2 ring-yellow-300/60 focus:outline-none focus:ring-4 focus:ring-yellow-500' : ''}
+
                   `}
               >
-                  <div className={`bg-orange-200/80 backdrop-blur-sm border-2 border-orange-300 text-orange-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform -rotate-1 ${keyboardSelectedItemId ? 'ring-4 ring-yellow-300' : ''}`}>
+                  <div className="bg-orange-200/80 backdrop-blur-sm border-2 border-orange-300 text-orange-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform -rotate-1">
                       🔶 {t('games.ce_sort.causes_label') || 'Causes'}
                   </div>
                   <div className="flex flex-wrap gap-2 justify-center content-start flex-grow w-full max-w-sm overflow-y-auto custom-scrollbar p-2">
@@ -3033,17 +3030,14 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   onDrop={(e) => handleDrop(e, 'effects')}
                   onDragOver={(e) => handleDragOver(e, 'effects')}
                   onDragLeave={handleDragLeave}
-                  onClick={keyboardSelectedItemId ? () => handleKeyboardMove('effects') : undefined}
-                  role={keyboardSelectedItemId ? 'button' : undefined}
-                  tabIndex={keyboardSelectedItemId ? 0 : undefined}
-                  aria-label={keyboardSelectedItemId ? 'Place selected item into Effects' : undefined}
-                  onKeyDown={keyboardSelectedItemId ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleKeyboardMove('effects'); } } : undefined}
+                  role="group"
+                  aria-label="Effects drop zone"
                   className={`flex-1 flex flex-col items-center justify-start p-6 relative z-10 ${reducedMotion ? '' : 'transition-all duration-300'}
                     ${activeDropZone === 'effects' ? `bg-teal-200/60 ${reducedMotion ? '' : 'scale-[1.01]'} shadow-[inset_0_0_40px_rgba(45,212,191,0.3)]` : 'bg-gradient-to-b from-teal-50/80 to-teal-100/40'}
-                    ${keyboardSelectedItemId ? 'cursor-pointer ring-2 ring-yellow-300/60 focus:outline-none focus:ring-4 focus:ring-yellow-500' : ''}
+
                   `}
               >
-                  <div className={`bg-teal-200/80 backdrop-blur-sm border-2 border-teal-300 text-teal-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform rotate-1 ${keyboardSelectedItemId ? 'ring-4 ring-yellow-300' : ''}`}>
+                  <div className="bg-teal-200/80 backdrop-blur-sm border-2 border-teal-300 text-teal-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform rotate-1">
                       🟦 {t('games.ce_sort.effects_label') || 'Effects'}
                   </div>
                   <div className="flex flex-wrap gap-2 justify-center content-start flex-grow w-full max-w-sm overflow-y-auto custom-scrollbar p-2">

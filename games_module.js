@@ -2648,22 +2648,14 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       onDrop: (e) => handleDrop(e, "causes"),
       onDragOver: (e) => handleDragOver(e, "causes"),
       onDragLeave: handleDragLeave,
-      onClick: keyboardSelectedItemId ? () => handleKeyboardMove("causes") : void 0,
-      role: keyboardSelectedItemId ? "button" : void 0,
-      tabIndex: keyboardSelectedItemId ? 0 : void 0,
-      "aria-label": keyboardSelectedItemId ? "Place selected item into Causes" : void 0,
-      onKeyDown: keyboardSelectedItemId ? (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          handleKeyboardMove("causes");
-        }
-      } : void 0,
+      role: "group",
+      "aria-label": "Causes drop zone",
       className: `flex-1 flex flex-col items-center justify-start p-6 relative z-10 ${reducedMotion ? "" : "transition-all duration-300"}
                     ${activeDropZone === "causes" ? `bg-orange-200/60 ${reducedMotion ? "" : "scale-[1.01]"} shadow-[inset_0_0_40px_rgba(251,146,60,0.3)]` : "bg-gradient-to-b from-orange-50/80 to-orange-100/40"}
-                    ${keyboardSelectedItemId ? "cursor-pointer ring-2 ring-yellow-300/60 focus:outline-none focus:ring-4 focus:ring-yellow-500" : ""}
+
                   `
     },
-    /* @__PURE__ */ React.createElement("div", { className: `bg-orange-200/80 backdrop-blur-sm border-2 border-orange-300 text-orange-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform -rotate-1 ${keyboardSelectedItemId ? "ring-4 ring-yellow-300" : ""}` }, "\u{1F536} ", t("games.ce_sort.causes_label") || "Causes"),
+    /* @__PURE__ */ React.createElement("div", { className: "bg-orange-200/80 backdrop-blur-sm border-2 border-orange-300 text-orange-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform -rotate-1" }, "\u{1F536} ", t("games.ce_sort.causes_label") || "Causes"),
     /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center content-start flex-grow w-full max-w-sm overflow-y-auto custom-scrollbar p-2" }, causesItems.map((item) => renderCauseEffectItem(item, "causes")), causesItems.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-orange-700 italic text-xs mt-8 text-center w-full" }, t("concept_sort.drop_placeholder") || "Drop causes here"))
   ), /* @__PURE__ */ React.createElement("div", { className: "hidden lg:flex flex-col items-center justify-center w-16 z-20 relative" }, /* @__PURE__ */ React.createElement("div", { className: "w-0.5 h-full bg-slate-200" }), /* @__PURE__ */ React.createElement("div", { className: "absolute top-1/2 -translate-y-1/2 bg-white p-2 rounded-full border-2 border-slate-200 shadow-sm" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 20, className: "text-slate-600", "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement(
     "div",
@@ -2671,22 +2663,14 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       onDrop: (e) => handleDrop(e, "effects"),
       onDragOver: (e) => handleDragOver(e, "effects"),
       onDragLeave: handleDragLeave,
-      onClick: keyboardSelectedItemId ? () => handleKeyboardMove("effects") : void 0,
-      role: keyboardSelectedItemId ? "button" : void 0,
-      tabIndex: keyboardSelectedItemId ? 0 : void 0,
-      "aria-label": keyboardSelectedItemId ? "Place selected item into Effects" : void 0,
-      onKeyDown: keyboardSelectedItemId ? (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          handleKeyboardMove("effects");
-        }
-      } : void 0,
+      role: "group",
+      "aria-label": "Effects drop zone",
       className: `flex-1 flex flex-col items-center justify-start p-6 relative z-10 ${reducedMotion ? "" : "transition-all duration-300"}
                     ${activeDropZone === "effects" ? `bg-teal-200/60 ${reducedMotion ? "" : "scale-[1.01]"} shadow-[inset_0_0_40px_rgba(45,212,191,0.3)]` : "bg-gradient-to-b from-teal-50/80 to-teal-100/40"}
-                    ${keyboardSelectedItemId ? "cursor-pointer ring-2 ring-yellow-300/60 focus:outline-none focus:ring-4 focus:ring-yellow-500" : ""}
+
                   `
     },
-    /* @__PURE__ */ React.createElement("div", { className: `bg-teal-200/80 backdrop-blur-sm border-2 border-teal-300 text-teal-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform rotate-1 ${keyboardSelectedItemId ? "ring-4 ring-yellow-300" : ""}` }, "\u{1F7E6} ", t("games.ce_sort.effects_label") || "Effects"),
+    /* @__PURE__ */ React.createElement("div", { className: "bg-teal-200/80 backdrop-blur-sm border-2 border-teal-300 text-teal-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform rotate-1" }, "\u{1F7E6} ", t("games.ce_sort.effects_label") || "Effects"),
     /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center content-start flex-grow w-full max-w-sm overflow-y-auto custom-scrollbar p-2" }, effectsItems.map((item) => renderCauseEffectItem(item, "effects")), effectsItems.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-teal-700 italic text-xs mt-8 text-center w-full" }, t("concept_sort.drop_placeholder") || "Drop effects here"))
   )), /* @__PURE__ */ React.createElement("div", { className: "h-44 bg-white border-t border-slate-200 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-40" }, /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider" }, t("concept_sort.unsorted_cards") || "Unsorted Items", " (", bankItems.length, ")"), attempts > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full" }, attempts, " incorrect attempt", attempts !== 1 ? "s" : "")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(
     "button",

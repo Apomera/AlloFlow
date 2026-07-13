@@ -39,7 +39,8 @@ describe('Cause and Effect Sort dialog accessibility', () => {
     expect(count('min-h-11')).toBeGreaterThanOrEqual(10);
     expect(count('focus:ring-2')).toBeGreaterThanOrEqual(8);
     expect(component).toContain('focus:ring-offset-2');
-    expect(component).toContain('focus:ring-4 focus:ring-yellow-500');
+    expect(count('role="group"')).toBeGreaterThanOrEqual(2);
+    expect(component).not.toContain('role={keyboardSelectedItemId');
   });
 
   it('announces keyboard, drag, completion, reset, and cancellation outcomes', () => {
