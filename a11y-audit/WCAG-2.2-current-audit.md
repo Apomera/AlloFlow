@@ -133,6 +133,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Upgraded reusable game controls across the module: theme and speech buttons now provide 44 CSS-pixel targets and strong keyboard focus, their visual-only emoji/icons are hidden, speech retains programmatic pressed state, and its playing pulse honors reduced motion. Shared post-game reviews are named regions with explicit screen-reader text for correct/incorrect status instead of color/glyph-only communication; Play again and Close meet 44 CSS pixels with visible focus and the replay icon is decorative (WCAG 1.1.1, 1.3.1, 1.4.1, 2.3.3, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
 
+- Replaced four Model UN native confirmations (skipping remaining speeches, advancing without adopted clauses, clause removal, and clearing session notes) with awaited accessible confirmation dialogs using descriptive action labels, safe cancel choices, warning/danger treatments, and fail-closed behavior when the accessible confirmation service is unavailable (WCAG 2.1.1, 2.4.3, 2.4.7, 3.2.2, 3.3.4, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
