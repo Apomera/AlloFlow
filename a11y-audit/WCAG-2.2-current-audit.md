@@ -155,6 +155,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Corrected Timeline Studio's AI generation lifecycle so Paste and Topic Research modes open their companion timeline window within the initiating button gesture, avoiding browser popup blocking after asynchronous AI calls and preventing stale timeline data from being resent. Removed the modal backdrop's invalid simulated-button semantics, retained Escape handling on the named dialog, prevented the popup handshake from overwriting in-progress research status, and exposed generation and summary changes through polite atomic live regions (WCAG 1.3.1, 2.1.1, 2.4.3, 4.1.2, 4.1.3).
 
+- Completed Timeline Studio modal focus management: focus now enters on the enlarged, visibly focused Close control; Tab and Shift+Tab remain within the dialog; Escape closes it; and focus returns to the invoking control after dismissal (WCAG 2.1.1, 2.1.2, 2.4.3, 2.4.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

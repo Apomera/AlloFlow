@@ -362,6 +362,8 @@
     var addToast = props.addToast;
 
     var winRef = React.useRef(null);
+    var dialogRef = React.useRef(null);
+    var closeButtonRef = React.useRef(null);
     var dataRef = React.useRef(null);
     var modeState = React.useState('paste'); // 'paste' | 'topic'
     var inputMode = modeState[0];
@@ -394,6 +396,48 @@
 
     var aiOn = props.aiHintsEnabled !== false && typeof callGemini === 'function';
     var lang = props.lang || 'en';
+
+    React.useEffect(function () {
+      var priorFocus = document.activeElement;
+      var timer = setTimeout(function () {
+        var target = closeButtonRef.current || dialogRef.current;
+        if (target && typeof target.focus === 'function') target.focus();
+      }, 0);
+      return function () {
+        clearTimeout(timer);
+        if (priorFocus && typeof priorFocus.focus === 'function' && document.contains(priorFocus)) {
+          try { priorFocus.focus(); } catch (_) {}
+        }
+      };
+    }, []);
+
+    function handleDialogKeyDown(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab' || !dialogRef.current) return;
+      var nodes = dialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])');
+      var focusable = Array.prototype.filter.call(nodes, function (node) {
+        return node.getAttribute('aria-hidden') !== 'true' && node.offsetParent !== null;
+      });
+      if (!focusable.length) {
+        e.preventDefault();
+        dialogRef.current.focus();
+        return;
+      }
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
 
     function sendData() {
       var w = winRef.current;
@@ -605,13 +649,14 @@
       onClick: onClose
     },
       h('section', {
+        ref: dialogRef,
         className: 'allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden',
         role: 'dialog',
         tabIndex: -1,
         'aria-modal': 'true',
         'aria-label': tr(t, 'timeline_studio.title', 'Timeline Studio'),
         onClick: function (e) { e.stopPropagation(); },
-        onKeyDown: function (e) { if (e.key === 'Escape') onClose(); }
+        onKeyDown: handleDialogKeyDown
       },
         h('div', { className: 'flex items-start justify-between gap-4 px-6 py-5 border-b border-slate-200 bg-slate-50' },
           h('div', null,
@@ -619,8 +664,9 @@
             h('p', { className: 'text-sm text-slate-600 mt-1 max-w-2xl' }, tr(t, 'timeline_studio.subtitle', 'Turn a reading, biography, or historical passage into an interactive timeline.'))
           ),
           h('button', {
+            ref: closeButtonRef,
             onClick: onClose,
-            className: 'p-2 -m-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 transition-colors text-xl',
+            className: 'min-w-11 min-h-11 p-2 -m-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2 transition-colors text-xl',
             'aria-label': tr(t, 'timeline_studio.close', 'Close Timeline Studio')
           }, '×')
         ),

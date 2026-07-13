@@ -166,7 +166,12 @@ describe('TimelineStudio generation lifecycle', () => {
     expect(modal).not.toContain("role: 'button'");
     expect(modal).not.toContain('tabIndex: 0');
     expect(modal).toContain("role: 'dialog'");
+    expect(modal).toContain('ref: dialogRef');
+    expect(modal).toContain('onKeyDown: handleDialogKeyDown');
+    expect(modal).toContain('ref: closeButtonRef');
     expect(modal).toContain("'aria-live': 'polite'");
+    expect(text).toContain("if (e.key !== 'Tab' || !dialogRef.current) return;");
+    expect(text).toContain('priorFocus.focus()');
   });
 });
 // ── Topic prompt contract ───────────────────────────────────────────────────
