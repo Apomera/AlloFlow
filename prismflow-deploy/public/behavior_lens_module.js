@@ -663,6 +663,7 @@ Return ONLY valid JSON:
             onClick: (e) => { if (e.target === e.currentTarget) onClose(); }
         },
             h('div', {
+                role: 'dialog', 'aria-modal': 'true', 'aria-label': (entry ? 'Edit ABC entry' : 'New ABC entry'),
                 className: 'bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto mx-4 animate-in zoom-in-95 duration-200'
             },
                 // Header
@@ -1325,6 +1326,12 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         const [notes, setNotes] = useState('');
         const timerRef = useRef(null);
         const intervalTimerRef = useRef(null);
+        // Mirror of the in-progress interval so the rollover timer reads the
+        // LATEST value (incl. the observer's "occurred" mark) instead of the
+        // stale closure it captured at start — which silently saved every
+        // interval as "not occurred".
+        const currentIntervalRef = useRef(null);
+        useEffect(() => { currentIntervalRef.current = currentInterval; }, [currentInterval]);
 
         // Start/stop timer
         const toggleTimer = useCallback(() => {
@@ -1340,17 +1347,22 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 }, 100);
                 // Start interval recording if applicable
                 if (method === 'interval') {
-                    setCurrentInterval({ start: Date.now(), occurred: false });
+                    const first = { start: Date.now(), occurred: false };
+                    currentIntervalRef.current = first;
+                    setCurrentInterval(first);
                     intervalTimerRef.current = setInterval(() => {
-                        setIntervals(prev => [...prev, { ...currentInterval, end: Date.now() }]);
-                        setCurrentInterval({ start: Date.now(), occurred: false });
+                        const finished = currentIntervalRef.current;
+                        if (finished) setIntervals(prev => [...prev, { ...finished, end: Date.now() }]);
+                        const next = { start: Date.now(), occurred: false };
+                        currentIntervalRef.current = next;
+                        setCurrentInterval(next);
                     }, intervalLength * 1000);
                 }
                 if (method === 'latency' && !latencyStart) {
                     setLatencyStart(Date.now());
                 }
             }
-        }, [isRunning, timer, method, intervalLength, currentInterval, latencyStart]);
+        }, [isRunning, timer, method, intervalLength, latencyStart]);
 
         // Cleanup
         useEffect(() => {
@@ -1359,6 +1371,10 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 if (intervalTimerRef.current) clearInterval(intervalTimerRef.current);
             };
         }, []);
+
+        // Move focus into the dialog on open (WCAG 2.4.3 / 4.1.2).
+        const dialogRef = useRef(null);
+        useEffect(() => { try { dialogRef.current && dialogRef.current.focus(); } catch (e) {} }, []);
 
         const handleSave = () => {
             const sessionData = {
@@ -1378,11 +1394,11 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             onClose();
         };
 
-        return h('div', { className: 'fixed inset-0 z-[400] bg-slate-900 flex flex-col text-white animate-in fade-in duration-300' },
+        return h('div', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': (tt('behavior_lens.obs.title', 'Live Observation')) + (studentName ? ' — ' + studentName : ''), tabIndex: -1, className: 'fixed inset-0 z-[400] bg-slate-900 flex flex-col text-white animate-in fade-in duration-300 focus:outline-none' },
             // Top bar
             h('div', { className: 'flex items-center justify-between px-6 py-4 bg-black/30' },
                 h('div', { className: 'flex items-center gap-3' },
-                    h('div', { className: 'w-3 h-3 rounded-full animate-pulse', style: { background: isRunning ? '#ef4444' : '#64748b' } }),
+                    h('div', { className: 'w-3 h-3 rounded-full animate-pulse', role: 'status', 'aria-label': isRunning ? 'Recording' : 'Paused', style: { background: isRunning ? '#ef4444' : '#64748b' } }),
                     h('h2', { className: 'text-lg font-black' },
                         '🔍 ', tt('behavior_lens.obs.title', 'Live Observation')
                     ),
@@ -1427,7 +1443,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     )
                 ),
                 // Start/stop button
-                h('button', { "aria-label": "Toggle Timer",
+                h('button', { "aria-label": isRunning ? 'Pause observation timer' : 'Start observation timer', 'aria-pressed': isRunning ? 'true' : 'false',
                     onClick: toggleTimer,
                     className: `w-24 h-24 rounded-full text-2xl font-black shadow-2xl transition-all transform hover:scale-105 active:scale-95 ${isRunning
                         ? 'bg-red-600 hover:bg-red-700 ring-4 ring-red-600/30'
@@ -1473,13 +1489,13 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         className: `w-20 h-20 rounded-full text-lg font-black shadow-lg transition-all active:scale-90 disabled:opacity-40 ${durationStart ? 'bg-red-600 hover:bg-red-700 animate-pulse' : 'bg-indigo-600 hover:bg-indigo-700'
                             }`
                     }, durationStart ? '⏹' : '▶'),
-                    durations.length > 0 && h('div', { className: 'text-xs text-slate-600' },
+                    durations.length > 0 && h('div', { className: 'text-xs text-slate-300' },
                         `${durations.length} episodes — Total: ${fmtDuration(durations.reduce((s, d) => s + d, 0))}`
                     )
                 ),
                 method === 'interval' && h('div', { className: 'flex flex-col items-center gap-4' },
                     !isRunning && h('div', { className: 'flex items-center gap-2' },
-                        h('span', { className: 'text-xs text-slate-600' }, tt('behavior_lens.obs.interval_length', 'Interval:')),
+                        h('span', { className: 'text-xs text-slate-300' }, tt('behavior_lens.obs.interval_length', 'Interval:')),
                         h('select', {
                             value: intervalLength,
                             onChange: (e) => setIntervalLength(parseInt(e.target.value)),
@@ -1490,16 +1506,16 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         )
                     ),
                     currentInterval && isRunning && h('button', { "aria-label": "Toggle current interval",
-                        onClick: () => setCurrentInterval(prev => ({ ...prev, occurred: !prev.occurred })),
+                        onClick: () => setCurrentInterval(prev => { const next = { ...prev, occurred: !prev.occurred }; currentIntervalRef.current = next; return next; }),
                         className: `px-6 py-4 rounded-xl text-sm font-bold transition-all ${currentInterval.occurred ? 'bg-red-600 ring-2 ring-red-400' : 'bg-white/10 hover:bg-white/20'
                             }`
                     }, currentInterval.occurred ? '✅ Behavior occurred' : '❌ Not occurred'),
-                    intervals.length > 0 && h('div', { className: 'text-xs text-slate-600' },
+                    intervals.length > 0 && h('div', { className: 'text-xs text-slate-300' },
                         `${intervals.filter(i => i.occurred).length}/${intervals.length} intervals — ${Math.round((intervals.filter(i => i.occurred).length / intervals.length) * 100)}%`
                     )
                 ),
                 method === 'latency' && h('div', { className: 'flex flex-col items-center gap-4' },
-                    h('div', { className: 'text-sm text-slate-600' },
+                    h('div', { className: 'text-sm text-slate-300' },
                         latencyEnd
                             ? (tt('behavior_lens.obs.latency_recorded', 'Latency recorded!'))
                             : latencyStart
@@ -1935,6 +1951,8 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         const [elapsed, setElapsed] = useState(0);
         const [newLabel, setNewLabel] = useState('');
         const timerRef = useRef(null);
+        const dialogRef = useRef(null);
+        useEffect(() => { try { dialogRef.current && dialogRef.current.focus(); } catch (e) {} }, []);
 
         const counterColors = ['#818cf8', '#f472b6', '#34d399', '#fbbf24', '#f97316', '#a78bfa'];
 
@@ -1999,7 +2017,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             onClose();
         };
 
-        return h('div', { className: 'fixed inset-0 z-[250] bg-slate-900 flex flex-col items-center justify-center text-white' },
+        return h('div', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': (tt('behavior_lens.freq.title', 'Frequency Counter')) + (studentName ? ' — ' + studentName : ''), tabIndex: -1, className: 'fixed inset-0 z-[250] bg-slate-900 flex flex-col items-center justify-center text-white focus:outline-none' },
             // Top bar
             h('div', { className: 'absolute top-0 left-0 right-0 flex items-center justify-between p-4' },
                 h('button', { onClick: onClose, 'aria-label': 'Close', className: 'p-2 rounded-full hover:bg-white/10 transition-colors' },
@@ -2053,14 +2071,16 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                             style: { color }
                         }, counter.count),
                         h('div', { className: 'text-xs text-slate-300' }, `${counterRate} / min`),
-                        // Tap button
-                        h('button', { "aria-label": "+1",
+                        // Tap button — name the behavior so a screen-reader /
+                        // voice user tracking several behaviors at once knows
+                        // which one they are incrementing.
+                        h('button', { "aria-label": 'Add one to ' + (counter.label || 'unlabeled behavior'),
                             onClick: () => incrementCounter(counter.id),
                             className: `${counters.length === 1 ? 'bl-freq-tap-solo w-32 h-32' : 'w-20 h-20'} rounded-full active:scale-95 transition-all shadow-xl flex items-center justify-center text-xl font-black`,
                             style: { background: color, boxShadow: `0 8px 24px ${color}40` }
                         }, '+1'),
                         // Decrement
-                        h('button', { "aria-label": "-1",
+                        h('button', { "aria-label": 'Subtract one from ' + (counter.label || 'unlabeled behavior'),
                             onClick: () => decrementCounter(counter.id),
                             className: 'text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 transition-colors'
                         }, '-1')
@@ -2122,6 +2142,8 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
         const [grid, setGrid] = useState([]);
         const [elapsed, setElapsed] = useState(0);
         const timerRef = useRef(null);
+        const dialogRef = useRef(null);
+        useEffect(() => { try { dialogRef.current && dialogRef.current.focus(); } catch (e) {} }, []);
 
         useEffect(() => {
             if (running && currentInterval < totalIntervals) {
@@ -2176,14 +2198,14 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             momentary: { label: tt('behavior_lens.obs_momentary', 'Momentary'), desc: 'Mark only if behavior at the EXACT moment' }
         };
 
-        return h('div', { className: 'fixed inset-0 z-[250] bg-slate-900/95 flex flex-col' },
+        return h('div', { ref: dialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': (tt('behavior_lens.interval.title', 'Interval Recording')) + (studentName ? ' — ' + studentName : ''), tabIndex: -1, className: 'fixed inset-0 z-[250] bg-slate-900/95 flex flex-col focus:outline-none' },
             // Top bar
             h('div', { className: 'p-4 flex items-center justify-between border-b border-slate-700' },
                 h('div', { className: 'flex items-center gap-3' },
-                    h('button', { onClick: onClose, 'aria-label': 'Close', className: 'p-2 rounded-full text-slate-600 hover:bg-white/10' }, h(X, { size: 20 })),
+                    h('button', { onClick: onClose, 'aria-label': 'Close', className: 'p-2 rounded-full text-slate-300 hover:bg-white/10' }, h(X, { size: 20 })),
                     h('div', null,
                         h('h3', { className: 'text-white font-black text-lg', 'data-help-key': 'bl_interval_recording' }, tt('behavior_lens.interval.title', 'Interval Recording')),
-                        h('p', { className: 'text-xs text-slate-600' }, `${studentName || ''} — ${modeLabels[mode].label}`)
+                        h('p', { className: 'text-xs text-slate-300' }, `${studentName || ''} — ${modeLabels[mode].label}`)
                     )
                 ),
                 h('button', { onClick: handleSave, disabled: completedCount === 0, className: 'px-4 py-2 bg-emerald-700 text-white rounded-full text-sm font-bold hover:bg-emerald-400 disabled:opacity-40 transition-all' },
@@ -2200,10 +2222,10 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         }, label)
                     )
                 ),
-                h('p', { className: 'text-xs text-slate-600 text-center' }, modeLabels[mode].desc),
+                h('p', { className: 'text-xs text-slate-300 text-center' }, modeLabels[mode].desc),
                 h('div', { className: 'flex gap-4 items-center justify-center' },
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.interval_sec', 'Interval (sec)')),
+                        h('label', { className: 'text-[11px] font-bold text-slate-300 uppercase block mb-1' }, tt('behavior_lens.interval_sec', 'Interval (sec)')),
                         h('select', {
                             value: intervalSec,
                             onChange: (e) => setIntervalSec(Number(e.target.value)),
@@ -2212,7 +2234,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         }, [10, 15, 20, 30, 60].map(v => h('option', { key: v, value: v }, `${v}s`)))
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.total_intervals', 'Total Intervals')),
+                        h('label', { className: 'text-[11px] font-bold text-slate-300 uppercase block mb-1' }, tt('behavior_lens.total_intervals', 'Total Intervals')),
                         h('select', {
                             value: totalIntervals,
                             onChange: (e) => setTotalIntervals(Number(e.target.value)),
@@ -2221,7 +2243,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         }, [10, 15, 20, 30, 40].map(v => h('option', { key: v, value: v }, v)))
                     )
                 ),
-                h('button', { "aria-label": "Toggle running",
+                h('button', { "aria-label": "Start recording",
                     onClick: () => { setRunning(true); setGrid([]); setCurrentInterval(0); setElapsed(0); },
                     className: 'w-full py-3 bg-indigo-500 text-white rounded-xl font-bold text-lg hover:bg-indigo-400 transition-all'
                 }, '▶ ' + (tt('behavior_lens.interval.start', 'Start Recording')))
@@ -2282,7 +2304,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             // Timer display
             h('div', { className: 'p-4 border-t border-slate-700 text-center' },
                 h('span', { className: 'text-2xl font-black tabular-nums text-white' }, fmtDuration(elapsed)),
-                h('span', { className: 'text-xs text-slate-600 ms-3' }, `${intervalSec}s intervals`)
+                h('span', { className: 'text-xs text-slate-300 ms-3' }, `${intervalSec}s intervals`)
             )
         );
     };
@@ -4572,7 +4594,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
         };
 
         if (editing) {
-            return h('div', { className: 'fixed inset-0 z-[300] bg-slate-900 flex flex-col items-center justify-center p-8' },
+            return h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Edit choice board', className: 'fixed inset-0 z-[300] bg-slate-900 flex flex-col items-center justify-center p-8' },
                 h('div', { className: 'bg-white rounded-2xl p-6 w-full max-w-md space-y-4 max-h-[85vh] overflow-y-auto' },
                     h('h3', { className: 'text-sm font-black text-slate-800' }, '✏️ Edit Choices'),
                     choices.map((c, i) =>
@@ -4616,7 +4638,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
 
         // First-Then mode
         if (mode === 'firstThen') {
-            return h('div', { className: 'fixed inset-0 z-[300] bg-slate-900 flex flex-col' },
+            return h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'First-Then board', className: 'fixed inset-0 z-[300] bg-slate-900 flex flex-col' },
                 h('div', { className: 'flex justify-between items-center p-4 shrink-0' },
                     h('div', { className: 'flex gap-2' },
                         h('button', { onClick: () => setMode('choice'), className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '🔲 Choices'),
@@ -4662,7 +4684,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
             );
         }
 
-        return h('div', { className: 'fixed inset-0 z-[300] bg-slate-900 flex flex-col' },
+        return h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Choice board', className: 'fixed inset-0 z-[300] bg-slate-900 flex flex-col' },
             // Toolbar
             h('div', { className: 'flex justify-between items-center p-4 shrink-0' },
                 h('div', { className: 'flex gap-2' },
