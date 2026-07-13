@@ -25,13 +25,12 @@ Lumen is `_pluginOnlyTools` + `ready:false` (out of the STEM Lab grid), so the
 - [ ] **Try a sample** → loads the **plant-growth** example (height/cm over weeks, before/after fertilizer) — not reading probes.
 - [ ] **⎘ Paste data** → paste CSV/TSV/JSON text → column-mapper preview → Confirm binds.
 - [ ] **⇪ Import file** → a `.csv` / `.json` / `.xlsx` / `.ods` → mapper → bind.
-- [ ] **⚗ Practice data…** (a disclosure — the trio is no longer loose in the entry row) → opens the violet practice box: **Use sample data**, a **Scenario** picker with humanized labels ("Improving trend", "Flat / no change", …), **⚗ Generate practice data**, and (once synthetic data is loaded) **↻ Re-roll**. Generated data appears with the **violet synthetic banner**.
+- [ ] **⚗ Generate practice data** → pick a scenario (improving/flat/variable/declining/responsive) → data appears with the **violet synthetic banner**; **↻ Re-roll** gives a fresh draw.
 
 ## 2. Editable variables (Setup row)
 - [ ] Change **Measure / Unit / X-axis label** — the header, entry field, chart axes, finding sentence, and data-table relabel **live**.
 
 ## 3. The 9 chart types
-- [ ] The audience + chart rows live behind **"▸ View options — Working · Trend"** (calm by default). Open it; switching to any non-default audience/chart keeps it **auto-open**, and the closed toggle always **names** the current state (state is never hidden).
 - [ ] Cycle the **Chart:** switcher — trend, bar, dot, box, histogram, scatter, slope, multi-line, grouped-bar all render without error.
 - [ ] Trend (default): per-point marks burn **● "Observed"** (not the L1 ◈); the trend *line* + uncertainty band are the L1 object.
 - [ ] **Color-blind-safe series (multi-line / grouped-bar):** series are distinguished by **shape + dash + texture**, not hue alone — series 1's line is **dashed** with **square** points; grouped bars carry a **texture** (diagonal/dots/…); the legend shows the same shape/dash/texture. Squint or imagine greyscale: the series are still tellable apart.
@@ -76,16 +75,6 @@ The SSR golden pins the overlay's structure; these need the real surface
 - [ ] **⤓ Export presentation (HTML)** → downloads `lumen-presentation-<measure>-<audience>-summary.html`. Open it: a **full-page, presentation-styled** doc with the **finding**, the **inlined live chart** (band + provenance glyphs intact — it is the *exact* chart you saw, serialized), Methods, and a **max-epistemic-level footer**. **Print-to-PDF** looks clean (the `@media print` rules drop chrome).
 - [ ] Tick **Include identifiable data (FERPA)** → Export presentation → a **confirm** dialog, then the file embeds the per-point table and the filename/footer say **CONFIDENTIAL**. Off → finding-only, **no per-row table**.
 - [ ] **Synthetic/sample data** → Export presentation is **watermarked** (title/banner/footer say SYNTHETIC, `-PRACTICE-` in the filename); a **Formal** audience still **blocks** the export (sign-off cannot clear it).
-
-## 12. 2026-07-12 wave — editing, focus subset, data-bound sign-off, export a11y
-- [ ] **Phase input:** in the entry row, type points tagging **Phase (optional)** `before`, then change it to `after` and add more — a **dashed phase line** appears at the boundary; the finding names it. The tag *sticks* between adds.
-- [ ] **Undo / remove / clear:** **↩ Undo last** removes the newest point; open the data table → each row has a **✕ Remove** (with a spoken label); **🗑 Clear all** asks to confirm first.
-- [ ] **⧉ Copy finding** (in the finding card) → the pasted sentence *starts with the level word* and carries the interval + n (the provenance travels with the copy).
-- [ ] **Focus subset (anti-cherry-pick):** open the data table and **uncheck** a few Focus boxes → an amber **"◐ Showing k of n"** chip appears (its only dismissal is **Show all**), the chart redraws over just the focused points, the finding says "**across these k of n probes**", and the **AI button is gated off** ("AI reads the full dataset"). Export the aggregate CSV → it contains a `shown_of,k/n` line. The identifiable CSV still exports **every** row.
-- [ ] **Data-bound sign-off:** at L3 + Formal, generate an AI reading, **Own it** (✓ Signed off), then **add or remove one data point** → the sign-off reverts to "⚠ Sign off before a formal export" and a formal export **blocks** until re-owned. The AI reading itself also clears on any data edit.
-- [ ] **Keyboard/SR spot-checks (axe-verified in CI; eyes-on here):** disclosure toggles announce expanded/collapsed; the data table reads as a real table (caption + column headers); no focus lands on anything invisible in Present mode.
-- [ ] **Export documents:** view-source of a downloaded brief/presentation starts `<!doctype html><html lang="en">`; the brief is readable on a phone (viewport meta).
-- [ ] **Benchmark empty-state:** under "Add external benchmark", a note explains the norm table **ships empty on purpose** until human-verified — no mystery refusal.
 
 ---
 

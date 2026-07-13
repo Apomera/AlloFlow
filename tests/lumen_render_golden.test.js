@@ -170,7 +170,7 @@ describe('Lumen — render invariants (no snapshot, just contracts)', () => {
 
   it('scatter is data-only L1: no AI affordance, no export, no benchmark picker in this view', () => {
     const html = renderState({ observations: PAIRED, chartType: 'scatter', ceiling: 'L3', audience: 'iep-team', variable2: 'Comprehension', unit2: '%' });
-    expect(html).not.toMatch(/Generate AI|Export this view|Add external benchmark/);
+    expect(html).not.toMatch(/Generate AI|Export this view|Add ORF benchmark/);
   });
 
   it('the slope pathway draws per-phase segments + observed dots + a not-an-effect caveat', () => {
@@ -335,17 +335,11 @@ describe('Lumen — render invariants (no snapshot, just contracts)', () => {
     expect(html).toMatchSnapshot();
   });
 
-  it('the practice-data disclosure toggle renders in every state; the controls live behind it', () => {
+  it('the generate-practice control + scenario picker render in every state', () => {
     const html = renderState({});
-    expect(html).toMatch(/⚗ Practice data…/);            // the toggle is always reachable
-    expect(html).not.toMatch(/Generate practice data/);   // the trio is calm-by-default (behind the disclosure)
-    const open = renderState({ showPractice: true });
-    expect(open).toMatch(/Generate practice data/);
-    expect(open).toMatch(/Practice-data scenario/);
-    ['improving', 'flat', 'variable', 'declining', 'responsive'].forEach((s) => expect(open).toMatch(new RegExp('value="' + s + '"')));
-    // scenario keys stay the VALUES; the visible labels are humanized
-    expect(open).toMatch(/Improving trend/);
-    expect(open).toMatch(/Flat \/ no change/);
+    expect(html).toMatch(/Generate practice data/);
+    expect(html).toMatch(/Practice-data scenario/);
+    ['improving', 'flat', 'variable', 'declining', 'responsive'].forEach((s) => expect(html).toMatch(new RegExp('value="' + s + '"')));
   });
 
   it('real data shows NO synthetic banner or watermark (byte-identity guard)', () => {
@@ -382,17 +376,15 @@ describe('Lumen — present mode + presentation export', () => {
     expect(html).toMatch(/Derived \(math\)/);                    // the provenance pill in the slide
   });
 
-  it('present mode is keyboard-operable: focus lands inside (autofocus), a trigger to return to, and trap pivots', () => {
+  it('present mode is keyboard-operable: focus lands inside (autofocus), a trigger to return to, and a Tab trap', () => {
     const html = renderState({ observations: REYNA, presentMode: true });
     // focus moves INTO the overlay on open
     expect(html).toMatch(/<button[^>]*id="lumen-present-first"[^>]*autofocus/i);
-    // the first/last controls the keydown Tab trap pivots on (the wrap itself is an
-    // event handler — Tab on last -> first, Shift+Tab on first -> last — not SSR-visible)
+    // the first/last controls the focus trap pivots on
     expect(html).toMatch(/id="lumen-present-first"/);
     expect(html).toMatch(/id="lumen-present-last"/);
-    // the OLD aria-hidden focusable sentinel pattern is BANNED (WCAG 4.1.2 / axe
-    // aria-hidden-focus): no element may combine aria-hidden with a tabindex.
-    expect((html.match(/tabindex="0"[^>]*aria-hidden="true"|aria-hidden="true"[^>]*tabindex="0"/gi) || []).length).toBe(0);
+    // two hidden focusable sentinels wrap Tab / Shift+Tab inside the dialog
+    expect((html.match(/tabindex="0"[^>]*aria-hidden="true"|aria-hidden="true"[^>]*tabindex="0"/gi) || []).length).toBe(2);
   });
 
   it('the ▶ Present trigger carries the id that focus returns to on Exit/Esc', () => {
@@ -454,144 +446,5 @@ describe('Lumen — present mode + presentation export', () => {
     expect(out.html).not.toMatch(/onload/);
     expect(out.html).toMatch(/<figure class="chart">/);
     expect(out.html).toMatch(/<text>ok<\/text>/);
-  });
-});
-
-// ─────────────────────────────────────────────────────────────────────
-// 2026-07-12 enhancement wave: calm-by-default view options, data-bound
-// sign-off at the render layer, typed phase entry, undo/remove/clear,
-// copy-finding, table a11y (caption + scope), and honest empty states.
-// ─────────────────────────────────────────────────────────────────────
-describe('Lumen — calm-by-default + editing + a11y contracts (2026-07-12)', () => {
-  it('view options are calm-by-default: audience/chart rows hidden at the default state, named on the toggle', () => {
-    const html = renderState({ observations: REYNA });
-    expect(html).toMatch(/View options — Working · Trend/);   // closed toggle names the hidden state
-    expect(html).not.toMatch(/id="lumen-view-options"/);      // rows not rendered
-    expect(html).toMatch(/aria-expanded="false"[^>]*aria-controls="lumen-view-options"|aria-controls="lumen-view-options"[^>]*aria-expanded="false"/);
-    expect(html).toMatch(/AI ceiling/);                       // the dial STAYS persistent (design §15.1)
-  });
-
-  it('view options AUTO-OPEN when audience or chart is non-default (state is never hidden)', () => {
-    const bar = renderState({ observations: REYNA, chartType: 'bar' });
-    expect(bar).toMatch(/id="lumen-view-options"/);
-    expect(bar).toMatch(/aria-pressed="true"[^>]*>Bar|>Bar<\/button>/);
-    const fam = renderState({ observations: REYNA, audience: 'family' });
-    expect(fam).toMatch(/id="lumen-view-options"/);
-    const explicit = renderState({ observations: REYNA, showViewOptions: true });
-    expect(explicit).toMatch(/id="lumen-view-options"/);
-    expect(explicit).toMatch(/Plain language/);               // the face buttons render when open
-  });
-
-  it('the L3 sign-off check is DATA-BOUND at the render layer: a hyps-only (legacy/stale) sign-off shows re-sign, the bound one shows signed', () => {
-    const comp = L.makeCompendium('Measure', 'units');
-    REYNA.forEach((r) => L.addObservation(comp, r));
-    const claimHash = L.deriveTrendClaim(comp, {})._hash;
-    const staleSig = L.signoffHash(aiHyps);                   // hyps-only — earned before the data-binding fix
-    const stale = renderState({ observations: REYNA, ceiling: 'L3', audience: 'iep-team', aiHyps: aiHyps, signoff: staleSig });
-    expect(stale).toMatch(/Sign off before a formal export/);
-    expect(stale).not.toMatch(/✓ Signed off/);
-    const boundSig = L.signoffHash(aiHyps, claimHash);        // bound to THIS data
-    const signed = renderState({ observations: REYNA, ceiling: 'L3', audience: 'iep-team', aiHyps: aiHyps, signoff: boundSig });
-    expect(signed).toMatch(/✓ Signed off/);
-  });
-
-  it('typed entry has a phase (condition) input, and Undo/Clear appear only once data exists', () => {
-    const empty = renderState({});
-    expect(empty).toMatch(/Phase \(optional\)/);
-    expect(empty).not.toMatch(/Undo last|Clear all/);
-    const withData = renderState({ observations: REYNA });
-    expect(withData).toMatch(/↩ Undo last/);
-    expect(withData).toMatch(/🗑 Clear all/);
-  });
-
-  it('the data table is an accessible table: caption + th scope, and a per-row Remove control on the 1:1 (trend) peer', () => {
-    const html = renderState({ observations: REYNA, showTable: true });
-    expect(html).toMatch(/<caption class="sr-only">/);
-    expect(html).toMatch(/<th scope="col"/);
-    expect(html).toMatch(/>Remove<\/th>/);
-    expect(html).toMatch(/aria-label="Remove the point at week 1, value 42"/);
-    // the multi-series (aggregate) peer stays read-only — no Remove column
-    const multi = renderState({ observations: MULTI, chartType: 'multiSeriesLine', seriesLabels: MULTI_LABELS, showTable: true });
-    expect(multi).not.toMatch(/>Remove<\/th>/);
-  });
-
-  it('the finding card offers a one-click copy of the provenance-bound sentence', () => {
-    const html = renderState({ observations: REYNA });
-    expect(html).toMatch(/⧉ Copy finding/);
-  });
-
-  it('the benchmark picker states its honest empty-state while the norm spine ships empty', () => {
-    const html = renderState({ observations: REYNA });
-    expect(html).toMatch(/Add external benchmark/);
-    expect(html).toMatch(/norm table ships empty on purpose/);
-    // once a verified ref exists the note yields to the chip
-    const withRef = renderState({ observations: REYNA, sourceRefs: [benchRef] });
-    expect(withRef).not.toMatch(/norm table ships empty on purpose/);
-  });
-
-  it('present mode never renders over a non-presentable view (persisted-state guard)', () => {
-    const html = renderState({ observations: MULTI, chartType: 'multiSeriesLine', seriesLabels: MULTI_LABELS, presentMode: true });
-    expect(html).not.toMatch(/id="lumen-present-overlay"/);
-  });
-
-  it('the present-mode reveal CSS is a literal (never routed through the i18n shim)', () => {
-    const html = renderState({ observations: REYNA, presentMode: true });
-    expect(html).toMatch(/@keyframes lumenReveal\{from\{opacity:0/);
-    expect(html).toMatch(/prefers-reduced-motion/);
-  });
-});
-
-// ─────────────────────────────────────────────────────────────────────
-// FOCUS SUBSET (design §4 anti-cherry-picking axis, built 2026-07-12).
-// "Hiding data to focus is allowed; hiding THAT you hid it is not":
-// while a focus is active a non-removable chip renders, the sentence
-// self-declares k-of-n, the chart draws only the focused points, the
-// table still lists EVERY row, and AI is gated off.
-// ─────────────────────────────────────────────────────────────────────
-describe('Lumen — focus subset (anti-cherry-picking)', () => {
-  const FOCUS6 = ['o1', 'o2', 'o3', 'o4', 'o5', 'o6'];
-
-  it('a focused view renders the non-removable chip + the self-declaring sentence', () => {
-    const html = renderState({ observations: REYNA, focusIds: FOCUS6 });
-    expect(html).toMatch(/Showing 6 of 10/);                       // the chip
-    expect(html).toMatch(/Show all/);                              // its only dismissal clears the focus
-    expect(html).toMatch(/across these 6 of 10 probes/);           // the sentence self-declares
-    // the chart draws ONLY the focused points (6 observed circles, not 10)
-    expect((html.match(/<circle/g) || []).length).toBe(6);
-  });
-
-  it('no focus => no chip, chart draws every point (byte-identity of the default view)', () => {
-    const html = renderState({ observations: REYNA });
-    expect(html).not.toMatch(/Showing \d+ of \d+ —/);
-    expect((html.match(/<circle/g) || []).length).toBe(REYNA.length);
-  });
-
-  it('the data table lists EVERY row with focus checkboxes — the full record is the receipt', () => {
-    const html = renderState({ observations: REYNA, focusIds: FOCUS6, showTable: true });
-    expect(html).toMatch(/>Focus<\/th>/);
-    expect((html.match(/type="checkbox"[^>]*aria-label="Include the point/g) || []).length).toBe(10); // all 10 rows
-    expect((html.match(/aria-label="Include the point[^"]*" checked=""/g) || []).length).toBe(6);     // 6 focused
-  });
-
-  it('AI is gated off while a focus is active (the AI context reads the full dataset)', () => {
-    const html = renderState({ observations: REYNA, focusIds: FOCUS6, ceiling: 'L3' });
-    expect(html).not.toMatch(/Generate AI/);
-    expect(html).toMatch(/AI is off while a focus is active/);
-  });
-
-  it('a focus shrunk below n=3 refuses honestly but keeps the table reachable for recovery', () => {
-    const html = renderState({ observations: REYNA, focusIds: ['o1', 'o2'], showTable: true });
-    expect(html).toMatch(/too few points to estimate a trend/);
-    expect(html).toMatch(/Showing 2 of 10/);
-    expect(html).toMatch(/>Focus<\/th>/);                          // checkboxes still there to re-grow the set
-  });
-
-  it('focus does not apply to the multi-series view (its claims are per-series already)', () => {
-    const html = renderState({ observations: MULTI, chartType: 'multiSeriesLine', seriesLabels: MULTI_LABELS, focusIds: ['o1'] });
-    expect(html).not.toMatch(/Showing 1 of/);
-  });
-
-  it('focused state is structurally byte-stable (snapshot)', () => {
-    expect(renderState({ observations: REYNA, focusIds: FOCUS6, showTable: true })).toMatchSnapshot();
   });
 });
