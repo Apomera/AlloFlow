@@ -185,3 +185,16 @@ describe('pack compiler gates English pools (source pins — packed boards outra
     expect(anti).toMatch(/wordSoundsLanguage=\{wordSoundsLanguage\}/);
   });
 });
+
+describe('setup labels: written-in English fallbacks must actually render', () => {
+  it('no bare two-arg t(key, "fallback") sites remain (host t() has NO fallback semantics — it returns undefined on a miss, which rendered the blank Voice Pack button and blank AAC toggles)', async () => {
+    const { readFileSync } = await import('node:fs');
+    const src = readFileSync(resolve(process.cwd(), 'word_sounds_setup_source.jsx'), 'utf8');
+    const bare = src.match(/\bt\('(?:word_sounds|status)\.[a-z0-9_]+',\s*'/g) || [];
+    expect(bare).toEqual([]);
+    // the fallback helper exists and the converted sites use it
+    expect(src).toMatch(/const tf = \(key, fallback, params\) =>/);
+    expect(src).toMatch(/tf\('word_sounds\.voice_pack_cta', 'Record your own sounds'\)/);
+    expect(src).toMatch(/tf\('word_sounds\.aac_prep_label', 'Prepare AAC symbol images'\)/);
+  });
+});

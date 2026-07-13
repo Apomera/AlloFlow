@@ -822,6 +822,21 @@
     };
 
     const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview , onMinimize, onExpand, isProbeMode, probeActivity, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage}) => {
+        // t-with-fallback: the host's t(key, params) returns UNDEFINED on a
+        // missing key and treats a string second argument as params — so every
+        // `tf('word_sounds.x', 'English text')` call below rendered an EMPTY
+        // label whenever the key wasn't registered (the blank 🎙️ Voice Pack
+        // button and the blank AAC checkboxes). tf makes the written-in
+        // English fallback actually work.
+        const tf = (key, fallback, params) => {
+            let v;
+            try { v = typeof t === 'function' ? t(key, params) : undefined; } catch (e) { v = undefined; }
+            if (v == null || typeof v !== 'string' || v === key) {
+                v = fallback == null ? '' : String(fallback);
+                if (params) Object.keys(params).forEach((p) => { v = v.split('{' + p + '}').join(params[p]); });
+            }
+            return v;
+        };
         const t = tProp || ((key, params) => getWordSoundsString((k) => k, key, params || {}));
         const [imageVisibilityMode, setImageVisibilityMode] = React.useState('smart');
     React.useEffect(() => {
@@ -1684,7 +1699,7 @@
                      {isProcessing && (
                          <div className="space-y-2">
                              <div className="flex justify-between text-xs font-bold text-violet-600">
-                                 <span>{t('status.analyzing', 'Processing...')}</span>
+                                 <span>{tf('status.analyzing', 'Processing...')}</span>
                                  <span>{generatedCount} / {selectedIndices.size}</span>
                              </div>
                              <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -1724,8 +1739,8 @@
                                 <Sparkles size={32} className="text-yellow-300 animate-pulse" />
                             </div>
                             <div>
-                                <h2 className="text-3xl font-black tracking-tight">{isProbeMode ? `📊 ${(probeActivity || '').charAt(0).toUpperCase() + (probeActivity || '').slice(1)} Probe` : t('word_sounds.title', 'Word Sounds Studio')}</h2>
-                                <p className="text-indigo-100 font-medium opacity-90">{t('word_sounds.subtitle', 'Design your phonics lesson')} • {gradeLevel || 'K-2'}</p>
+                                <h2 className="text-3xl font-black tracking-tight">{isProbeMode ? `📊 ${(probeActivity || '').charAt(0).toUpperCase() + (probeActivity || '').slice(1)} Probe` : tf('word_sounds.title', 'Word Sounds Studio')}</h2>
+                                <p className="text-indigo-100 font-medium opacity-90">{tf('word_sounds.subtitle', 'Design your phonics lesson')} • {gradeLevel || 'K-2'}</p>
                             </div>
                         </div>
                         <div className="flex gap-2">
@@ -1818,44 +1833,44 @@
                     <div className="flex flex-1 overflow-hidden">
                         <div className="w-1/3 bg-slate-50 border-r border-slate-200 p-6 flex flex-col gap-6 overflow-y-auto">
                             <div className="space-y-3">
-                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{t('word_sounds.session_type', 'Session Type')}</label>
+                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.session_type', 'Session Type')}</label>
                                 <div className="bg-white p-2 rounded-xl border border-slate-400 shadow-sm grid grid-cols-2 gap-2">
                                     <button type="button" data-help-key="ws_gen_mode_practice"
                                         onClick={() => setSessionType('practice')}
                                         aria-pressed={sessionType === 'practice'}
                                         className={`px-3 py-2 rounded-lg font-bold text-sm transition-colors ${sessionType === 'practice' ? 'bg-violet-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                                        🎮 {t('word_sounds.mode_practice', 'Practice')}
+                                        🎮 {tf('word_sounds.mode_practice', 'Practice')}
                                     </button>
                                     <button type="button" data-help-key="ws_gen_mode_assessment"
                                         onClick={() => { setSessionType('assessment'); setIncludeLessonPlan(false); }}
                                         aria-pressed={sessionType === 'assessment'}
                                         className={`px-3 py-2 rounded-lg font-bold text-sm transition-colors ${sessionType === 'assessment' ? 'bg-amber-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                                        📊 {t('word_sounds.mode_assessment', 'Assessment')}
+                                        📊 {tf('word_sounds.mode_assessment', 'Assessment')}
                                     </button>
                                 </div>
                                 {sessionType === 'assessment' && (
                                     <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
                                         <p className="text-[11px] font-semibold text-amber-800 leading-snug">
-                                            {t('word_sounds.assessment_note', 'Timed, no hints — a single-skill probe for progress monitoring, not practice. Lesson plans are turned off in this mode.')}
+                                            {tf('word_sounds.assessment_note', 'Timed, no hints — a single-skill probe for progress monitoring, not practice. Lesson plans are turned off in this mode.')}
                                         </p>
-                                        <label className="block text-xs font-bold text-amber-900">{t('word_sounds.probe_skill', 'Probe skill')}</label>
-                                        <select aria-label={t('word_sounds.probe_skill', 'Probe skill')}
+                                        <label className="block text-xs font-bold text-amber-900">{tf('word_sounds.probe_skill', 'Probe skill')}</label>
+                                        <select aria-label={tf('word_sounds.probe_skill', 'Probe skill')}
                                             value={probeActivitySel} onChange={(e) => setProbeActivitySel(e.target.value)}
                                             className="w-full px-2 py-1.5 rounded-lg border border-amber-300 bg-white text-sm font-semibold text-slate-700">
-                                            <option value="segmentation">{t('word_sounds.act_segmentation', 'Segmentation')}</option>
-                                            <option value="isolation">{t('word_sounds.act_isolation', 'Sound Isolation')}</option>
-                                            <option value="blending">{t('word_sounds.act_blending', 'Blending')}</option>
-                                            <option value="rhyming">{t('word_sounds.act_rhyming', 'Rhyming')}</option>
-                                            <option value="counting">{t('word_sounds.act_counting', 'Sound Counting')}</option>
+                                            <option value="segmentation">{tf('word_sounds.act_segmentation', 'Segmentation')}</option>
+                                            <option value="isolation">{tf('word_sounds.act_isolation', 'Sound Isolation')}</option>
+                                            <option value="blending">{tf('word_sounds.act_blending', 'Blending')}</option>
+                                            <option value="rhyming">{tf('word_sounds.act_rhyming', 'Rhyming')}</option>
+                                            <option value="counting">{tf('word_sounds.act_counting', 'Sound Counting')}</option>
                                         </select>
                                     </div>
                                 )}
                             </div>
                             <div className="space-y-3">
-                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{t('word_sounds.settings', 'Settings')}</label>
+                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.settings', 'Settings')}</label>
                                 <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm">
                                     <div className="flex justify-between items-center mb-2">
-                                        <span className="font-bold text-slate-700">{t('word_sounds.count', 'Word Count')}</span>
+                                        <span className="font-bold text-slate-700">{tf('word_sounds.count', 'Word Count')}</span>
                                         <span className="bg-violet-100 text-violet-700 px-2 py-1 rounded-md text-xs font-bold">{wordCount}</span>
                                     </div>
                                     <input aria-label={t('common.word_count_slider')}
@@ -1867,7 +1882,7 @@
                                 </div>
                                 <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3">
                                     <div className="flex justify-between items-center mb-2">
-                                        <span className="font-bold text-slate-700">{t('word_sounds.phono_activity_length', 'Sound Activities per Session')}</span>
+                                        <span className="font-bold text-slate-700">{tf('word_sounds.phono_activity_length', 'Sound Activities per Session')}</span>
                                         <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-bold">{wordSoundsSessionGoal || 30}</span>
                                     </div>
                                     <input aria-label={t('common.session_goal_slider')}
@@ -1876,12 +1891,12 @@
                                         onChange={(e) => setWordSoundsSessionGoal && setWordSoundsSessionGoal(parseInt(e.target.value))}
                                         className="w-full accent-emerald-500 cursor-pointer"
                                     />
-                                    <p className="text-xs text-slate-600 mt-2">{t('word_sounds.phono_activity_length_hint', 'Phonological activities complete after this many correct answers')}</p>
+                                    <p className="text-xs text-slate-600 mt-2">{tf('word_sounds.phono_activity_length_hint', 'Phonological activities complete after this many correct answers')}</p>
                                 </div>
                                 <div className="mt-3">
                                     <div className={`bg-white p-4 rounded-xl border ${includeLessonPlan ? 'opacity-50 cursor-not-allowed border-slate-200' : orthoSessionGoal > 0 ? 'border-indigo-300 bg-indigo-50/30' : 'border-slate-200'} shadow-sm`}>
                                         <div className="flex justify-between items-center mb-2">
-                                            <span className="font-bold text-slate-700">{t('word_sounds.ortho_activity_length', '🔤 Spelling Activities per Session')}</span>
+                                            <span className="font-bold text-slate-700">{tf('word_sounds.ortho_activity_length', '🔤 Spelling Activities per Session')}</span>
                                             <span className={`px-2 py-1 rounded-md text-xs font-bold ${orthoSessionGoal > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>{orthoSessionGoal || 'Off'}</span>
                                         </div>
                                         <input aria-label={t('common.spelling_session_goal_slider')}
@@ -1896,31 +1911,31 @@
                                                 ? '⚠️ Controlled by Lesson Plan mode'
                                                 : orthoSessionGoal > 0
                                                     ? t('word_sounds.ortho_activity_hint_on', `Spelling activities begin after sound activities complete (${orthoSessionGoal} items)`)
-                                                    : t('word_sounds.ortho_activity_hint_off', 'Slide right to add spelling practice after phonics activities')
+                                                    : tf('word_sounds.ortho_activity_hint_off', 'Slide right to add spelling practice after phonics activities')
                                             }
                                         </p>
                                     </div>
                                 </div>
                                 <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3">
                                     <div className="flex justify-between items-center mb-2">
-                                        <span className="font-bold text-slate-700">{t('word_sounds.image_theme', 'Image Style')}</span>
+                                        <span className="font-bold text-slate-700">{tf('word_sounds.image_theme', 'Image Style')}</span>
                                         <Palette size={18} className="text-pink-500" />
                                     </div>
                                     <input aria-label={t('common.image_theme_input')}
                                         type="text"
                                         data-help-key="ws_gen_theme_input" value={imageTheme}
                                         onChange={(e) => setImageTheme(e.target.value)}
-                                        placeholder={t('word_sounds.theme_placeholder', 'e.g. cartoon, pixel art, realistic...')}
+                                        placeholder={tf('word_sounds.theme_placeholder', 'e.g. cartoon, pixel art, realistic...')}
                                         className="w-full p-2 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
                                     />
-                                    <p className="text-xs text-slate-600 mt-2">{t('word_sounds.theme_hint', 'Optional: Style for new word images (not glossary)')}</p>
+                                    <p className="text-xs text-slate-600 mt-2">{tf('word_sounds.theme_hint', 'Optional: Style for new word images (not glossary)')}</p>
                                     <label className="flex items-start gap-2 mt-3 cursor-pointer">
                                         <input type="checkbox" checked={includeAacImages}
                                             onChange={(e) => setIncludeAacImages(e.target.checked)}
                                             className="mt-0.5 accent-teal-600" />
                                         <span className="text-xs text-slate-600">
-                                            <span className="font-bold text-slate-700">{t('word_sounds.aac_prep_label', 'Prepare AAC symbol images')}</span><br/>
-                                            {t('word_sounds.aac_prep_hint', 'Pre-generates a picture for every answer choice so the AAC symbol overlay works on student devices without AI. Slower to prepare.')}
+                                            <span className="font-bold text-slate-700">{tf('word_sounds.aac_prep_label', 'Prepare AAC symbol images')}</span><br/>
+                                            {tf('word_sounds.aac_prep_hint', 'Pre-generates a picture for every answer choice so the AAC symbol overlay works on student devices without AI. Slower to prepare.')}
                                         </span>
                                     </label>
                                     <label className="flex items-start gap-2 mt-2 cursor-pointer">
@@ -1928,8 +1943,8 @@
                                             onChange={(e) => { setAacDefaultOn(e.target.checked); if (e.target.checked) setIncludeAacImages(true); }}
                                             className="mt-0.5 accent-teal-600" />
                                         <span className="text-xs text-slate-600">
-                                            <span className="font-bold text-slate-700">{t('word_sounds.aac_default_label', 'Start with symbol overlay ON')}</span><br/>
-                                            {t('word_sounds.aac_default_hint', 'For AAC users: activities open with picture-supported answer choices already showing (also enables image preparation).')}
+                                            <span className="font-bold text-slate-700">{tf('word_sounds.aac_default_label', 'Start with symbol overlay ON')}</span><br/>
+                                            {tf('word_sounds.aac_default_hint', 'For AAC users: activities open with picture-supported answer choices already showing (also enables image preparation).')}
                                         </span>
                                     </label>
                                 </div>
@@ -1987,25 +2002,25 @@
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{t('word_sounds.voice_pack_section', 'Voice')}</label>
+                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.voice_pack_section', 'Voice')}</label>
                                 <button type="button" onClick={() => setShowVoicePack(true)} data-help-key="ws_gen_voice_pack" className="w-full p-3 rounded-xl border-2 border-violet-200 bg-violet-50 hover:bg-violet-100 transition-colors flex items-center gap-3 text-left">
                                     <span className="text-xl">🎙️</span>
                                     <span className="flex-1 min-w-0">
-                                        <span className="block font-bold text-violet-700 text-sm">{t('word_sounds.voice_pack_cta', 'Record your own sounds')}</span>
-                                        <span className="block text-[11px] text-slate-500">{t('word_sounds.voice_pack_cta_hint', 'Use your voice for the phoneme bank (Orton-Gillingham)')}</span>
+                                        <span className="block font-bold text-violet-700 text-sm">{tf('word_sounds.voice_pack_cta', 'Record your own sounds')}</span>
+                                        <span className="block text-[11px] text-slate-500">{tf('word_sounds.voice_pack_cta_hint', 'Use your voice for the phoneme bank (Orton-Gillingham)')}</span>
                                     </span>
                                 </button>
                             </div>
                             {showVoicePack ? <PhonemeVoicePackEditor onClose={() => setShowVoicePack(false)} t={t} /> : null}
                             <div className="space-y-3">
-                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{t('word_sounds.sources', 'Active Sources')}</label>
+                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.sources', 'Active Sources')}</label>
                                 <div role="button" tabIndex={0} aria-pressed={includeGlossary} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIncludeGlossary(prev => !prev); } }} className={`p-3 rounded-xl border-2 transition-all cursor-pointer ${includeGlossary ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`} data-help-key="ws_gen_src_glossary" onClick={() => setIncludeGlossary(prev => !prev)}>
                                     <div className="flex items-center gap-3">
                                         <div className={`w-5 h-5 rounded border flex items-center justify-center ${includeGlossary ? 'bg-violet-600 border-violet-600' : 'border-slate-300'}`}>
                                             {includeGlossary && <Check size={14} className="text-white" />}
                                         </div>
                                         <BookOpen size={18} className="text-violet-600" />
-                                        <span className="font-bold text-slate-700">{t('word_sounds.source_glossary', 'Glossary')} ({glossaryTerms?.length || 0})</span>
+                                        <span className="font-bold text-slate-700">{tf('word_sounds.source_glossary', 'Glossary')} ({glossaryTerms?.length || 0})</span>
                                     </div>
                                 </div>
                                 <div className={`p-3 rounded-xl border-2 transition-all ${includeFamily ? 'bg-pink-50 border-pink-500' : 'bg-white border-slate-200'}`}>
@@ -2014,7 +2029,7 @@
                                             {includeFamily && <Check size={14} className="text-white" />}
                                         </div>
                                         <Layers size={18} className="text-pink-600" />
-                                        <span className="font-bold text-slate-700">{t('word_sounds.source_family', 'Word Family')}</span>
+                                        <span className="font-bold text-slate-700">{tf('word_sounds.source_family', 'Word Family')}</span>
                                     </div>
                                     {includeFamily && (
                                         <><select aria-label={t('common.selection')} data-help-key="ws_gen_family_select"
@@ -2022,7 +2037,7 @@
                                             onChange={(e) => setSelectedFamily(e.target.value)}
                                             className="mt-3 w-full p-2 rounded-lg border border-pink-200 bg-white text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
                                         >
-                                            <option value="">{t('word_sounds.select_family', 'Select family...')}</option>
+                                            <option value="">{tf('word_sounds.select_family', 'Select family...')}</option>
                                             {Object.keys(WORD_FAMILY_PRESETS).map(k => <option key={k} value={k}>{k} ({WORD_FAMILY_PRESETS[k].length})</option>)}
                                         </select>
                                         {selectedFamily && WORD_FAMILY_PRESETS[selectedFamily] && WORD_FAMILY_PRESETS[selectedFamily].filter(w => {
@@ -2041,14 +2056,14 @@
                                             {includeCustom && <Check size={14} className="text-white" />}
                                         </div>
                                         <Edit2 size={18} className="text-emerald-600" />
-                                        <span className="font-bold text-slate-700">{t('word_sounds.source_custom', 'Custom Manual')}</span>
+                                        <span className="font-bold text-slate-700">{tf('word_sounds.source_custom', 'Custom Manual')}</span>
                                     </div>
                                     {includeCustom && (<>
                                         <div className="mt-3 flex gap-2">
                                             <input aria-label={t('common.quick_add_word')}
                                                 id="word-sounds-quick-add" data-help-key="ws_gen_quick_add_input"
                                                 type="text"
-                                                placeholder={t('word_sounds.add_word', 'Add a word...')}
+                                                placeholder={tf('word_sounds.add_word', 'Add a word...')}
                                                 className="flex-1 p-2 rounded-lg border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none"
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter') {
@@ -2078,9 +2093,9 @@
                                             </button>
                                         </div>
                                         <textarea
-                                            aria-label={t('word_sounds.type_words', 'Type words here')}
+                                            aria-label={tf('word_sounds.type_words', 'Type words here')}
                                             value={customText} onChange={(e) => setCustomText(e.target.value)}
-                                            placeholder={t('word_sounds.type_words', 'Type words here (space or comma separated)...')}
+                                            placeholder={tf('word_sounds.type_words', 'Type words here (space or comma separated)...')}
                                             className="mt-2 w-full h-20 p-2 rounded-lg border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none resize-none"
                                         />
                                     </>)}
@@ -2091,7 +2106,7 @@
                                             {includeSightWords && <Check size={14} className="text-white" />}
                                         </div>
                                         <BookOpen size={18} className="text-amber-600" />
-                                        <span className="font-bold text-slate-700">{t('word_sounds.source_sight_words', '📚 Sight Words')}</span>
+                                        <span className="font-bold text-slate-700">{tf('word_sounds.source_sight_words', '📚 Sight Words')}</span>
                                     </div>
                                     {includeSightWords && (
                                         <select aria-label={t('common.selection')}
@@ -2112,7 +2127,7 @@
                                             {includeAI && <Check size={14} className="text-white" />}
                                         </div>
                                         <Sparkles size={18} className="text-violet-600" />
-                                        <span className="font-bold text-slate-700">{t('word_sounds.source_ai', 'AI Topic Gen')}</span>
+                                        <span className="font-bold text-slate-700">{tf('word_sounds.source_ai', 'AI Topic Gen')}</span>
                                     </div>
                                     {includeAI && (
                                         <div className="mt-3 flex gap-2">
@@ -2231,16 +2246,16 @@
                         <div className="flex-1 bg-white p-8 overflow-y-auto flex flex-col">
                              <div className="flex justify-between items-end mb-6">
                                 <div>
-                                    <h3 className="text-2xl font-black text-slate-700">{t('word_sounds.preview_title', 'Lesson Preview')}</h3>
+                                    <h3 className="text-2xl font-black text-slate-700">{tf('word_sounds.preview_title', 'Lesson Preview')}</h3>
                                     <div className="flex items-center gap-4">
-                                        <p className="text-slate-600 font-medium">{selectedIndices.size} {t('word_sounds.of_total', 'of')} {previewList.length} {t('word_sounds.words_selected', 'words selected')}</p>
+                                        <p className="text-slate-600 font-medium">{selectedIndices.size} {tf('word_sounds.of_total', 'of')} {previewList.length} {tf('word_sounds.words_selected', 'words selected')}</p>
                                         {previewList.length > 0 && (
                                             <button
                                                 aria-label={t('common.toggle_all')}
                                                 onClick={toggleAll}
                                                 className="text-xs font-bold uppercase tracking-wider text-violet-600 hover:text-violet-700 hover:underline"
                                             >
-                                                {selectedIndices.size === previewList.length ? t('word_sounds.deselect_all', 'Deselect All') : t('word_sounds.select_all', 'Select All')}
+                                                {selectedIndices.size === previewList.length ? tf('word_sounds.deselect_all', 'Deselect All') : tf('word_sounds.select_all', 'Select All')}
                                             </button>
                                         )}
                                     </div>
@@ -2257,7 +2272,7 @@
                                     }`}
                                 >
                                     {isProcessing ? <Loader2 className="animate-spin" /> : <PlayCircle fill="currentColor" className="text-white/20" size={28} />}
-                                    {isProcessing ? t('status.generating', 'Generating...') : t('word_sounds.start', 'Start Activity')}
+                                    {isProcessing ? tf('status.generating', 'Generating...') : tf('word_sounds.start', 'Start Activity')}
                                 </button>
                              </div>
                              {isProcessing && (
@@ -2265,7 +2280,7 @@
                                      <div className="flex items-center justify-between mb-3">
                                          <div className="flex items-center gap-3">
                                              <Loader2 className="animate-spin text-violet-600" size={24} />
-                                             <span className="font-bold text-violet-800 text-lg">{t('status.analyzing', 'Creating audio & analyzing words...')}</span>
+                                             <span className="font-bold text-violet-800 text-lg">{tf('status.analyzing', 'Creating audio & analyzing words...')}</span>
                                          </div>
                                          <span className="text-violet-600 font-black text-xl">{generatedCount} / {selectedIndices.size}</span>
                                      </div>
@@ -2332,8 +2347,8 @@
                              ) : (
                                  <div className="flex-1 flex flex-col items-center justify-center text-slate-600">
                                      <Layers size={48} className="mb-4 opacity-50" />
-                                     <p className="text-xl font-bold">{t('word_sounds.no_words', 'No words selected')}</p>
-                                     <p className="text-sm">{t('word_sounds.choose_source_hint', 'Choose a source to begin')}</p>
+                                     <p className="text-xl font-bold">{tf('word_sounds.no_words', 'No words selected')}</p>
+                                     <p className="text-sm">{tf('word_sounds.choose_source_hint', 'Choose a source to begin')}</p>
                                  </div>
                              )}
                         </div>
