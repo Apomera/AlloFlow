@@ -114,6 +114,23 @@ describe('Fisher Lab voyage progression', () => {
     expect(evaluateCoreManeuver('stand-on', Math.PI, Math.PI, 3, 3, 4.9)).toMatchObject({ observedEnough: false, complete: false });
   });
 
+  it('interprets bearing and range trends for closest-point-of-approach watch', () => {
+    const { evaluateCoreCollisionRisk } = window.__FisherLabCore;
+
+    expect(evaluateCoreCollisionRisk(20, 15, 15, 30, 32)).toMatchObject({
+      id: 'collision-risk',
+      constantBearing: true,
+      closing: true,
+      opening: false,
+      bearingChange: 2,
+      rangeChange: -5
+    });
+    expect(evaluateCoreCollisionRisk(20, 15, 15, 30, 43)).toMatchObject({ id: 'bearing-changing', constantBearing: false, closing: true });
+    expect(evaluateCoreCollisionRisk(20, 18, 14, 30, 46)).toMatchObject({ id: 'opening', opening: true });
+    expect(evaluateCoreCollisionRisk(20, 15, 15, 179, -179)).toMatchObject({ id: 'collision-risk', bearingChange: 2 });
+    expect(evaluateCoreCollisionRisk(20, 20, 20, 30, 30)).toMatchObject({ id: 'monitoring', closing: false, opening: false });
+  });
+
   it('awards ranks from combined score, accuracy, and fuel stewardship', () => {
     const { getCoreVoyageRank } = window.__FisherLabCore;
 
@@ -153,6 +170,9 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('Alter starboard · open closest approach');
     expect(source).toContain('Maintain course · monitor closest approach');
     expect(source).toContain('Observe crossing 5 s');
+    expect(source).toContain('evaluateCoreCollisionRisk');
+    expect(source).toContain('CPA WATCH');
+    expect(source).toContain('Closest point of approach watch.');
     expect(source).toContain("type: 'fish-haul'");
     expect(source).toContain("role: 'dialog', 'aria-modal': 'true'");
     expect(source).not.toContain('resumeSim');

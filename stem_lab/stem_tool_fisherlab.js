@@ -491,6 +491,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var turnedEnough = turnDegrees >= 15;
     return { criterionOne: slowEnough, criterionTwo: turnedEnough, observedEnough: true, headingDeviation: headingDeviation, speedDeviation: speedDeviation, turnDegrees: turnDegrees, complete: slowEnough && turnedEnough };
   }
+  function evaluateCoreCollisionRisk(startRange, currentRange, closestRange, startBearing, currentBearing) {
+    var bearingDelta = currentBearing - startBearing;
+    while (bearingDelta > 180) bearingDelta -= 360;
+    while (bearingDelta < -180) bearingDelta += 360;
+    var bearingChange = Math.abs(bearingDelta);
+    var rangeChange = currentRange - startRange;
+    var constantBearing = bearingChange <= 5;
+    var closing = currentRange < startRange - 0.5 && currentRange <= closestRange + 0.75;
+    var opening = currentRange > closestRange + 1.5;
+    var id = opening ? 'opening' : closing && constantBearing ? 'collision-risk' : closing ? 'bearing-changing' : 'monitoring';
+    var labels = {
+      'collision-risk': 'Collision risk: steady bearing, closing range',
+      'bearing-changing': 'Bearing changing while range closes',
+      opening: 'Range opening after closest approach',
+      monitoring: 'Monitoring bearing and range'
+    };
+    return { id: id, label: labels[id], bearingChange: bearingChange, rangeChange: rangeChange, constantBearing: constantBearing, closing: closing, opening: opening };
+  }
   function scoreCoreDecision(score, streak, correct, multiplier) {
     var nextStreak = correct ? streak + 1 : 0;
     var baseReward = 25 + Math.min(20, Math.max(0, nextStreak - 1) * 5);
@@ -527,6 +545,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreEncounter: getCoreEncounter,
     evaluateCoreEncounter: evaluateCoreEncounter,
     evaluateCoreManeuver: evaluateCoreManeuver,
+    evaluateCoreCollisionRisk: evaluateCoreCollisionRisk,
     scoreCoreDecision: scoreCoreDecision,
     isCoreMissionReady: isCoreMissionReady,
     getCoreObjective: getCoreObjective,
@@ -8872,6 +8891,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       trafficManeuverSeconds: 0,
       trafficStartHeading: Math.PI,
       trafficStartSpeed: 0,
+      trafficStartRange: 0,
+      trafficStartBearing: 0,
       trafficClosestRange: Infinity,
       missionComplete: false,
       fuelDepletedWarned: false,
@@ -9035,7 +9056,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       boatState.trafficStartHeading = boatState.heading;
       boatState.trafficStartSpeed = boatState.speed;
       boatState.trafficManeuverSeconds = 0;
-      boatState.trafficClosestRange = boat.position.distanceTo(trafficVessel.position);
+      boatState.trafficStartRange = boat.position.distanceTo(trafficVessel.position);
+      boatState.trafficStartBearing = relativeCoreBearing(boatState.heading, boat.position.x, boat.position.z, trafficVessel.position.x, trafficVessel.position.z) * 180 / Math.PI;
+      boatState.trafficClosestRange = boatState.trafficStartRange;
       setPaused(false, false);
       statusCb({ type: result.correct ? 'score' : 'violation', text: (result.correct ? '+' : '') + scored.delta + ' points · ' + result.encounter.explanation });
       statusCb({ type: 'guidance', text: 'Helm drill: ' + encounterProfile.maneuverInstruction });
@@ -9361,6 +9384,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       }
       var trafficManeuver = evaluateCoreManeuver(encounterProfile.maneuverType, boatState.trafficStartHeading, boatState.heading, boatState.trafficStartSpeed, boatState.speed, boatState.trafficManeuverSeconds);
       var trafficRange = boat.position.distanceTo(trafficVessel.position);
+      var trafficRelativeBearing = relativeCoreBearing(boatState.heading, boat.position.x, boat.position.z, trafficVessel.position.x, trafficVessel.position.z) * 180 / Math.PI;
       if (boatState.trafficDecisionMade && !boatState.trafficManeuverComplete) {
         boatState.trafficManeuverSeconds += dt;
         boatState.trafficClosestRange = Math.min(boatState.trafficClosestRange, trafficRange);
@@ -9377,6 +9401,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           flAnnounce('Maneuver reviewed. Continue the voyage.');
         }
       }
+      var trafficRisk = boatState.trafficDecisionMade ? evaluateCoreCollisionRisk(boatState.trafficStartRange, trafficRange, boatState.trafficClosestRange, boatState.trafficStartBearing, trafficRelativeBearing) : { id: 'monitoring', label: 'Monitoring bearing and range', bearingChange: 0, rangeChange: 0, constantBearing: false, closing: false, opening: false };
       if (boatState.trafficDecisionMade && trafficVessel.visible) {
         trafficVessel.position.x += trafficTravelDirection * dt * 4.2;
         if ((trafficTravelDirection < 0 && trafficVessel.position.x < -34) || (trafficTravelDirection > 0 && trafficVessel.position.x > 34)) trafficVessel.visible = false;
@@ -9575,6 +9600,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         trafficSpeedDeviation: trafficManeuver.speedDeviation,
         trafficTurnDegrees: trafficManeuver.turnDegrees,
         trafficRange: trafficRange,
+        trafficRelativeBearing: trafficRelativeBearing,
+        trafficRiskId: trafficRisk.id,
+        trafficRiskLabel: trafficRisk.label,
+        trafficBearingChange: trafficRisk.bearingChange,
+        trafficRangeChange: trafficRisk.rangeChange,
+        trafficConstantBearing: trafficRisk.constantBearing,
+        trafficClosing: trafficRisk.closing,
+        trafficOpening: trafficRisk.opening,
         trafficClosestRange: boatState.trafficClosestRange,
         trafficManeuverSeconds: boatState.trafficManeuverSeconds,
         trafficVesselVisible: trafficVessel.visible,
@@ -9683,6 +9716,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatState.trafficManeuverSeconds = 0;
         boatState.trafficStartHeading = Math.PI;
         boatState.trafficStartSpeed = 0;
+        boatState.trafficStartRange = 0;
+        boatState.trafficStartBearing = 0;
         boatState.trafficClosestRange = Infinity;
         boatState.missionComplete = false;
         boatState.stewardshipScore = 0;
@@ -10637,6 +10672,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var decisionAccuracy = hud.totalDecisions ? Math.round((hud.correctDecisions || 0) / hud.totalDecisions * 100) : 0;
       var modeProfile = getCoreVoyageMode(voyageMode);
       var voyageRank = getCoreVoyageRank(hud.stewardshipScore || 0, decisionAccuracy, fuelValue);
+      var trafficPlotAngle = (hud.trafficRelativeBearing || 0) * Math.PI / 180;
+      var trafficPlotRadius = Math.min(22, Math.max(7, (hud.trafficRange || 0) / 38 * 22));
+      var trafficPlotX = Math.sin(trafficPlotAngle) * trafficPlotRadius;
+      var trafficPlotY = -Math.cos(trafficPlotAngle) * trafficPlotRadius;
+      var trafficRiskColor = hud.trafficRiskId === 'collision-risk' ? '#fca5a5' : hud.trafficRiskId === 'opening' ? '#86efac' : hud.trafficRiskId === 'bearing-changing' ? '#7dd3fc' : '#fde68a';
       function setHeldControl(key, pressed) {
         if (harborRef.current && harborRef.current.setControl) harborRef.current.setControl(key, pressed);
       }
@@ -10771,6 +10811,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 )
               ),
               hud.trafficDecisionMade && !hud.trafficManeuverComplete ? h('div', { style: { marginTop: 7, paddingTop: 7, borderTop: '1px solid rgba(125,211,252,0.25)', display: 'grid', gap: 4, textAlign: 'left' } },
+                h('div', { 'aria-label': 'Closest point of approach watch. ' + (hud.trafficRiskLabel || 'Monitoring bearing and range') + '. Bearing change ' + (hud.trafficBearingChange || 0).toFixed(1) + ' degrees. Range change ' + (hud.trafficRangeChange || 0).toFixed(1) + ' simulation units.', style: { display: 'grid', gridTemplateColumns: '54px minmax(0,1fr)', gap: 7, alignItems: 'center', paddingBottom: 5, marginBottom: 1, borderBottom: '1px solid rgba(125,211,252,0.18)' } },
+                  h('div', { 'aria-hidden': 'true', style: { position: 'relative', width: 50, height: 50, borderRadius: '50%', border: '1px solid rgba(125,211,252,0.55)', background: 'radial-gradient(circle, transparent 31%, rgba(125,211,252,0.18) 32%, transparent 34%, transparent 64%, rgba(125,211,252,0.18) 65%, transparent 67%), linear-gradient(90deg, transparent 49%, rgba(125,211,252,0.22) 50%, transparent 52%), linear-gradient(transparent 49%, rgba(125,211,252,0.22) 50%, transparent 52%)' } },
+                    h('span', { style: { position: 'absolute', left: '50%', top: '50%', width: 6, height: 8, borderRadius: '50% 50% 35% 35%', background: '#f8fafc', transform: 'translate(-50%,-50%)' } }),
+                    h('span', { style: { position: 'absolute', left: '50%', top: '50%', width: 7, height: 7, borderRadius: '50%', background: trafficRiskColor, border: '1px solid #020617', boxShadow: '0 0 7px ' + trafficRiskColor, transform: 'translate(calc(-50% + ' + trafficPlotX.toFixed(1) + 'px), calc(-50% + ' + trafficPlotY.toFixed(1) + 'px))', transition: 'transform 0.15s linear' } })
+                  ),
+                  h('div', { style: { minWidth: 0 } },
+                    h('strong', { style: { display: 'block', color: trafficRiskColor, fontSize: 9, lineHeight: 1.3 } }, 'CPA WATCH · ' + (hud.trafficRiskLabel || 'Monitoring bearing and range')),
+                    h('span', { style: { display: 'block', marginTop: 3, color: '#dbeafe', fontSize: 8 } }, 'Bearing Δ ' + (hud.trafficBearingChange || 0).toFixed(1) + '° · Range Δ ' + ((hud.trafficRangeChange || 0) > 0 ? '+' : '') + (hud.trafficRangeChange || 0).toFixed(1))
+                  )
+                ),
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: hud.trafficCriterionOne ? '#86efac' : '#fef3c7', fontSize: 9 } },
                   h('span', null, (hud.trafficCriterionOne ? '✓ ' : '○ ') + (hud.trafficManeuverType === 'stand-on' ? 'Course steady ≤ 8°' : 'Safe speed ≤ 2.5 kt')),
                   h('strong', null, hud.trafficManeuverType === 'stand-on' ? (hud.trafficHeadingDeviation || 0).toFixed(1) + '°' : Math.abs(hud.speed || 0).toFixed(1) + ' kt')),
