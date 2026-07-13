@@ -2216,6 +2216,7 @@ const makeSortScoreTracker = () => {
 
 const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, titles = { setA: { text: "Set A" }, setB: { text: "Set B" } }, primaryLanguage = "English" }) => {
   const { t } = useContext(LanguageContext);
+  const reducedMotion = useReducedMotion();
   const scoreTrackerRef = useRef(null);
   if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
@@ -2236,6 +2237,11 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
   const vennPlayAgainRef = useRef(null);
   useGameDialogFocus(vennDialogRef, vennCloseRef, onClose);
   useEffect(() => { if (isWon) vennPlayAgainRef.current?.focus(); }, [isWon]);
+  useEffect(() => () => {
+      if (hintTimerRef.current) {
+          clearTimeout(hintTimerRef.current);
+      }
+  }, []);
   const showZoneHint = (correctZone) => {
       if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
       setLastHint(correctZone);
@@ -2272,23 +2278,34 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
     setScore(0);
     setIsWon(false);
   }, [data]);
-  const handleItemKeyDown = (e, item) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          e.stopPropagation();
-          if (keyboardSelectedItemId === item.id) {
-              setKeyboardSelectedItemId(null);
-              setAnnouncement(t('concept_map.venn.selection_cancelled'));
-          } else {
-              setKeyboardSelectedItemId(item.id);
-              setAnnouncement(t('concept_map.venn.item_selected', { item: getText(item) }));
-              if (playSound) playSound('click');
-          }
+  const focusVennItem = (itemId) => {
+      window.setTimeout(() => {
+          const candidates = Array.from(vennDialogRef.current?.querySelectorAll('[data-venn-item-id]') || []);
+          const itemControl = candidates.find(node => node.dataset.vennItemId === itemId);
+          itemControl?.focus();
+      }, 0);
+  };
+  const cancelKeyboardSelection = () => {
+      const selectedId = keyboardSelectedItemId;
+      setKeyboardSelectedItemId(null);
+      setAnnouncement(t('concept_map.venn.selection_cancelled'));
+      if (selectedId) focusVennItem(selectedId);
+  };
+  const toggleKeyboardSelection = (event, item) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (keyboardSelectedItemId === item.id) {
+          cancelKeyboardSelection();
+      } else {
+          setKeyboardSelectedItemId(item.id);
+          setAnnouncement(t('concept_map.venn.item_selected', { item: getText(item) }));
+          if (playSound) playSound('click');
       }
   };
   const handleKeyboardMove = (targetZone) => {
       if (!keyboardSelectedItemId) return;
-      const itemIndex = items.findIndex(i => i.id === keyboardSelectedItemId);
+      const selectedId = keyboardSelectedItemId;
+      const itemIndex = items.findIndex(i => i.id === selectedId);
       if (itemIndex === -1) return;
       const item = items[itemIndex];
       const itemName = item ? getText(item) : "Item";
@@ -2308,10 +2325,11 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
                if(playSound) playSound('incorrect');
                showZoneHint(item.correctZone);
-               setAnnouncement(t('concept_map.venn.move_incorrect', { item: itemName }));
+               setAnnouncement(`${t('concept_map.venn.move_incorrect', { item: itemName })} ${t('games.ce_sort.hint_try') || 'Try'}: ${getTitle(item.correctZone)}.`);
            }
       }
       setKeyboardSelectedItemId(null);
+      focusVennItem(selectedId);
   };
   const handleDragStart = (e, item) => {
     setDraggedItem(item);
@@ -2334,18 +2352,21 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
           if (playSound) playSound('correct');
           setItems(prev => prev.map(i => i.id === draggedItem.id ? { ...i, currentZone: targetZone } : i));
           const delta = scoreTrackerRef.current.correct(draggedItem.id);
-       if (delta > 0) setScore(s => s + delta);
+          if (delta > 0) setScore(s => s + delta);
+          setAnnouncement(t('concept_map.venn.move_correct', { item: getText(draggedItem), zone: getTitle(targetZone) }));
       } else {
           if (playSound) playSound('incorrect');
           setAttempts(a => a + 1);
           setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(draggedItem.id)));
           showZoneHint(draggedItem.correctZone);
+          setAnnouncement(`${t('concept_map.venn.move_incorrect', { item: getText(draggedItem) })} ${t('games.ce_sort.hint_try') || 'Try'}: ${getTitle(draggedItem.correctZone)}.`);
       }
       setDraggedItem(null);
   };
   useEffect(() => {
       if (!isWon && items.length > 0 && items.every(i => i.currentZone !== 'bank')) {
           setIsWon(true);
+          setAnnouncement(`${t('concept_map.venn.victory_title') || 'Perfect!'}. ${t('common.score') || 'Score'}: ${score}.`);
           if(onScoreUpdate) onScoreUpdate(score, "Venn Diagram Sort");
           if (playSound) playSound('correct');
           if (onGameComplete) {
@@ -2359,9 +2380,14 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
       }
   }, [items, score, onScoreUpdate, playSound, isWon]);
   const resetVennGame = () => {
+      if (hintTimerRef.current) {
+          clearTimeout(hintTimerRef.current);
+          hintTimerRef.current = null;
+      }
       const shuffled = items.map(item => ({ ...item, currentZone: 'bank' }));
       for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
       setItems(shuffled); setScore(0); setAttempts(0); setIsWon(false); setKeyboardSelectedItemId(null);
+      setLastHint(null);
       setAnnouncement(t('concept_map.venn.restarted') || 'Venn sort restarted.');
       window.setTimeout(() => vennDialogRef.current?.focus(), 0);
   };
@@ -2387,30 +2413,40 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
       if (gameLang === 'english' && t.trans) return t.trans;
       return t.text || "";
   };
+  const getTitleLang = (key) => {
+      const value = titles[key];
+      const showsEnglishTranslation = gameLang === 'english' && value && typeof value === 'object' && value.trans;
+      if (showsEnglishTranslation) return 'en';
+      try {
+          return (window.AlloFlowLang && window.AlloFlowLang.bcp47(primaryLanguage)) || 'en';
+      } catch (_) {
+          return 'en';
+      }
+  };
   const hasTranslations = items.some(i => i.translation);
   const vennSetA = useMemo(() => items.filter(i => i.currentZone === 'setA'), [items]);
   const vennSetB = useMemo(() => items.filter(i => i.currentZone === 'setB'), [items]);
   const vennShared = useMemo(() => items.filter(i => i.currentZone === 'shared'), [items]);
   const vennBank = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
   return (
-      <div ref={vennDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="venn-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? '' : ' animate-in zoom-in-95'}`} data-help-key="venn_game_container">
+      <div ref={vennDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="venn-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col focus:outline-none${reducedMotion ? '' : ' animate-in zoom-in-95'}`} data-help-key="venn_game_container">
           <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-          <div className="bg-indigo-600 p-4 text-white flex justify-between items-center shadow-md z-30">
+          <div className="bg-indigo-600 p-3 sm:p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30">
               <h3 id="venn-game-title" className="font-bold text-xl flex items-center gap-2" data-help-key="venn_header">
-                  <Layout size={24}/> {t('common.venn_sort_title')}
+                  <Layout size={24} aria-hidden="true"/> {t('common.venn_sort_title')}
               </h3>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center justify-end gap-2">
                   {hasTranslations && (
                       <select aria-label={t('common.selection')}
                           value={gameLang}
                           onChange={(e) => setGameLang(e.target.value)}
-                          className="text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer shadow-sm"
+                          className="min-h-11 text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600 cursor-pointer shadow-sm"
                       >
                           <option value="primary">{primaryLanguage}</option>
                           <option value="english">{t('languages.english')}</option>
                       </select>
                   )}
-                  <div className="bg-indigo-800 px-4 py-1 rounded-full font-bold text-yellow-200 border border-indigo-500">
+                  <div className="min-h-11 flex items-center bg-indigo-800 px-4 py-1 rounded-full font-bold text-yellow-200 border border-indigo-500">
                       {t('common.score')}: {score}
                   </div>
                   <GameThemeToggle />
@@ -2422,16 +2458,17 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                        data-help-key="venn_back_btn"
                       className="min-h-11 flex items-center gap-1 text-xs font-bold bg-indigo-700 hover:bg-indigo-500 px-3 py-1.5 rounded-full transition-colors border border-indigo-400 focus:outline-none focus:ring-2 focus:ring-white"
                   >
-                      <ArrowDown className="rotate-90" size={14}/> {t('concept_map.venn.back_to_editor')}
+                      <ArrowDown className="rotate-90" size={14} aria-hidden="true"/> {t('concept_map.venn.back_to_editor')}
                   </button>
               </div>
           </div>
-          <div className="flex-grow relative bg-slate-100 overflow-hidden flex flex-col items-center justify-center">
+          <div className="flex-grow relative bg-slate-100 overflow-auto flex flex-col items-center justify-start md:justify-center">
               <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
               {isWon && (
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" role="presentation">
                     <div ref={vennVictoryRef} role="dialog" aria-modal="true" aria-labelledby="venn-victory-title" aria-describedby="venn-victory-description"
                       onKeyDown={event => {
+                        event.stopPropagation();
                         if (event.key === 'Escape') { event.preventDefault(); onClose(); return; }
                         if (event.key !== 'Tab') return;
                         const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
@@ -2439,7 +2476,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                         const first = focusable[0], last = focusable[focusable.length - 1];
                         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
                         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-                      }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? 'animate-in zoom-in-95 duration-300' : ''}`}>
+                      }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!reducedMotion ? 'animate-in zoom-in-95 duration-300' : ''}`}>
                         <h2 id="venn-victory-title" className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title')}</h2>
                         <p id="venn-victory-description" className="text-slate-600">{t('concept_map.venn.victory_desc')}</p>
                         <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -2447,51 +2484,66 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                           <button type="button" onClick={onClose} className="min-h-11 rounded-lg bg-slate-200 px-4 py-2 font-bold text-slate-800 hover:bg-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
                         </div>
                     </div>
-                    {!useReducedMotion() && <ConfettiExplosion />}
+                    {!reducedMotion && <ConfettiExplosion />}
                 </div>
               )}
               {lastHint && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2">
-                    <HelpCircle size={16} /> Try: {lastHint === 'shared' ? (getTitle('shared') || 'Both') : getTitle(lastHint)}
+                <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm flex items-center gap-2${reducedMotion ? '' : ' animate-in fade-in slide-in-from-top-2 duration-300'}`}>
+                    <HelpCircle size={16} aria-hidden="true" /> {t('games.ce_sort.hint_try') || 'Try'}: <span lang={getTitleLang(lastHint)}>{lastHint === 'shared' ? (getTitle('shared') || 'Both') : getTitle(lastHint)}</span>
                 </div>
               )}
               {keyboardSelectedItemId && (
                 <div
-                    className="absolute inset-0 z-50 bg-black/10 backdrop-blur-[2px] flex items-center justify-center"
-                    onClick={() => setKeyboardSelectedItemId(null)}
+                    role="presentation"
+                    className="absolute inset-0 z-50 bg-black/10 backdrop-blur-[2px] flex items-center justify-center p-4"
+                    onClick={cancelKeyboardSelection}
                 >
                     <div
                         ref={moveMenuRef}
-                        className="bg-white p-6 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-3 animate-in zoom-in duration-200"
+                        className={`bg-white p-6 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-3 max-w-md w-full${reducedMotion ? '' : ' animate-in zoom-in duration-200'}`}
                         role="dialog"
                         aria-modal="true"
-                        aria-label={t('concept_map.venn.choose_dest_aria')}
+                        aria-labelledby="venn-move-menu-title"
                         onClick={e => e.stopPropagation()}
+                        onKeyDown={event => {
+                            event.stopPropagation();
+                            if (event.key === 'Escape') {
+                                event.preventDefault();
+                                cancelKeyboardSelection();
+                                return;
+                            }
+                            if (event.key !== 'Tab') return;
+                            const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                            if (!focusable.length) { event.preventDefault(); return; }
+                            const first = focusable[0], last = focusable[focusable.length - 1];
+                            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+                        }}
                     >
-                        <h4 className="text-sm font-bold text-slate-700 text-center mb-2">{t('concept_map.venn.move_menu_title')}</h4>
+                        <h4 id="venn-move-menu-title" className="text-sm font-bold text-slate-700 text-center mb-2">{t('concept_map.venn.move_menu_title')}</h4>
                         <div className="grid grid-cols-2 gap-3">
-                            <button data-help-key="venn_move_a" onClick={() => handleKeyboardMove('setA')} className="px-4 py-3 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-xl font-bold text-xs transition-colors border border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-500">
-                                {getTitle('setA')}
+                            <button type="button" data-help-key="venn_move_a" onClick={() => handleKeyboardMove('setA')} className="min-h-11 px-4 py-3 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-xl font-bold text-xs transition-colors border border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2">
+                                <span lang={getTitleLang('setA')}>{getTitle('setA')}</span>
                             </button>
-                            <button data-help-key="venn_move_b" onClick={() => handleKeyboardMove('setB')} className="px-4 py-3 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-xl font-bold text-xs transition-colors border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                {getTitle('setB')}
+                            <button type="button" data-help-key="venn_move_b" onClick={() => handleKeyboardMove('setB')} className="min-h-11 px-4 py-3 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-xl font-bold text-xs transition-colors border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <span lang={getTitleLang('setB')}>{getTitle('setB')}</span>
                             </button>
-                            <button data-help-key="venn_move_shared" onClick={() => handleKeyboardMove('shared')} className="col-span-2 px-4 py-3 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-xl font-bold text-xs transition-colors border border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                {getTitle('shared') || t('concept_map.venn.shared_fallback')}
+                            <button type="button" data-help-key="venn_move_shared" onClick={() => handleKeyboardMove('shared')} className="col-span-2 min-h-11 px-4 py-3 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-xl font-bold text-xs transition-colors border border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+                                <span lang={getTitleLang('shared')}>{getTitle('shared') || t('concept_map.venn.shared_fallback')}</span>
                             </button>
-                            <button data-help-key="venn_move_bank" onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 mt-2 focus:outline-none focus:ring-2 focus:ring-slate-500">
+                            <button type="button" data-help-key="venn_move_bank" onClick={() => handleKeyboardMove('bank')} className="col-span-2 min-h-11 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 mt-2 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2">
                                 {t('concept_map.venn.return_bank')}
                             </button>
                         </div>
-                        <button data-help-key="venn_move_cancel" onClick={() => setKeyboardSelectedItemId(null)} className="mt-2 text-xs text-slate-600 hover:text-slate-800 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('concept_map.venn.cancel_selection')}</button>
+                        <button type="button" data-help-key="venn_move_cancel" onClick={cancelKeyboardSelection} className="min-h-11 mt-2 text-xs text-slate-600 hover:text-slate-800 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 rounded">{t('concept_map.venn.cancel_selection')}</button>
                     </div>
                 </div>
               )}
               <div className="w-full max-w-[800px] flex justify-between px-4 md:px-12 mb-2 z-20 pointer-events-none">
-                  <div className="bg-rose-100/90 backdrop-blur-sm border-2 border-rose-300 text-rose-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm max-w-[300px] text-center pointer-events-auto transform -rotate-2">
+                  <div lang={getTitleLang('setA')} className="bg-rose-100/90 backdrop-blur-sm border-2 border-rose-300 text-rose-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm max-w-[300px] text-center pointer-events-auto transform -rotate-2">
                       {getTitle('setA')}
                   </div>
-                  <div className="bg-blue-100/90 backdrop-blur-sm border-2 border-blue-300 text-blue-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm max-w-[300px] text-center pointer-events-auto transform rotate-2">
+                  <div lang={getTitleLang('setB')} className="bg-blue-100/90 backdrop-blur-sm border-2 border-blue-300 text-blue-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm max-w-[300px] text-center pointer-events-auto transform rotate-2">
                       {getTitle('setB')}
                   </div>
               </div>
@@ -2500,25 +2552,24 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                       onDrop={(e) => handleDrop(e, 'setA')}
                       onDragOver={(e) => handleDragOver(e, 'setA')}
                       onDragLeave={handleDragLeave}
-                      className={`absolute left-0 w-[500px] h-[500px] rounded-full border-4 flex flex-col items-start justify-center ps-24 transition-all duration-300
-                        ${activeDropZone === 'setA' ? 'bg-rose-200/60 border-rose-500 scale-[1.02] z-10 shadow-[0_0_30px_rgba(244,63,94,0.3)]' : 'bg-gradient-to-br from-rose-100/50 to-rose-200/30 border-rose-300'}
+                      className={`absolute left-0 w-[500px] h-[500px] rounded-full border-4 flex flex-col items-start justify-center ps-24 ${reducedMotion ? '' : 'transition-all duration-300'}
+                        ${activeDropZone === 'setA' ? `bg-rose-200/60 border-rose-500 ${reducedMotion ? '' : 'scale-[1.02]'} z-10 shadow-[0_0_30px_rgba(244,63,94,0.3)]` : 'bg-gradient-to-br from-rose-100/50 to-rose-200/30 border-rose-300'}
                       `}
                       data-help-key="venn_drop_zone_a"
                   >
                       <div className="flex flex-wrap gap-2 w-64 content-center justify-center pe-12 h-64 overflow-y-auto custom-scrollbar">
                           {vennSetA.map(item => (
-                              <div
+                              <button
                                 key={item.id}
-                                tabIndex={0}
-                                role="button"
+                                type="button"
+                                data-venn-item-id={item.id}
                                 aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: getTitle('setA') })}
                                 aria-pressed={keyboardSelectedItemId === item.id}
-                                onKeyDown={(e) => handleItemKeyDown(e, item)}
-                                onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                                data-help-key="venn_sorted_item" className={`bg-white text-rose-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-rose-200 animate-in zoom-in cursor-pointer hover:bg-rose-50 focus:outline-none focus:ring-2 focus:ring-rose-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
+                                onClick={(event) => toggleKeyboardSelection(event, item)}
+                                data-help-key="venn_sorted_item" className={`min-h-11 bg-white text-rose-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-rose-200 cursor-pointer hover:bg-rose-50 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 ${reducedMotion ? '' : 'animate-in zoom-in'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''}`}
                               >
                                 <span lang={getTextLang(item)}>{getText(item)}</span>
-                              </div>
+                              </button>
                           ))}
                       </div>
                   </div>
@@ -2526,25 +2577,24 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                       onDrop={(e) => handleDrop(e, 'setB')}
                       onDragOver={(e) => handleDragOver(e, 'setB')}
                       onDragLeave={handleDragLeave}
-                      className={`absolute right-0 w-[500px] h-[500px] rounded-full border-4 flex flex-col items-end justify-center pe-24 transition-all duration-300
-                        ${activeDropZone === 'setB' ? 'bg-blue-200/60 border-blue-500 scale-[1.02] z-10 shadow-[0_0_30px_rgba(59,130,246,0.3)]' : 'bg-gradient-to-bl from-blue-100/50 to-blue-200/30 border-blue-300'}
+                      className={`absolute right-0 w-[500px] h-[500px] rounded-full border-4 flex flex-col items-end justify-center pe-24 ${reducedMotion ? '' : 'transition-all duration-300'}
+                        ${activeDropZone === 'setB' ? `bg-blue-200/60 border-blue-500 ${reducedMotion ? '' : 'scale-[1.02]'} z-10 shadow-[0_0_30px_rgba(59,130,246,0.3)]` : 'bg-gradient-to-bl from-blue-100/50 to-blue-200/30 border-blue-300'}
                       `}
                       data-help-key="venn_drop_zone_b"
                   >
                       <div className="flex flex-wrap gap-2 w-64 content-center justify-center ps-12 h-64 overflow-y-auto custom-scrollbar">
                           {vennSetB.map(item => (
-                              <div
+                              <button
                                 key={item.id}
-                                tabIndex={0}
-                                role="button"
+                                type="button"
+                                data-venn-item-id={item.id}
                                 aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: getTitle('setB') })}
                                 aria-pressed={keyboardSelectedItemId === item.id}
-                                onKeyDown={(e) => handleItemKeyDown(e, item)}
-                                onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                                data-help-key="venn_sorted_item" className={`bg-white text-blue-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-blue-200 animate-in zoom-in cursor-pointer hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
+                                onClick={(event) => toggleKeyboardSelection(event, item)}
+                                data-help-key="venn_sorted_item" className={`min-h-11 bg-white text-blue-700 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-b-2 border-blue-200 cursor-pointer hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${reducedMotion ? '' : 'animate-in zoom-in'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''}`}
                               >
                                 <span lang={getTextLang(item)}>{getText(item)}</span>
-                              </div>
+                              </button>
                           ))}
                       </div>
                   </div>
@@ -2552,26 +2602,25 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                       onDrop={(e) => handleDrop(e, 'shared')}
                       onDragOver={(e) => handleDragOver(e, 'shared')}
                       onDragLeave={handleDragLeave}
-                      className={`absolute w-[180px] h-[340px] z-20 flex flex-col items-center justify-center rounded-[50%] transition-all duration-300
-                        ${activeDropZone === 'shared' ? 'bg-purple-200/40 border-2 border-purple-500 scale-105 shadow-[0_0_40px_rgba(168,85,247,0.4)]' : 'hover:bg-purple-100/20'}
+                      className={`absolute w-[180px] h-[340px] z-20 flex flex-col items-center justify-center rounded-[50%] ${reducedMotion ? '' : 'transition-all duration-300'}
+                        ${activeDropZone === 'shared' ? `bg-purple-200/40 border-2 border-purple-500 ${reducedMotion ? '' : 'scale-105'} shadow-[0_0_40px_rgba(168,85,247,0.4)]` : 'hover:bg-purple-100/20'}
                       `}
                       data-help-key="venn_drop_zone_shared"
                   >
-                      <h4 className="font-black text-purple-800 uppercase tracking-widest bg-white/90 px-3 py-1 rounded-full mb-2 shadow-sm text-[11px] border border-purple-100 opacity-60 hover:opacity-100 transition-opacity">{t('concept_map.venn.shared_label')}</h4>
+                      <h4 lang={getTitleLang('shared')} className="font-black text-purple-800 uppercase tracking-widest bg-white/90 px-3 py-1 rounded-full mb-2 shadow-sm text-[11px] border border-purple-100 opacity-60 hover:opacity-100 transition-opacity">{getTitle('shared') || t('concept_map.venn.shared_label')}</h4>
                       <div className="flex flex-wrap gap-1.5 justify-center w-full overflow-y-auto max-h-[80%] p-2 custom-scrollbar">
                           {vennShared.map(item => (
-                              <div
+                              <button
                                 key={item.id}
-                                tabIndex={0}
-                                role="button"
+                                type="button"
+                                data-venn-item-id={item.id}
                                 aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: t('concept_map.venn.shared_label') })}
                                 aria-pressed={keyboardSelectedItemId === item.id}
-                                onKeyDown={(e) => handleItemKeyDown(e, item)}
-                                onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                                data-help-key="venn_sorted_item" className={`bg-white text-purple-700 px-2 py-1 rounded shadow-sm text-[11px] font-bold border-b-2 border-purple-200 animate-in zoom-in cursor-pointer hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
+                                onClick={(event) => toggleKeyboardSelection(event, item)}
+                                data-help-key="venn_sorted_item" className={`min-h-11 bg-white text-purple-700 px-2 py-1 rounded shadow-sm text-[11px] font-bold border-b-2 border-purple-200 cursor-pointer hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${reducedMotion ? '' : 'animate-in zoom-in'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''}`}
                               >
                                 <span lang={getTextLang(item)}>{getText(item)}</span>
-                              </div>
+                              </button>
                           ))}
                       </div>
                   </div>
@@ -2583,18 +2632,22 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                   {vennBank.map(item => (
                       <div
                           key={item.id}
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, item)}
-                          onDragEnd={() => setDraggedItem(null)}
-                          tabIndex={0}
-                          role="button"
-                          aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: t('concept_sort.unsorted_aria') })}
-                          aria-pressed={keyboardSelectedItemId === item.id}
-                          onKeyDown={(e) => handleItemKeyDown(e, item)}
-                          onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                          data-help-key="venn_bank_item" className={`bg-white px-4 py-2 rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-900 cursor-grab active:cursor-grabbing active:border-b-0 active:translate-y-1 transition-all text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center animate-in zoom-in duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 border-yellow-500 z-50 scale-110' : ''} ${draggedItem && draggedItem.id === item.id ? 'opacity-30 scale-95' : ''}`}
+                          className={`min-h-11 bg-white rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center ${reducedMotion ? '' : 'animate-in zoom-in duration-300'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 border-yellow-500 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''} ${draggedItem && draggedItem.id === item.id ? `opacity-30 ${reducedMotion ? '' : 'scale-95'}` : ''}`}
                       >
-                          <span lang={getTextLang(item)}>{getText(item)}</span>
+                          <button
+                              type="button"
+                              draggable
+                              onDragStart={(event) => handleDragStart(event, item)}
+                              onDragEnd={() => setDraggedItem(null)}
+                              data-venn-item-id={item.id}
+                              aria-label={t('concept_map.venn.item_aria', { item: getText(item), zone: t('concept_sort.unsorted_aria') })}
+                              aria-pressed={keyboardSelectedItemId === item.id}
+                              onClick={(event) => toggleKeyboardSelection(event, item)}
+                              data-help-key="venn_bank_item"
+                              className={`min-h-11 flex-1 px-4 py-2 rounded-xl cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${reducedMotion ? '' : 'active:translate-y-1 transition-transform'}`}
+                          >
+                              <span lang={getTextLang(item)}>{getText(item)}</span>
+                          </button>
                           <SpeakButton text={getText(item)} size={11} />
                       </div>
                   ))}

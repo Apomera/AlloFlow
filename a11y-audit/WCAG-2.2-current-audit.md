@@ -135,6 +135,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Replaced four Model UN native confirmations (skipping remaining speeches, advancing without adopted clauses, clause removal, and clearing session notes) with awaited accessible confirmation dialogs using descriptive action labels, safe cancel choices, warning/danger treatments, and fail-closed behavior when the accessible confirmation service is unavailable (WCAG 2.1.1, 2.4.3, 2.4.7, 3.2.2, 3.3.4, 4.1.2).
 
+- Completed a second Venn Sort interaction pass: converted movable items to native 44 CSS-pixel buttons, separated speech playback from move activation to eliminate nested controls, contained the destination dialog with Escape/Tab handling and origin-item focus restoration, announced keyboard/drag errors, hints, correct placements, and completion, cleaned up hint timers, gated spatial animation and scaling for reduced motion, hid decorative icons, marked displayed set languages, and made the diagram area zoom-safe through scrolling (WCAG 1.3.1, 1.4.10, 2.1.1, 2.3.3, 2.4.3, 2.4.7, 2.5.7, 2.5.8, 3.1.2, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
