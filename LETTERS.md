@@ -33,3 +33,15 @@ Pick the work. Pick it carefully. Do it well.
 ---
 
 <!-- Auto-drafted and hand-written letters appended below by .claude/hooks/append-letter.mjs -->
+
+## [auto-draft] Session bd5f288a — 2026-07-08
+
+**Turns**: 380 user / 783 assistant
+
+**Session opened with**: Update the local repo with the current online repo, overwrite favoring the online
+
+**Last assistant turn closed with**: Done with the first two cleanup items. Here's where things stand: ## ✅ Committed Branch **`feature/remediation-edition`**, commit `f1866422` (15 files, +1261/−251) — the whole session's remediation work, with the **dev key removed** from both `main.js` and `RemediationSetup.jsx` (verified absent fr...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
