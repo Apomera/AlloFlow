@@ -157,6 +157,77 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
     expect(audioInstances[0].src).toBe('blob:on-demand-sentence');
     expect(audioInstances[0].play).toHaveBeenCalledTimes(1);
   });
+
+  it('captures the actively played sentence into durable karaoke storage', async () => {
+    audioInstances = [];
+    global.Audio = window.Audio = FakeAudio;
+    const capture = vi.fn(async () => true);
+    window.__alloCaptureKaraokeAudio = capture;
+    const getAudioUrl = vi.fn(sentence => Promise.resolve('blob:' + sentence));
+
+    renderKaraoke(karaokeProps({
+      text: 'Capture this sentence.',
+      getAudioUrl,
+      captureOn: true,
+    }));
+
+    const play = host.querySelector('button[aria-label="Play"]');
+    await act(async () => {
+      play.click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(capture).toHaveBeenCalledWith('Capture this sentence.', 'blob:Capture this sentence.');
+  });
+
+  it('persists look-ahead sentences instead of leaving them only in the temporary TTS cache', async () => {
+    vi.useFakeTimers();
+    audioInstances = [];
+    global.Audio = window.Audio = FakeAudio;
+    const capture = vi.fn(async () => true);
+    window.__alloCaptureKaraokeAudio = capture;
+    const getAudioUrl = vi.fn(sentence => Promise.resolve('blob:' + sentence));
+
+    renderKaraoke(karaokeProps({ getAudioUrl, captureOn: true }));
+    const play = host.querySelector('button[aria-label="Play"]');
+    await act(async () => {
+      play.click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500);
+      await Promise.resolve();
+    });
+
+    expect(capture).toHaveBeenCalledWith('First sentence.', 'blob:First sentence.');
+    expect(capture).toHaveBeenCalledWith('Second sentence.', 'blob:Second sentence.');
+    expect(capture).toHaveBeenCalledWith('Third sentence.', 'blob:Third sentence.');
+    expect(capture).toHaveBeenCalledWith('Fourth sentence.', 'blob:Fourth sentence.');
+  });
+
+  it('uses the canonical leveled-text sentence list when supplied', async () => {
+    audioInstances = [];
+    global.Audio = window.Audio = FakeAudio;
+    const getAudioUrl = vi.fn(sentence => Promise.resolve('blob:' + sentence));
+
+    renderKaraoke(karaokeProps({
+      text: 'Heading First sentence.',
+      sentenceList: ['Heading', 'First sentence.'],
+      getAudioUrl,
+      captureOn: false,
+    }));
+    const play = host.querySelector('button[aria-label="Play"]');
+    await act(async () => {
+      play.click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(getAudioUrl).toHaveBeenCalledWith('Heading');
+    expect(getAudioUrl).not.toHaveBeenCalledWith('Heading First sentence.');
+  });
 });
 
 describe('Canvas callTTS URL cache', () => {

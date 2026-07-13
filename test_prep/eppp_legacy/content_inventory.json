@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-12T21:42:15.693Z",
+  "generatedAt": "2026-07-13T18:42:38.070Z",
   "summary": {
     "legacyQuestions": 2933,
     "nativeQaQuestions": 500,
@@ -12,12 +12,16 @@
     "memoryAids": 255,
     "textbookChapters": 49,
     "textbookSections": 278,
-    "knowledgeChecks": 91,
+    "knowledgeChecks": 93,
     "diagramTemplates": 25,
-    "diagramPlacements": 52,
+    "diagramPlacements": 54,
     "termDefinitions": 1583,
-    "chapterReferences": 293,
+    "chapterReferences": 297,
     "aiReflectiveCodas": 49,
+    "sourceReviewedChapters": 28,
+    "sourceReviewedFlashcards": 9,
+    "sourceReviewedMemoryAids": 8,
+    "editorialReviewedSourcePendingMemoryAids": 2,
     "learnerModes": 14
   },
   "flashcardsByDomain": [
@@ -118,8 +122,9 @@
     {
       "contentType": "textbook chapters",
       "count": 49,
-      "status": "legacy-preserved-review-not-started",
-      "nextGate": "claim-level source audit, instructional edit, accessibility and expert review"
+      "status": "review-in-progress",
+      "reviewedCount": 28,
+      "nextGate": "21 chapters still need claim-level source audit and editorial review; all chapters still require independent expert review"
     },
     {
       "contentType": "interactive diagrams",
@@ -130,14 +135,17 @@
     {
       "contentType": "flashcards",
       "count": 415,
-      "status": "legacy-preserved-review-not-started",
-      "nextGate": "deduplication, atomic-answer review, source support and clue check"
+      "status": "review-in-progress",
+      "reviewedCount": 9,
+      "nextGate": "remaining cards need deduplication, atomic-answer review, source support and clue checks"
     },
     {
       "contentType": "memory aids",
       "count": 255,
-      "status": "legacy-preserved-review-not-started",
-      "nextGate": "oversimplification, outdated clinical guidance, bias and source review"
+      "status": "review-in-progress",
+      "reviewedCount": 8,
+      "editorialSourcePendingCount": 2,
+      "nextGate": "remaining aids need oversimplification, outdated-guidance, bias, and source review"
     },
     {
       "contentType": "term definitions",

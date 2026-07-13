@@ -853,8 +853,10 @@
       ctx.fillStyle = isDark ? '#e0e7ff' : '#fef3c7';
       ctx.font = 'bold 11px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('PLATE A ->', (bx + leftOff) / 2, plateY + plateH / 2 + 4);
-      ctx.fillText('<- PLATE B', bx + rightOff + (W - bx - rightOff) / 2, plateY + plateH / 2 + 4);
+      var leftMotionLabel = cur.mode === 'divergent' ? '<- PLATE A' : (cur.mode === 'transform' ? 'PLATE A ↑' : 'PLATE A ->');
+      var rightMotionLabel = cur.mode === 'divergent' ? 'PLATE B ->' : (cur.mode === 'transform' ? 'PLATE B ↓' : '<- PLATE B');
+      ctx.fillText(leftMotionLabel, (bx + leftOff) / 2, plateY + plateH / 2 + 4);
+      ctx.fillText(rightMotionLabel, bx + rightOff + (W - bx - rightOff) / 2, plateY + plateH / 2 + 4);
 
       // Mode-specific rendering on top of plates
       if (cur.mode === 'convergent') {
@@ -879,16 +881,30 @@
           ctx.closePath();
           ctx.fill();
         }
-        // Subduction: show one plate diving down into mantle
-        ctx.strokeStyle = isDark ? '#d946ef' : '#451a03';
-        ctx.lineWidth = 2.5;
-        ctx.setLineDash([4, 3]);
-        ctx.beginPath();
-        ctx.moveTo(bx, plateY + plateH);
-        ctx.lineTo(bx + 30, plateY + plateH + 50);
-        ctx.lineTo(bx + 35, plateY + plateH + 80);
-        ctx.stroke();
-        ctx.setLineDash([]);
+        // Subduction slab: dense oceanic lithosphere descends beneath the overriding plate.
+        var slabGrad = ctx.createLinearGradient(bx, plateY + plateH, bx + 50, plateY + plateH + 95);
+        slabGrad.addColorStop(0, isDark ? '#c026d3' : '#78350f'); slabGrad.addColorStop(1, isDark ? '#312e81' : '#451a03');
+        ctx.save(); ctx.shadowColor = isDark ? '#d946ef' : '#f97316'; ctx.shadowBlur = 9;
+        ctx.strokeStyle = slabGrad; ctx.lineWidth = 14; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(bx - 3, plateY + plateH - 2); ctx.bezierCurveTo(bx + 15, plateY + plateH + 22, bx + 38, plateY + plateH + 62, bx + 48, plateY + plateH + 98); ctx.stroke();
+        ctx.shadowBlur = 0; ctx.strokeStyle = isDark ? '#f0abfc' : '#fbbf24'; ctx.lineWidth = 1.4; ctx.setLineDash([5, 4]);
+        ctx.beginPath(); ctx.moveTo(bx - 3, plateY + plateH - 2); ctx.bezierCurveTo(bx + 15, plateY + plateH + 22, bx + 38, plateY + plateH + 62, bx + 48, plateY + plateH + 98); ctx.stroke(); ctx.setLineDash([]);
+        // Water released from the slab promotes melting; buoyant magma rises to a volcanic arc.
+        var arcX = bx + 78;
+        ctx.strokeStyle = '#fb923c'; ctx.lineWidth = 5; ctx.globalAlpha = 0.55; ctx.shadowColor = '#f97316'; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.moveTo(bx + 42, plateY + plateH + 72); ctx.bezierCurveTo(bx + 72, plateY + plateH + 45, arcX - 8, plateY + 28, arcX, plateY - 2); ctx.stroke();
+        for (var mp = 0; mp < 5; mp++) {
+          var meltPhase = motionReduced ? (0.12 + mp * 0.17) : ((cur.years * 0.0024 + mp / 5) % 1);
+          var mx = bx + 42 + meltPhase * (arcX - bx - 42), my = plateY + plateH + 72 - meltPhase * (plateH + 74);
+          ctx.globalAlpha = 0.45 + meltPhase * 0.5; ctx.fillStyle = meltPhase > 0.65 ? '#fde68a' : '#fb923c';
+          ctx.beginPath(); ctx.arc(mx, my, 2.5 + meltPhase * 1.4, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+        ctx.fillStyle = isDark ? '#3f3f46' : '#78350f'; ctx.strokeStyle = isDark ? '#fb7185' : '#7f1d1d'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(arcX - 22, plateY); ctx.lineTo(arcX, plateY - 38); ctx.lineTo(arcX + 22, plateY); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#fb923c'; ctx.beginPath(); ctx.moveTo(arcX - 5, plateY - 29); ctx.lineTo(arcX, plateY - 38); ctx.lineTo(arcX + 5, plateY - 29); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = isDark ? '#fecaca' : '#7f1d1d'; ctx.font = 'bold 8px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('VOLCANIC ARC', arcX, plateY - 46);
+        ctx.restore();
       } else if (cur.mode === 'divergent') {
         // Magma in the gap
         var gapW = cur.rift;
@@ -910,27 +926,55 @@
             ctx.arc(bx - gapW / 2 + (f + 0.5) * gapW / 5, plateY - 8 + Math.sin(cur.years * 0.03 + f) * 4, 3, 0, Math.PI * 2);
             ctx.fill();
           }
-        }
+          // Symmetric magnetic stripes record new seafloor spreading away from the ridge.
+          var stripeY = plateY + plateH * 0.62, stripeH = plateH * 0.34;
+          var leftEdge = bx - gapW / 2, rightEdge = bx + gapW / 2;
+          for (var ms = 0; ms < 6; ms++) {
+            var stripeW = 11;
+            var polarity = ms % 2 === 0;
+            ctx.fillStyle = polarity ? (isDark ? '#38bdf8' : '#1d4ed8') : (isDark ? '#c084fc' : '#7e22ce');
+            ctx.globalAlpha = 0.32 + (5 - ms) * 0.055;
+            ctx.fillRect(leftEdge - (ms + 1) * stripeW, stripeY, stripeW - 1, stripeH);
+            ctx.fillRect(rightEdge + ms * stripeW, stripeY, stripeW - 1, stripeH);
+          }
+          ctx.globalAlpha = 1;
+          // Fresh basalt is hottest and youngest beside the ridge axis.
+          ctx.fillStyle = '#fb923c'; ctx.shadowColor = '#f97316'; ctx.shadowBlur = 8;
+          ctx.fillRect(leftEdge - 8, stripeY, 8, stripeH); ctx.fillRect(rightEdge, stripeY, 8, stripeH); ctx.shadowBlur = 0;
+          ctx.strokeStyle = '#67e8f9'; ctx.lineWidth = 2; ctx.fillStyle = '#67e8f9';
+          ctx.beginPath(); ctx.moveTo(bx - 12, plateY - 16); ctx.lineTo(bx - 54, plateY - 16); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(bx - 54, plateY - 16); ctx.lineTo(bx - 46, plateY - 21); ctx.lineTo(bx - 46, plateY - 11); ctx.closePath(); ctx.fill();
+          ctx.beginPath(); ctx.moveTo(bx + 12, plateY - 16); ctx.lineTo(bx + 54, plateY - 16); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(bx + 54, plateY - 16); ctx.lineTo(bx + 46, plateY - 21); ctx.lineTo(bx + 46, plateY - 11); ctx.closePath(); ctx.fill();
+          ctx.fillStyle = isDark ? '#bae6fd' : '#0c4a6e'; ctx.font = 'bold 8px sans-serif'; ctx.textAlign = 'center';
+          ctx.fillText('NEW CRUST • MIRRORED MAGNETIC STRIPES', bx, plateY + plateH + 13);        }
       } else if (cur.mode === 'transform') {
-        // Friction zone (vertical hatch line)
-        ctx.strokeStyle = isDark ? '#f43f5e' : '#dc2626';
-        ctx.lineWidth = 3;
-        ctx.setLineDash([5, 5]);
-        ctx.beginPath();
-        ctx.moveTo(bx, plateY);
-        ctx.lineTo(bx, plateY + plateH);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        // Offset marker - show a "road" that is broken
-        var roadY = plateY + plateH * 0.3;
-        ctx.strokeStyle = '#fbbf24';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.moveTo(bx - 60, roadY);
-        ctx.lineTo(bx - 5, roadY);
-        ctx.moveTo(bx + 5, roadY + (cur.offset % 30));
-        ctx.lineTo(bx + 60, roadY + (cur.offset % 30));
-        ctx.stroke();
+        // Transform fault: locked asperities accumulate shear stress before slipping.
+        var stress = (cur.offset % 30) / 30;
+        ctx.save(); ctx.shadowColor = '#f43f5e'; ctx.shadowBlur = 8 + stress * 16;
+        ctx.strokeStyle = isDark ? '#fb7185' : '#dc2626'; ctx.lineWidth = 5 + stress * 2; ctx.globalAlpha = 0.42 + stress * 0.5;
+        ctx.beginPath(); ctx.moveTo(bx, plateY); ctx.lineTo(bx, plateY + plateH); ctx.stroke();
+        ctx.shadowBlur = 0; ctx.globalAlpha = 1; ctx.setLineDash([4, 4]); ctx.strokeStyle = '#fecdd3'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(bx, plateY); ctx.lineTo(bx, plateY + plateH); ctx.stroke(); ctx.setLineDash([]);
+        // Locked rough spots along the fault concentrate stress.
+        for (var asp = 0; asp < 4; asp++) {
+          var ay = plateY + 10 + asp * (plateH - 20) / 3;
+          ctx.fillStyle = stress > 0.68 ? '#fef2f2' : '#fda4af';
+          ctx.beginPath(); ctx.moveTo(bx, ay - 4); ctx.lineTo(bx + 4, ay); ctx.lineTo(bx, ay + 4); ctx.lineTo(bx - 4, ay); ctx.closePath(); ctx.fill();
+        }
+        // Opposing shear arrows pair direction with the plate labels.
+        ctx.strokeStyle = '#fbbf24'; ctx.fillStyle = '#fbbf24'; ctx.lineWidth = 2.2;
+        ctx.beginPath(); ctx.moveTo(bx - 28, plateY + plateH - 8); ctx.lineTo(bx - 28, plateY + 12); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(bx - 28, plateY + 12); ctx.lineTo(bx - 33, plateY + 20); ctx.lineTo(bx - 23, plateY + 20); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(bx + 28, plateY + 8); ctx.lineTo(bx + 28, plateY + plateH - 12); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(bx + 28, plateY + plateH - 12); ctx.lineTo(bx + 23, plateY + plateH - 20); ctx.lineTo(bx + 33, plateY + plateH - 20); ctx.closePath(); ctx.fill();
+        // Offset marker: a once-continuous road records cumulative displacement.
+        var roadY = plateY + plateH * 0.28, roadOffset = cur.offset % 30;
+        ctx.strokeStyle = '#fde047'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(bx - 72, roadY); ctx.lineTo(bx - 6, roadY); ctx.moveTo(bx + 6, roadY + roadOffset); ctx.lineTo(bx + 72, roadY + roadOffset); ctx.stroke();
+        ctx.fillStyle = isDark ? '#fecdd3' : '#7f1d1d'; ctx.font = 'bold 8px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('SHEAR STRESS ' + Math.round(stress * 100) + '% • SHALLOW QUAKES', bx, plateY - 12);
+        ctx.restore();
       }
 
       // Earthquake markers

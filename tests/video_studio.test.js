@@ -1833,18 +1833,34 @@ describe('Demo Autopilot preflight and quality analysis', () => {
     const blocked = VS.vsBuildDemoPreflight({ planCount: 0, openerConnected: false, captureSupported: false, audioMode: 'auto-Kore' });
     expect(blocked.ok).toBe(false);
     expect(blocked.blockingCount).toBeGreaterThanOrEqual(3);
-    const ready = VS.vsBuildDemoPreflight({ planCount: 2, openerConnected: true, captureSupported: true, micSupported: true, audioMode: 'auto-Kore', storageKnown: true, availableBytes: 1024 * 1024 * 1024 });
+    const ready = VS.vsBuildDemoPreflight({ planCount: 2, commandReadinessKnown: true, commandReady: true, openerConnected: true, captureSupported: true, micSupported: true, audioMode: 'auto-Kore', storageKnown: true, availableBytes: 1024 * 1024 * 1024 });
     expect(ready.ok).toBe(true);
     expect(ready.items.find(item => item.id === 'audio').status).toBe('ready');
   });
 
   it('warns for limited storage and blocks an unavailable requested microphone', () => {
-    const report = VS.vsBuildDemoPreflight({ planCount: 1, openerConnected: true, captureSupported: true, micSupported: false, audioMode: 'mic', storageKnown: true, availableBytes: 100 * 1024 * 1024 });
+    const report = VS.vsBuildDemoPreflight({ planCount: 1, commandReadinessKnown: true, commandReady: true, openerConnected: true, captureSupported: true, micSupported: false, audioMode: 'mic', storageKnown: true, availableBytes: 100 * 1024 * 1024 });
     expect(report.ok).toBe(false);
     expect(report.warningCount).toBe(1);
     expect(report.items.find(item => item.id === 'audio').status).toBe('block');
   });
 
+  it('blocks an unvalidated command plan and trusts the release-matched official tutorial', () => {
+    const unknown = VS.vsBuildDemoPreflight({ planCount: 1, openerConnected: true, captureSupported: true, audioMode: 'captions' });
+    expect(unknown.ok).toBe(false);
+    expect(unknown.items.find(item => item.id === 'commands').status).toBe('block');
+    const official = VS.vsBuildDemoPreflight({ planCount: 2, officialPlan: true, openerConnected: true, captureSupported: true, audioMode: 'captions' });
+    expect(official.items.find(item => item.id === 'commands').status).toBe('ready');
+  });
+
+  it('warns without blocking when narration may overrun its recorded step', () => {
+    const report = VS.vsBuildDemoPreflight({ planCount: 2, commandReadinessKnown: true, commandReady: true, openerConnected: true, captureSupported: true, micSupported: true, audioMode: 'captions', scriptWarningCount: 2, scriptTooLongCount: 1 });
+    const pacing = report.items.find(item => item.id === 'pacing');
+    expect(report.ok).toBe(true);
+    expect(report.warningCount).toBe(1);
+    expect(pacing.status).toBe('warn');
+    expect(pacing.detail).toContain('maximum result hold');
+  });
   it('scores a complete narrated demo and flags incomplete output', () => {
     const good = VS.vsAnalyzeDemoTakeQuality({
       duration: 10,
@@ -1895,6 +1911,13 @@ describe('vsBuildDemoCaptionCues', () => {
       { start: 2, end: 9.5, text: 'Step 1: Create a lesson. The lesson is ready for review.' },
       { start: 12, end: 20, text: 'Step 2: Generate a quiz. The quiz now uses the lesson content.' },
     ]);
+  });
+  it('uses an approved script verbatim instead of app-generated narration', () => {
+    const cues = VS.vsBuildDemoCaptionCues([
+      { t: 1, index: 0, phase: 'start', label: 'Open library', narration: 'Opening.', script: 'First, open the reading library.' },
+      { t: 5, index: 0, phase: 'done', label: 'Open library', narration: 'The library is open.', script: 'First, open the reading library.' },
+    ], 8);
+    expect(cues).toEqual([{ start: 1, end: 5, text: 'First, open the reading library.' }]);
   });
   it('caps orphan cues at 8s, clips at the next cue and the take end', () => {
     const cues = VS.vsBuildDemoCaptionCues([
@@ -2037,6 +2060,11 @@ describe('take persistence + export hardening wiring', () => {
     // Popup: card, plan review, start/stop, step events on the recording clock.
     expect(html).toContain('id="demoAutopilotCard"');
     expect(html).toContain('id="demoGoal"');
+    expect(html).toContain('id="demoGoalHelp"');
+    expect(html).toContain('aria-keyshortcuts="Control+Enter Meta+Enter"');
+    expect(html).toContain('Generate demo plan</button>');
+    expect(html).toContain("if (e.key !== 'Enter' || (!e.ctrlKey && !e.metaKey)");
+    expect(html).toContain("if (!$('demoPlanBtn').disabled) $('demoPlanBtn').click();");
     expect(html).toContain('id="demoPlanList"');
     expect(html).toContain('id="demoAudioMode"');
     expect(html).toContain('id="demoStatus" role="status" aria-live="polite"');
@@ -2059,7 +2087,7 @@ describe('take persistence + export hardening wiring', () => {
     // ANTI: props reuse AlloBot's planner/runner + shared single-flight guard.
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
     expect(anti).toContain('onPlanDemo: async (goal) => {');
-    expect(anti).toContain('onRunDemoPlan: async (steps, hooks) => {');
+    expect(anti).toContain('onRunDemoPlan: async (steps, hooks, options) => {');
     expect(anti).toContain('AC.planUtterance(_alloCmdCtx()');
     expect(anti).toContain('AC.runPlan(() => _alloCmdCtx(), [list[i]]');
     expect(anti).toContain("throw new Error('AlloBot is already running a plan — stop it first.');");
@@ -2108,7 +2136,36 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('id="demoQualityCard"');
     expect(html).toContain('function runDemoPreflight()');
     expect(html).toContain('function renderDemoQuality(take)');
-    expect(html).toContain('Rehearsal complete. Review the pacing');
+    expect(html).toContain('2 · Check readiness');
+    expect(html).toContain('Readiness check passed. No app actions ran');
+    expect(html).toContain("bridgeRequest('allostudio-demovalidate-request'");
+    expect(html).toContain('Command readiness');
+    expect(moduleText()).toContain("type === 'allostudio-demovalidate-request'");
+    expect(html).toContain('id="demoRepairBtn"');
+    expect(html).toContain('id="demoDraftClearBtn"');
+    expect(html).toContain('id="demoScriptReviewBtn"');
+    expect(html).toContain('id="demoScriptCopyBtn"');
+    expect(html).toContain('id="demoPacingFitBtn"');
+    expect(html).toContain('id="demoPacingStatus"');
+    expect(html).toContain('id="demoScriptReviewText"');
+    expect(html).toContain('function demoStepPacing(step)');
+    expect(html).toContain('function demoPacingAudit(steps)');
+    expect(html).toContain('data-demo-step-pacing');
+    expect(html).toContain('function defaultDemoStepScript(step)');
+    expect(html).toContain('function demoScriptText()');
+    expect(html).toContain("'Step ' + (i + 1) + ' narration'");
+    expect(html).toContain("'Step ' + (i + 1) + ' result hold seconds'");
+    expect(html).toContain('demoState.activeSteps = steps.map(cleanDemoDraftStep)');
+    expect(html).toContain("var DEMO_DRAFT_KEY = 'vs_demo_draft_v1'");
+    expect(html).toContain('function restoreDemoDraft()');
+    expect(html).toContain('function updateDemoStepReadinessUI()');
+    expect(html).toContain('data-demo-step-readiness');
+    expect(html).toContain('version !== demoState.preflightVersion');
+    expect(html).toContain('Open the Educator Hub, then show the Document Builder');
+    expect(html).not.toContain('Create a 5th-grade lesson about volcanoes');
+    expect(html).toContain("typeof demoState !== 'undefined' && demoState && demoState.running");
+    expect(html).toContain('if (renderDemoQuality(take) && take) saveDraft(take)');
+    expect(html).toContain("minutes === 1 ? '' : 's'");
     expect(html).toContain("bridgeRequest('allostudio-official-tutorial-request'");
     expect(html).toContain("type: 'allostudio-official-tutorial-cleanup'");
     expect(html).toContain('id="demoNarrCancelBtn"');
@@ -2124,12 +2181,27 @@ describe('take persistence + export hardening wiring', () => {
     expect(m).toContain("ev.data.type === 'allostudio-official-tutorial-request'");
     expect(m).toContain("ev.data.type === 'allostudio-official-tutorial-run-request'");
     expect(m).toContain('propsRef.current.onCleanupOfficialTutorial');
+    expect(m).toContain("kind: 'official', cleanupAfterStop: false");
+    expect(m).toContain("kind: 'generic', cleanupAfterStop: false");
+    expect(m).toContain('demoRunRef.current.stop = true');
+    expect(m).toContain("demoRunRef.current.kind === 'official'");
+    expect(m).toContain('cleanupAfterStop = true');
+    expect(m).toContain('{ rehearsal: !!drReq.rehearsal }');
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
+    expect(m).toContain('pauseAfter: Math.round(Math.max(0.5, Math.min(8');
+    expect(m).toContain("script: String((s && s.script) || '').slice(0, 400)");
     expect(anti).toContain("only: ['source-input', 'simplified']");
     expect(anti).toContain('onRunOfficialTutorial: async (tutorialId, steps, hooks) => {');
     expect(anti).toContain("source: 'official-tutorial'");
     expect(anti).toContain('setInputText(snapshot.inputText)');
     expect(anti).toContain('setGeneratedContent(snapshot.generatedContent)');
+    expect(anti).toContain('onRunDemoPlan: async (steps, hooks, options) => {');
+    expect(anti).toContain('const rehearsal = !!(options && options.rehearsal)');
+    expect(anti).toContain('return { ok: true, completed: previewCompleted, rehearsal: true }');
+    expect(anti).toContain('Number(step.pauseAfter) || 2.2');
+    expect(anti).toContain('Number(list[i].pauseAfter) || 2.2');
+    expect(anti).toContain('let completionEvent = null;');
+    expect(anti).not.toContain('setTimeout(r2, 2200)');
   });
   it('versions the popup from the loaded controller module instead of a stale fixed pin', () => {
     const m = moduleText();

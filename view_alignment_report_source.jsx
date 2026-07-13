@@ -20,11 +20,12 @@ var _lazyIcon = function (name) {
     if (status === 'Aligned' || status === 'Pass') return 'bg-green-100 text-green-700';
     if (status === 'Not Aligned' || status === 'Revise') return 'bg-red-100 text-red-700';
     if (status === 'Compute failed') return 'bg-amber-100 text-amber-800';
+    if (status === 'Not evaluated' || status === 'Not applicable' || status === 'Incomplete') return 'bg-slate-200 text-slate-800';
     // 'Partially Aligned', 'Pass with notes', or anything unknown
     return 'bg-orange-100 text-orange-700';
   }
   function ComprehensiveSection(p) {
-    return <div id={p.id || undefined} className="bg-white p-6 rounded-xl border border-slate-300 shadow-sm mb-6 scroll-mt-4"><div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200"><h3 className="font-bold text-slate-800 flex items-center gap-2 text-lg"><span aria-hidden="true">{p.icon}</span> {p.title}</h3><span className={'text-[11px] uppercase font-bold px-2 py-1 rounded ' + statusBadgeClass(p.status)}>{p.status || 'N/A'}</span></div>{p.children}</div>;
+    return <div id={p.id || undefined} tabIndex={-1} className="bg-white p-6 rounded-xl border border-slate-300 shadow-sm mb-6 scroll-mt-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"><div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200"><h3 className="font-bold text-slate-800 flex items-center gap-2 text-lg"><span aria-hidden="true">{p.icon}</span> {p.title}</h3><span className={'text-[11px] uppercase font-bold px-2 py-1 rounded ' + statusBadgeClass(p.status)}>{p.status || 'N/A'}</span></div>{p.children}</div>;
   }
 
   // ─── StandardsSection ─────────────────────────────────────────────────
@@ -40,7 +41,8 @@ var _lazyIcon = function (name) {
       // Per-standard collapsible cards
       perStandard.length > 0 && <div className="space-y-3">{perStandard.map(function (report, idx) {
           var passColor = report && report.overallDetermination === 'Pass';
-          return <details key={idx} open={!passColor} className={'rounded-lg border ' + (passColor ? 'border-emerald-200 bg-emerald-50' : 'border-rose-200 bg-rose-50')}><summary className={'px-3 py-2 cursor-pointer font-semibold text-sm select-none flex items-center justify-between gap-2 ' + (passColor ? 'text-emerald-800 hover:bg-emerald-100' : 'text-rose-800 hover:bg-rose-100')}><span className="flex-1 truncate">{report && report.standard || 'Standard ' + (idx + 1)}</span><span className={'text-[10px] uppercase font-bold px-2 py-0.5 rounded ' + (passColor ? 'bg-emerald-200 text-emerald-900' : 'bg-rose-200 text-rose-900')}>{report && report.overallDetermination || 'Revise'}</span></summary><div className="px-3 pb-3 pt-2 bg-white rounded-b-lg space-y-2 text-xs">{report && report.standardBreakdown && (report.standardBreakdown.cognitiveDemand || report.standardBreakdown.contentFocus) && <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 pb-2 border-b border-slate-200">{report.standardBreakdown.cognitiveDemand && <div><span className="font-bold uppercase text-slate-600">Cognitive demand: </span><span className="text-slate-800">{report.standardBreakdown.cognitiveDemand}</span></div>}{report.standardBreakdown.contentFocus && <div><span className="font-bold uppercase text-slate-600">Content focus: </span><span className="text-slate-800">{report.standardBreakdown.contentFocus}</span></div>}</div>}{['textAlignment', 'activityAlignment', 'assessmentAlignment'].map(function (key) {
+          var pendingColor = report && report.overallDetermination === 'Not evaluated';
+          return <details key={idx} open={!passColor} className={'rounded-lg border ' + (passColor ? 'border-emerald-200 bg-emerald-50' : pendingColor ? 'border-slate-300 bg-slate-50' : 'border-rose-200 bg-rose-50')}><summary className={'px-3 py-2 cursor-pointer font-semibold text-sm select-none flex items-center justify-between gap-2 ' + (passColor ? 'text-emerald-800 hover:bg-emerald-100' : pendingColor ? 'text-slate-800 hover:bg-slate-100' : 'text-rose-800 hover:bg-rose-100')}><span className="flex-1 min-w-0 break-words">{report && report.standard || 'Standard ' + (idx + 1)}</span><span className={'text-[10px] uppercase font-bold px-2 py-0.5 rounded ' + (passColor ? 'bg-emerald-200 text-emerald-900' : pendingColor ? 'bg-slate-200 text-slate-900' : 'bg-rose-200 text-rose-900')}>{report && report.overallDetermination || 'Not evaluated'}</span></summary><div className="px-3 pb-3 pt-2 bg-white rounded-b-lg space-y-2 text-xs">{report && report.standardBreakdown && (report.standardBreakdown.cognitiveDemand || report.standardBreakdown.contentFocus) && <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 pb-2 border-b border-slate-200">{report.standardBreakdown.cognitiveDemand && <div><span className="font-bold uppercase text-slate-600">Cognitive demand: </span><span className="text-slate-800">{report.standardBreakdown.cognitiveDemand}</span></div>}{report.standardBreakdown.contentFocus && <div><span className="font-bold uppercase text-slate-600">Content focus: </span><span className="text-slate-800">{report.standardBreakdown.contentFocus}</span></div>}</div>}{['textAlignment', 'activityAlignment', 'assessmentAlignment'].map(function (key) {
                 var sec = report && report.analysis && report.analysis[key];
                 if (!sec) return null;
                 var lbl = key === 'textAlignment' ? 'Text' : key === 'activityAlignment' ? 'Activities' : 'Assessment';
@@ -97,7 +99,7 @@ var _lazyIcon = function (name) {
               return <span key={i} className="text-xs px-2 py-0.5 bg-rose-100 text-rose-900 rounded">{m}</span>;
             }) : <span className="text-xs text-emerald-700">all four covered</span>}</div></div></div>{
       // DOK bar
-      e.dokTotal > 0 && <div className="mb-3"><div className="text-xs font-semibold text-slate-700 mb-1">{'Quiz DOK distribution (' + e.dokTotal + ' items, Webb\'s framework):'}</div><div className="flex h-6 w-full rounded overflow-hidden border border-slate-200">{(dok.L1 || 0) > 0 && <div style={{
+      e.dokTotal > 0 && <div className="mb-3"><div className="text-xs font-semibold text-slate-700 mb-1">{'Quiz DOK distribution (' + e.dokTotal + ' items, Webb\'s framework):'}</div><div role="img" aria-label={'Quiz DOK distribution: Level 1 recall ' + (dok.L1 || 0) + ' percent; Level 2 skill and concept ' + (dok.L2 || 0) + ' percent; Level 3 strategic thinking ' + (dok.L3 || 0) + ' percent; Level 4 extended thinking ' + (dok.L4 || 0) + ' percent; unknown ' + (dok.unknown || 0) + ' percent.'} className="flex h-6 w-full rounded overflow-hidden border border-slate-200">{(dok.L1 || 0) > 0 && <div style={{
             width: dok.L1 + '%',
             backgroundColor: '#fde68a'
           }} className="flex items-center justify-center text-[10px] font-bold text-amber-900" title={'L1 Recall: ' + dok.L1 + '%'}>{dok.L1 > 8 ? 'L1 ' + dok.L1 + '%' : ''}</div>}{(dok.L2 || 0) > 0 && <div style={{
@@ -211,7 +213,7 @@ var _lazyIcon = function (name) {
             }).length}</div><div className="text-xs text-emerald-700">Present</div></div><div className={'p-3 rounded text-center ' + (d.missing && d.missing.length > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-slate-50 border border-slate-200')}><div className={'text-2xl font-bold ' + (d.missing && d.missing.length > 0 ? 'text-rose-800' : 'text-slate-800')}>{d.missing && d.missing.length || 0}</div><div className={'text-xs ' + (d.missing && d.missing.length > 0 ? 'text-rose-700' : 'text-slate-600')}>Missing</div></div></div> // Inventory grid
       <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5 mb-3">{Object.keys(flags).map(function (k) {
           var on = flags[k];
-          return <div key={k} className={'flex items-center gap-2 text-xs px-2 py-1.5 rounded border ' + (on ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-500')}><span aria-hidden="true" className="flex-shrink-0">{on ? '✓' : '○'}</span><span className="truncate">{labelMap[k] || k}</span></div>;
+          return <div key={k} className={'flex items-center gap-2 text-xs px-2 py-1.5 rounded border ' + (on ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-500')}><span aria-hidden="true" className="flex-shrink-0">{on ? '✓' : '○'}</span><span className="min-w-0 break-words">{labelMap[k] || k}</span></div>;
         })}</div>{d.recommendations && d.recommendations.length > 0 && <div className="p-3 bg-amber-50 border border-amber-200 rounded mb-3"><div className="text-xs font-semibold text-amber-900 mb-1">Heuristic recommendations:</div><ul className="list-disc ml-5 text-sm text-amber-900 space-y-1">{d.recommendations.map(function (r, i) {
             return <li key={i}>{r}</li>;
           })}</ul></div>}{d.llmReview && <div className="p-3 bg-indigo-50 border border-indigo-200 rounded mb-3"><div className="text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2"><span aria-hidden="true">🤖</span> UDL specialist review (AI)</div>{d.llmReview.narrative && <p className="text-sm text-indigo-900 mb-2">{d.llmReview.narrative}</p>}{d.llmReview.priorityAdditions && d.llmReview.priorityAdditions.length > 0 && <div className="mb-2"><div className="text-xs font-semibold text-indigo-800 mb-1">Priority additions:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{d.llmReview.priorityAdditions.map(function (r, i) {
@@ -259,7 +261,8 @@ var _lazyIcon = function (name) {
   function ReadinessScoreCard(p) {
     var o = p.overall;
     if (!o) return null;
-    var score = typeof o.score === 'number' ? o.score : 0;
+    var score = typeof o.score === 'number' ? o.score : typeof o.provisionalScore === 'number' ? o.provisionalScore : 0;
+    var isIncomplete = !!o.incomplete;
     var dimEvaluated = typeof o.dimensionsEvaluated === 'number' ? o.dimensionsEvaluated : 0;
 
     // Empty-state: no comprehensive dimensions ran, render an informative
@@ -275,6 +278,11 @@ var _lazyIcon = function (name) {
       ringColor = '#dc2626';
       bgColor = '#fef2f2';
       textColor = '#991b1b';
+    } else if (isIncomplete) {
+      band = 'slate';
+      ringColor = '#64748b';
+      bgColor = '#f8fafc';
+      textColor = '#334155';
     } else if (score >= 90) {
       band = 'emerald';
       ringColor = '#059669';
@@ -298,11 +306,15 @@ var _lazyIcon = function (name) {
     }
     var dimScores = o.perDimensionPercent || {};
     var dimLabels = {
+      standards: 'Standards',
       vocabulary: 'Vocab',
       engagement: 'Engagement',
       accessibility: 'Access',
       udl: 'UDL',
-      accuracy: 'Accuracy'
+      accuracy: 'Accuracy',
+      differentiation: 'Differentiation',
+      cognitiveLoad: 'Pacing',
+      culturalResponsiveness: 'Representation'
     };
     return <div className="p-5 rounded-2xl border-2 mb-8 shadow-sm" style={{
       backgroundColor: bgColor,
@@ -311,20 +323,18 @@ var _lazyIcon = function (name) {
       // above. This card now functions as the per-dimension chip strip + blocking-issues
       // detail panel that didn't fit in the summary banner.
       <div className="min-w-0"><div className="text-xs font-bold uppercase tracking-wider mb-3" style={{
-          color: textColor,
-          opacity: 0.8
+          color: textColor
         }}>Per-Dimension Breakdown</div> // Per-dimension status chips
         <div className="flex flex-wrap gap-2">{ALL_DIMENSIONS_FOR_RENDER.map(function (dim) {
             var dimData = (o.dimensionScores || {})[dim];
             if (!dimData) return null;
-            var pct = dimScores[dim] || 0;
-            var chipColor = dimData.status === 'Aligned' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : dimData.status === 'Not Aligned' ? 'bg-rose-100 text-rose-800 border-rose-300' : 'bg-amber-100 text-amber-800 border-amber-300';
-            return <div key={dim} className={'flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full border ' + chipColor}><span>{dimLabels[dim] || dim}</span><span className="font-bold">{pct + '%'}</span></div>;
+            var pct = typeof dimScores[dim] === 'number' ? dimScores[dim] + '%' : '—';
+            var chipColor = dimData.status === 'Aligned' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : dimData.status === 'Not Aligned' ? 'bg-rose-100 text-rose-800 border-rose-300' : dimData.status === 'Partially Aligned' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-slate-100 text-slate-800 border-slate-300';
+            return <div key={dim} className={'flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full border ' + chipColor}><span>{dimLabels[dim] || dim}</span><span className="font-bold">{pct}</span></div>;
           })}</div>{o.blockingIssues && o.blockingIssues.length > 0 && <div className="mt-3 p-2 bg-white border border-rose-300 rounded text-xs"><div className="font-bold text-rose-900 mb-1">🔴 Blocking issues (must fix before Pass):</div><ul className="list-disc ml-5 text-rose-900 space-y-1">{o.blockingIssues.map(function (b, i) {
               return <li key={i}><span className="font-semibold">{b.dimension + ': '}</span>{b.issue}</li>;
-            })}</ul></div>}</div>{o.notes && <div className="mt-3 text-[11px] italic" style={{
-        color: textColor,
-        opacity: 0.65
+            })}</ul></div>}{o.incompleteIssues && o.incompleteIssues.length > 0 && <div className="mt-3 p-2 bg-white border border-slate-300 rounded text-xs"><div className="font-bold text-slate-900 mb-1">Incomplete evidence:</div><ul className="list-disc ml-5 text-slate-800 space-y-1">{o.incompleteIssues.map(function (b, i) { return <li key={i}><span className="font-semibold">{b.dimension + ': '}</span>{b.issue}</li>; })}</ul></div>}</div>{o.notes && <div className="mt-3 text-[11px] italic" style={{
+        color: textColor
       }}>{o.notes}</div>}</div>;
   }
   var ALL_DIMENSIONS_FOR_RENDER = ['standards', 'vocabulary', 'engagement', 'accessibility', 'udl', 'accuracy', 'differentiation', 'cognitiveLoad', 'culturalResponsiveness'];
@@ -462,12 +472,17 @@ var _lazyIcon = function (name) {
   }
   function ExecutiveSummary(p) {
     var c = p.comp;
+    var t = typeof p.t === 'function' ? p.t : function () { return 'Curriculum audit summary'; };
     var standardsReportCount = p.standardsReportCount || 0;
     var onApplyFixes = p.onApplyFixes;
     if (!c) return null;
     var overall = c.overall || {};
-    var score = typeof overall.score === 'number' ? overall.score : null;
+    var certifiedScore = typeof overall.score === 'number' ? overall.score : null;
+    var score = certifiedScore !== null ? certifiedScore : typeof overall.provisionalScore === 'number' ? overall.provisionalScore : null;
+    var scoreIsProvisional = certifiedScore === null && score !== null;
     var dimEvaluated = typeof overall.dimensionsEvaluated === 'number' ? overall.dimensionsEvaluated : 0;
+    var dimTotal = typeof overall.totalDimensions === 'number' ? overall.totalDimensions : ALL_DIMENSIONS_FOR_RENDER.length;
+    var dimApplicable = typeof overall.dimensionsApplicable === 'number' ? overall.dimensionsApplicable : dimTotal;
     var failedDims = ALL_DIMENSIONS_FOR_RENDER.filter(function (d) {
       return c[d] && c[d].computeFailed;
     });
@@ -480,7 +495,7 @@ var _lazyIcon = function (name) {
       bg: '#fef2f2',
       text: '#991b1b',
       accent: 'rose'
-    };else if (score === null) statusClr = {
+    };else if (scoreIsProvisional || score === null) statusClr = {
       ring: '#94a3b8',
       bg: '#f8fafc',
       text: '#334155',
@@ -514,18 +529,16 @@ var _lazyIcon = function (name) {
         score !== null && dimEvaluated > 0 && <div className="relative flex-shrink-0" style={{
           width: '88px',
           height: '88px'
-        }}><svg viewBox="0 0 88 88" style={{
+        }}><span className="sr-only">{(scoreIsProvisional ? 'Provisional curriculum readiness score: ' : 'Curriculum readiness score: ') + score + ' out of 100.'}</span><svg viewBox="0 0 88 88" style={{
             width: '88px',
             height: '88px'
           }} aria-hidden="true"><circle cx={44} cy={44} r={38} fill="none" stroke="#e2e8f0" strokeWidth={8} /><circle cx={44} cy={44} r={38} fill="none" stroke={statusClr.ring} strokeWidth={8} strokeDasharray={(Math.PI * 2 * 38).toFixed(2)} strokeDashoffset={(Math.PI * 2 * 38 * (1 - score / 100)).toFixed(2)} strokeLinecap="round" transform="rotate(-90 44 44)" /><text x={44} y={50} textAnchor="middle" fontSize={24} fontWeight={900} fill={statusClr.text} fontFamily="system-ui, sans-serif">{score}</text></svg></div>}<div className="flex-1 min-w-0"><div className="text-[11px] font-bold uppercase tracking-wider mb-0.5" style={{
-            color: statusClr.text,
-            opacity: 0.7
+            color: statusClr.text
           }}>Curriculum Audit</div><div className="text-xl font-black mb-1" style={{
             color: statusClr.text
           }}>{score !== null && dimEvaluated > 0 ? overall.label || score + ' / 100' : dimEvaluated === 0 ? 'No comprehensive dimensions evaluated' : 'Audit summary'}</div><div className="text-xs" style={{
-            color: statusClr.text,
-            opacity: 0.8
-          }}>{standardsReportCount > 0 ? standardsReportCount + ' standard' + (standardsReportCount === 1 ? '' : 's') + ' audited · ' : ''}{dimEvaluated + ' of 5 comprehensive dimension' + (dimEvaluated === 1 ? '' : 's') + ' evaluated'}{failedDims.length > 0 ? ' · ' + failedDims.length + ' failed to compute' : ''}</div></div>{
+            color: statusClr.text
+          }}>{standardsReportCount > 0 ? standardsReportCount + ' standard' + (standardsReportCount === 1 ? '' : 's') + ' audited · ' : ''}{dimEvaluated + ' of ' + dimApplicable + ' applicable comprehensive dimension' + (dimApplicable === 1 ? '' : 's') + ' evaluated · ' + dimTotal + ' total'}{failedDims.length > 0 ? ' · ' + failedDims.length + ' failed to compute' : ''}</div></div>{
         // Apply fixes button
         typeof onApplyFixes === 'function' && (topRecs.length > 0 || dimEvaluated > 0) && <button type="button" onClick={onApplyFixes} className="flex-shrink-0 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2" title="Open Audit Remediator: review and apply fixes"><span aria-hidden="true">🛠️</span> Apply suggested fixes</button>}{
         // Plan S+ Audit↔Quiz bridge: "Generate Pre-Check on identified gaps".
@@ -541,8 +554,7 @@ var _lazyIcon = function (name) {
         }).join(', ')}. The audit ran but is incomplete; try regenerating.</div>}{
       // Top recommendations
       topRecs.length > 0 && <div className="mt-3"><div className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{
-          color: statusClr.text,
-          opacity: 0.7
+          color: statusClr.text
         }}>{'Top ' + topRecs.length + ' suggested fix' + (topRecs.length === 1 ? '' : 'es')}</div><ol className="space-y-1.5 ml-1">{topRecs.map(function (r, i) {
             var prClass = r.priority <= 0.5 ? 'bg-rose-100 text-rose-900 border-rose-300 hover:bg-rose-200' : r.priority <= 1.5 ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200' : 'bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200';
             // Polish #3: when the rec carries a dimensionKey, render the chip as an
@@ -557,10 +569,12 @@ var _lazyIcon = function (name) {
               var el = document.getElementById('audit-' + r.dimensionKey);
               if (el) {
                 ev.preventDefault();
+                var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                 el.scrollIntoView({
-                  behavior: 'smooth',
+                  behavior: reduceMotion ? 'auto' : 'smooth',
                   block: 'start'
                 });
+                el.focus({ preventScroll: true });
                 // Brief flash to visually anchor the user's eye.
                 el.style.transition = 'box-shadow 800ms ease-out';
                 el.style.boxShadow = '0 0 0 4px rgba(99, 102, 241, 0.4)';
@@ -581,7 +595,7 @@ var _lazyIcon = function (name) {
     var d = p.data;
     var label = p.label;
     if (!d || !d.computeFailed) return null;
-    return <div id={p.id || undefined} className="bg-amber-50 p-4 rounded-xl border border-amber-300 shadow-sm mb-6 scroll-mt-4"><div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="text-lg">⚠</span><h3 className="font-bold text-amber-900">{label + ' — could not be computed'}</h3><span className="ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900">Failed</span></div>{d.notes && <p className="text-sm text-amber-900 mb-2">{d.notes}</p>}{d.error && <details className="text-xs text-amber-800"><summary className="cursor-pointer font-semibold">Show error</summary><pre className="mt-1 p-2 bg-amber-100 rounded overflow-x-auto whitespace-pre-wrap">{d.error}</pre></details>}</div>;
+    return <div id={p.id || undefined} tabIndex={-1} className="bg-amber-50 p-4 rounded-xl border border-amber-300 shadow-sm mb-6 scroll-mt-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"><div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="text-lg">⚠</span><h3 className="font-bold text-amber-900">{label + ' — could not be computed'}</h3><span className="ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900">Failed</span></div>{d.notes && <p className="text-sm text-amber-900 mb-2">{d.notes}</p>}{d.error && <details className="text-xs text-amber-800"><summary className="cursor-pointer font-semibold">Show error</summary><pre className="mt-1 p-2 bg-amber-100 rounded overflow-x-auto whitespace-pre-wrap">{d.error}</pre></details>}</div>;
   }
 
   // Plan R+: N/A card for dimensions explicitly flagged as Not Applicable
@@ -592,12 +606,12 @@ var _lazyIcon = function (name) {
     var d = p.data;
     var label = p.label;
     if (!d || !d.notApplicable) return null;
-    return <div id={p.id || undefined} className="bg-slate-50 p-4 rounded-xl border border-dashed border-slate-300 shadow-sm mb-6 scroll-mt-4"><div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="text-lg">➖</span><h3 className="font-bold text-slate-700">{label}</h3><span className="ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700">Not applicable</span></div>{d.reason && <p className="text-sm text-slate-600">{d.reason}</p>}</div>;
+    return <div id={p.id || undefined} tabIndex={-1} className="bg-slate-50 p-4 rounded-xl border border-dashed border-slate-300 shadow-sm mb-6 scroll-mt-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"><div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="text-lg">➖</span><h3 className="font-bold text-slate-700">{label}</h3><span className="ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700">Not applicable</span></div>{d.reason && <p className="text-sm text-slate-600">{d.reason}</p>}</div>;
   }
   function ComprehensiveBlock(p) {
     var c = p.comp;
     if (!c) return null;
-    return <div className="mt-8 pt-6 border-t border-slate-200 max-w-4xl mx-auto"><div className="mb-6"><h2 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-1">Per-Dimension Findings</h2><p className="text-sm text-slate-600">Detailed evidence and recommendations from each comprehensive audit dimension. Apply fixes from the summary panel above.</p></div>{c.overall && <ReadinessScoreCard overall={c.overall} />}{
+    return <div className="mt-8 pt-6 border-t border-slate-200 max-w-4xl mx-auto"><div className="mb-6"><h2 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-1">Per-Dimension Findings</h2><p className="text-sm text-slate-600">Detailed evidence and recommendations from each comprehensive audit dimension. Apply fixes from the summary panel above.</p></div>{c.auditScope && <div className="mb-4 p-3 rounded border border-slate-300 bg-slate-50 text-sm text-slate-800"><strong>Audit scope: </strong>{(c.auditScope.includedArtifactIds || []).length + ' artifacts · ' + (c.auditScope.includedTypes || []).join(', ')}{c.auditScope.contextTruncated ? <span> · AI context was truncated</span> : null}{c.auditScope.warnings && c.auditScope.warnings.length > 0 ? <ul className="list-disc ml-5 mt-1">{c.auditScope.warnings.map(function (w, i) { return <li key={i}>{w}</li>; })}</ul> : null}</div>}<div className="mb-4 p-3 rounded border border-blue-300 bg-blue-50 text-sm text-blue-950"><strong>Accessibility scope: </strong>These are selected content-accessibility indicators, not a WCAG conformance assessment. Manual keyboard, screen-reader, zoom/reflow, contrast, and rendered-content testing are still required.</div>{c.differentiation && c.differentiation.audioCoverage && <div className="mb-4 p-3 rounded border border-indigo-300 bg-indigo-50 text-sm text-indigo-950"><strong>Audio coverage: </strong>{'Read-aloud capable ' + (c.differentiation.audioCoverage.readAloudCapabilityPct === null ? 'N/A' : c.differentiation.audioCoverage.readAloudCapabilityPct + '%') + ' · Embedded audio ' + (c.differentiation.audioCoverage.embeddedAudioPct === null ? 'N/A' : c.differentiation.audioCoverage.embeddedAudioPct + '%') + ' · Prepared synchronized sentences ' + (c.differentiation.audioCoverage.preparedSentenceCoveragePct === null ? 'N/A' : c.differentiation.audioCoverage.preparedSentenceCoveragePct + '%')}</div>}{c.overall && <ReadinessScoreCard overall={c.overall} />}{
       // Standards rendered first (most teacher-relevant)
       c.standards && (c.standards.computeFailed ? <FailedDimensionCard id="audit-standards" data={c.standards} label="Standards alignment" /> : c.standards.notApplicable ? <NotApplicableCard id="audit-standards" data={c.standards} label="Standards alignment" /> : <StandardsSection standards={c.standards} />)}{c.vocabulary && (c.vocabulary.computeFailed ? <FailedDimensionCard id="audit-vocabulary" data={c.vocabulary} label="Vocabulary fit" /> : <VocabularySection vocab={c.vocabulary} />)}{c.engagement && (c.engagement.computeFailed ? <FailedDimensionCard id="audit-engagement" data={c.engagement} label="Engagement variety" /> : <EngagementSection eng={c.engagement} />)}{c.accessibility && (c.accessibility.computeFailed ? <FailedDimensionCard id="audit-accessibility" data={c.accessibility} label="Content accessibility" /> : <AccessibilitySection access={c.accessibility} />)}{c.udl && (c.udl.computeFailed ? <FailedDimensionCard id="audit-udl" data={c.udl} label="UDL principles" /> : <UdlSection udl={c.udl} />)}{c.accuracy && (c.accuracy.computeFailed ? <FailedDimensionCard id="audit-accuracy" data={c.accuracy} label="Content accuracy" /> : <AccuracySection acc={c.accuracy} />)}{
       // Plan R+ new dimensions
@@ -608,9 +622,9 @@ var _lazyIcon = function (name) {
     var generatedContent = props.generatedContent;
     var comprehensive = generatedContent && generatedContent.data && generatedContent.data.comprehensive;
     var reports = generatedContent && generatedContent.data && Array.isArray(generatedContent.data.reports) ? generatedContent.data.reports : [];
-    return <div className="space-y-8 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10">{
+    return <div className="curriculum-audit-report space-y-8 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10" role="region" aria-label="Curriculum audit report" tabIndex={0} lang={comprehensive && comprehensive.auditLanguage || 'en'}>{
       // Executive summary banner — readiness score + top fixes + Apply button.
-      comprehensive && <ExecutiveSummary comp={comprehensive} standardsReportCount={reports.length} onApplyFixes={props.onApplyFixes} onGeneratePreCheck={props.onGeneratePreCheck} />}{
+      comprehensive && <ExecutiveSummary t={t} comp={comprehensive} standardsReportCount={reports.length} onApplyFixes={props.onApplyFixes} onGeneratePreCheck={props.onGeneratePreCheck} />}{
       // Per-dimension findings (standards is now the first dimension card; the
       // legacy top-level reports[] block has been folded into comprehensive.standards).
       comprehensive && <ComprehensiveBlock comp={comprehensive} onApplyFixes={props.onApplyFixes} />}</div>;

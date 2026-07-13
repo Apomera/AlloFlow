@@ -90,7 +90,9 @@ describe('auto-continue canonical verification', () => {
       expect(loop).toContain(field);
     }
     expect(loop).toContain('setPdfFixResult(snapshot);');
-    expect(loop).toContain('_expertReviewBeforeVerification: _requiresManualReview ? _expertBase : null');
+    expect(loop).toContain('const _expertBase = { needed: !!_expertBaseReason, reason: _expertBaseReason };');
+    expect(loop).toContain('_verificationExpertReview: false');
+    expect(loop).toContain('_expertReviewBeforeVerification: null');
   });
 
   it('centrally enforces exact-HTML binding before every raw React state write', () => {
@@ -137,7 +139,8 @@ describe('auto-continue canonical verification', () => {
 
   it('rehydrates loaded projects asynchronously and never trusts a serialized snapshot', () => {
     expect(src).toContain('reader.onload = async (ev) => {');
-    expect(loaderBlock).toContain('const project = await rehydrateVerificationHtmlBinding(_savedProject);');
+    expect(loaderBlock).toContain('const _sanitizedImport = _projectSanitizer(_savedProject);');
+    expect(loaderBlock).toContain('const project = await rehydrateVerificationHtmlBinding(_sanitizedImport.project);');
     expect(loaderBlock).toContain('const _loadedHtmlBound = isLiveVerificationHtmlBound(project, project.accessibleHtml);');
     expect(loaderBlock).toContain('|| !_loadedHtmlBound');
     expect(loaderBlock).toContain('attachVerificationHtmlProof(_loadedPdfFixResult, project.accessibleHtml);');
@@ -155,7 +158,7 @@ describe('auto-continue canonical verification', () => {
     expect(src).toContain('const pdfProjectLoadEpochRef = useRef(0);');
     expect(projectLoader).toContain('const _projectLoadEpoch = ++pdfProjectLoadEpochRef.current;');
     expect(projectLoader.match(/_projectLoadEpoch !== pdfProjectLoadEpochRef\.current/g)).toHaveLength(2);
-    expect(projectLoader.indexOf('const project = await rehydrateVerificationHtmlBinding(_savedProject);')).toBeLessThan(
+    expect(projectLoader.indexOf('const project = await rehydrateVerificationHtmlBinding(_sanitizedImport.project);')).toBeLessThan(
       projectLoader.lastIndexOf('if (_projectLoadEpoch !== pdfProjectLoadEpochRef.current) return;'),
     );
     expect(projectLoader).toContain('if (_projectLoadEpoch === pdfProjectLoadEpochRef.current) addToast');

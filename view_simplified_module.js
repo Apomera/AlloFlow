@@ -593,6 +593,9 @@ function SimplifiedView(props) {
       return s && s.trim().length > 0;
     });
   };
+  var karaokeReaderSentences = React.useMemo(function () {
+    return getReadAloudSentencesForText(generatedContent && generatedContent.data);
+  }, [generatedContent && generatedContent.data]);
   var handlePrepareReadAloudAudio = async function () {
     if (ttsPrepState.busy || typeof window.__alloPrepareReadAloud !== 'function') return;
     var sentences = getReadAloudSentencesForText(generatedContent && generatedContent.data);
@@ -1187,6 +1190,9 @@ function SimplifiedView(props) {
     isTeacher: isTeacherMode,
     onClose: () => setIsKaraokeOverlayActive(false),
     getAudioUrl: getKaraokeAudioUrl,
+    sentenceList: karaokeReaderSentences,
+    captureOn: saveTtsAsPlayed,
+    onCaptureChange: setSaveTtsAsPlayedEnabled,
     text: (generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')
   })), immersiveSettings.lineFocus && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out",

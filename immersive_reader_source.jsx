@@ -964,7 +964,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
 // (Compatible with Gemini TTS, which returns audio-only with no timepoint
 // metadata. See plan.md for rationale.)
 // ============================================================================
-const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, isTeacher }) => {
+const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, getAudioUrl, isTeacher, captureOn: captureOnProp, onCaptureChange }) => {
     const { t } = useContext(LanguageContext);
     const [sentences, setSentences] = useState([]);
     const [sentenceIdx, setSentenceIdx] = useState(0);
@@ -973,7 +973,14 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     // globals; the player picks up the new audio through the shared store.
     const [regenBusy, setRegenBusy] = useState(false);
     const [prepState, setPrepState] = useState(null); // { busy, done, total, bytes } | null
-    const [captureOn, setCaptureOn] = useState(() => { try { return localStorage.getItem('allo_save_karaoke_audio') !== '0'; } catch (_) { return true; } });
+    const [localCaptureOn, setLocalCaptureOn] = useState(() => { try { return localStorage.getItem('allo_save_karaoke_audio') !== '0'; } catch (_) { return true; } });
+    const captureOn = typeof captureOnProp === 'boolean' ? captureOnProp : localCaptureOn;
+    const setCaptureOn = useCallback((value) => {
+        const next = !!value;
+        setLocalCaptureOn(next);
+        try { localStorage.setItem('allo_save_karaoke_audio', next ? '1' : '0'); } catch (_) {}
+        try { if (typeof onCaptureChange === 'function') onCaptureChange(next); } catch (_) {}
+    }, [onCaptureChange]);
     const [recording, setRecording] = useState(false);
     const [studentTakeTick, setStudentTakeTick] = useState(0);
     const _recRef = useRef(null);
@@ -1020,6 +1027,10 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     // callTTS caches on the shared urlCache, so a warmed sentence is an instant
     // cache hit when the player later requests it — zero perceived latency.
     const warmedRef = useRef(new Set());
+    // A warmed URL is only an in-memory cache entry. Track which look-ahead
+    // sentences also reached the durable per-resource store so turning capture
+    // on after warming can persist the cached URL without re-synthesis.
+    const capturedWarmRef = useRef(new Set());
     const reducedMotion = typeof window !== 'undefined' && window.matchMedia
         ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
         : false;
@@ -1038,28 +1049,31 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     // student→student), so capturing simply makes their replays instant. Human
     // recordings are a separate explicit flow and are unaffected.
     const scheduleCaptureForStorage = useCallback((sentenceText, url) => {
-        if (!captureOn || !sentenceText || !url) return;
-        if (typeof window === 'undefined' || typeof window.__alloCaptureKaraokeAudio !== 'function') return;
-        const run = () => {
-            try {
-                const result = window.__alloCaptureKaraokeAudio(sentenceText, url);
-                if (result && typeof result.catch === 'function') result.catch(() => {});
-            } catch (e) {}
-        };
+        if (!captureOn || !sentenceText || !url) return Promise.resolve(false);
+        if (typeof window === 'undefined' || typeof window.__alloCaptureKaraokeAudio !== 'function') return Promise.resolve(false);
+        // Invoke immediately so the persistence helper can snapshot the blob URL
+        // before playback cleanup. It defers only the heavy MP3 encode after it
+        // owns the bytes.
         try {
-            if (typeof window.requestIdleCallback === 'function') {
-                window.requestIdleCallback(run, { timeout: 1200 });
-            } else {
-                setTimeout(run, 250);
-            }
+            return Promise.resolve(window.__alloCaptureKaraokeAudio(sentenceText, url)).catch(() => false);
         } catch (e) {
-            setTimeout(run, 250);
+            return Promise.resolve(false);
         }
     }, [captureOn]);
 
     // Split text into sentences once (self-contained — parent's splitTextToSentences isn't exported)
     useEffect(() => {
         setCurrentAudioReadyIdx(-1);
+        const canonicalSentences = (Array.isArray(sentenceList) ? sentenceList : [])
+            .map(s => String(s || '').trim())
+            .filter(Boolean);
+        if (canonicalSentences.length) {
+            setSentences(canonicalSentences);
+            setSentenceIdx(0); setSweepPct(0);
+            warmedRef.current = new Set();
+            capturedWarmRef.current = new Set();
+            return;
+        }
         if (!text) { setSentences([]); return; }
         const cleaned = String(text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
         // Prefer the SHARED splitter (KaraokeAudioStore) so stored/vetted
@@ -1070,7 +1084,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         if (_KS && typeof _KS.splitSentences === 'function') {
             const _shared = _KS.splitSentences(text);
             setSentences(_shared.length > 0 ? _shared : [cleaned]);
-            setSentenceIdx(0); setSweepPct(0); warmedRef.current = new Set();
+            setSentenceIdx(0); setSweepPct(0); warmedRef.current = new Set(); capturedWarmRef.current = new Set();
             return;
         }
         // Preserve terminal punctuation in each sentence; split on "punct + whitespace"
@@ -1092,7 +1106,8 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         setSentenceIdx(0);
         setSweepPct(0);
         warmedRef.current = new Set(); // new text → nothing warmed yet
-    }, [text]);
+        capturedWarmRef.current = new Set();
+    }, [text, sentenceList]);
 
     // ── Zero-latency pre-warm (2026-07-06) ──────────────────────────────
     // Whenever the active sentence changes, quietly fetch the NEXT few
@@ -1116,23 +1131,48 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         const run = async () => {
             for (let i = sentenceIdx + 1; i <= sentenceIdx + LOOKAHEAD && i < sentences.length; i++) {
                 if (cancelled) return;
-                if (warmedRef.current.has(i)) continue;
-                warmedRef.current.add(i);
+                const alreadyWarmed = warmedRef.current.has(i);
+                const needsDurableCapture = captureOn && !capturedWarmRef.current.has(i);
+                if (alreadyWarmed && !needsDurableCapture) continue;
+                if (!alreadyWarmed) warmedRef.current.add(i);
                 // Fire through the player's own audio resolver; we ignore the
-                // returned URL — the point is the cache side-effect. A failure
-                // clears the mark so a later pass can retry.
+                // returned URL for playback, but when capture is enabled the same
+                // bytes must also enter the durable resource store.
                 try {
                     const warmedUrl = await resolver(sentences[i]);
-                    if (!warmedUrl) warmedRef.current.delete(i);
+                    if (!warmedUrl) {
+                        warmedRef.current.delete(i);
+                        capturedWarmRef.current.delete(i);
+                    } else if (needsDurableCapture) {
+                        const captured = await scheduleCaptureForStorage(sentences[i], warmedUrl);
+                        let stored = false;
+                        try {
+                            const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
+                            stored = !!(st && st.has(sentences[i]));
+                        } catch (e) {}
+                        if (captured || stored) capturedWarmRef.current.add(i);
+                    }
                 }
-                catch (e) { warmedRef.current.delete(i); }
+                catch (e) { warmedRef.current.delete(i); capturedWarmRef.current.delete(i); }
             }
         };
         // Small defer so the current sentence's on-demand fetch always wins
         // the queue; pre-warm fills in behind it.
         const timer = setTimeout(run, 200);
         return () => { cancelled = true; clearTimeout(timer); };
-    }, [isOpen, isPlaying, sentences, sentenceIdx, currentAudioReadyIdx]);
+    }, [isOpen, isPlaying, sentences, sentenceIdx, currentAudioReadyIdx, captureOn, scheduleCaptureForStorage]);
+
+    // If saving is enabled while a sentence is already playing, capture that
+    // current clip instead of waiting for the next sentence.
+    const previousCaptureOnRef = useRef(captureOn);
+    useEffect(() => {
+        const justEnabled = !previousCaptureOnRef.current && captureOn;
+        previousCaptureOnRef.current = captureOn;
+        if (!justEnabled || !isOpen || !isPlaying) return;
+        const audio = audioRef.current;
+        const sentence = sentences[sentenceIdx];
+        if (audio && audio.src && sentence) scheduleCaptureForStorage(sentence, audio.src);
+    }, [captureOn, isOpen, isPlaying, sentences, sentenceIdx, scheduleCaptureForStorage]);
 
     // Hard teardown when the overlay closes or the component unmounts
     useEffect(() => {
@@ -1523,7 +1563,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                     {isTeacher && (
                         <div className="flex items-center gap-2" role="group" aria-label={safeT(t, 'immersive.teacher_audio_tools', 'Read-aloud tools')}>
                             <label className="flex items-center gap-1.5 cursor-pointer" title={safeT(t, 'immersive.save_readaloud_tip', 'Save each sentence shortly after it starts playing into this resource, so students hear your vetted audio instantly on any device.')}>
-                                <input type="checkbox" checked={captureOn} onChange={e => { const v = e.target.checked; setCaptureOn(v); try { localStorage.setItem("allo_save_karaoke_audio", v ? "1" : "0"); } catch (_) {} }} aria-label={safeT(t, "immersive.save_readaloud", "Save read-aloud as I listen")} />
+                                <input type="checkbox" checked={captureOn} onChange={e => setCaptureOn(e.target.checked)} aria-label={safeT(t, "immersive.save_readaloud", "Save read-aloud as I listen")} />
                                 <span>{'💾'} {safeT(t, 'immersive.save_readaloud', 'Save read-aloud')}</span>
                             </label>
                             <button

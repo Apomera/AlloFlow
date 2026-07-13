@@ -1392,6 +1392,8 @@
     var resetTriggerRef = useRef(null);
     var _resetConfirm = useState(false);
     var showResetConfirm = _resetConfirm[0]; var setShowResetConfirm = _resetConfirm[1];
+    var _exitHint = useState(false);
+    var showExitHint = _exitHint[0]; var setShowExitHint = _exitHint[1];
     var closeHandlerRef = useRef(onClose);
     closeHandlerRef.current = onClose;
 
@@ -1430,18 +1432,33 @@
     var _journal = useState(loadJournal);
     var journal = _journal[0]; var setJournal = _journal[1];
 
-    // Persist on every change (debounced via a microtask so rapid setState
-    // batches collapse to one write).
-    var saveScheduledRef = useRef(false);
+    // Truthful debounced persistence. Cleanup flushes the captured latest
+    // state so closing the modal immediately after an edit cannot lose work.
+    var _saveStatus = useState('saved');
+    var saveStatus = _saveStatus[0]; var setSaveStatus = _saveStatus[1];
+    var latestJournalRef = useRef(journal);
+    latestJournalRef.current = journal;
     useEffect(function () {
-      if (saveScheduledRef.current) return;
-      saveScheduledRef.current = true;
+      setSaveStatus('saving');
       var id = setTimeout(function () {
-        saveScheduledRef.current = false;
         saveJournal(journal);
-      }, 60);
-      return function () { clearTimeout(id); };
+        setSaveStatus('saved');
+      }, 120);
+      return function () {
+        clearTimeout(id);
+        saveJournal(journal);
+      };
     }, [journal]);
+    useEffect(function () {
+      var flushLatestJournal = function () { saveJournal(latestJournalRef.current); };
+      window.addEventListener('pagehide', flushLatestJournal);
+      window.addEventListener('beforeunload', flushLatestJournal);
+      return function () {
+        window.removeEventListener('pagehide', flushLatestJournal);
+        window.removeEventListener('beforeunload', flushLatestJournal);
+        flushLatestJournal();
+      };
+    }, []);
 
     // Seed reading level from the host's known grade — but only on a genuinely
     // fresh journal (nothing persisted at mount). Never override a level the
@@ -1475,6 +1492,38 @@
     var educatorViewOn = _eduView[0]; var setEducatorViewOn = _eduView[1];
     var educatorView = window.ResearchHub && window.ResearchHub.getEducatorView
       ? window.ResearchHub.getEducatorView() : null;
+    var researchMilestones = [
+      { label: 'Frame a question', complete: !!(journal.questionTitle || '').trim() },
+      { label: 'Gather evidence', complete: (journal.evidenceCards || []).length > 0 || (journal.sources || []).length > 0 },
+      { label: 'Develop ideas', complete: (journal.modelSnapshots || []).length > 0 || (journal.candidateConcepts || []).length > 0 || (journal.framings || []).length > 0 },
+      { label: 'Build a position', complete: (journal.claims || []).length > 0 || (journal.designClaims || []).length > 0 || (journal.compositions || []).length > 0 },
+      { label: 'Revise and loop', complete: (journal.loopBacks || []).length > 0 },
+    ];
+    var researchProgress = Math.round(researchMilestones.filter(function (step) { return step.complete; }).length / researchMilestones.length * 100);
+    var researchNextMove = !researchMilestones[0].complete
+      ? 'Write a question worth investigating'
+      : !activeLane
+        ? 'Choose the lens that best fits your question'
+        : !researchMilestones[1].complete
+          ? 'Collect or log your first piece of evidence'
+          : !researchMilestones[2].complete
+            ? 'Develop a model, framing, or candidate idea'
+            : !researchMilestones[3].complete
+              ? 'Connect evidence to a claim or design decision'
+              : 'Revisit an earlier stage and strengthen your reasoning';
+    var researchQuestionText = (journal.questionTitle || '').trim();
+    var researchQuestionWords = researchQuestionText ? researchQuestionText.split(/\s+/).filter(Boolean).length : 0;
+    var researchQuestionSignals = [
+      { label: 'In your own words', met: researchQuestionWords >= 4 },
+      { label: 'Open to investigation', met: /^(how|why|what|which|when|where|to what extent|in what ways|whose)\b/i.test(researchQuestionText) },
+      { label: 'Focused enough to explore', met: researchQuestionWords >= 7 && researchQuestionWords <= 28 },
+      { label: 'Written as a question', met: /\?$/.test(researchQuestionText) },
+    ];
+    var researchQuestionReady = researchQuestionSignals.filter(function (signal) { return signal.met; }).length;
+    var researchLaneMatch = null;
+    if (/\b(how might|design|build|improve|solve|constraint|prototype)\b/i.test(researchQuestionText)) researchLaneMatch = { id: 'engineering', icon: '\uD83D\uDEE0\uFE0F', label: 'Engineering Design', reason: 'Your question points toward creating or improving a solution under constraints.' };
+    else if (/\b(whose|perspective|history|historical|community|policy|meaning|culture|justice|impact on people)\b/i.test(researchQuestionText)) researchLaneMatch = { id: 'humanities', icon: '\uD83D\uDCDA', label: 'Humanities & Social Research', reason: 'Your question asks about people, perspectives, meaning, systems, or public consequences.' };
+    else if (/\b(why|pattern|measure|observe|experiment|cause|effect|phenomenon|data)\b/i.test(researchQuestionText)) researchLaneMatch = { id: 'scientific', icon: '\uD83D\uDD2C', label: 'Scientific Inquiry', reason: 'Your question points toward observing patterns, testing explanations, or gathering measurable evidence.' };
 
     var setActiveLane = useCallback(function (laneId) {
       setJournal(function (prev) {
@@ -1529,6 +1578,7 @@
       <div
         role="presentation"
         data-help-key="research_hub"
+        data-backdrop-dismiss-disabled="true"
         style={{
           position: 'fixed', inset: 0, zIndex: 60,
           background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(6px)',
@@ -1536,7 +1586,7 @@
           padding: '4vh 16px',
           overflowY: 'auto',
         }}
-        onClick={function (e) { if (e.target === e.currentTarget && typeof onClose === 'function') onClose(); }}
+        onClick={function (e) { if (e.target === e.currentTarget) setShowExitHint(true); }}
       >
         <div
           ref={dialogRef}
@@ -1601,7 +1651,7 @@
               <button
                 ref={closeButtonRef}
                 type="button"
-                onClick={function () { if (typeof onClose === 'function') onClose(); }}
+                onClick={function () { setShowExitHint(false); if (typeof onClose === 'function') onClose(); }}
                 aria-label={t('common.close') || 'Close'}
                 style={{
                   background: 'rgba(255,255,255,0.18)', color: '#fff',
@@ -1622,6 +1672,48 @@
             <div role="status" aria-live="polite" aria-atomic="true" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}>
               {educatorViewOn ? (t('research_hub.educator_view_on') || 'Educator view') : activeLane ? activeLane.label : (t('research_hub.lane_selector_title') || 'Choose an investigation lane')}
             </div>
+            {showExitHint && (
+              <div data-research-exit-hint="true" role="status" aria-live="polite" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '12px', border: '1px solid #bfdbfe', background: '#eff6ff', color: '#1e3a8a' }}>
+                <span aria-hidden="true" style={{ fontSize: '16px' }}>{'💾'}</span>
+                <div style={{ flex: 1, fontSize: '11px', lineHeight: 1.5 }}><strong>Your Research Hub stayed open.</strong> Clicking outside no longer closes it, so downloads, resource packs, and saved files are less likely to interrupt your work. Use Close or press Escape when you are finished.</div>
+                <button type="button" onClick={function () { setShowExitHint(false); }} aria-label="Dismiss saved-work reminder" style={{ border: '1px solid #bfdbfe', borderRadius: '8px', background: '#fff', color: '#1e40af', padding: '5px 8px', fontSize: '10px', fontWeight: 800, cursor: 'pointer' }}>Got it</button>
+              </div>
+            )}
+            <section
+              data-research-command="true"
+              aria-labelledby="research-command-title"
+              style={{
+                overflow: 'hidden', borderRadius: '16px', border: '1px solid #c7d2fe',
+                background: 'linear-gradient(135deg, #eef2ff 0%, #ffffff 52%, #f0fdfa 100%)',
+                boxShadow: '0 8px 24px rgba(67,56,202,0.08)',
+              }}
+            >
+              <div style={{ padding: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: '16px' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}><div style={{ fontSize: '10px', fontWeight: 900, letterSpacing: '1.4px', textTransform: 'uppercase', color: '#4f46e5' }}>Inquiry command center</div><span aria-hidden="true" style={{ fontSize: '9px', fontWeight: 800, color: saveStatus === 'saved' ? '#047857' : '#1d4ed8' }}>{saveStatus === 'saved' ? '✓ Saved' : '• Saving...'}</span></div>
+                  <h3 id="research-command-title" style={{ margin: '4px 0 0', fontSize: '18px', fontWeight: 900, color: '#0f172a' }}>{researchNextMove}</h3>
+                  <p style={{ margin: '5px 0 0', fontSize: '11px', lineHeight: 1.55, color: '#475569' }}>Your journal travels across every lane. Change lenses without losing evidence, models, sources, or revisions.</p>
+                  <div style={{ marginTop: '12px', height: '8px', borderRadius: '999px', overflow: 'hidden', background: '#e0e7ff' }} role="progressbar" aria-label="Inquiry progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={researchProgress}>
+                    <div style={{ width: researchProgress + '%', height: '100%', borderRadius: '999px', background: 'linear-gradient(90deg,#4f46e5,#14b8a6)', transition: 'width 180ms ease' }} />
+                  </div>
+                  <div style={{ marginTop: '8px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(100px,1fr))', gap: '6px' }}>
+                    {researchMilestones.map(function (step, index) {
+                      return <div key={step.label} style={{ fontSize: '9px', fontWeight: 800, color: step.complete ? '#047857' : '#64748b' }}><span aria-hidden="true">{step.complete ? '✓' : index + 1}{' '}</span>{step.label}</div>;
+                    })}
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '8px' }}>
+                  {[
+                    { label: 'Evidence', value: (journal.evidenceCards || []).length },
+                    { label: 'Sources', value: (journal.sources || []).length },
+                    { label: 'Idea versions', value: (journal.modelSnapshots || []).length + (journal.framings || []).length + (journal.candidateConcepts || []).length },
+                    { label: 'Revisions', value: (journal.loopBacks || []).length },
+                  ].map(function (metric) {
+                    return <div key={metric.label} style={{ borderRadius: '12px', border: '1px solid #ffffff', background: 'rgba(255,255,255,0.88)', padding: '10px', boxShadow: '0 2px 8px rgba(15,23,42,0.05)' }}><div style={{ fontSize: '18px', fontWeight: 900, color: '#1e293b' }}>{metric.value}</div><div style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#64748b' }}>{metric.label}</div></div>;
+                  })}
+                </div>
+              </div>
+            </section>
             {/* Inquiry-framing input — shared across all three lanes */}
             <div style={{
               padding: '12px 14px', borderRadius: '12px',
@@ -1656,6 +1748,33 @@
                   resize: 'vertical', minHeight: '50px',
                 }}
               />
+              <div data-research-question-coach="true" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {!researchQuestionText && (
+                  <div>
+                    <div style={{ marginBottom: '6px', fontSize: '10px', fontWeight: 800, color: '#475569' }}>Need a starting shape? Choose a stem, then make it yours.</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }} role="group" aria-label="Inquiry question starters">
+                      {[
+                        'What patterns do you notice in ',
+                        'How might we improve ',
+                        'Why does this change when ',
+                        'Whose perspectives are missing from ',
+                      ].map(function (stem) {
+                        return <button key={stem} type="button" onClick={function () { setQuestionTitle(stem); }} style={{ border: '1px solid #c7d2fe', borderRadius: '999px', background: '#eef2ff', color: '#3730a3', padding: '5px 9px', fontSize: '10px', fontWeight: 800, cursor: 'pointer' }}>{stem.trim() + '...'}</button>;
+                      })}
+                    </div>
+                  </div>
+                )}
+                {researchQuestionText && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', gap: '10px', alignItems: 'center', borderRadius: '10px', background: researchQuestionReady === researchQuestionSignals.length ? '#ecfdf5' : '#ffffff', border: '1px solid ' + (researchQuestionReady === researchQuestionSignals.length ? '#a7f3d0' : '#e2e8f0'), padding: '8px 10px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                      {researchQuestionSignals.map(function (signal) {
+                        return <span key={signal.label} style={{ borderRadius: '999px', padding: '3px 7px', fontSize: '9px', fontWeight: 800, background: signal.met ? '#d1fae5' : '#f1f5f9', color: signal.met ? '#047857' : '#64748b' }}><span aria-hidden="true">{signal.met ? '✓ ' : '○ '}</span>{signal.label}</span>;
+                      })}
+                    </div>
+                    <div style={{ textAlign: 'right', whiteSpace: 'nowrap' }}><div style={{ fontSize: '11px', fontWeight: 900, color: researchQuestionReady === 4 ? '#047857' : '#4338ca' }}>{researchQuestionReady === 4 ? 'Ready to investigate' : researchQuestionReady + '/4 signals'}</div><div style={{ marginTop: '1px', fontSize: '9px', color: '#64748b' }}>{researchQuestionWords + ' words - ' + researchQuestionText.length + '/240 characters'}</div></div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Suggestion-badge primitive demo banner — shows the convention
@@ -1694,6 +1813,15 @@
                   {t('research_hub.lane_selector_help') ||
                     'These three lanes share one inquiry journal. Evidence cards, voice notes, and your model history carry across — so a question that starts as scientific inquiry can finish as a humanities op-ed without losing the work.'}
                 </p>
+                {researchLaneMatch ? (
+                  <div data-research-lane-match="true" style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '12px 14px', borderRadius: '14px', border: '1px solid #c7d2fe', background: 'linear-gradient(90deg,#eef2ff,#f8fafc)', flexWrap: 'wrap' }}>
+                    <span aria-hidden="true" style={{ fontSize: '24px' }}>{researchLaneMatch.icon}</span>
+                    <div style={{ flex: '1 1 260px' }}><div style={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.8px', color: '#4f46e5' }}>Possible lens match - based only on words in your question</div><div style={{ marginTop: '2px', fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>{researchLaneMatch.label}</div><p style={{ margin: '3px 0 0', fontSize: '11px', lineHeight: 1.5, color: '#475569' }}>{researchLaneMatch.reason}</p><p style={{ margin: '3px 0 0', fontSize: '10px', color: '#64748b' }}>This is not a verdict. Try another lane whenever a different lens reveals something useful.</p></div>
+                    <button type="button" onClick={function () { setActiveLane(researchLaneMatch.id); }} style={{ flexShrink: 0, border: 0, borderRadius: '9px', background: '#4f46e5', color: '#fff', padding: '7px 10px', fontSize: '10px', fontWeight: 900, cursor: 'pointer' }}>Try this lens</button>
+                  </div>
+                ) : researchQuestionText ? (
+                  <div data-research-lane-match="true" style={{ padding: '10px 12px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '11px', color: '#475569' }}><strong>No single lens dominates.</strong> Choose the lane that matches what you want to do first; your journal will travel with you.</div>
+                ) : null}
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
@@ -1704,11 +1832,13 @@
                       <button
                         key={L.id}
                         type="button"
+                        data-research-lane={L.id}
                         data-help-key={'research_hub_lane_' + L.id}
                         onClick={function () { setActiveLane(L.id); }}
                         style={{
                           padding: '16px', borderRadius: '14px',
-                          border: '1px solid #cbd5e1', background: '#ffffff',
+                          border: '1px solid ' + (L.id === 'scientific' ? '#67e8f9' : L.id === 'engineering' ? '#fcd34d' : '#fda4af'),
+                          background: L.id === 'scientific' ? 'linear-gradient(145deg,#ecfeff,#ffffff)' : L.id === 'engineering' ? 'linear-gradient(145deg,#fffbeb,#ffffff)' : 'linear-gradient(145deg,#fff1f2,#ffffff)',
                           textAlign: 'left', cursor: 'pointer',
                           display: 'flex', flexDirection: 'column', gap: '8px',
                           transition: 'transform 0.15s, box-shadow 0.15s',
@@ -1719,11 +1849,15 @@
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <span aria-hidden="true" style={{ fontSize: '32px' }}>{L.icon}</span>
                           <div>
-                            <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#1e293b' }}>{L.label}</h4>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}><h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#1e293b' }}>{L.label}</h4>{researchLaneMatch && researchLaneMatch.id === L.id && <span style={{ borderRadius: '999px', padding: '2px 6px', background: '#4f46e5', color: '#fff', fontSize: '8px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.4px' }}>Lens match</span>}</div>
                             <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748b' }}>{L.tagline}</p>
                           </div>
                         </div>
                         <p style={{ margin: 0, fontSize: '12px', color: '#475569', lineHeight: 1.5 }}>{L.blurb}</p>
+                        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                          <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748b' }}>{L.id === 'scientific' ? 'Best for explaining phenomena' : L.id === 'engineering' ? 'Best for solving constrained problems' : 'Best for interpreting people and systems'}</span>
+                          <span style={{ fontSize: '10px', fontWeight: 900, color: L.id === 'scientific' ? '#0e7490' : L.id === 'engineering' ? '#b45309' : '#be123c' }}>Open workspace {'→'}</span>
+                        </div>
                         {L._placeholder && (
                           <span style={{
                             alignSelf: 'flex-start',
@@ -1786,35 +1920,38 @@
               />
             </details>
 
-            <details style={{
-              padding: '12px 14px', borderRadius: '12px',
-              border: '1px solid #e2e8f0', background: '#f8fafc',
+            <details data-research-backpack="true" style={{
+              borderRadius: '16px', overflow: 'hidden',
+              border: '1px solid #cbd5e1', background: '#ffffff',
+              boxShadow: '0 4px 14px rgba(15,23,42,0.05)',
             }}>
-              <summary style={{ cursor: 'pointer', fontSize: '12px', fontWeight: 800, color: '#1e293b' }}>
-                <span aria-hidden="true">{'\u{1F4D3} '}</span>
-                {t('research_hub.journal_state_summary') || 'Inquiry journal state'}
+              <summary style={{ cursor: 'pointer', padding: '12px 14px', listStylePosition: 'inside', background: 'linear-gradient(90deg,#f8fafc,#eef2ff)' }}>
+                <span aria-hidden="true" style={{ fontSize: '16px' }}>{'🎒 '}</span>
+                <span style={{ fontSize: '12px', fontWeight: 900, color: '#1e293b' }}>{t('research_hub.journal_state_summary') || 'Research Backpack'}</span>
+                <span data-research-save-status="true" role="status" aria-live="polite" style={{ marginLeft: '8px', borderRadius: '999px', padding: '3px 7px', background: saveStatus === 'saved' ? '#d1fae5' : '#dbeafe', color: saveStatus === 'saved' ? '#047857' : '#1d4ed8', fontSize: '9px', fontWeight: 900 }}>{saveStatus === 'saved' ? 'Saved on this device' : 'Saving latest changes...'}</span>
+                <span style={{ marginLeft: '8px', fontSize: '10px', color: '#64748b' }}>{researchProgress + '% inquiry progress'}</span>
               </summary>
-              <ul style={{ margin: '8px 0 0', paddingLeft: '20px', fontSize: '11px', color: '#475569', lineHeight: 1.7 }}>
-                <li>{(t('research_hub.journal_dev_level') || 'Reading level') + ': ' + (DEV_LEVELS.filter(function (l) { return l.key === journal.devLevel; })[0] || { long: journal.devLevel }).long}</li>
-                <li>{(t('research_hub.journal_active_lane') || 'Active lane') + ': ' + (activeLane ? activeLane.label : (t('research_hub.journal_no_lane') || 'none yet'))}</li>
-                <li>{(t('research_hub.journal_evidence_count') || 'Evidence cards') + ': ' + (journal.evidenceCards || []).length}</li>
-                <li>{(t('research_hub.journal_model_versions') || 'Model snapshots') + ': ' + (journal.modelSnapshots || []).length}</li>
-                <li>{(t('research_hub.journal_sources') || 'Sources logged') + ': ' + (journal.sources || []).length}</li>
-                <li>{(t('research_hub.journal_ai_calls') || 'AI questions this session') + ': ' + (journal.aiCallCount || 0) + ' / ' + MAX_AI_CALLS_PER_SESSION}</li>
-              </ul>
-              <button
-                type="button"
-                onClick={requestClearJournal}
-                style={{
-                  marginTop: '10px',
-                  padding: '4px 10px', borderRadius: '999px',
-                  background: '#fff', border: '1px solid #fca5a5',
-                  color: '#b91c1c', fontWeight: 700, fontSize: '11px',
-                  cursor: 'pointer',
-                }}
-              >
-                {t('research_hub.journal_reset') || 'Reset this inquiry'}
-              </button>
+              <div style={{ padding: '14px', borderTop: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: '8px' }}>
+                  {[
+                    { icon: '📌', label: 'Evidence', value: (journal.evidenceCards || []).length, detail: 'observations and records' },
+                    { icon: '🔗', label: 'Sources', value: (journal.sources || []).length, detail: 'sources logged' },
+                    { icon: '💡', label: 'Ideas', value: (journal.modelSnapshots || []).length + (journal.candidateConcepts || []).length + (journal.framings || []).length, detail: 'models, concepts, framings' },
+                    { icon: '💬', label: 'Positions', value: (journal.claims || []).length + (journal.designClaims || []).length + (journal.compositions || []).length, detail: 'claims and compositions' },
+                    { icon: '🔄', label: 'Revisions', value: (journal.loopBacks || []).length, detail: 'documented loop-backs' },
+                  ].map(function (item) {
+                    return <div key={item.label} style={{ borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', padding: '10px' }}><div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><span aria-hidden="true" style={{ fontSize: '17px' }}>{item.icon}</span><strong style={{ fontSize: '18px', color: '#1e293b' }}>{item.value}</strong></div><div style={{ marginTop: '3px', fontSize: '10px', fontWeight: 900, color: '#334155' }}>{item.label}</div><div style={{ marginTop: '1px', fontSize: '9px', color: '#64748b' }}>{item.detail}</div></div>;
+                  })}
+                </div>
+                <div style={{ marginTop: '10px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: '8px' }}>
+                  <div style={{ borderRadius: '12px', border: '1px solid #e0e7ff', background: '#eef2ff', padding: '10px' }}><div style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: '#4f46e5' }}>Current context</div><div style={{ marginTop: '4px', fontSize: '11px', color: '#334155' }}>{(DEV_LEVELS.filter(function (l) { return l.key === journal.devLevel; })[0] || { long: journal.devLevel }).long + ' reading level - ' + (activeLane ? activeLane.label : 'No lane selected')}</div></div>
+                  <div style={{ borderRadius: '12px', border: '1px solid #ccfbf1', background: '#f0fdfa', padding: '10px' }}><div style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: '#0f766e' }}>Journal continuity</div><div style={{ marginTop: '4px', fontSize: '11px', color: '#334155' }}>Everything here travels with you when you switch research lanes.</div></div>
+                  <div style={{ borderRadius: '12px', border: '1px solid #fde68a', background: '#fffbeb', padding: '10px' }}><div style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', color: '#b45309' }}>AI questions</div><div style={{ marginTop: '4px', fontSize: '11px', color: '#334155' }}>{(journal.aiCallCount || 0) + ' of ' + MAX_AI_CALLS_PER_SESSION + ' used this session - your authored work is not counted.'}</div></div>
+                </div>
+                <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button type="button" onClick={requestClearJournal} style={{ minHeight: '44px', padding: '7px 12px', borderRadius: '10px', background: '#fff', border: '1px solid #fca5a5', color: '#b91c1c', fontWeight: 800, fontSize: '10px', cursor: 'pointer' }}>{t('research_hub.journal_reset') || 'Reset this inquiry'}</button>
+                </div>
+              </div>
             </details>
           </div>
 

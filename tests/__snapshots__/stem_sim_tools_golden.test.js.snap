@@ -18,10 +18,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for anato
   "buttons": 66,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 165,
+  "lengthBucket": 171,
   "paths": 0,
   "selects": 0,
-  "sha": "f63df9d3966987d5",
+  "sha": "f6626ad097242424",
   "svgs": 0,
 }
 `;
@@ -41,13 +41,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for archS
 
 exports[`science-sim + studio render goldens > renders + pins a digest for artStudio [ssr] 1`] = `
 {
-  "buttons": 24,
+  "buttons": 23,
   "canvases": 1,
   "inputs": 3,
-  "lengthBucket": 40,
+  "lengthBucket": 39,
   "paths": 0,
   "selects": 0,
-  "sha": "36dfab07e66d0b6d",
+  "sha": "efff3cd20841defd",
   "svgs": 0,
 }
 `;

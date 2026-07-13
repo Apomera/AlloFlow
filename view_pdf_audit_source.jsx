@@ -11358,8 +11358,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <label data-help-key="pdf_audit_view_load_project_btn" className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
                           📂 Load Project
                           <input type="file" accept=".json,.alloflow.json" className="hidden" onChange={(e) => {
-                            if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) { addToast('This project file is larger than the 320 MB safety limit.', 'error'); e.target.value = ''; return; }
                             const file = e.target.files?.[0]; if (!file) return;
+                            if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) { addToast('This project file is larger than the 320 MB safety limit.', 'error'); e.target.value = ''; return; }
                             const _projectLoadToken = ++_projectLoadSelectionRef.current;
                             const reader = new FileReader();
                             reader.onload = async (ev) => {

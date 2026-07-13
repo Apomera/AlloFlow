@@ -2644,6 +2644,9 @@ var d = (labToolData.companionPlanting) || {};
           var cgAdvisorCooldown = cg.advisorCooldown || 0;
           var cgAdvisorResponse = cg.advisorResponse || null;
           var cgLastFeedback = cg.lastFeedback || null;
+          var cgLastDayReport = cg.lastDayReport || null;
+          var cgDayPrediction = cg.dayPrediction || null;
+          var cgPredictionResult = cg.predictionResult || null;
           var cgPlantFilter = cg.plantFilter || 'all';
 
           // NPK consumption rates per plant (per growth day)
@@ -2750,6 +2753,10 @@ var d = (labToolData.companionPlanting) || {};
           var cgCellHistory = cg.cellHistory || {}; // { "0": ["tomato", "beans"], "1": ["corn"] ... }
 
           function cgAdvanceDay() {
+            var reportBeforePlants = cgGrid.filter(function(cell) { return cell.plantId && CG_PLANTS[cell.plantId] && !CG_PLANTS[cell.plantId].isStructure; });
+            var reportBeforeGrowth = reportBeforePlants.length ? reportBeforePlants.reduce(function(sum, cell) { return sum + cell.growthDay; }, 0) / reportBeforePlants.length : 0;
+            var reportBeforeHealth = reportBeforePlants.length ? reportBeforePlants.reduce(function(sum, cell) { return sum + cell.health; }, 0) / reportBeforePlants.length : 100;
+            var reportBeforeReady = reportBeforePlants.filter(function(cell) { var plant = CG_PLANTS[cell.plantId]; return plant && cell.growthDay >= plant.days && cell.health > 20; }).length;
             var newGrid = cgGrid.map(function(cell, idx) {
               if (!cell.plantId) return cell;
               var plant = CG_PLANTS[cell.plantId];
@@ -2945,6 +2952,30 @@ var d = (labToolData.companionPlanting) || {};
             }
 
             var readyAfterDay = newGrid.filter(function(cell) { var readyPlant = cell.plantId && CG_PLANTS[cell.plantId]; return readyPlant && cell.growthDay >= readyPlant.days && cell.health > 20; }).length;
+            var reportAfterPlants = newGrid.filter(function(cell) { return cell.plantId && CG_PLANTS[cell.plantId] && !CG_PLANTS[cell.plantId].isStructure; });
+            var reportAfterGrowth = reportAfterPlants.length ? reportAfterPlants.reduce(function(sum, cell) { return sum + cell.growthDay; }, 0) / reportAfterPlants.length : 0;
+            var reportAfterHealth = reportAfterPlants.length ? reportAfterPlants.reduce(function(sum, cell) { return sum + cell.health; }, 0) / reportAfterPlants.length : 100;
+            var reportMoisture = Math.min(100, Math.max(0, newMoisture + extraMoisture));
+            var reportNitrogen = Math.min(100, newNitrogen + extraNitrogen);
+            var reportHelpfulLinks = 0;
+            cgGrid.forEach(function(cell, idx) { if (cell.plantId) reportHelpfulLinks += getCellBonus(cgGrid, idx).pairs.filter(function(pair) { return pair.bonus > 0; }).length; });
+            reportHelpfulLinks = Math.round(reportHelpfulLinks / 2);
+            var reportInsight = newEvent ? 'A garden event shaped today more than the usual seasonal pattern.' : cgSeason === 3 ? 'Winter dormancy paused crop growth while the soil system kept changing.' : cgMoisture < 20 ? 'Low moisture slowed growth. Watering before the next day will protect momentum.' : cgNitrogen < 15 ? 'Low nitrogen limited heavy feeders. Compost or legumes can restore fertility.' : reportHelpfulLinks > 0 ? reportHelpfulLinks + ' helpful companion link' + (reportHelpfulLinks !== 1 ? 's helped' : ' helped') + ' support growth and resilience.' : 'Seasonal conditions drove steady growth. Add companion neighbors to strengthen resilience.';
+            var lastDayReport = {
+              day: newDay,
+              season: ['Spring', 'Summer', 'Autumn', 'Winter'][cgSeason],
+              growthDelta: Math.round((reportAfterGrowth - reportBeforeGrowth) * 10) / 10,
+              healthDelta: Math.round((reportAfterHealth - reportBeforeHealth) * 10) / 10,
+              moistureDelta: Math.round((reportMoisture - cgMoisture) * 10) / 10,
+              nitrogenDelta: Math.round((reportNitrogen - cgNitrogen) * 10) / 10,
+              pestDelta: Math.round((newPestPop - cgPestPop) * 10) / 10,
+              readyDelta: Math.max(0, readyAfterDay - reportBeforeReady),
+              insight: reportInsight,
+              eventLabel: newEvent ? newEvent.label : null
+            };
+            var predictionChecks = { growth: lastDayReport.growthDelta >= 0.8, moisture: lastDayReport.moistureDelta <= -1, pests: lastDayReport.pestDelta > 0, harvest: lastDayReport.readyDelta > 0 };
+            var observedOutcome = lastDayReport.readyDelta > 0 ? 'A new crop became ready to harvest.' : lastDayReport.healthDelta < 0 ? 'Average plant health declined.' : lastDayReport.pestDelta > 0 ? 'Pest pressure increased.' : lastDayReport.moistureDelta <= -1 ? 'Soil moisture decreased.' : 'The strongest signal was steady crop growth.';
+            var predictionResult = cgDayPrediction ? { id: cgDayPrediction.id, label: cgDayPrediction.label, matched: !!predictionChecks[cgDayPrediction.id], observed: observedOutcome, day: newDay } : null;
             var dayFeedback = newEvent ? { icon: newEvent.emoji, title: newEvent.label, detail: newEvent.desc, tone: newEvent.isGood ? 'success' : 'warning' } : { icon: '\uD83D\uDCC5', title: 'Day ' + (newDay % 30 + 1) + ' complete', detail: 'Moisture is ' + Math.round(Math.min(100, Math.max(0, newMoisture + extraMoisture))) + '%. ' + (readyAfterDay ? readyAfterDay + ' crop' + (readyAfterDay !== 1 ? 's are' : ' is') + ' ready to harvest.' : 'Growth advanced across the garden.'), tone: readyAfterDay ? 'celebrate' : 'info' };
 
             cgUpd({
@@ -2961,6 +2992,9 @@ var d = (labToolData.companionPlanting) || {};
               beneficialPop: Math.round(newBeneficialPop * 10) / 10,
               activeEvent: newEvent,
               advisorCooldown: Math.max(0, cgAdvisorCooldown - 1),
+              lastDayReport: lastDayReport,
+              predictionResult: predictionResult,
+              dayPrediction: null,
               lastFeedback: dayFeedback
             });
             cgLogActivity(dayFeedback.icon, dayFeedback.title, dayFeedback.detail);
@@ -3874,6 +3908,12 @@ var d = (labToolData.companionPlanting) || {};
             var forecastMoisture = Math.max(0, Math.round((cgMoisture - forecastMoistureLoss) * 10) / 10);
             var forecastGrowth = ['Steady spring growth', 'Fast summer growth', 'Slower cool growth', 'Winter dormancy'][cgSeason];
             var forecastPestRisk = cgSeason === 1 ? 'High' : cgSeason === 0 ? 'Moderate' : cgSeason === 2 ? 'Low' : 'Minimal';
+            var predictionOptions = [
+              { id: 'growth', icon: '\uD83C\uDF31', label: 'Growth will accelerate' },
+              { id: 'moisture', icon: '\uD83D\uDCA7', label: 'Soil will get drier' },
+              { id: 'pests', icon: '\uD83D\uDC1B', label: 'Pests will increase' },
+              { id: 'harvest', icon: '\uD83C\uDF3E', label: 'A crop will become ready' }
+            ];
             var forecastAdvice = cgMoisture < 35 ? { icon: '\uD83D\uDCA7', text: 'Water before advancing to prevent drought stress.', action: 'Water now', onClick: cgWater } : cgNitrogen < 25 ? { icon: 'N', text: 'Add compost before heavy feeders lose momentum.', action: 'Add compost', onClick: cgCompost } : cgPestPop > 18 ? { icon: '\uD83D\uDC1B', text: 'Reduce pests before they damage the next day of growth.', action: 'Weed now', onClick: cgWeed } : { icon: '\u2705', text: 'Conditions are stable. Advance and observe the result.', action: 'Advance day', onClick: cgAdvanceDay };
             var seasonGoals = [
               { id: 'diversity', icon: '\uD83C\uDF3F', label: 'Grow 4 plant families', value: Math.min(4, seasonFamilyCount), target: 4, tip: 'Diversity makes the ecosystem more resilient.', action: 'Add diversity', onClick: function() { cgUpd({ phase: 'plan', plantFilter: 'all' }); } },
@@ -3883,6 +3923,20 @@ var d = (labToolData.companionPlanting) || {};
               { id: 'harvest', icon: '\uD83C\uDF3E', label: 'Complete a harvest', value: cgTotalHarvested > 0 ? 1 : 0, target: 1, tip: 'Bring one crop through the full growth cycle.', action: readyCells ? 'Harvest now' : 'Keep growing', onClick: readyCells ? cgHarvest : cgAdvanceDay }
             ];
             var seasonGoalProgress = Math.round(seasonGoals.reduce(function(sum, goal) { return sum + Math.min(1, goal.value / goal.target); }, 0) / seasonGoals.length * 100);
+            var communityFoodCrops = cgGrid.filter(function(cell) { var plant = cell.plantId && CG_PLANTS[cell.plantId]; return plant && !plant.isStructure && !plant.pollinator && !plant.regen; }).length;
+            var communityImpact = Math.min(100, Math.round((Math.min(6, communityFoodCrops) / 6 * 35) + (Math.min(3, pulsePollinators) / 3 * 25) + (Math.min(4, seasonFamilyCount) / 4 * 20) + ((cgNitrogen >= 30 && cgMoisture >= 30 && cgMoisture <= 85) ? 20 : 0)));
+            var dayReportMetrics = cgLastDayReport ? [
+              { id: 'growth', icon: '\uD83C\uDF31', label: 'Average growth', value: cgLastDayReport.growthDelta, suffix: ' days' },
+              { id: 'health', icon: '\u2764\uFE0F', label: 'Plant health', value: cgLastDayReport.healthDelta, suffix: '%' },
+              { id: 'moisture', icon: '\uD83D\uDCA7', label: 'Moisture', value: cgLastDayReport.moistureDelta, suffix: '%' },
+              { id: 'nitrogen', icon: 'N', label: 'Nitrogen', value: cgLastDayReport.nitrogenDelta, suffix: '%' },
+              { id: 'pests', icon: '\uD83D\uDC1B', label: 'Pest pressure', value: cgLastDayReport.pestDelta, suffix: '' }
+            ] : [];
+            var communityVoices = [
+              { id: 'kitchen', icon: '\uD83E\uDDD1\u200D\uD83C\uDF73', name: 'Maya, garden cook', role: 'Food for neighbors', complete: communityFoodCrops >= 4 || cgTotalHarvested >= 4, progress: Math.min(4, Math.max(communityFoodCrops, cgTotalHarvested)), target: 4, message: communityFoodCrops >= 4 || cgTotalHarvested >= 4 ? 'This mix could become a colorful community meal. The garden is feeding more than one kind of need.' : 'Could we grow four food crops for a shared garden meal?', action: 'Find food crops', onClick: function() { cgUpd({ phase: 'plan', plantFilter: 'food', lastFeedback: { icon: '\uD83E\uDDD1\u200D\uD83C\uDF73', title: 'Maya opened the seed shelf', detail: 'Food crops are filtered. Choose a crop, then place it in an empty plot.', tone: 'info' } }); } },
+              { id: 'habitat', icon: '\uD83E\uDDD1\u200D\uD83C\uDF3E', name: 'Dev, habitat steward', role: 'Shelter for wildlife', complete: pulsePollinators >= 2 || cgObservedVisitors.length >= 2, progress: Math.min(2, Math.max(pulsePollinators, cgObservedVisitors.length)), target: 2, message: pulsePollinators >= 2 || cgObservedVisitors.length >= 2 ? 'The flowers and field notes show that this patch is becoming habitat, not just a crop bed.' : 'Can we create two habitat signals for pollinators and other visitors?', action: cgObservedVisitors.length ? 'View visitors' : 'Find helpers', onClick: function() { cgUpd({ phase: 'plan', plantFilter: 'helpers', showWildlifeGuide: true, lastFeedback: { icon: '\uD83D\uDC1D', title: 'Dev marked habitat choices', detail: 'Add flowers or herbs, then watch the living ecosystem panel for new visitors.', tone: 'info' } }); } },
+              { id: 'soil', icon: '\uD83E\uDDD1\u200D\uD83D\uDD2C', name: 'Rowan, soil caretaker', role: 'Healthy ground', complete: cgNitrogen >= 30 && cgMoisture >= 30 && cgMoisture <= 85 && cgOrganicMatter >= 3, progress: [cgNitrogen >= 30, cgMoisture >= 30 && cgMoisture <= 85, cgOrganicMatter >= 3].filter(Boolean).length, target: 3, message: cgNitrogen >= 30 && cgMoisture >= 30 && cgMoisture <= 85 && cgOrganicMatter >= 3 ? 'Moisture, nitrogen, and organic matter are working together. Healthy soil makes every future season stronger.' : 'Help me balance moisture, nitrogen, and organic matter for the soil community.', action: cgMoisture < 30 ? 'Water soil' : 'Build soil', onClick: cgMoisture < 30 ? cgWater : function() { cgUpd({ phase: 'plan', plantFilter: 'regen', lastFeedback: { icon: '\u267B\uFE0F', title: 'Rowan highlighted soil builders', detail: 'Regenerative plants and compost strengthen fertility over time.', tone: 'info' } }); } }
+            ];
             var gardenVisitors = [];
             if (pulsePollinators > 0) gardenVisitors.push({ id: 'pollinators', icon: '\uD83D\uDC1D', name: 'Bees and butterflies', reason: pulsePollinators + ' pollinator habitat' + (pulsePollinators !== 1 ? 's' : ''), evidence: 'Flowers provide nectar and pollen that support crop pollination.' });
             if (cgGrid.some(function(cell) { return ['dill','yarrow','marigold','nasturtium'].indexOf(cell.plantId) !== -1; }) || cgBeneficialPop >= 10) gardenVisitors.push({ id: 'ladybugs', icon: '\uD83D\uDC1E', name: 'Ladybugs', reason: 'Pest-control habitat', evidence: 'Dill, yarrow, marigold, and nasturtium provide food and shelter for aphid predators.' });
@@ -3943,12 +3997,42 @@ var d = (labToolData.companionPlanting) || {};
                 )
               ),
 
+              cgLastDayReport && h('section', { className: 'overflow-hidden rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-950 via-slate-900 to-violet-950 text-white shadow-lg', 'data-community-day-report': true, 'aria-labelledby': 'community-day-report-title' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 p-3' },
+                  h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-indigo-200' }, 'Cause and effect'), h('h3', { id: 'community-day-report-title', className: 'text-sm font-black text-white' }, 'Day ' + ((cgLastDayReport.day - 1) % 30 + 1) + ' garden report'), h('p', { className: 'mt-0.5 text-[11px] text-indigo-100' }, cgLastDayReport.season + ' conditions' + (cgLastDayReport.eventLabel ? ' - ' + cgLastDayReport.eventLabel : '') + ' shaped today.')),
+                  cgLastDayReport.readyDelta > 0 && h('span', { className: 'rounded-full bg-yellow-300 px-3 py-1.5 text-[10px] font-black text-yellow-950', role: 'status' }, cgLastDayReport.readyDelta + ' new harvest' + (cgLastDayReport.readyDelta !== 1 ? 's' : '') + ' ready')
+                ),
+                h('div', { className: 'grid grid-cols-2 gap-2 p-3 sm:grid-cols-5' }, dayReportMetrics.map(function(metric) { var favorable = metric.id === 'pests' ? metric.value <= 0 : metric.value >= 0; var signedValue = (metric.value > 0 ? '+' : '') + metric.value + metric.suffix; return h('div', { key: metric.id, className: 'rounded-xl border border-white/10 bg-white/10 p-2 text-center' }, h('div', { className: 'text-base', 'aria-hidden': true }, metric.icon), h('div', { className: 'mt-0.5 text-sm font-black ' + (metric.value === 0 ? 'text-slate-200' : favorable ? 'text-emerald-300' : 'text-rose-300') }, signedValue), h('div', { className: 'text-[9px] text-indigo-100' }, metric.label)); })),
+                h('div', { className: 'mx-3 mb-3 flex items-start gap-2 rounded-xl border border-indigo-300/20 bg-indigo-400/10 p-3' }, h('span', { className: 'text-lg', 'aria-hidden': true }, '\uD83D\uDCA1'), h('div', null, h('div', { className: 'text-[9px] font-black uppercase tracking-wide text-indigo-200' }, 'Why it changed'), h('p', { className: 'mt-0.5 text-[11px] leading-relaxed text-white' }, cgLastDayReport.insight))),
+                cgPredictionResult && h('div', { className: 'mx-3 mb-3 flex items-start gap-3 rounded-xl border p-3 ' + (cgPredictionResult.matched ? 'border-emerald-300/40 bg-emerald-400/15' : 'border-amber-300/40 bg-amber-300/10'), role: 'status', 'aria-live': 'polite', 'data-community-prediction-result': true },
+                  h('span', { className: 'text-xl', 'aria-hidden': true }, cgPredictionResult.matched ? '\uD83C\uDFAF' : '\uD83D\uDD0E'),
+                  h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (cgPredictionResult.matched ? 'text-emerald-200' : 'text-amber-200') }, cgPredictionResult.matched ? 'Prediction supported' : 'Prediction needs revision'), h('p', { className: 'mt-0.5 text-[11px] text-white' }, 'You predicted: ' + cgPredictionResult.label), h('p', { className: 'mt-1 text-[11px] leading-relaxed text-indigo-100' }, 'Evidence: ' + cgPredictionResult.observed + (cgPredictionResult.matched ? ' The evidence supports your prediction.' : ' Use this evidence to revise your next prediction.')))
+                )
+              ),
+
+              plantedCells > 0 && h('section', { className: 'overflow-hidden rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50 via-white to-amber-50 shadow-sm', 'data-community-neighbors': true, 'aria-labelledby': 'community-neighbors-title' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-3 border-b border-orange-100 p-3' },
+                  h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-orange-700' }, 'Community voices'), h('h3', { id: 'community-neighbors-title', className: 'text-sm font-black text-slate-900' }, communityImpact >= 80 ? 'The garden is becoming a neighborhood asset' : 'Neighbors are rooting for this garden'), h('p', { className: 'mt-0.5 text-[11px] text-slate-600' }, 'Garden choices create food, habitat, and healthier soil. Hear what the community notices next.')),
+                  h('div', { className: 'min-w-[132px] rounded-xl border border-orange-200 bg-white p-2 text-center shadow-sm' }, h('div', { className: 'text-[9px] font-black uppercase text-orange-700' }, 'Community impact'), h('div', { className: 'text-xl font-black text-orange-900' }, communityImpact + '%'), h('div', { className: 'mt-1 h-1.5 overflow-hidden rounded-full bg-orange-100', role: 'progressbar', 'aria-label': 'Community garden impact', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': communityImpact }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-400 transition-all', style: { width: communityImpact + '%' } })))
+                ),
+                h('div', { className: 'grid gap-2 p-3 lg:grid-cols-3' }, communityVoices.map(function(voice) { return h('article', { key: voice.id, className: 'flex flex-col rounded-xl border p-3 ' + (voice.complete ? 'border-emerald-300 bg-emerald-50' : 'border-orange-100 bg-white') },
+                  h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'flex h-9 w-9 items-center justify-center rounded-full bg-white text-lg shadow-sm', 'aria-hidden': true }, voice.icon), h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'text-xs font-black text-slate-900' }, voice.name), h('div', { className: 'text-[9px] font-bold uppercase tracking-wide text-slate-500' }, voice.role)), h('span', { className: 'rounded-full px-2 py-1 text-[9px] font-black ' + (voice.complete ? 'bg-emerald-600 text-white' : 'bg-orange-100 text-orange-800') }, voice.complete ? 'Request met' : voice.progress + '/' + voice.target)),
+                  h('p', { className: 'mt-2 flex-1 text-[11px] leading-relaxed text-slate-700' }, '\u201C' + voice.message + '\u201D'),
+                  h('div', { className: 'mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100', role: 'progressbar', 'aria-label': voice.name + ' request progress', 'aria-valuemin': 0, 'aria-valuemax': voice.target, 'aria-valuenow': voice.progress }, h('div', { className: 'h-full rounded-full ' + (voice.complete ? 'bg-emerald-500' : 'bg-orange-400'), style: { width: Math.round(voice.progress / voice.target * 100) + '%' } })),
+                  !voice.complete && h('button', { onClick: voice.onClick, className: 'mt-2 self-start rounded-lg bg-orange-100 px-2.5 py-1.5 text-[10px] font-black text-orange-900 hover:bg-orange-200' }, voice.action)
+                ); }))
+              ),
+
               cgPhase === 'grow' && h('section', { className: 'rounded-2xl border border-cyan-200 bg-gradient-to-r from-cyan-50 via-white to-sky-50 p-3 shadow-sm', 'data-community-forecast': true, 'aria-labelledby': 'community-forecast-title' },
                 h('div', { className: 'grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]' },
                   h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-cyan-700' }, 'Decision preview'), h('h3', { id: 'community-forecast-title', className: 'text-sm font-black text-slate-900' }, 'Tomorrow in the Garden'), h('div', { className: 'mt-2 grid grid-cols-3 gap-2' },
                     [{ label: 'Moisture', value: forecastMoisture + '%', sub: '-' + forecastMoistureLoss.toFixed(1) + '% expected' }, { label: 'Growth', value: forecastGrowth, sub: ['Spring','Summer','Autumn','Winter'][cgSeason] + ' conditions' }, { label: 'Pest risk', value: forecastPestRisk, sub: cgBeneficialPop >= 10 ? 'Beneficial insects active' : 'Watch crop health' }].map(function(item) { return h('div', { key: item.label, className: 'rounded-xl border border-white bg-white p-2 shadow-sm' }, h('div', { className: 'text-[9px] font-black uppercase text-slate-500' }, item.label), h('div', { className: 'mt-0.5 text-[11px] font-black text-slate-800' }, item.value), h('div', { className: 'mt-0.5 text-[9px] text-slate-500' }, item.sub)); })
                   )),
                   h('div', { className: 'flex items-center gap-3 rounded-xl border border-cyan-100 bg-white p-3 lg:max-w-[300px]' }, h('span', { className: 'text-xl', 'aria-hidden': true }, forecastAdvice.icon), h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'text-[9px] font-black uppercase text-cyan-700' }, 'Before advancing'), h('div', { className: 'mt-0.5 text-[11px] leading-relaxed text-slate-700' }, forecastAdvice.text)), h('button', { onClick: forecastAdvice.onClick, className: 'shrink-0 rounded-lg bg-cyan-700 px-2 py-1.5 text-[10px] font-black text-white hover:bg-cyan-800' }, forecastAdvice.action))
+                ),
+                h('div', { className: 'mt-3 rounded-xl border border-cyan-200 bg-white/80 p-3', 'data-community-prediction': true, 'aria-labelledby': 'community-prediction-title' },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[9px] font-black uppercase tracking-wide text-cyan-700' }, 'Think like a scientist'), h('h4', { id: 'community-prediction-title', className: 'text-xs font-black text-slate-900' }, 'What do you predict will happen next?')), cgDayPrediction && h('span', { className: 'rounded-full bg-cyan-100 px-2 py-1 text-[9px] font-black text-cyan-800', role: 'status' }, 'Prediction locked for next day')),
+                  h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-4' }, predictionOptions.map(function(option) { var selected = cgDayPrediction && cgDayPrediction.id === option.id; return h('button', { key: option.id, onClick: function() { cgUpd({ dayPrediction: { id: option.id, label: option.label } }); }, 'aria-pressed': !!selected, className: 'flex items-center gap-2 rounded-xl border px-3 py-2 text-left text-[10px] font-black transition-all ' + (selected ? 'border-cyan-600 bg-cyan-600 text-white shadow-sm' : 'border-cyan-100 bg-white text-slate-700 hover:border-cyan-400 hover:bg-cyan-50') }, h('span', { className: 'text-base', 'aria-hidden': true }, option.icon), h('span', null, option.label)); }))
                 )
               ),
 

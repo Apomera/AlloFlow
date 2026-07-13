@@ -1,28 +1,23 @@
 {
-  "generatedAt": "2026-07-12T22:27:25.424Z",
+  "generatedAt": "2026-07-13T03:28:42.524Z",
   "source": {
     "stemToolFileCount": 119,
-    "registeredToolCount": 121,
+    "registeredToolCount": 122,
     "monitoredMarkerCount": 74
   },
   "summary": {
-    "loadErrorCount": 1,
-    "markerPassCount": 73,
-    "markerFailCount": 1,
+    "loadErrorCount": 0,
+    "markerPassCount": 74,
+    "markerFailCount": 0,
     "monitoredIssueCount": 16,
     "monitoredErrorCount": 0,
     "monitoredWarningCount": 6,
     "monitoredNoticeCount": 10,
-    "syncDriftCount": 5,
-    "sourcePublicDriftCount": 2,
+    "syncDriftCount": 3,
+    "sourcePublicDriftCount": 0,
     "monitoredSyncDriftCount": 2
   },
-  "loadErrors": [
-    {
-      "file": "stem_tool_companionplanting.js",
-      "error": "Invalid or unexpected token"
-    }
-  ],
+  "loadErrors": [],
   "markerResults": [
     {
       "id": "opticsLab",
@@ -30,7 +25,7 @@
       "marker": "data-opticslab-focus",
       "label": "Optics focus panel",
       "ok": true,
-      "htmlBytes": 20319,
+      "htmlBytes": 20751,
       "issues": [
         {
           "toolId": "opticsLab",
@@ -50,7 +45,7 @@
         "fields": 0,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 20319
+        "htmlBytes": 20751
       }
     },
     {
@@ -230,11 +225,16 @@
       "file": "stem_tool_companionplanting.js",
       "marker": "data-companion-workspace-stage",
       "label": "Companion Planting workspace stage",
-      "ok": false,
-      "error": "Tool is not registered.",
-      "htmlBytes": 0,
+      "ok": true,
+      "htmlBytes": 20484,
       "issues": [],
-      "metrics": {}
+      "metrics": {
+        "buttons": 20,
+        "fields": 0,
+        "canvases": 1,
+        "headings": 5,
+        "htmlBytes": 20484
+      }
     },
     {
       "id": "dnaLab",
@@ -338,14 +338,14 @@
       "marker": "data-fireecology-mission",
       "label": "Fire Ecology stewardship mission",
       "ok": true,
-      "htmlBytes": 25696,
+      "htmlBytes": 25739,
       "issues": [],
       "metrics": {
         "buttons": 29,
         "fields": 1,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 25696
+        "htmlBytes": 25739
       }
     },
     {
@@ -661,14 +661,14 @@
       "marker": "data-anatomy-mission",
       "label": "Anatomy mission panel",
       "ok": true,
-      "htmlBytes": 33093,
+      "htmlBytes": 33485,
       "issues": [],
       "metrics": {
         "buttons": 66,
         "fields": 1,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 33093
+        "htmlBytes": 33485
       }
     },
     {
@@ -845,14 +845,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13327,
+      "htmlBytes": 13366,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13327
+        "htmlBytes": 13366
       }
     },
     {
@@ -921,14 +921,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 47675,
+      "htmlBytes": 47679,
       "issues": [],
       "metrics": {
         "buttons": 53,
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 47675
+        "htmlBytes": 47679
       }
     },
     {
@@ -973,7 +973,7 @@
       "marker": "data-skatelab-run-focus",
       "label": "SkateLab run focus",
       "ok": true,
-      "htmlBytes": 69325,
+      "htmlBytes": 70487,
       "issues": [
         {
           "toolId": "skatelab",
@@ -989,7 +989,7 @@
         "fields": 10,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 69325
+        "htmlBytes": 70487
       }
     },
     {
@@ -1140,14 +1140,14 @@
       "marker": "data-circuit-bench",
       "label": "Circuit electronics bench",
       "ok": true,
-      "htmlBytes": 42420,
+      "htmlBytes": 42776,
       "issues": [],
       "metrics": {
         "buttons": 54,
         "fields": 2,
         "canvases": 1,
         "headings": 2,
-        "htmlBytes": 42420
+        "htmlBytes": 42776
       }
     },
     {
@@ -1423,7 +1423,7 @@
   "sync": {
     "drift": [
       {
-        "file": "stem_tool_circuit.js",
+        "file": "stem_tool_optics.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1431,43 +1431,9 @@
           "build": true
         },
         "hashes": {
-          "source": "C71A16911AAC",
-          "public": "C71A16911AAC",
-          "build": "4A474AAC85A8"
-        },
-        "sourcePublicMatch": true,
-        "sourceBuildMatch": false,
-        "status": "build-drift"
-      },
-      {
-        "file": "stem_tool_companionplanting.js",
-        "monitored": true,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "7D3F03451492",
-          "public": "2E8FF8053DD3",
-          "build": "682FAEB000EA"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_economicslab.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "F5B7DD4BAD48",
-          "public": "F5B7DD4BAD48",
-          "build": "8BD285AA61CC"
+          "source": "834C495D8445",
+          "public": "834C495D8445",
+          "build": "494E67C4A75D"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
@@ -1482,35 +1448,16 @@
           "build": true
         },
         "hashes": {
-          "source": "D53BE9D40D0D",
-          "public": "7E5ED7C03E6C",
-          "build": "A284849D1A8B"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_roadready.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "3DA8BB08AF9F",
-          "public": "3DA8BB08AF9F",
-          "build": "4250E357A8BD"
+          "source": "946E2E78A5F5",
+          "public": "946E2E78A5F5",
+          "build": "F1FB6EE0170C"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
-      }
-    ],
-    "sourcePublicDrift": [
+      },
       {
-        "file": "stem_tool_companionplanting.js",
+        "file": "stem_tool_platetectonics.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1518,35 +1465,19 @@
           "build": true
         },
         "hashes": {
-          "source": "7D3F03451492",
-          "public": "2E8FF8053DD3",
-          "build": "682FAEB000EA"
+          "source": "A928406DD1A6",
+          "public": "A928406DD1A6",
+          "build": "6D522DB866EE"
         },
-        "sourcePublicMatch": false,
+        "sourcePublicMatch": true,
         "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_particlelab3d.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "D53BE9D40D0D",
-          "public": "7E5ED7C03E6C",
-          "build": "A284849D1A8B"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
+        "status": "build-drift"
       }
     ],
+    "sourcePublicDrift": [],
     "monitoredDrift": [
       {
-        "file": "stem_tool_circuit.js",
+        "file": "stem_tool_optics.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1554,16 +1485,16 @@
           "build": true
         },
         "hashes": {
-          "source": "C71A16911AAC",
-          "public": "C71A16911AAC",
-          "build": "4A474AAC85A8"
+          "source": "834C495D8445",
+          "public": "834C495D8445",
+          "build": "494E67C4A75D"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
         "status": "build-drift"
       },
       {
-        "file": "stem_tool_companionplanting.js",
+        "file": "stem_tool_platetectonics.js",
         "monitored": true,
         "exists": {
           "source": true,
@@ -1571,13 +1502,13 @@
           "build": true
         },
         "hashes": {
-          "source": "7D3F03451492",
-          "public": "2E8FF8053DD3",
-          "build": "682FAEB000EA"
+          "source": "A928406DD1A6",
+          "public": "A928406DD1A6",
+          "build": "6D522DB866EE"
         },
-        "sourcePublicMatch": false,
+        "sourcePublicMatch": true,
         "sourceBuildMatch": false,
-        "status": "source-public-drift"
+        "status": "build-drift"
       }
     ]
   },

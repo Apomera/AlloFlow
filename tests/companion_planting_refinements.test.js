@@ -84,10 +84,24 @@ describe('Companion Planting refinements', () => {
         ? { plantId: 'sunflower', growthDay: 10, health: 100, watered: false, pests: 0 }
         : { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 });
     const html = renderCompanionPlanting({
-      companionPlanting: { gardenMode: 'community', communityGarden: { phase: 'grow', grid, moisture: 92, showWildlifeGuide: true, eventLog: [{ icon: 'W', title: 'Watered garden', detail: 'Moisture increased.', day: 3, ts: 1 }] } },
+      companionPlanting: { gardenMode: 'community', communityGarden: { phase: 'grow', grid, moisture: 92, showWildlifeGuide: true, eventLog: [{ icon: 'W', title: 'Watered garden', detail: 'Moisture increased.', day: 3, ts: 1 }], lastDayReport: { day: 4, season: 'Spring', growthDelta: 1.2, healthDelta: 0.3, moistureDelta: -1.5, nitrogenDelta: -0.6, pestDelta: 0.2, readyDelta: 1, insight: 'Helpful companion links supported growth.', eventLabel: null }, dayPrediction: { id: 'growth', label: 'Growth will accelerate' }, predictionResult: { id: 'growth', label: 'Growth will accelerate', matched: true, observed: 'The strongest signal was steady crop growth.', day: 4 } } },
     });
 
     expect(html).toContain('data-community-actions="true"');
+    expect(html).toContain('data-community-day-report="true"');
+    expect(html).toContain('Day 4 garden report');
+    expect(html).toContain('Cause and effect');
+    expect(html).toContain('Why it changed');
+    expect(html).toContain('1 new harvest ready');
+    expect(html).toContain('Helpful companion links supported growth.');
+    expect(html).toContain('data-community-prediction="true"');
+    expect(html).toContain('Think like a scientist');
+    expect(html).toContain('What do you predict will happen next?');
+    expect(html).toContain('Growth will accelerate');
+    expect(html).toContain('aria-pressed="true"');
+    expect(html).toContain('data-community-prediction-result="true"');
+    expect(html).toContain('Prediction supported');
+    expect(html).toContain('Evidence: The strongest signal was steady crop growth.');
     expect(html).toContain('data-community-forecast="true"');
     expect(html).toContain('Tomorrow in the Garden');
     expect(html).toContain('Decision preview');
@@ -133,5 +147,19 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('data-community-feedback="true"');
     expect(html).toContain('Garden watered');
     expect(html).toContain('aria-live="polite"');
+  });
+
+  it('connects garden choices to responsive community voices', () => {
+    const grid = Array.from({ length: 16 }, (_, index) => ({ plantId: index === 0 ? 'tomato' : null, growthDay: 0, health: 100, watered: false, pests: 0 }));
+    const html = renderCompanionPlanting({ companionPlanting: { gardenMode: 'community', communityGarden: { grid } } });
+
+    expect(html).toContain('data-community-neighbors="true"');
+    expect(html).toContain('Community voices');
+    expect(html).toContain('Community impact');
+    expect(html).toContain('Maya, garden cook');
+    expect(html).toContain('Dev, habitat steward');
+    expect(html).toContain('Rowan, soil caretaker');
+    expect(html).toContain('Garden choices create food, habitat, and healthier soil.');
+    expect(html).toContain('aria-label="Community garden impact"');
   });
 });

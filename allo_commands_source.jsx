@@ -342,6 +342,162 @@ function runFindReadingCommand(c, params, t) {
   return readingRecommendationText(matches, params || {}, t);
 }
 
+// Command contracts are shared by AlloBot plans and Demo Autopilot. They make
+// planning constraints explicit instead of asking the model to infer whether a
+// command is automatic, privacy-sensitive, terminal, or dependent on state.
+const PLAN_CONTRACTS = Object.freeze({
+  create_lesson: {
+    demoSafe: false,
+    interaction: 'guided',
+    terminal: true,
+    params: ['topic', 'grade'],
+    reason: 'Starts an interactive lesson wizard; it does not finish lesson content automatically.'
+  },
+  generate_quiz: { requires: ['source'], produces: ['quiz'] },
+  generate_glossary: { requires: ['source'], produces: ['glossary'] },
+  generate_simplified: { requires: ['source'], produces: ['source'], params: ['grade'] },
+  generate_sentence_frames: { requires: ['source'], produces: ['sentence-frames'] },
+  generate_analysis: { requires: ['source'], produces: ['analysis'] },
+  generate_outline: { requires: ['source'], produces: ['outline'] },
+  launch_flashcards: { requires: ['glossary'] },
+  export_pack: {
+    demoSafe: false,
+    requires: ['source'],
+    interaction: 'external',
+    reason: 'Starts a file download outside the recorded workflow.'
+  },
+  translate_document: {
+    demoSafe: false,
+    requires: ['pipeline'],
+    interaction: 'interactive',
+    params: ['language'],
+    reason: 'Prepares translation controls but still requires a teacher click and AI quota.'
+  },
+  pipeline_score: { requires: ['pipeline'] },
+  pipeline_issues: { requires: ['pipeline'] },
+  pipeline_downloads: { requires: ['pipeline'] },
+  pipeline_verification: { requires: ['pipeline'] },
+  pipeline_tour: { requires: ['pipeline'] },
+  pipeline_fix_again: {
+    demoSafe: false,
+    requires: ['pipeline'],
+    reason: 'Starts a real remediation pass.'
+  },
+  pipeline_stop: {
+    demoSafe: false,
+    requires: ['pipeline'],
+    reason: 'Stops an active remediation pass.'
+  }
+});
+
+const DEMO_BLOCKED_COMMANDS = new Set([
+  'open_notebook',
+  'open_class_session',
+  'open_class_analytics',
+  'open_ai_settings',
+  'open_roster',
+  'open_project_settings',
+  'open_behavior_lens',
+  'open_report_writer',
+  'open_dynamic_assessment',
+  'open_submission_inbox',
+  'submit_work',
+  'toggle_dictation',
+  'voice_start',
+  'voice_stop',
+  'toggle_cloud_sync',
+  'report_problem',
+  'clear_my_answers'
+]);
+
+function getCommandContract(commandOrId) {
+  const cmd = commandOrId && typeof commandOrId === 'object' ? commandOrId : null;
+  const id = String(cmd ? cmd.id : (commandOrId || ''));
+  const declared = PLAN_CONTRACTS[id] || {};
+  return {
+    demoSafe: declared.demoSafe !== false && !DEMO_BLOCKED_COMMANDS.has(id) && !(cmd && cmd.destructive),
+    interaction: declared.interaction || 'automatic',
+    terminal: !!declared.terminal,
+    requires: Array.isArray(declared.requires) ? declared.requires.slice() : [],
+    produces: Array.isArray(declared.produces) ? declared.produces.slice() : [],
+    params: Array.isArray(declared.params) ? declared.params.slice() : [],
+    reason: declared.reason || ''
+  };
+}
+
+function _planCapabilities(ctx) {
+  const out = new Set();
+  if (ctx && ctx.hasSourceOrAnalysis) out.add('source');
+  if (ctx && ctx.contentIsGlossary) out.add('glossary');
+  if (ctx && ctx.contentLoaded) out.add('content');
+  if (ctx && ctx.pipelineOpen) out.add('pipeline');
+  return out;
+}
+
+// Pure, non-mutating plan preflight. It simulates declared produces/requires
+// contracts while still checking today's live command guards. Both AlloBot and
+// Video Studio use the same result, so readiness logic cannot drift.
+function validatePlan(ctx, rawSteps, opts = {}) {
+  const list = (Array.isArray(rawSteps) ? rawSteps : []).slice(0, 8);
+  const all = buildAlloCommands(ctx || {}, { includeGated: true });
+  const liveIds = new Set(buildAlloCommands(ctx || {}).map((c) => c.id));
+  const initial = _planCapabilities(ctx || {});
+  const capabilities = new Set(initial);
+  const items = [];
+  for (let i = 0; i < list.length; i++) {
+    const step = list[i] || {};
+    const cmd = all.find((c) => c.id === step.commandId);
+    const contract = getCommandContract(cmd || step.commandId);
+    let status = 'ready';
+    let detail = '';
+    if (!cmd) {
+      status = 'block';
+      detail = 'This command is not available for the current role.';
+    } else if (opts.demoSafeOnly && !contract.demoSafe) {
+      status = 'block';
+      detail = contract.reason || 'This command is not allowed in automatic demo recording.';
+    } else {
+      const missing = contract.requires.filter((name) => !capabilities.has(name));
+      if (missing.length) {
+        status = 'block';
+        detail = 'Needs ' + missing.join(', ') + ' before this step.';
+      } else if (contract.terminal && i < list.length - 1) {
+        status = 'block';
+        detail = contract.reason || 'This interactive command must be the final step.';
+      } else if (contract.interaction !== 'automatic' && !opts.allowInteractive) {
+        status = 'block';
+        detail = contract.reason || 'This step requires teacher interaction.';
+      } else if (!liveIds.has(cmd.id)) {
+        const unlockedByPlan = contract.requires.length > 0 &&
+          contract.requires.every((name) => capabilities.has(name)) &&
+          contract.requires.some((name) => !initial.has(name));
+        if (!unlockedByPlan) {
+          status = 'block';
+          detail = 'This command is not available in the current app state.';
+        }
+      }
+    }
+    if (status !== 'block') contract.produces.forEach((name) => capabilities.add(name));
+    items.push({
+      index: i,
+      commandId: step.commandId || '',
+      label: (cmd && cmd.label) || step.commandId || 'Unknown command',
+      params: _cleanPlanParams(step.params),
+      why: typeof step.why === 'string' ? step.why.slice(0, 120) : '',
+      status,
+      detail,
+      contract
+    });
+  }
+  const blockingCount = items.filter((item) => item.status === 'block').length;
+  return {
+    ok: list.length > 0 && blockingCount === 0,
+    items,
+    blockingCount,
+    warningCount: items.filter((item) => item.status === 'warn').length
+  };
+}
+
 function buildAlloCommands(ctx, opts = {}) {
   const t = _mkT(ctx && ctx.t);
   const cmds = [
@@ -612,23 +768,32 @@ function _cleanPlanParams(p) {
 // ordered list of registry commands. Returns [{commandId, params, why}]
 // (2–6 steps, every id validated against the CURRENT role-filtered menu)
 // or null. Nothing here executes — the caller must confirm + runPlan.
-async function planUtterance(ctx, rawText) {
+async function planUtterance(ctx, rawText, opts = {}) {
   const text = String(rawText || '').trim();
   if (!text || text.length > 400) return null;
   if (!ctx || typeof ctx.callGemini !== 'function') return null;
-  // includeGated: the plan's whole point is that step N unlocks step N+1
-  // ("create a lesson, THEN quiz it") — the default when-filtered menu would
-  // hide generate_quiz before content exists and make those chains
-  // unplannable. Availability is still enforced per step at RUN time.
-  // Destructive commands are excluded from plans outright (not just paused):
-  // they belong on the explicitly-confirmed single-command surfaces, and a
-  // proposed plan that would stop dead at its own step is a UX lie.
-  const commands = buildAlloCommands(ctx, { includeGated: true }).filter((c) => !c.chatSkip && !c.destructive);
+  // Include gated commands so the model may propose a real producer before a
+  // dependent command. The contract validator below proves that dependency;
+  // it never assumes a wizard or navigation command produced app content.
+  const commands = buildAlloCommands(ctx, { includeGated: true }).filter((c) => {
+    if (c.chatSkip || c.destructive) return false;
+    return !opts.demoSafeOnly || getCommandContract(c).demoSafe;
+  });
   if (!commands.length) return null;
   const _gatedNow = (c) => { if (!c.when) return false; try { return !c.when(ctx); } catch (_) { return true; } };
-  const menu = commands.map((c) => c.id + ': ' + c.label + (_gatedNow(c) ? ' [not available yet — an earlier step must first create what it needs]' : '')).join('\n');
+  const menu = commands.map((c) => {
+    const contract = getCommandContract(c);
+    const notes = [];
+    if (_gatedNow(c)) notes.push('not available in the live state');
+    if (contract.requires.length) notes.push('requires ' + contract.requires.join(', '));
+    if (contract.produces.length) notes.push('produces ' + contract.produces.join(', '));
+    if (contract.params.length) notes.push('params ' + contract.params.join(', '));
+    if (contract.interaction !== 'automatic') notes.push(contract.interaction);
+    if (contract.terminal) notes.push('must be final');
+    return c.id + ': ' + c.label + (notes.length ? ' [' + notes.join('; ') + ']' : '');
+  }).join('\n');
   try {
-    const out = await ctx.callGemini('A teacher asked an education app\'s assistant to do a multi-step task. Break it into an ORDERED list of app commands chosen ONLY from this menu:\n' + menu + '\n\nTask: "' + text.replace(/"/g, '\'') + '"\n\nReturn ONLY JSON: {"steps": [{"commandId": string, "params": object, "why": string}], "confidence": number between 0 and 1}. 2 to 6 steps. A command marked [not available yet — an earlier step must first create what it needs] may only appear AFTER a step that produces its prerequisite (e.g. create_lesson before generate_quiz). params carries values the user stated (e.g. {"topic": "volcanoes", "grade": "5"} or {"language": "Spanish"}); use {} if none. "why" is a short phrase. Return {"steps": [], "confidence": 0} unless the task CLEARLY maps to a sequence of these app actions (not a content question).');
+    const out = await ctx.callGemini('A teacher asked an education app\'s assistant to do a multi-step task. Break it into an ORDERED list of app commands chosen ONLY from this menu:\n' + menu + '\n\nTask: "' + text.replace(/"/g, '\'') + '"\n\nReturn ONLY JSON: {"steps": [{"commandId": string, "params": object, "why": string}], "confidence": number between 0 and 1}. Use 2 to 6 steps. A command with requirements may appear only when the current app state already satisfies them or an EARLIER command explicitly says it produces them. Navigation and guided wizards do not produce content unless their contract says so. A command marked [must be final] cannot have later steps. params carries only values the user stated, using the named params in the menu; use {} if none. "why" is a short phrase. Return {"steps": [], "confidence": 0} unless the task CLEARLY maps to a sequence of these app actions (not a content question).');
     const m = String(out || '').match(/\{[\s\S]*\}/);
     const j = JSON.parse(m ? m[0] : String(out));
     if (!j || !Array.isArray(j.steps) || typeof j.confidence !== 'number' || j.confidence < 0.7) return null;
@@ -636,11 +801,16 @@ async function planUtterance(ctx, rawText) {
     const steps = j.steps.filter((s) => s && typeof s.commandId === 'string').slice(0, 6);
     if (steps.length < 2) return null; // single-step asks stay on routeUtterance
     if (steps.some((s) => !known.has(s.commandId))) return null;
-    return steps.map((s) => ({
+    const cleanSteps = steps.map((s) => ({
       commandId: s.commandId,
       params: _cleanPlanParams(s.params),
       why: typeof s.why === 'string' ? s.why.slice(0, 120) : ''
     }));
+    const report = validatePlan(ctx, cleanSteps, {
+      demoSafeOnly: !!opts.demoSafeOnly,
+      allowInteractive: !!opts.allowInteractive
+    });
+    return report.ok ? cleanSteps : null;
   } catch (_) { return null; }
 }
 

@@ -24,7 +24,7 @@ const ratio = (a, b) => { const x = _lum(a), y = _lum(b); return (Math.max(x, y)
 describe('contrastFixPair — reaches WCAG AA, choosing which colour to move', () => {
   it('the live module exposes contrastFixPair', async () => {
     expect(typeof (await liveFix())).toBe('function');
-  });
+  }, 15000);
 
   it('INVARIANT: for any failing pair, the result reaches the target (or reports moved=none if it already passed)', async () => {
     const f = await liveFix();

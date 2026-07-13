@@ -1108,6 +1108,7 @@ const indexTimelineItems = (itemsArray) => itemsArray.map((item, i) => ({
 }));
 const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, onExplainIncorrect, initialImageSize }) => {
   const { t } = useContext(LanguageContext);
+  const reducedMotion = useReducedMotion();
   const [items, setItems] = useState([]);
   const [isWon, setIsWon] = useState(false);
   const [attempts, setAttempts] = useState(0);
@@ -1130,6 +1131,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   const [hintHidden, setHintHidden] = useState(false);
   const [answerRevealed, setAnswerRevealed] = useState(false);
   const itemRefs = useRef([]);
+  const itemButtonRefs = useRef([]);
   const normalizedItemsRef = useRef([]);
   const timelineDialogRef = useRef(null);
   const timelineCloseRef = useRef(null);
@@ -1156,7 +1158,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   }, [data]);
   useEffect(() => {
     if (keyboardLiftedIdx === null) return;
-    const el = itemRefs.current[keyboardLiftedIdx];
+    const el = itemButtonRefs.current[keyboardLiftedIdx];
     if (el && typeof el.focus === 'function') el.focus();
   }, [keyboardLiftedIdx, items]);
   useEffect(() => {
@@ -1232,20 +1234,19 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
         if (playSound) playSound('click');
     }
   };
+  const toggleKeyboardLift = (index) => {
+      if (isWon) return;
+      if (keyboardLiftedIdx === index) {
+          setKeyboardLiftedIdx(null);
+          setAnnouncement(t('timeline.game.dropped', { item: items[index].event }));
+      } else {
+          setKeyboardLiftedIdx(index);
+          setAnnouncement(t('timeline.game.lifted', { item: items[index].event }));
+      }
+      if (playSound) playSound('click');
+  };
   const handleKeyDown = (e, index) => {
       if (isWon) return;
-      if (e.key === ' ' || e.key === 'Enter') {
-          e.preventDefault();
-          if (keyboardLiftedIdx === index) {
-              setKeyboardLiftedIdx(null);
-              setAnnouncement(t('timeline.game.dropped', { item: items[index].event }));
-              if (playSound) playSound('click');
-          } else {
-              setKeyboardLiftedIdx(index);
-              setAnnouncement(t('timeline.game.lifted', { item: items[index].event }));
-              if (playSound) playSound('click');
-          }
-      }
       if (keyboardLiftedIdx === index) {
           if (e.key === 'ArrowUp') {
               e.preventDefault();
@@ -1358,21 +1359,21 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
      // bestScore intentionally preserved across resets within the same game session.
   };
   return (
-    <div ref={timelineDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="timeline-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
+    <div ref={timelineDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="timeline-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col focus:outline-none${reducedMotion ? '' : ' animate-in fade-in duration-300'}`}>
        <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-       <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20">
+       <div className="p-4 bg-indigo-600 text-white flex flex-wrap justify-between items-center gap-3 shrink-0 shadow-md z-20">
            <div>
                <h3 id="timeline-game-title" className="font-bold text-lg flex items-center gap-2">
-                   <ListOrdered size={20} className="text-yellow-300"/> {t('timeline.game.header')}
+                   <ListOrdered size={20} className="text-yellow-300" aria-hidden="true"/> {t('timeline.game.header')}
                </h3>
                <p className="text-xs text-indigo-200">{t('timeline.game.desc')}</p>
            </div>
-           <div className="flex items-center gap-4">
+           <div className="flex flex-wrap items-center gap-3">
                <div className="bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-500 flex items-center gap-2">
-                   <Trophy size={14} className="text-yellow-300"/>
+                   <Trophy size={14} className="text-yellow-300" aria-hidden="true"/>
                    <span className="font-bold text-sm">{score} pts</span>
                </div>
-               <label className="hidden sm:flex items-center gap-1.5 text-[10px] text-indigo-100 bg-indigo-800/50 px-2.5 py-1.5 rounded-full border border-indigo-500 cursor-pointer" title={t('timeline.game.image_size_title') || 'Adjust card image size for accessibility'}>
+               <label className="min-h-11 flex items-center gap-1.5 text-[10px] text-indigo-100 bg-indigo-800/50 px-2.5 py-1.5 rounded-full border border-indigo-500 cursor-pointer" title={t('timeline.game.image_size_title') || 'Adjust card image size for accessibility'}>
                    <span className="font-bold uppercase tracking-wider text-[9px]">{t('timeline.game.image_size_label') || 'Image'}</span>
                    <input
                        type="range" min={64} max={300} step={16}
@@ -1388,7 +1389,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
            </div>
        </div>
        <div className="flex-grow overflow-y-auto p-6 bg-slate-100 relative custom-scrollbar">
-           {isWon && !answerRevealed && !useReducedMotion() && <ConfettiExplosion />}
+           {isWon && !answerRevealed && !reducedMotion && <ConfettiExplosion />}
            {answerRevealed && (
                <div className="max-w-3xl mx-auto mb-4 px-4 py-3 bg-slate-100 border border-slate-400 rounded-lg text-slate-700 text-sm font-medium text-center">
                    👁 {t('timeline.game.answer_revealed_banner') || 'Answer revealed — no points this round. Play again to try for a score.'}
@@ -1397,11 +1398,11 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
            <div className="max-w-3xl mx-auto relative min-h-full pb-20">
                {!isWon && (
                    <div className="sticky top-0 z-30 flex flex-col items-center gap-2 mb-8">
-                       <div className={`bg-white/90 backdrop-blur-sm px-6 py-2 rounded-full border border-indigo-100 shadow-sm text-indigo-600 text-xs font-bold uppercase tracking-wider flex items-center gap-2${useReducedMotion() ? '' : ' animate-in slide-in-from-top-2'}`}>
-                           <ArrowDown size={14} /> {t('timeline.game.arrange_instruction')} <ArrowDown size={14} />
+                       <div className={`bg-white/90 backdrop-blur-sm px-6 py-2 rounded-full border border-indigo-100 shadow-sm text-indigo-600 text-xs font-bold uppercase tracking-wider flex items-center gap-2${reducedMotion ? '' : ' animate-in slide-in-from-top-2'}`}>
+                           <ArrowDown size={14} aria-hidden="true" /> {t('timeline.game.arrange_instruction')} <ArrowDown size={14} aria-hidden="true" />
                        </div>
                        {progressionLabel && (
-                           <div className={`bg-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-bold flex flex-col items-center gap-0.5 shadow-md${useReducedMotion() ? '' : ' animate-in slide-in-from-top-3'}`}>
+                           <div className={`bg-indigo-600 text-white px-4 py-1.5 rounded-full text-xs font-bold flex flex-col items-center gap-0.5 shadow-md${reducedMotion ? '' : ' animate-in slide-in-from-top-3'}`}>
                                <div className="flex items-center gap-2">
                                    <span className="opacity-70">{t('timeline.order_by')}</span> {progressionLabel}
                                </div>
@@ -1430,7 +1431,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                        {!hintHidden && attempts === 0 && keyboardLiftedIdx === null && items.length > 0 && (
                            <div className="text-[11px] text-slate-600 italic flex items-center gap-2">
                                <span>{t('timeline.game.keyboard_hint') || 'Keyboard: Enter to lift, ↑/↓ to move, Enter to drop.'}</span>
-                               <button onClick={() => setHintHidden(true)} className="underline hover:text-slate-700" aria-label={t('common.dismiss') || 'Dismiss'}>×</button>
+                               <button type="button" onClick={() => setHintHidden(true)} className="min-w-11 min-h-11 rounded underline hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label={t('common.dismiss') || 'Dismiss'}>×</button>
                            </div>
                        )}
                    </div>
@@ -1447,12 +1448,8 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                            <div
                                key={item.id}
                                ref={el => itemRefs.current[idx] = el}
-                               tabIndex={isWon ? -1 : 0}
                                role="listitem"
-                               aria-roledescription="draggable item"
-                               aria-pressed={isLifted}
-                               aria-label={`${item.event}. ${t('timeline.game.position_aria', {pos: idx + 1, total: items.length})}. ${isLifted ? t('timeline.game.lifted_aria') : t('timeline.game.lift_aria')}`}
-                               onKeyDown={(e) => handleKeyDown(e, idx)}
+                               aria-roledescription="draggable timeline item"
                                draggable={!isWon}
                                onDragStart={(e) => handleDragStart(e, idx)}
                                onDragOver={(e) => handleDragOver(e, idx)}
@@ -1460,21 +1457,21 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                onTouchStart={(e) => handleTouchStart(e, idx)}
                                onTouchMove={handleTouchMove}
                                onTouchEnd={handleTouchEnd}
-                               className={`relative z-10 sm:flex sm:items-center sm:justify-between group transition-all duration-300 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 focus:ring-offset-4 ${isDragging ? 'opacity-20 scale-95' : 'opacity-100'} ${isLifted ? 'z-50 scale-105 ring-4 ring-yellow-400 ring-offset-4 shadow-2xl' : ''}`}
+                               className={`relative z-10 sm:flex sm:items-center sm:justify-between group rounded-2xl ${reducedMotion ? '' : 'transition-all duration-300'} ${isDragging ? `opacity-20 ${reducedMotion ? '' : 'scale-95'}` : 'opacity-100'} ${isLifted ? `z-50 ring-4 ring-yellow-400 ring-offset-4 shadow-2xl ${reducedMotion ? '' : 'scale-105'}` : ''}`}
                                data-help-key="timeline_draggable_item"
                            >
                                <div className={`hidden sm:block sm:w-1/2 ${!isLeft ? 'order-1' : 'order-2'}`}></div>
-                               <div style={isWon && !useReducedMotion() ? { transitionDelay: `${Math.min(idx * 60, 600)}ms` } : undefined} className={`absolute left-3 sm:left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-4 border-white shadow-sm z-20 transition-all duration-300 ${isWon && item.originalIndex === idx ? 'bg-green-500 scale-110' : 'bg-indigo-300 group-hover:bg-indigo-500'}`}>
+                               <div style={isWon && !reducedMotion ? { transitionDelay: `${Math.min(idx * 60, 600)}ms` } : undefined} className={`absolute left-3 sm:left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-4 border-white shadow-sm z-20 ${reducedMotion ? '' : 'transition-all duration-300'} ${isWon && item.originalIndex === idx ? `bg-green-500 ${reducedMotion ? '' : 'scale-110'}` : 'bg-indigo-300 group-hover:bg-indigo-500'}`}>
                                    {isWon && item.originalIndex === idx && (
-                                       <div className={`absolute -right-1 -top-1 text-green-500 opacity-75${useReducedMotion() ? '' : ' animate-ping'}`}><CheckCircle2 size={24}/></div>
+                                       <div className={`absolute -right-1 -top-1 text-green-500 opacity-75${reducedMotion ? '' : ' animate-ping'}`}><CheckCircle2 size={24} aria-hidden="true"/></div>
                                    )}
                                </div>
-                               <div className={`sm:w-1/2 ps-10 sm:ps-0 ${isLeft ? 'sm:pe-12 sm:text-end order-1' : 'sm:ps-12 sm:text-start order-2'} transition-all duration-300`}>
-                                   <div style={isWon && !useReducedMotion() ? { transitionDelay: `${Math.min(idx * 60, 600)}ms` } : undefined} className={`
-                                       relative p-5 rounded-2xl border-2 shadow-sm transition-all transform duration-200
+                               <div className={`sm:w-1/2 ps-10 sm:ps-0 ${isLeft ? 'sm:pe-12 sm:text-end order-1' : 'sm:ps-12 sm:text-start order-2'} ${reducedMotion ? '' : 'transition-all duration-300'}`}>
+                                   <div style={isWon && !reducedMotion ? { transitionDelay: `${Math.min(idx * 60, 600)}ms` } : undefined} className={`
+                                       relative p-5 rounded-2xl border-2 shadow-sm
                                        ${isWon
                                            ? 'bg-green-50 border-green-200 opacity-90'
-                                           : `${colorClass} hover:-translate-y-1 hover:shadow-md cursor-grab active:cursor-grabbing`
+                                           : `${colorClass} hover:shadow-md cursor-grab active:cursor-grabbing ${reducedMotion ? '' : 'transition-all transform duration-200 hover:-translate-y-1'}`
                                        }
                                    `}>
                                        <div className={`absolute top-3 ${isLeft ? 'right-3 sm:left-3 sm:right-auto' : 'right-3'} w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black ${isWon ? 'bg-green-200 text-green-800' : 'bg-black/5 text-slate-600'}`}>
@@ -1482,7 +1479,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                        </div>
                                        <div className="pe-6 sm:px-2">
                                            {isWon && (item.date || item.date_en) && (
-                                               <div className={`inline-block px-2 py-0.5 rounded-md text-[11px] font-black uppercase tracking-wider mb-2 bg-green-100 text-green-800 animate-in zoom-in`}>
+                                               <div className={`inline-block px-2 py-0.5 rounded-md text-[11px] font-black uppercase tracking-wider mb-2 bg-green-100 text-green-800 ${reducedMotion ? '' : 'animate-in zoom-in'}`}>
                                                    {item.date}
                                                </div>
                                            )}
@@ -1496,8 +1493,24 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                                />
                                            )}
                                            <div className={`text-sm font-bold leading-snug flex items-center gap-1 ${isWon ? 'text-green-900' : ''}`}>
-                                               {item.event}
-                                               {!isWon && <SpeakButton text={item.event} size={11} />}
+                                               {isWon ? (
+                                                   <span>{item.event}</span>
+                                               ) : (
+                                                   <>
+                                                       <button
+                                                           ref={el => itemButtonRefs.current[idx] = el}
+                                                           type="button"
+                                                           aria-pressed={isLifted}
+                                                           aria-label={`${item.event}. ${t('timeline.game.position_aria', {pos: idx + 1, total: items.length})}. ${isLifted ? t('timeline.game.lifted_aria') : t('timeline.game.lift_aria')}`}
+                                                           onKeyDown={(event) => handleKeyDown(event, idx)}
+                                                           onClick={() => toggleKeyboardLift(idx)}
+                                                           className="min-h-11 flex-1 rounded-lg px-2 py-2 text-start focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                                       >
+                                                           {item.event}
+                                                       </button>
+                                                       <SpeakButton text={item.event} size={11} />
+                                                   </>
+                                               )}
                                            </div>
                                            {item.event_en && (
                                                <div className={`text-xs italic mt-1 ${isWon ? 'text-green-700/70' : 'text-slate-600'}`}>
@@ -1507,8 +1520,9 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                            {onExplainIncorrect && !isWon && lastCorrectCount !== null && item.originalIndex !== idx && (
                                                <>
                                                    <button
+                                                       type="button"
                                                        onClick={(e) => { e.stopPropagation(); handleExplainClick(item); }}
-                                                       className="mt-2 text-[11px] font-bold text-indigo-700 hover:text-indigo-900 bg-white/70 border border-indigo-200 hover:border-indigo-400 rounded px-2 py-0.5 transition-colors inline-flex items-center gap-1"
+                                                       className="min-h-11 mt-2 text-[11px] font-bold text-indigo-700 hover:text-indigo-900 bg-white/70 border border-indigo-200 hover:border-indigo-400 rounded px-3 py-2 transition-colors inline-flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                                        aria-label={t('timeline.game.why_aria') || 'Explain why this is out of place'}
                                                        aria-busy={explanations[item.originalIndex] === 'loading'}
                                                    >
@@ -1528,13 +1542,13 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                        </div>
                                        {!isWon && (
                                            <div className="absolute top-1/2 -translate-y-1/2 right-2 text-black/10 p-1 group-hover:text-black/20">
-                                               <GripVertical size={20} />
+                                               <GripVertical size={20} aria-hidden="true" />
                                            </div>
                                        )}
                                        {!isWon && (
-                                            <div className="absolute -right-3 top-1/2 -translate-y-1/2 flex flex-col gap-1 sm:hidden opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 rounded-full p-1 shadow-sm">
-                                                <button onClick={() => moveItem(idx, 'up')} disabled={idx === 0} className="p-1 text-slate-600 hover:text-indigo-600 disabled:opacity-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_up')} data-help-key="timeline_move_up"><ArrowUp size={14}/></button>
-                                                <button onClick={() => moveItem(idx, 'down')} disabled={idx === items.length - 1} className="p-1 text-slate-600 hover:text-indigo-600 disabled:opacity-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_down')} data-help-key="timeline_move_down"><ArrowDown size={14}/></button>
+                                            <div className="absolute -right-3 top-1/2 -translate-y-1/2 flex flex-col gap-1 sm:hidden opacity-100 bg-white/90 rounded-full p-1 shadow-sm">
+                                                <button type="button" onClick={() => moveItem(idx, 'up')} disabled={idx === 0} className="min-w-11 min-h-11 inline-flex items-center justify-center text-slate-700 hover:text-indigo-700 disabled:opacity-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_up')} data-help-key="timeline_move_up"><ArrowUp size={14} aria-hidden="true"/></button>
+                                                <button type="button" onClick={() => moveItem(idx, 'down')} disabled={idx === items.length - 1} className="min-w-11 min-h-11 inline-flex items-center justify-center text-slate-700 hover:text-indigo-700 disabled:opacity-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded" aria-label={t('move_down')} data-help-key="timeline_move_down"><ArrowDown size={14} aria-hidden="true"/></button>
                                             </div>
                                        )}
                                    </div>
@@ -1561,23 +1575,25 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
              </div>
            )}
        </div>
-       <div className="p-4 bg-white border-t border-slate-200 flex justify-between items-center shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+       <div className="p-4 bg-white border-t border-slate-200 flex flex-wrap justify-between items-center gap-3 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
            <div className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-               {isWon ? <span className="text-green-600 flex items-center gap-1"><CheckCircle2 size={16}/> {t('timeline.game.complete')}</span> : t('timeline.game.attempts', { attempts })}
+               {isWon ? <span className="text-green-600 flex items-center gap-1"><CheckCircle2 size={16} aria-hidden="true"/> {t('timeline.game.complete')}</span> : t('timeline.game.attempts', { attempts })}
            </div>
-           <div className="flex gap-3">
+           <div className="flex flex-wrap gap-3">
                <button
+                    type="button"
                     onClick={reset}
-                    className="px-5 py-2.5 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors flex items-center gap-2"
+                    className="min-h-11 px-5 py-2.5 rounded-full text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     aria-label={t('timeline.game.reset_aria')}
                     data-help-key="timeline_reset_btn"
                >
-                   <RefreshCw size={14}/> {t('timeline.game.reset')}
+                   <RefreshCw size={14} aria-hidden="true"/> {t('timeline.game.reset')}
                </button>
                {!isWon && items.length > 0 && hintsUsed < Math.ceil(items.length / 3) && (
                    <button
+                       type="button"
                        onClick={useHint}
-                       className="px-5 py-2.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors flex items-center gap-2"
+                       className="min-h-11 px-5 py-2.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-2"
                        aria-label={t('timeline.game.hint_aria') || 'Use a hint'}
                        title={t('timeline.game.hint_tooltip') || 'Move one item to its correct position (-15 pts)'}
                        data-help-key="timeline_hint_btn"
@@ -1587,8 +1603,9 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                )}
                {!isWon && (
                    <button
+                       type="button"
                        onClick={revealAnswer}
-                       className="px-5 py-2.5 rounded-full text-xs font-bold bg-slate-50 text-slate-600 border border-slate-400 hover:bg-slate-100 transition-colors flex items-center gap-2"
+                       className="min-h-11 px-5 py-2.5 rounded-full text-xs font-bold bg-slate-50 text-slate-700 border border-slate-400 hover:bg-slate-100 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                        aria-label={t('timeline.game.reveal_aria') || 'Show the correct answer (no points awarded)'}
                        title={t('timeline.game.reveal_tooltip') || 'Reveal the correct order — no points awarded'}
                        data-help-key="timeline_reveal_btn"
@@ -1598,9 +1615,10 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                )}
                {!isWon && (
                    <button
+                       type="button"
                        aria-label={t('common.check_order')}
                         onClick={checkOrder}
-                        className="px-6 py-2.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all active:scale-95 flex items-center gap-2"
+                        className="min-h-11 px-6 py-2.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 hover:shadow-indigo-300 flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         data-help-key="timeline_check_btn"
                    >
                        <CheckCircle2 size={16} /> {t('timeline.game.check_order')}

@@ -6509,6 +6509,16 @@ const AlloFlowContent = () => {
       if (timer) clearInterval(timer);
     };
   }, []);
+  const remediationModuleNames = ['DocPipelineModule', 'VerificationPolicy', 'DocBuilderRenderer'];
+  const remediationMissingModules = remediationModuleNames.filter((name) => !(window.AlloModules && window.AlloModules[name]));
+  const remediationFailedModules = remediationMissingModules.filter((name) => moduleLoadInfo.failed.includes(name));
+  const remediationPendingModules = remediationMissingModules.filter((name) => !remediationFailedModules.includes(name));
+  const remediationReady = remediationMissingModules.length === 0;
+  const remediationDependencyState = {
+    pending: remediationPendingModules,
+    failed: remediationFailedModules,
+  };
+  const retryRemediationDependencies = () => { try { window.__alloRetryFailedModules?.(); } catch (_) {} };
   const [canPlayBotIntro, setCanPlayBotIntro] = useState(false);
   useEffect(() => {
     const isWizardOpen = showStudentWelcome && hasSelectedRole && !isTeacherMode;
@@ -7401,7 +7411,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = 'eaa6f20fb';
+    var pluginCdnVersion = '72905f41e';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -7623,38 +7633,38 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=eaa6f20fb');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=eaa6f20fb');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=eaa6f20fb');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=eaa6f20fb');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=eaa6f20fb');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=eaa6f20fb');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=eaa6f20fb');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=eaa6f20fb');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=eaa6f20fb');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=eaa6f20fb');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=eaa6f20fb');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=eaa6f20fb');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=eaa6f20fb');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=eaa6f20fb');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=eaa6f20fb');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=eaa6f20fb');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=eaa6f20fb');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=eaa6f20fb');
-    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=eaa6f20fb');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=eaa6f20fb');
-    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=eaa6f20fb');
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=eaa6f20fb');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=eaa6f20fb');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=eaa6f20fb');
+    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=72905f41e');
+    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=72905f41e');
+    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=72905f41e');
+    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=72905f41e');
+    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=72905f41e');
+    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=72905f41e');
+    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=72905f41e');
+    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=72905f41e');
+    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=72905f41e');
+    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=72905f41e');
+    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=72905f41e');
+    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=72905f41e');
+    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=72905f41e');
+    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=72905f41e');
+    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=72905f41e');
+    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=72905f41e');
+    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=72905f41e');
+    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=72905f41e');
+    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=72905f41e');
+    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=72905f41e');
+    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=72905f41e');
+    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=72905f41e');
+    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=72905f41e');
+    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=72905f41e');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=eaa6f20fb'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=72905f41e'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=eaa6f20fb'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=72905f41e'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=72905f41e'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
@@ -7663,82 +7673,84 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=eaa6f20fb');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=eaa6f20fb');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=eaa6f20fb');
-    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=eaa6f20fb');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=eaa6f20fb');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=eaa6f20fb');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=eaa6f20fb');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=eaa6f20fb');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=eaa6f20fb');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=eaa6f20fb');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=eaa6f20fb');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=eaa6f20fb');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=eaa6f20fb');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=eaa6f20fb'); }; })();
+    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=72905f41e');
+    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=72905f41e');
+    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=72905f41e');
+    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=72905f41e');
+    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=72905f41e');
+    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=72905f41e');
+    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=72905f41e');
+    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=72905f41e');
+    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=72905f41e');
+    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=72905f41e');
+    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=72905f41e');
+    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=72905f41e');
+    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=72905f41e');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=72905f41e'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=72905f41e'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=72905f41e'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=72905f41e'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=eaa6f20fb');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=eaa6f20fb');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=eaa6f20fb');
+    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=72905f41e');
+    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=72905f41e');
+    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=72905f41e');
     loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=e3efe3e6');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=eaa6f20fb');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=eaa6f20fb');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=eaa6f20fb');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=eaa6f20fb');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=eaa6f20fb');
+    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=72905f41e');
+    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=72905f41e');
+    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=72905f41e');
+    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=72905f41e');
+    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=72905f41e');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=eaa6f20fb'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=72905f41e'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=eaa6f20fb');
+    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=72905f41e');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=eaa6f20fb');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=eaa6f20fb'); }; })();
+    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=72905f41e');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=72905f41e'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=72905f41e'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=72905f41e'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=72905f41e'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=72905f41e'); }; })();
     window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=e7423298'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=eaa6f20fb'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=eaa6f20fb');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=eaa6f20fb');
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=72905f41e'); }; })();
+    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=72905f41e');
+    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=72905f41e');
     loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
     loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ea313f84');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=eaa6f20fb');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=eaa6f20fb');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=eaa6f20fb');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=eaa6f20fb');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=eaa6f20fb');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=eaa6f20fb'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=eaa6f20fb'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=eaa6f20fb'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=eaa6f20fb'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=eaa6f20fb'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=eaa6f20fb');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=eaa6f20fb');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=eaa6f20fb');
+    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=72905f41e');
+    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=72905f41e');
+    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=72905f41e');
+    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=72905f41e');
+    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=72905f41e');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=72905f41e'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=72905f41e'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=72905f41e'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=72905f41e'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=72905f41e'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=72905f41e'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=72905f41e'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=72905f41e'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=72905f41e'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=72905f41e'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=72905f41e'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=72905f41e'); }; })();
+    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=72905f41e');
+    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=72905f41e');
+    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=72905f41e');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=eaa6f20fb');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=eaa6f20fb');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=eaa6f20fb');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=eaa6f20fb');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=eaa6f20fb');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=eaa6f20fb');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=eaa6f20fb');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=eaa6f20fb');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=eaa6f20fb');
+    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=72905f41e');
+    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=72905f41e');
+    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=72905f41e');
+    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=72905f41e');
+    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=72905f41e');
+    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=72905f41e');
+    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=72905f41e');
+    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=72905f41e');
+    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=72905f41e');
+    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=72905f41e');
+    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=72905f41e');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
     // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
@@ -7775,64 +7787,64 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=eaa6f20fb');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=eaa6f20fb');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=eaa6f20fb');
+    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=72905f41e');
+    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=72905f41e');
+    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=72905f41e');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=eaa6f20fb');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=eaa6f20fb');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=eaa6f20fb');
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=eaa6f20fb');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=eaa6f20fb');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=eaa6f20fb');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=eaa6f20fb');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=eaa6f20fb');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=eaa6f20fb');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=eaa6f20fb');
+    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=72905f41e');
+    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=72905f41e');
+    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=72905f41e');
+    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=72905f41e');
+    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=72905f41e');
+    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=72905f41e');
+    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=72905f41e');
+    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=72905f41e');
+    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=72905f41e');
+    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=72905f41e');
     loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=9dadb72f1');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=eaa6f20fb');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=eaa6f20fb');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=eaa6f20fb');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=eaa6f20fb');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=eaa6f20fb');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=eaa6f20fb');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=eaa6f20fb');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=eaa6f20fb');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=eaa6f20fb');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=eaa6f20fb');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=eaa6f20fb');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=eaa6f20fb');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=eaa6f20fb');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=eaa6f20fb');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=eaa6f20fb');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=eaa6f20fb');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=eaa6f20fb');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=eaa6f20fb');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=eaa6f20fb');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=eaa6f20fb');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=eaa6f20fb');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=eaa6f20fb');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=eaa6f20fb');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=eaa6f20fb');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=eaa6f20fb');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=eaa6f20fb');
-    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=eaa6f20fb');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=eaa6f20fb');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=eaa6f20fb');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=eaa6f20fb');
+    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=72905f41e');
+    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=72905f41e');
+    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=72905f41e');
+    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=72905f41e');
+    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=72905f41e');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=72905f41e');
+    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=72905f41e');
+    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=72905f41e');
+    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=72905f41e');
+    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=72905f41e');
+    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=72905f41e');
+    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=72905f41e');
+    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=72905f41e');
+    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=72905f41e');
+    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=72905f41e');
+    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=72905f41e');
+    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=72905f41e');
+    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=72905f41e');
+    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=72905f41e');
+    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=72905f41e');
+    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=72905f41e');
+    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=72905f41e');
+    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=72905f41e');
+    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=72905f41e');
+    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=72905f41e');
+    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=72905f41e');
+    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=72905f41e');
+    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=72905f41e');
+    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=72905f41e');
+    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=72905f41e');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=eaa6f20fb');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=eaa6f20fb');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=eaa6f20fb');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=eaa6f20fb');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=eaa6f20fb');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=eaa6f20fb');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=eaa6f20fb');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=eaa6f20fb');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=eaa6f20fb');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=eaa6f20fb');
+    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=72905f41e');
+    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=72905f41e');
+    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=72905f41e');
+    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=72905f41e');
+    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=72905f41e');
+    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=72905f41e');
+    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=72905f41e');
+    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=72905f41e');
+    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=72905f41e');
+    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=72905f41e');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -15034,6 +15046,29 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [pdfAuditResult, setPdfAuditResult] = useState(null);
   const [pdfAuditLoading, setPdfAuditLoading] = useState(false);
   const [pendingPdfBase64, setPendingPdfBase64] = useState(null);
+  const pdfAuditEpochRef = useRef(0);
+  const pdfAuditAbortControllerRef = useRef(null);
+  const beginPdfAuditRun = React.useCallback(() => {
+    try { if (pdfAuditAbortControllerRef.current) pdfAuditAbortControllerRef.current.abort(); } catch (_) {}
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const token = { epoch: ++pdfAuditEpochRef.current, signal: controller ? controller.signal : null };
+    pdfAuditAbortControllerRef.current = controller;
+    return token;
+  }, []);
+  const isPdfAuditRunCurrent = React.useCallback((token) => !!(token
+    && token.epoch === pdfAuditEpochRef.current
+    && !(token.signal && token.signal.aborted)), []);
+  const finishPdfAuditRun = React.useCallback((token) => {
+    if (!token || token.epoch !== pdfAuditEpochRef.current) return false;
+    pdfAuditAbortControllerRef.current = null;
+    return true;
+  }, []);
+  const invalidatePdfAuditRun = React.useCallback(() => {
+    try { if (pdfAuditAbortControllerRef.current) pdfAuditAbortControllerRef.current.abort(); } catch (_) {}
+    pdfAuditAbortControllerRef.current = null;
+    pdfAuditEpochRef.current += 1;
+    setPdfAuditLoading(false);
+  }, []);
   const [pendingPdfFile, setPendingPdfFile] = useState(null);
   // Original PDF bytes survive a SOFT modal-close in this ref. The pendingPdfBase64 STATE is nulled on
   // close (it gates the "no doc loaded" panel at the LMS-audit-URLs block), but the re-entry pill reopens
@@ -15074,6 +15109,26 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     _setPdfFixResultRaw(enforced);
     return enforced;
   }, []);
+  const capturePdfHtmlCommitToken = React.useCallback(() => {
+    const current = pdfFixResultRef.current;
+    return {
+      revision: pdfHtmlRevisionRef.current,
+      html: current && typeof current.accessibleHtml === 'string' ? current.accessibleHtml : null,
+    };
+  }, []);
+  const commitPdfFixResultIfCurrent = React.useCallback((token, updater) => {
+    if (!token || token.revision !== pdfHtmlRevisionRef.current) return false;
+    const current = pdfFixResultRef.current;
+    if (!current || current.accessibleHtml !== token.html) return false;
+    let committed = false;
+    setPdfFixResult((prev) => {
+      if (!prev || token.revision !== pdfHtmlRevisionRef.current || prev.accessibleHtml !== token.html) return prev;
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      committed = !!next;
+      return next || prev;
+    });
+    return committed;
+  }, [setPdfFixResult]);
   const [pdfFixLoading, setPdfFixLoading] = useState(false);
   // Three-way "save before closing?" dialog. Fires only when there is work to lose.
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
@@ -15435,6 +15490,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       addToast(t('toasts.help_mode_close_blocked') || '❓ Help mode is on — click any control to learn about it. Press the yellow ✕ (right edge) to exit help mode first.', 'info');
       return;
     }
+    invalidatePdfAuditRun();
     setPdfFixLoading(false);
     setPdfFixStep('');
     setPendingPdfBase64(null);
@@ -15472,6 +15528,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     _closePdfAuditModal();
   };
   const startNewPdfAudit = () => {
+    invalidatePdfAuditRun();
     lastPdfAuditResultRef.current = null; // dropping the result — no re-entry pill for a cleared audit
     setPdfAuditResult(null);
     setPdfFixResult(null);
@@ -15553,16 +15610,20 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [pdfAutoSaveProject]);
   React.useEffect(() => {
     let cancelled = false;
-    if (!pdfAuditResult || !pendingPdfFile || !_docPipeline || !_docPipeline.multiSessionId || !_docPipeline.loadMultiSession) {
+    if (!pdfAuditResult || !pendingPdfFile || !pendingPdfBase64 || !_docPipeline || !_docPipeline.documentDigest || !_docPipeline.multiSessionId || !_docPipeline.loadMultiSession) {
       setPdfMultiSession(null);
       return;
     }
-    const sessionId = _docPipeline.multiSessionId(
-      pendingPdfFile.name || 'document.pdf',
-      pendingPdfFile.size || 0,
-      pdfAuditResult.pageCount || 1
-    );
-    _docPipeline.loadMultiSession(sessionId).then((record) => {
+    _docPipeline.documentDigest(pendingPdfBase64).then((digest) => {
+      if (cancelled || !digest) return null;
+      const sessionId = _docPipeline.multiSessionId(
+        pendingPdfFile.name || 'document.pdf',
+        pendingPdfFile.size || 0,
+        pdfAuditResult.pageCount || 1,
+        digest
+      );
+      return sessionId ? _docPipeline.loadMultiSession(sessionId, digest) : null;
+    }).then((record) => {
       if (cancelled) return;
       setPdfMultiSession(record);
       if (record && record.ranges && record.ranges.length > 0) {
@@ -15577,7 +15638,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       }
     }).catch(() => { if (!cancelled) setPdfMultiSession(null); });
     return () => { cancelled = true; };
-  }, [pdfAuditResult, pendingPdfFile]);
+  }, [pdfAuditResult, pendingPdfFile, pendingPdfBase64]);
   const PDF_REGRESSION_TOLERANCE = 5;
   const safeCloneAudit = (o) => { try { return o == null ? o : JSON.parse(JSON.stringify(o)); } catch { return o; } };
   const blendAiAxe = (aiScore, axeScore) => {
@@ -15731,7 +15792,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       // could enter the success numerator of the reliability rate Aaron defends to UMaine.
       // Unknown verifier state is now 'incomplete', never 'success': success requires target
       // reached AND a KNOWN-zero axe result AND a complete (non-degraded) AI verification.
-      const _outcome = (cur.afterScore >= pdfTargetScore && _resid === 0 && !cur._aiVerificationIncomplete) ? 'success' : 'incomplete';
+      const _remediationOutcome = (_docPipeline && typeof _docPipeline.remediationOutcome === 'function')
+        ? _docPipeline.remediationOutcome(cur, { targetScore: pdfTargetScore })
+        : { state: (cur.afterScore >= pdfTargetScore && _resid === 0 && !cur._aiVerificationIncomplete) ? 'success' : 'incomplete' };
       const row = {
         _k: key, at: new Date().toISOString(),
         runId: cur.runId || null, // #15 (ChatGPT review 2026-07-10): per-run identity from the pipeline (null on older/loaded rows)
@@ -15743,7 +15806,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         pages: cur.pageCount || null,
         // Reliability telemetry (2026-06-13): an honest outcome + the per-run
         // stats from fixResult.pipelineStats (null on older/loaded rows).
-        outcome: _outcome,
+        outcome: _remediationOutcome.state,
+        remediationOutcome: _remediationOutcome,
+        verificationState: cur.verificationState || 'unavailable',
         retries: _ps ? _ps.retries : null,
         // #15: the honest counter set — retries now counts real retry ATTEMPTS; the old counter
         // incremented on terminal failure (a recovered retry recorded 0, a no-retry failure 1).
@@ -21622,6 +21687,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef,
     exportAuditResult,
     setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading,
+    beginPdfAuditRun, isPdfAuditRunCurrent, finishPdfAuditRun,
     setPdfFixStep, setPendingPdfBase64, setPendingPdfFile,
     setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex,
     setPdfBatchStep, setPdfBatchSummary, setIsGeneratingStyle,
@@ -21890,10 +21956,6 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const downgraded = applyVerificationHtmlBinding(result, false, optionalReason || 'verification-html-binding-missing-or-stale');
     try { delete downgraded._verificationHtmlSnapshot; } catch (_) {}
     try { delete downgraded._verificationHtmlBindingDigest; } catch (_) {}
-    const priorReason = downgraded.expertReviewReason;
-    downgraded.needsExpertReview = true;
-    downgraded.expertReviewReason = (priorReason === 'content-fidelity' || priorReason === 'both') ? 'both' : 'accessibility';
-    downgraded._verificationExpertReview = true;
     return downgraded;
   }
   verificationBindingHelpersRef.current.enforce = enforceVerificationHtmlBinding;
@@ -22273,15 +22335,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           ? (_freshContentFidelityReview ? 'both' : 'accessibility')
           : (_freshContentFidelityReview ? 'content-fidelity' : null);
         const _expertBase = { needed: !!_expertBaseReason, reason: _expertBaseReason };
-        let _nextNeedsExpertReview;
-        let _nextExpertReviewReason;
-        if (_requiresManualReview) {
-          _nextNeedsExpertReview = true;
-          _nextExpertReviewReason = (_expertBase.reason === 'content-fidelity' || _expertBase.reason === 'both') ? 'both' : 'accessibility';
-        } else {
-          _nextNeedsExpertReview = _expertBase.needed;
-          _nextExpertReviewReason = _expertBase.reason;
-        }
+        const _nextNeedsExpertReview = _expertBase.needed;
+        const _nextExpertReviewReason = _expertBase.reason;
         cur = Object.assign({}, cur, {
           accessibleHtml: result.html,
           axeAudit: _freshAxe,
@@ -22308,8 +22363,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           secondEngineAudit: _freshEa,
           needsExpertReview: _nextNeedsExpertReview,
           expertReviewReason: _nextExpertReviewReason,
-          _verificationExpertReview: _requiresManualReview,
-          _expertReviewBeforeVerification: _requiresManualReview ? _expertBase : null,
+          _verificationExpertReview: false,
+          _expertReviewBeforeVerification: null,
           finalText: _newPlain || cur.finalText,
           autoFixPasses: (cur.autoFixPasses || 0) + (result.passes || 0),
           htmlChars: result.html.length,
@@ -22408,7 +22463,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           fileSize: (pendingPdfFile && typeof pendingPdfFile.size === 'number' && pendingPdfFile.size > 0)
             ? pendingPdfFile.size
             : (_override.base64 ? Math.floor(String(_override.base64).replace(/^data:[^,]*,/, '').replace(/\s+/g, '').length * 3 / 4) : null),
-          docKey: (() => { try { const _f = window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.docFingerprint; return (_f && _override.base64) ? _f(_override.base64) : null; } catch (_) { return null; } })(),
+          docKey: _override.docKey || null,
           extractedText: _override.extractedText || '',
           pdfBase64: _override.base64 || null,
           failureReason: _override.failureReason || 'other',
@@ -22446,6 +22501,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       version: 1,
       savedAt: new Date().toISOString(),
       fileName: pendingPdfFile?.name || 'document.pdf',
+      documentDigest: cur.documentDigest || null,
       accessibleHtml: cur.accessibleHtml,
       beforeScore: cur.beforeScore,
       afterScore: cur.afterScore,
@@ -22515,11 +22571,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     };
     if (pdfMultiSession && Array.isArray(pdfMultiSession.ranges) && pdfMultiSession.ranges.length > 0) {
       project.multiSession = {
-        schemaVersion: 1,
+        schemaVersion: 2,
         sessionId: pdfMultiSession.sessionId,
         fileName: pdfMultiSession.fileName || project.fileName,
         fileSize: pdfMultiSession.fileSize || (pendingPdfFile?.size || 0),
         pageCount: pdfMultiSession.pageCount || project.pageCount,
+        documentDigest: pdfMultiSession.documentDigest || cur.documentDigest || null,
         ranges: pdfMultiSession.ranges,
       };
     }
@@ -22677,10 +22734,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   };
 
   const _prevPdfFixLoadingRef = useRef(pdfFixLoading);
+  const _pdfFidelityRepairEpochRef = useRef(0);
   useEffect(() => {
     const wasLoading = _prevPdfFixLoadingRef.current;
     _prevPdfFixLoadingRef.current = pdfFixLoading;
     if (!wasLoading || pdfFixLoading) return; // fire only on true → false
+    const _repairEpoch = ++_pdfFidelityRepairEpochRef.current;
     const tid = setTimeout(() => {
       try {
         if (!extractionData || !extractionData.fullText) return;
@@ -22704,6 +22763,28 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           } catch (e) { return ''; }
         };
         const sourceText = extractionData.fullText || '';
+        let _repairToken = capturePdfHtmlCommitToken();
+        let _workingHtml = String((_repairToken && _repairToken.html) || '');
+        let _staleRepairNotified = false;
+        const _repairCurrent = () => !!(_repairToken
+          && _pdfFidelityRepairEpochRef.current === _repairEpoch
+          && _repairToken.revision === pdfHtmlRevisionRef.current
+          && pdfFixResultRef.current
+          && pdfFixResultRef.current.accessibleHtml === _repairToken.html);
+        const _discardStaleRepair = () => {
+          if (_staleRepairNotified) return;
+          _staleRepairNotified = true;
+          if (addToast) addToast(t('toasts.fidelity_stale_discarded') || 'The document changed during automatic fidelity repair ? the stale repair was discarded.', 'info');
+        };
+        const _commitRepairHtml = (nextHtml) => {
+          if (!_repairCurrent() || !commitPdfFixResultIfCurrent(_repairToken, (prev) => ({ ...prev, accessibleHtml: nextHtml }))) {
+            _discardStaleRepair(); return false;
+          }
+          _repairToken = capturePdfHtmlCommitToken();
+          _workingHtml = String(nextHtml || '');
+          return true;
+        };
+        const _commitRepairMeta = (updater) => _repairCurrent() && commitPdfFixResultIfCurrent(_repairToken, updater);
         const remText1 = extractText();
         const pass1 = _buildMissingList(sourceText, remText1);
         const missing1 = pass1.missing;
@@ -22716,7 +22797,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           if (addToast) addToast(t('toasts.fidelity_100_words_missing'), 'success');
           try {
             if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-              setPdfFixResult(prev => prev ? Object.assign({}, prev, {
+              _commitRepairMeta(prev => prev ? Object.assign({}, prev, {
                 integrityVerifying: false,
                 integrityFinal: {
                   coverage: beforeFidelity,
@@ -22733,7 +22814,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         }
         try {
           if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-            setPdfFixResult(prev => prev ? Object.assign({}, prev, { integrityVerifying: true }) : prev);
+            _commitRepairMeta(prev => prev ? Object.assign({}, prev, { integrityVerifying: true }) : prev);
           }
         } catch (e) { /* non-blocking */ }
         (async () => {
@@ -22741,49 +22822,48 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           const stageCounts = { retry: 0, sentence: 0 };
           let currentMissing = missing1;
           try {
-            const currentHtml = getPdfPreviewHtml ? getPdfPreviewHtml() : ((pdfFixResult && pdfFixResult.accessibleHtml) || '');
+            const currentHtml = _workingHtml;
             const stageA = await retargetMissingWordsViaGemini(currentHtml, currentMissing, sourceText);
+            if (!_repairCurrent()) { _discardStaleRepair(); return; }
             if (stageA && Array.isArray(stageA.restoredViaRetry) && stageA.restoredViaRetry.length > 0 && stageA.html && stageA.html !== currentHtml) {
               stageCounts.retry = stageA.restoredViaRetry.length;
-              if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-                setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: stageA.html } : prev);
-              }
+              if (!_commitRepairHtml(stageA.html)) return;
               currentMissing = Array.isArray(stageA.stillMissing) ? stageA.stillMissing : currentMissing;
             }
           } catch (eA) { /* non-blocking */ }
           if (currentMissing.length > 0) {
             try {
-              const currentHtml = (pdfFixResult && pdfFixResult.accessibleHtml) || (getPdfPreviewHtml ? getPdfPreviewHtml() : '');
+              const currentHtml = _workingHtml;
               const stageB = restoreSentencesDeterministic(currentHtml, currentMissing, sourceText);
               if (stageB && Array.isArray(stageB.restoredViaSentence) && stageB.restoredViaSentence.length > 0 && stageB.html && stageB.html !== currentHtml) {
                 stageCounts.sentence = stageB.restoredViaSentence.length;
-                if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-                  setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: stageB.html } : prev);
-                }
+                if (!_commitRepairHtml(stageB.html)) return;
                 currentMissing = Array.isArray(stageB.stillMissing) ? stageB.stillMissing : currentMissing;
               }
             } catch (eB) { /* non-blocking */ }
           }
           setTimeout(() => {
             try {
+            if (!_repairCurrent()) { _discardStaleRepair(); return; }
             let restoreResult = { restored: [], unplaceable: currentMissing };
             if (currentMissing.length > 0) {
               try { restoreResult = applyWordRestorationInPlace(currentMissing, sourceText) || restoreResult; }
               catch (restoreErr) { /* warn already in pipeline */ }
+              _repairToken = capturePdfHtmlCommitToken();
+              _workingHtml = String((_repairToken && _repairToken.html) || '');
             }
             let dedupResult = { autoRemoved: [], highlighted: [] };
             try {
-              const currentHtml = (pdfFixResult && pdfFixResult.accessibleHtml) || (getPdfPreviewHtml ? getPdfPreviewHtml() : '');
+              const currentHtml = _workingHtml;
               const dedup = detectAndHandleDuplicates(currentHtml, sourceText);
               if (dedup && dedup.html && dedup.html !== currentHtml) {
-                if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-                  setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: dedup.html } : prev);
-                }
+                if (!_commitRepairHtml(dedup.html)) return;
                 dedupResult = { autoRemoved: dedup.autoRemoved || [], highlighted: dedup.highlighted || [] };
               }
             } catch (eD) { /* non-blocking */ }
             setTimeout(() => {
               try {
+              if (!_repairCurrent()) { _discardStaleRepair(); return; }
               try {
                 const remText2 = extractText();
                 const pass2 = _buildMissingList(sourceText, remText2);
@@ -22800,7 +22880,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                 const _dedupRemovedCount = (dedupResult.autoRemoved || []).length;
                 try {
                   if (typeof setPdfFixResult === 'function') {
-                    setPdfFixResult(prev => prev ? Object.assign({}, prev, {
+                    _commitRepairMeta(prev => prev ? Object.assign({}, prev, {
                       integrityVerifying: false,
                       integrityFinal: {
                         coverage: afterFidelity,
@@ -22836,20 +22916,20 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                 }
               } catch (e) { /* non-blocking */ }
               } finally {
-                setPdfFixResult(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
+                _commitRepairMeta(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
               }
             }, 500);
             } finally {
-              setPdfFixResult(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
+              _commitRepairMeta(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
             }
           }, 200);
           } finally {
-            setPdfFixResult(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
+            _commitRepairMeta(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
           }
         })();
       } catch (outerErr) { /* non-blocking */ }
     }, 200);
-    return () => clearTimeout(tid);
+    return () => { clearTimeout(tid); if (_pdfFidelityRepairEpochRef.current === _repairEpoch) _pdfFidelityRepairEpochRef.current += 1; };
   }, [pdfFixLoading, extractionData, pdfMultiSession]);
 
   const [expertCommandInput, setExpertCommandInput] = useState('');
@@ -23471,9 +23551,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const iframe = exportPreviewRef.current;
       const doc = iframe && (iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document));
       if (!doc || !doc.body || !doc.documentElement) return;
+      const hasLiveEdits = doc.body.getAttribute('data-allo-user-edited') === '1';
+      if (doc.body.getAttribute('data-allo-preview-error') === '1') return;
+      if (exportPreviewSource === 'remediation' && !hasLiveEdits) return;
       // Never persist an empty/failed render, while allowing legitimate short,
       // image-led, equation-only, form, and title-page documents.
-      const hasMeaningfulContent = (doc.body.textContent || '').trim().length > 0 || !!doc.body.querySelector('img,svg,canvas,video,audio,math,table,form,input,textarea,select,hr');
+      const hasMeaningfulContent = (doc.body.textContent || '').trim().length > 0 || !!doc.body.querySelector('img,svg,canvas,video,audio,math,table,form,input,textarea,select');
       if (!hasMeaningfulContent) return;
       const clone = doc.documentElement.cloneNode(true);
       try {
@@ -23518,13 +23601,18 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     return raw.length + ':' + (hash >>> 0).toString(16);
   };
   const BUILDER_PROJECT_DRAFT_MAX_BYTES = 32 * 1024 * 1024;
+  const BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES = 32 * 1024 * 1024;
+  const _builderUtf8ByteLength = (value) => {
+    try { return new TextEncoder().encode(String(value == null ? '' : value)).byteLength; }
+    catch (_) { return String(value == null ? '' : value).length; }
+  };
   // Project files can come from outside this app. A saved Builder draft is
   // therefore treated as untrusted HTML before it is ever placed in the
   // same-origin editing iframe. Preserve document structure and styling while
   // removing executable/embedded content, event handlers, navigation targets,
   // remote CSS fetches, and dangerous URL schemes.
   const _sanitizeBuilderProjectDraft = (html, historySignature) => {
-    if (typeof html !== 'string' || html.length === 0 || html.length > BUILDER_PROJECT_DRAFT_MAX_BYTES || !/<body[\s>]/i.test(html)) return null;
+    if (typeof html !== 'string' || html.length === 0 || _builderUtf8ByteLength(html) > BUILDER_PROJECT_DRAFT_MAX_BYTES || !/<body[\s>]/i.test(html)) return null;
     try {
       const parsed = new DOMParser().parseFromString(html, 'text/html');
       if (!parsed || !parsed.documentElement || !parsed.body) return null;
@@ -23543,31 +23631,149 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       });
       parsed.querySelectorAll('form').forEach((form) => { form.removeAttribute('action'); form.removeAttribute('target'); form.removeAttribute('method'); });
       const cleanHtml = '<!DOCTYPE html>\n' + parsed.documentElement.outerHTML;
-      if (cleanHtml.length > BUILDER_PROJECT_DRAFT_MAX_BYTES) return null;
+      if (_builderUtf8ByteLength(cleanHtml) > BUILDER_PROJECT_DRAFT_MAX_BYTES) return null;
       return { version: 1, source: 'history', historySignature, html: cleanHtml, savedAt: new Date().toISOString(), activeContentRemoved: true };
     } catch (_) { return null; }
   };
-  const _getBuilderDraftForProject = () => {
+  const _deduplicateBuilderDraftAssets = (html) => {
+    const assets = [];
+    const indexes = new Map();
+    const compactHtml = String(html || '').replace(/data:image\/[a-z0-9.+-]+;base64,[a-z0-9+/=\r\n]+/gi, (asset) => {
+      let index = indexes.get(asset);
+      if (index === undefined) {
+        index = assets.length;
+        indexes.set(asset, index);
+        assets.push(asset);
+      }
+      return 'allo-builder-asset:' + index;
+    });
+    return { html: compactHtml, assets };
+  };
+  const _restoreBuilderDraftAssets = (html, assets) => {
+    if (!Array.isArray(assets) || assets.length > 2048 || assets.some((asset) => typeof asset !== 'string' || !/^data:image\/[a-z0-9.+-]+;base64,/i.test(asset))) return null;
+    return String(html || '').replace(/allo-builder-asset:(\d+)/g, (_match, rawIndex) => {
+      const index = Number(rawIndex);
+      return Number.isSafeInteger(index) && assets[index] ? assets[index] : '';
+    });
+  };
+  const _builderBytesToBase64 = (bytes) => {
+    let binary = '';
+    for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(offset, Math.min(offset + 0x8000, bytes.length)));
+    }
+    return btoa(binary);
+  };
+  const _builderBase64ToBytes = (encoded) => {
+    try {
+      const binary = atob(String(encoded || ''));
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+      return bytes;
+    } catch (_) { return null; }
+  };
+  const _readBuilderDraftStreamBounded = async (stream, maxBytes) => {
+    if (!stream || typeof stream.getReader !== 'function' || typeof TextDecoder === 'undefined') return null;
+    const reader = stream.getReader();
+    const chunks = [];
+    let total = 0;
+    try {
+      while (true) {
+        const part = await reader.read();
+        if (part.done) break;
+        total += part.value.byteLength;
+        if (total > maxBytes) { try { await reader.cancel(); } catch (_) {} return null; }
+        chunks.push(part.value);
+      }
+    } finally { try { reader.releaseLock(); } catch (_) {} }
+    const merged = new Uint8Array(total);
+    let offset = 0;
+    chunks.forEach((chunk) => { merged.set(chunk, offset); offset += chunk.byteLength; });
+    return new TextDecoder().decode(merged);
+  };
+  const _encodeBuilderDraftPayload = async (payloadText) => {
+    try {
+      if (typeof CompressionStream === 'function' && typeof Blob === 'function' && typeof Response === 'function') {
+        const compressedStream = new Blob([payloadText]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+        const compressed = new Uint8Array(await new Response(compressedStream).arrayBuffer());
+        if (compressed.byteLength <= BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES) {
+          return { encoding: 'deflate-raw-base64', payload: _builderBytesToBase64(compressed), storedByteLength: compressed.byteLength };
+        }
+        return null;
+      }
+    } catch (_) {}
+    const storedByteLength = _builderUtf8ByteLength(payloadText);
+    return storedByteLength <= BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES
+      ? { encoding: 'plain-json', payload: payloadText, storedByteLength }
+      : null;
+  };
+  const _decodeBuilderDraftPayload = async (candidate) => {
+    if (!candidate || typeof candidate.payload !== 'string' || candidate.payload.length > BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES * 2) return null;
+    if (candidate.encoding === 'plain-json') {
+      if (_builderUtf8ByteLength(candidate.payload) > BUILDER_PROJECT_DRAFT_MAX_BYTES) return null;
+      return candidate.payload;
+    }
+    if (candidate.encoding !== 'deflate-raw-base64' || typeof DecompressionStream !== 'function' || typeof Blob !== 'function') return null;
+    const bytes = _builderBase64ToBytes(candidate.payload);
+    if (!bytes || bytes.byteLength > BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES) return null;
+    try {
+      const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+      return await _readBuilderDraftStreamBounded(stream, BUILDER_PROJECT_DRAFT_MAX_BYTES);
+    } catch (_) { return null; }
+  };
+  const _packBuilderProjectDraft = async (cleanDraft, historySignature) => {
+    const compact = _deduplicateBuilderDraftAssets(cleanDraft.html);
+    const payloadText = JSON.stringify(compact);
+    if (_builderUtf8ByteLength(payloadText) > BUILDER_PROJECT_DRAFT_MAX_BYTES) return null;
+    const encoded = await _encodeBuilderDraftPayload(payloadText);
+    if (!encoded) return null;
+    return {
+      version: 2,
+      source: 'history',
+      historySignature,
+      encoding: encoded.encoding,
+      payload: encoded.payload,
+      storedByteLength: encoded.storedByteLength,
+      uncompressedByteLength: _builderUtf8ByteLength(cleanDraft.html),
+      assetCount: compact.assets.length,
+      savedAt: new Date().toISOString(),
+      activeContentRemoved: true
+    };
+  };
+  const _unpackBuilderProjectDraft = async (candidate, historySignature) => {
+    if (!candidate || candidate.source !== 'history' || candidate.historySignature !== historySignature) return null;
+    if (candidate.version === 1) return typeof candidate.html === 'string' ? candidate.html : null;
+    if (candidate.version !== 2) return null;
+    const payloadText = await _decodeBuilderDraftPayload(candidate);
+    if (!payloadText) return null;
+    try {
+      const compact = JSON.parse(payloadText);
+      if (!compact || typeof compact.html !== 'string') return null;
+      const html = _restoreBuilderDraftAssets(compact.html, compact.assets || []);
+      return html && _builderUtf8ByteLength(html) <= BUILDER_PROJECT_DRAFT_MAX_BYTES ? html : null;
+    } catch (_) { return null; }
+  };
+  const _getBuilderDraftForProject = async () => {
     try {
       _syncBuilderEditsToRemediation();
       const draft = window.__alloBuilderEditedPack;
       const signature = _getBuilderHistorySignature();
       if (!draft || draft.source !== 'history' || draft.historySignature !== signature) return null;
-      return _sanitizeBuilderProjectDraft(draft.html, signature);
+      const cleanDraft = _sanitizeBuilderProjectDraft(draft.html, signature);
+      return cleanDraft ? await _packBuilderProjectDraft(cleanDraft, signature) : null;
     } catch (_) { return null; }
   };
-  const _restoreBuilderDraftFromProject = (candidate, loadedHistory) => {
+  const _restoreBuilderDraftFromProject = async (candidate, loadedHistory) => {
     try {
       window.__alloBuilderEditedPack = null;
       if (candidate == null) return;
       const signature = _getBuilderHistorySignature(loadedHistory);
-      const validEnvelope = candidate && candidate.version === 1 && candidate.source === 'history' && candidate.historySignature === signature;
-      const cleanDraft = validEnvelope ? _sanitizeBuilderProjectDraft(candidate.html, signature) : null;
+      const unpackedHtml = await _unpackBuilderProjectDraft(candidate, signature);
+      const cleanDraft = unpackedHtml ? _sanitizeBuilderProjectDraft(unpackedHtml, signature) : null;
       if (!cleanDraft) {
         addToast(t('toasts.builder_draft_skipped') || 'A saved Document Builder draft was not restored because it was stale or unsafe.', 'info');
         return;
       }
-      window.__alloBuilderEditedPack = { ...cleanDraft, at: Date.now(), restoredFromProject: true };
+      window.__alloBuilderEditedPack = { ...cleanDraft, at: Date.now(), restoredFromProject: true, storedVersion: candidate.version };
       addToast(t('toasts.builder_draft_restored') || 'Document Builder edits were restored with this project.', 'success');
     } catch (_) {
       try { window.__alloBuilderEditedPack = null; } catch (_) {}
@@ -23595,13 +23801,17 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     // their own CSS on repeated application. Slides mode stays history-based
     // (no remediation slide deck exists; the audit modal's accessible-PPTX
     // export covers decks).
+      if (!_docPipeline || typeof _docPipeline.sanitizeRemediationHtml !== 'function') {
+        throw new Error('Remediation security module unavailable ? reload after the application modules finish loading.');
+      }
+      const _safeRemediationHtml = _docPipeline.sanitizeRemediationHtml(pdfFixResult.accessibleHtml);
     if (exportPreviewSource === 'remediation' && pdfFixResult?.accessibleHtml && exportPreviewMode !== 'slides') {
       try {
         if (_docPipeline && typeof _docPipeline.applyStyleSeedToHtml === 'function') {
-          return _docPipeline.applyStyleSeedToHtml(pdfFixResult.accessibleHtml, exportTheme, exportConfig.fontSize || 16);
+          return _docPipeline.applyStyleSeedToHtml(_safeRemediationHtml, exportTheme, exportConfig.fontSize || 16);
         }
       } catch (err) { warnLog('[Export preview] remediation theming failed — serving unthemed remediated HTML:', err); }
-      return pdfFixResult.accessibleHtml;
+      return _safeRemediationHtml;
     }
     if (exportPreviewMode === 'slides') {
       return getSlidesPreviewHTML();
@@ -23661,7 +23871,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         addToast && addToast(t('toasts.preview_failed_render_document_pipeline'), 'error');
       }
       const escapedMsg = msg.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-      html = `<!DOCTYPE html><html><body style="font-family:system-ui;padding:2rem;color:#991b1b;background:#fef2f2"><h2>Preview error</h2><pre style="white-space:pre-wrap;font-size:12px">${escapedMsg}</pre><p style="font-size:12px;color:#7f1d1d;margin-top:1rem">If this persists, the CDN-loaded doc pipeline likely needs a redeploy with the latest fix.</p></body></html>`;
+      html = `<!DOCTYPE html><html><body data-allo-preview-error="1" style="font-family:system-ui;padding:2rem;color:#991b1b;background:#fef2f2"><h2>Preview error</h2><pre style="white-space:pre-wrap;font-size:12px">${escapedMsg}</pre><p style="font-size:12px;color:#7f1d1d;margin-top:1rem">If this persists, the CDN-loaded doc pipeline likely needs a redeploy with the latest fix.</p></body></html>`;
     }
     doc.open();
     doc.write(html);
@@ -32156,7 +32366,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
  * color utilities). Contrast matrix + drift enforced by
  * tests/docsuite_theme_contrast.test.js.
  * Scope class .allo-docsuite covers: docsuite (PDF remediation + Document Hub modals); selsuite (4 Tailwind SEL tools); appsuite (main-content artifact views + sidebar);
- * plus the main-content JSX region of ANTI. Union 993 tokens. */
+ * plus the main-content JSX region of ANTI. Union 994 tokens. */
 .theme-dark .allo-docsuite { color-scheme: dark; }
 .theme-dark .allo-docsuite input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 .theme-dark .allo-docsuite textarea,
@@ -32284,7 +32494,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
 .theme-dark .allo-docsuite .text-green-400, .theme-dark .allo-docsuite .text-green-500, .theme-dark .allo-docsuite .text-green-600, .theme-dark .allo-docsuite .text-green-700, .theme-dark .allo-docsuite .text-green-800, .theme-dark .allo-docsuite .text-green-900 { color:#86efac !important; }
 .theme-dark .allo-docsuite .text-blue-400, .theme-dark .allo-docsuite [class~="text-blue-400/70"], .theme-dark .allo-docsuite .text-blue-500, .theme-dark .allo-docsuite [class~="text-blue-500/70"], .theme-dark .allo-docsuite .text-blue-600, .theme-dark .allo-docsuite .text-blue-700, .theme-dark .allo-docsuite .text-blue-800, .theme-dark .allo-docsuite [class~="text-blue-800/80"], .theme-dark .allo-docsuite .text-blue-900, .theme-dark .allo-docsuite .text-blue-950 { color:#93c5fd !important; }
 .theme-dark .allo-docsuite .text-slate-400 { color:#a3b1c2 !important; }
-.theme-dark .allo-docsuite .text-indigo-400, .theme-dark .allo-docsuite .text-indigo-500, .theme-dark .allo-docsuite .text-indigo-600, .theme-dark .allo-docsuite [class~="text-indigo-600/80"], .theme-dark .allo-docsuite .text-indigo-700, .theme-dark .allo-docsuite .text-indigo-800, .theme-dark .allo-docsuite .text-indigo-900 { color:#a5b4fc !important; }
+.theme-dark .allo-docsuite .text-indigo-400, .theme-dark .allo-docsuite .text-indigo-500, .theme-dark .allo-docsuite .text-indigo-600, .theme-dark .allo-docsuite [class~="text-indigo-600/80"], .theme-dark .allo-docsuite .text-indigo-700, .theme-dark .allo-docsuite .text-indigo-800, .theme-dark .allo-docsuite .text-indigo-900, .theme-dark .allo-docsuite .text-indigo-950 { color:#a5b4fc !important; }
 .theme-dark .allo-docsuite .text-slate-500 { color:#a9b7c8 !important; }
 .theme-dark .allo-docsuite .text-violet-400, .theme-dark .allo-docsuite .text-violet-500, .theme-dark .allo-docsuite .text-violet-600, .theme-dark .allo-docsuite .text-violet-700, .theme-dark .allo-docsuite .text-violet-800, .theme-dark .allo-docsuite .text-violet-900 { color:#c4b5fd !important; }
 .theme-dark .allo-docsuite .text-gray-600, .theme-dark .allo-docsuite .text-slate-600 { color:#cbd5e1 !important; }
@@ -32303,7 +32513,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
 .theme-contrast .allo-docsuite .bg-amber-100, .theme-contrast .allo-docsuite [class~="bg-amber-100/50"], .theme-contrast .allo-docsuite .bg-amber-200, .theme-contrast .allo-docsuite [class~="bg-amber-200/50"], .theme-contrast .allo-docsuite [class~="bg-amber-200/60"], .theme-contrast .allo-docsuite .bg-amber-300, .theme-contrast .allo-docsuite [class~="bg-amber-300/15"], .theme-contrast .allo-docsuite [class~="bg-amber-300/50"], .theme-contrast .allo-docsuite .bg-amber-400, .theme-contrast .allo-docsuite .bg-amber-50, .theme-contrast .allo-docsuite [class~="bg-amber-50/50"], .theme-contrast .allo-docsuite [class~="bg-amber-50/60"], .theme-contrast .allo-docsuite [class~="bg-amber-50/70"], .theme-contrast .allo-docsuite .bg-amber-500, .theme-contrast .allo-docsuite [class~="bg-amber-500/15"], .theme-contrast .allo-docsuite [class~="bg-amber-500/20"], .theme-contrast .allo-docsuite .bg-amber-600, .theme-contrast .allo-docsuite .bg-amber-700, .theme-contrast .allo-docsuite [class~="bg-amber-700/40"], .theme-contrast .allo-docsuite .bg-amber-800, .theme-contrast .allo-docsuite [class~="bg-amber-900/20"], .theme-contrast .allo-docsuite [class~="bg-amber-900/30"], .theme-contrast .allo-docsuite [class~="bg-amber-900/40"], .theme-contrast .allo-docsuite [class~="bg-amber-900/50"], .theme-contrast .allo-docsuite [class~="bg-amber-900/60"], .theme-contrast .allo-docsuite [class~="bg-amber-900/80"], .theme-contrast .allo-docsuite .bg-blue-100, .theme-contrast .allo-docsuite [class~="bg-blue-100/50"], .theme-contrast .allo-docsuite .bg-blue-200, .theme-contrast .allo-docsuite [class~="bg-blue-200/20"], .theme-contrast .allo-docsuite [class~="bg-blue-200/30"], .theme-contrast .allo-docsuite .bg-blue-300, .theme-contrast .allo-docsuite .bg-blue-400, .theme-contrast .allo-docsuite .bg-blue-50, .theme-contrast .allo-docsuite [class~="bg-blue-50/50"], .theme-contrast .allo-docsuite [class~="bg-blue-50/95"], .theme-contrast .allo-docsuite [class~="bg-blue-500/10"], .theme-contrast .allo-docsuite .bg-blue-600, .theme-contrast .allo-docsuite .bg-blue-700, .theme-contrast .allo-docsuite .bg-blue-800, .theme-contrast .allo-docsuite [class~="bg-blue-900/30"], .theme-contrast .allo-docsuite [class~="bg-blue-900/50"], .theme-contrast .allo-docsuite .bg-cyan-100, .theme-contrast .allo-docsuite [class~="bg-cyan-100/80"], .theme-contrast .allo-docsuite .bg-cyan-200, .theme-contrast .allo-docsuite .bg-cyan-50, .theme-contrast .allo-docsuite [class~="bg-cyan-50/50"], .theme-contrast .allo-docsuite .bg-cyan-500, .theme-contrast .allo-docsuite .bg-cyan-600, .theme-contrast .allo-docsuite .bg-cyan-700, .theme-contrast .allo-docsuite .bg-cyan-800, .theme-contrast .allo-docsuite .bg-emerald-100, .theme-contrast .allo-docsuite .bg-emerald-200, .theme-contrast .allo-docsuite .bg-emerald-300, .theme-contrast .allo-docsuite .bg-emerald-400, .theme-contrast .allo-docsuite .bg-emerald-50, .theme-contrast .allo-docsuite [class~="bg-emerald-50/40"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/50"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/60"], .theme-contrast .allo-docsuite [class~="bg-emerald-50/70"], .theme-contrast .allo-docsuite .bg-emerald-500, .theme-contrast .allo-docsuite [class~="bg-emerald-500/15"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/20"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/25"], .theme-contrast .allo-docsuite [class~="bg-emerald-500/30"], .theme-contrast .allo-docsuite .bg-emerald-600, .theme-contrast .allo-docsuite .bg-emerald-700, .theme-contrast .allo-docsuite .bg-emerald-800, .theme-contrast .allo-docsuite [class~="bg-emerald-800/60"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/20"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/30"], .theme-contrast .allo-docsuite [class~="bg-emerald-900/40"], .theme-contrast .allo-docsuite .bg-emerald-950, .theme-contrast .allo-docsuite .bg-fuchsia-100, .theme-contrast .allo-docsuite .bg-fuchsia-50, .theme-contrast .allo-docsuite [class~="bg-fuchsia-50/50"], .theme-contrast .allo-docsuite .bg-fuchsia-500, .theme-contrast .allo-docsuite .bg-fuchsia-600, .theme-contrast .allo-docsuite [class~="bg-fuchsia-600/60"], .theme-contrast .allo-docsuite .bg-fuchsia-700, .theme-contrast .allo-docsuite [class~="bg-fuchsia-700/50"], .theme-contrast .allo-docsuite [class~="bg-fuchsia-900/40"], .theme-contrast .allo-docsuite .bg-green-100, .theme-contrast .allo-docsuite [class~="bg-green-100/50"], .theme-contrast .allo-docsuite .bg-green-200, .theme-contrast .allo-docsuite .bg-green-300, .theme-contrast .allo-docsuite .bg-green-400, .theme-contrast .allo-docsuite .bg-green-50, .theme-contrast .allo-docsuite [class~="bg-green-50/50"], .theme-contrast .allo-docsuite .bg-green-500, .theme-contrast .allo-docsuite .bg-green-600, .theme-contrast .allo-docsuite .bg-green-700, .theme-contrast .allo-docsuite .bg-green-800, .theme-contrast .allo-docsuite .bg-indigo-100, .theme-contrast .allo-docsuite [class~="bg-indigo-100/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/60"], .theme-contrast .allo-docsuite [class~="bg-indigo-100/80"], .theme-contrast .allo-docsuite .bg-indigo-200, .theme-contrast .allo-docsuite [class~="bg-indigo-200/50"], .theme-contrast .allo-docsuite .bg-indigo-300, .theme-contrast .allo-docsuite [class~="bg-indigo-300/20"], .theme-contrast .allo-docsuite .bg-indigo-400, .theme-contrast .allo-docsuite .bg-indigo-50, .theme-contrast .allo-docsuite [class~="bg-indigo-50/30"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/60"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/70"], .theme-contrast .allo-docsuite [class~="bg-indigo-50/80"], .theme-contrast .allo-docsuite .bg-indigo-500, .theme-contrast .allo-docsuite [class~="bg-indigo-500/10"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/15"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/25"], .theme-contrast .allo-docsuite [class~="bg-indigo-500/30"], .theme-contrast .allo-docsuite .bg-indigo-600, .theme-contrast .allo-docsuite [class~="bg-indigo-600/10"], .theme-contrast .allo-docsuite [class~="bg-indigo-600/30"], .theme-contrast .allo-docsuite .bg-indigo-700, .theme-contrast .allo-docsuite .bg-indigo-800, .theme-contrast .allo-docsuite [class~="bg-indigo-800/50"], .theme-contrast .allo-docsuite .bg-indigo-900, .theme-contrast .allo-docsuite [class~="bg-indigo-900/20"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/30"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-900/50"], .theme-contrast .allo-docsuite .bg-indigo-950, .theme-contrast .allo-docsuite [class~="bg-indigo-950/40"], .theme-contrast .allo-docsuite [class~="bg-indigo-950/50"], .theme-contrast .allo-docsuite [class~="bg-indigo-950/80"], .theme-contrast .allo-docsuite .bg-lime-500, .theme-contrast .allo-docsuite .bg-lime-600, .theme-contrast .allo-docsuite .bg-orange-100, .theme-contrast .allo-docsuite [class~="bg-orange-100/50"], .theme-contrast .allo-docsuite .bg-orange-200, .theme-contrast .allo-docsuite [class~="bg-orange-200/30"], .theme-contrast .allo-docsuite .bg-orange-300, .theme-contrast .allo-docsuite .bg-orange-400, .theme-contrast .allo-docsuite [class~="bg-orange-400/15"], .theme-contrast .allo-docsuite .bg-orange-50, .theme-contrast .allo-docsuite [class~="bg-orange-50/50"], .theme-contrast .allo-docsuite [class~="bg-orange-50/80"], .theme-contrast .allo-docsuite .bg-orange-600, .theme-contrast .allo-docsuite .bg-orange-700, .theme-contrast .allo-docsuite .bg-orange-800, .theme-contrast .allo-docsuite .bg-pink-100, .theme-contrast .allo-docsuite .bg-pink-200, .theme-contrast .allo-docsuite .bg-pink-50, .theme-contrast .allo-docsuite [class~="bg-pink-50/50"], .theme-contrast .allo-docsuite .bg-pink-500, .theme-contrast .allo-docsuite [class~="bg-pink-500/30"], .theme-contrast .allo-docsuite .bg-pink-600, .theme-contrast .allo-docsuite .bg-pink-700, .theme-contrast .allo-docsuite .bg-pink-800, .theme-contrast .allo-docsuite [class~="bg-pink-800/60"], .theme-contrast .allo-docsuite [class~="bg-pink-900/40"], .theme-contrast .allo-docsuite .bg-purple-100, .theme-contrast .allo-docsuite [class~="bg-purple-100/50"], .theme-contrast .allo-docsuite .bg-purple-200, .theme-contrast .allo-docsuite .bg-purple-300, .theme-contrast .allo-docsuite [class~="bg-purple-300/20"], .theme-contrast .allo-docsuite .bg-purple-400, .theme-contrast .allo-docsuite .bg-purple-50, .theme-contrast .allo-docsuite [class~="bg-purple-50/50"], .theme-contrast .allo-docsuite .bg-purple-500, .theme-contrast .allo-docsuite .bg-purple-600, .theme-contrast .allo-docsuite [class~="bg-purple-600/10"], .theme-contrast .allo-docsuite .bg-purple-700, .theme-contrast .allo-docsuite .bg-red-100, .theme-contrast .allo-docsuite [class~="bg-red-100/50"], .theme-contrast .allo-docsuite .bg-red-200, .theme-contrast .allo-docsuite .bg-red-300, .theme-contrast .allo-docsuite .bg-red-400, .theme-contrast .allo-docsuite .bg-red-50, .theme-contrast .allo-docsuite .bg-red-500, .theme-contrast .allo-docsuite [class~="bg-red-500/30"], .theme-contrast .allo-docsuite .bg-red-600, .theme-contrast .allo-docsuite .bg-red-700, .theme-contrast .allo-docsuite [class~="bg-red-900/50"], .theme-contrast .allo-docsuite [class~="bg-red-900/90"], .theme-contrast .allo-docsuite [class~="bg-red-950/40"], .theme-contrast .allo-docsuite .bg-rose-100, .theme-contrast .allo-docsuite .bg-rose-200, .theme-contrast .allo-docsuite .bg-rose-300, .theme-contrast .allo-docsuite .bg-rose-50, .theme-contrast .allo-docsuite [class~="bg-rose-50/50"], .theme-contrast .allo-docsuite [class~="bg-rose-50/70"], .theme-contrast .allo-docsuite [class~="bg-rose-50/80"], .theme-contrast .allo-docsuite .bg-rose-500, .theme-contrast .allo-docsuite .bg-rose-600, .theme-contrast .allo-docsuite .bg-rose-700, .theme-contrast .allo-docsuite .bg-rose-800, .theme-contrast .allo-docsuite [class~="bg-rose-900/20"], .theme-contrast .allo-docsuite [class~="bg-rose-900/30"], .theme-contrast .allo-docsuite [class~="bg-rose-900/40"], .theme-contrast .allo-docsuite .bg-sky-100, .theme-contrast .allo-docsuite .bg-sky-200, .theme-contrast .allo-docsuite .bg-sky-50, .theme-contrast .allo-docsuite [class~="bg-sky-50/50"], .theme-contrast .allo-docsuite [class~="bg-sky-50/70"], .theme-contrast .allo-docsuite .bg-sky-500, .theme-contrast .allo-docsuite .bg-sky-600, .theme-contrast .allo-docsuite .bg-slate-100, .theme-contrast .allo-docsuite [class~="bg-slate-100/50"], .theme-contrast .allo-docsuite .bg-slate-200, .theme-contrast .allo-docsuite .bg-slate-300, .theme-contrast .allo-docsuite .bg-slate-400, .theme-contrast .allo-docsuite .bg-slate-50, .theme-contrast .allo-docsuite [class~="bg-slate-50/30"], .theme-contrast .allo-docsuite [class~="bg-slate-50/50"], .theme-contrast .allo-docsuite [class~="bg-slate-50/70"], .theme-contrast .allo-docsuite [class~="bg-slate-50/80"], .theme-contrast .allo-docsuite [class~="bg-slate-50/90"], .theme-contrast .allo-docsuite .bg-slate-600, .theme-contrast .allo-docsuite .bg-slate-700, .theme-contrast .allo-docsuite [class~="bg-slate-700/50"], .theme-contrast .allo-docsuite [class~="bg-slate-700/90"], .theme-contrast .allo-docsuite .bg-slate-800, .theme-contrast .allo-docsuite [class~="bg-slate-800/40"], .theme-contrast .allo-docsuite [class~="bg-slate-800/50"], .theme-contrast .allo-docsuite [class~="bg-slate-800/60"], .theme-contrast .allo-docsuite [class~="bg-slate-800/70"], .theme-contrast .allo-docsuite [class~="bg-slate-800/80"], .theme-contrast .allo-docsuite [class~="bg-slate-800/90"], .theme-contrast .allo-docsuite [class~="bg-slate-800/95"], .theme-contrast .allo-docsuite .bg-slate-900, .theme-contrast .allo-docsuite [class~="bg-slate-900/40"], .theme-contrast .allo-docsuite [class~="bg-slate-900/50"], .theme-contrast .allo-docsuite [class~="bg-slate-900/60"], .theme-contrast .allo-docsuite [class~="bg-slate-900/70"], .theme-contrast .allo-docsuite [class~="bg-slate-900/80"], .theme-contrast .allo-docsuite [class~="bg-slate-900/90"], .theme-contrast .allo-docsuite [class~="bg-slate-900/95"], .theme-contrast .allo-docsuite .bg-slate-950, .theme-contrast .allo-docsuite [class~="bg-slate-950/40"], .theme-contrast .allo-docsuite [class~="bg-slate-950/70"], .theme-contrast .allo-docsuite [class~="bg-slate-950/80"], .theme-contrast .allo-docsuite [class~="bg-slate-950/90"], .theme-contrast .allo-docsuite .bg-stone-50, .theme-contrast .allo-docsuite .bg-stone-700, .theme-contrast .allo-docsuite .bg-teal-100, .theme-contrast .allo-docsuite .bg-teal-200, .theme-contrast .allo-docsuite .bg-teal-300, .theme-contrast .allo-docsuite .bg-teal-400, .theme-contrast .allo-docsuite .bg-teal-50, .theme-contrast .allo-docsuite [class~="bg-teal-50/50"], .theme-contrast .allo-docsuite [class~="bg-teal-50/60"], .theme-contrast .allo-docsuite .bg-teal-500, .theme-contrast .allo-docsuite .bg-teal-600, .theme-contrast .allo-docsuite .bg-teal-700, .theme-contrast .allo-docsuite .bg-teal-800, .theme-contrast .allo-docsuite .bg-teal-950, .theme-contrast .allo-docsuite .bg-violet-100, .theme-contrast .allo-docsuite [class~="bg-violet-100/50"], .theme-contrast .allo-docsuite .bg-violet-200, .theme-contrast .allo-docsuite .bg-violet-400, .theme-contrast .allo-docsuite .bg-violet-50, .theme-contrast .allo-docsuite [class~="bg-violet-50/50"], .theme-contrast .allo-docsuite [class~="bg-violet-50/60"], .theme-contrast .allo-docsuite [class~="bg-violet-50/70"], .theme-contrast .allo-docsuite .bg-violet-500, .theme-contrast .allo-docsuite .bg-violet-600, .theme-contrast .allo-docsuite [class~="bg-violet-600/30"], .theme-contrast .allo-docsuite [class~="bg-violet-600/40"], .theme-contrast .allo-docsuite [class~="bg-violet-600/60"], .theme-contrast .allo-docsuite .bg-violet-700, .theme-contrast .allo-docsuite [class~="bg-violet-700/20"], .theme-contrast .allo-docsuite [class~="bg-violet-900/50"], .theme-contrast .allo-docsuite .bg-white, .theme-contrast .allo-docsuite [class~="bg-white/10"], .theme-contrast .allo-docsuite [class~="bg-white/15"], .theme-contrast .allo-docsuite [class~="bg-white/20"], .theme-contrast .allo-docsuite [class~="bg-white/30"], .theme-contrast .allo-docsuite [class~="bg-white/35"], .theme-contrast .allo-docsuite [class~="bg-white/5"], .theme-contrast .allo-docsuite [class~="bg-white/50"], .theme-contrast .allo-docsuite [class~="bg-white/60"], .theme-contrast .allo-docsuite [class~="bg-white/70"], .theme-contrast .allo-docsuite [class~="bg-white/80"], .theme-contrast .allo-docsuite [class~="bg-white/90"], .theme-contrast .allo-docsuite [class~="bg-white/95"], .theme-contrast .allo-docsuite .bg-yellow-100, .theme-contrast .allo-docsuite [class~="bg-yellow-100/5"], .theme-contrast .allo-docsuite .bg-yellow-200, .theme-contrast .allo-docsuite [class~="bg-yellow-200/30"], .theme-contrast .allo-docsuite .bg-yellow-300, .theme-contrast .allo-docsuite .bg-yellow-400, .theme-contrast .allo-docsuite [class~="bg-yellow-400/20"], .theme-contrast .allo-docsuite [class~="bg-yellow-400/30"], .theme-contrast .allo-docsuite .bg-yellow-50, .theme-contrast .allo-docsuite [class~="bg-yellow-50/50"], .theme-contrast .allo-docsuite .bg-yellow-500, .theme-contrast .allo-docsuite [class~="bg-yellow-500/20"], .theme-contrast .allo-docsuite .bg-yellow-600, .theme-contrast .allo-docsuite .bg-yellow-700, .theme-contrast .allo-docsuite .bg-yellow-900, .theme-contrast .allo-docsuite .bg-zinc-500, .theme-contrast .allo-docsuite .bg-zinc-600 { background-color:#000000 !important; }
 .theme-contrast .allo-docsuite .from-amber-100, .theme-contrast .allo-docsuite .from-amber-300, .theme-contrast .allo-docsuite .from-amber-400, .theme-contrast .allo-docsuite [class~="from-amber-400/20"], .theme-contrast .allo-docsuite .from-amber-50, .theme-contrast .allo-docsuite [class~="from-amber-50/80"], .theme-contrast .allo-docsuite .from-amber-500, .theme-contrast .allo-docsuite .from-amber-600, .theme-contrast .allo-docsuite [class~="from-amber-600/80"], .theme-contrast .allo-docsuite .from-amber-700, .theme-contrast .allo-docsuite .from-amber-800, .theme-contrast .allo-docsuite .from-amber-900, .theme-contrast .allo-docsuite [class~="from-amber-900/40"], .theme-contrast .allo-docsuite .from-black, .theme-contrast .allo-docsuite .from-blue-100, .theme-contrast .allo-docsuite .from-blue-400, .theme-contrast .allo-docsuite .from-blue-50, .theme-contrast .allo-docsuite [class~="from-blue-50/60"], .theme-contrast .allo-docsuite .from-blue-500, .theme-contrast .allo-docsuite .from-blue-600, .theme-contrast .allo-docsuite .from-blue-700, .theme-contrast .allo-docsuite [class~="from-blue-900/40"], .theme-contrast .allo-docsuite .from-cyan-50, .theme-contrast .allo-docsuite [class~="from-cyan-50/60"], .theme-contrast .allo-docsuite .from-cyan-500, .theme-contrast .allo-docsuite .from-cyan-600, .theme-contrast .allo-docsuite [class~="from-cyan-900/40"], .theme-contrast .allo-docsuite .from-emerald-50, .theme-contrast .allo-docsuite .from-emerald-500, .theme-contrast .allo-docsuite .from-emerald-600, .theme-contrast .allo-docsuite [class~="from-emerald-900/40"], .theme-contrast .allo-docsuite .from-fuchsia-600, .theme-contrast .allo-docsuite .from-green-400, .theme-contrast .allo-docsuite .from-green-50, .theme-contrast .allo-docsuite .from-green-500, .theme-contrast .allo-docsuite .from-green-700, .theme-contrast .allo-docsuite .from-green-800, .theme-contrast .allo-docsuite .from-indigo-200, .theme-contrast .allo-docsuite .from-indigo-400, .theme-contrast .allo-docsuite .from-indigo-50, .theme-contrast .allo-docsuite [class~="from-indigo-50/60"], .theme-contrast .allo-docsuite [class~="from-indigo-50/80"], .theme-contrast .allo-docsuite [class~="from-indigo-50/95"], .theme-contrast .allo-docsuite .from-indigo-500, .theme-contrast .allo-docsuite .from-indigo-600, .theme-contrast .allo-docsuite .from-indigo-700, .theme-contrast .allo-docsuite [class~="from-indigo-900/40"], .theme-contrast .allo-docsuite [class~="from-indigo-900/50"], .theme-contrast .allo-docsuite .from-lime-600, .theme-contrast .allo-docsuite [class~="from-orange-50/80"], .theme-contrast .allo-docsuite .from-orange-500, .theme-contrast .allo-docsuite .from-pink-100, .theme-contrast .allo-docsuite .from-pink-500, .theme-contrast .allo-docsuite .from-pink-600, .theme-contrast .allo-docsuite [class~="from-pink-900/40"], .theme-contrast .allo-docsuite .from-purple-50, .theme-contrast .allo-docsuite .from-purple-600, .theme-contrast .allo-docsuite .from-purple-900, .theme-contrast .allo-docsuite [class~="from-purple-900/40"], .theme-contrast .allo-docsuite [class~="from-red-50/70"], .theme-contrast .allo-docsuite .from-red-800, .theme-contrast .allo-docsuite .from-rose-100, .theme-contrast .allo-docsuite .from-rose-50, .theme-contrast .allo-docsuite .from-rose-500, .theme-contrast .allo-docsuite .from-rose-600, .theme-contrast .allo-docsuite [class~="from-rose-900/40"], .theme-contrast .allo-docsuite .from-sky-50, .theme-contrast .allo-docsuite [class~="from-sky-50/80"], .theme-contrast .allo-docsuite .from-sky-500, .theme-contrast .allo-docsuite .from-sky-600, .theme-contrast .allo-docsuite [class~="from-sky-900/40"], .theme-contrast .allo-docsuite .from-slate-50, .theme-contrast .allo-docsuite .from-slate-600, .theme-contrast .allo-docsuite .from-slate-700, .theme-contrast .allo-docsuite .from-slate-800, .theme-contrast .allo-docsuite .from-slate-900, .theme-contrast .allo-docsuite .from-stone-600, .theme-contrast .allo-docsuite .from-teal-50, .theme-contrast .allo-docsuite [class~="from-teal-50/80"], .theme-contrast .allo-docsuite .from-teal-500, .theme-contrast .allo-docsuite .from-teal-600, .theme-contrast .allo-docsuite .from-teal-700, .theme-contrast .allo-docsuite .from-violet-100, .theme-contrast .allo-docsuite .from-violet-50, .theme-contrast .allo-docsuite .from-violet-500, .theme-contrast .allo-docsuite .from-violet-600, .theme-contrast .allo-docsuite .from-violet-700, .theme-contrast .allo-docsuite [class~="from-violet-900/40"], .theme-contrast .allo-docsuite .from-white, .theme-contrast .allo-docsuite [class~="from-white/0"], .theme-contrast .allo-docsuite .from-yellow-300, .theme-contrast .allo-docsuite .from-yellow-400, .theme-contrast .allo-docsuite .from-yellow-50, .theme-contrast .allo-docsuite .from-yellow-600, .theme-contrast .allo-docsuite .from-zinc-600, .theme-contrast .allo-docsuite .to-amber-50, .theme-contrast .allo-docsuite [class~="to-amber-50/40"], .theme-contrast .allo-docsuite .to-amber-500, .theme-contrast .allo-docsuite .to-amber-600, .theme-contrast .allo-docsuite .to-amber-800, .theme-contrast .allo-docsuite [class~="to-amber-800/20"], .theme-contrast .allo-docsuite [class~="to-amber-800/80"], .theme-contrast .allo-docsuite .to-blue-50, .theme-contrast .allo-docsuite .to-blue-500, .theme-contrast .allo-docsuite .to-blue-600, .theme-contrast .allo-docsuite .to-blue-700, .theme-contrast .allo-docsuite [class~="to-blue-900/40"], .theme-contrast .allo-docsuite .to-cyan-50, .theme-contrast .allo-docsuite .to-cyan-600, .theme-contrast .allo-docsuite .to-cyan-700, .theme-contrast .allo-docsuite .to-emerald-50, .theme-contrast .allo-docsuite .to-emerald-500, .theme-contrast .allo-docsuite .to-emerald-600, .theme-contrast .allo-docsuite .to-emerald-700, .theme-contrast .allo-docsuite .to-emerald-800, .theme-contrast .allo-docsuite .to-emerald-900, .theme-contrast .allo-docsuite .to-fuchsia-100, .theme-contrast .allo-docsuite .to-fuchsia-500, .theme-contrast .allo-docsuite .to-fuchsia-600, .theme-contrast .allo-docsuite [class~="to-fuchsia-900/40"], .theme-contrast .allo-docsuite .to-gray-700, .theme-contrast .allo-docsuite .to-green-700, .theme-contrast .allo-docsuite .to-indigo-100, .theme-contrast .allo-docsuite .to-indigo-50, .theme-contrast .allo-docsuite [class~="to-indigo-50/30"], .theme-contrast .allo-docsuite .to-indigo-500, .theme-contrast .allo-docsuite .to-indigo-600, .theme-contrast .allo-docsuite .to-indigo-700, .theme-contrast .allo-docsuite [class~="to-indigo-900/40"], .theme-contrast .allo-docsuite .to-lime-50, .theme-contrast .allo-docsuite .to-orange-100, .theme-contrast .allo-docsuite [class~="to-orange-100/40"], .theme-contrast .allo-docsuite .to-orange-400, .theme-contrast .allo-docsuite .to-orange-50, .theme-contrast .allo-docsuite .to-orange-500, .theme-contrast .allo-docsuite [class~="to-orange-500/20"], .theme-contrast .allo-docsuite .to-orange-600, .theme-contrast .allo-docsuite .to-orange-700, .theme-contrast .allo-docsuite .to-orange-800, .theme-contrast .allo-docsuite .to-orange-900, .theme-contrast .allo-docsuite [class~="to-orange-900/40"], .theme-contrast .allo-docsuite .to-pink-50, .theme-contrast .allo-docsuite .to-pink-500, .theme-contrast .allo-docsuite .to-pink-600, .theme-contrast .allo-docsuite [class~="to-pink-900/40"], .theme-contrast .allo-docsuite .to-purple-50, .theme-contrast .allo-docsuite [class~="to-purple-50/80"], .theme-contrast .allo-docsuite [class~="to-purple-50/95"], .theme-contrast .allo-docsuite .to-purple-500, .theme-contrast .allo-docsuite .to-purple-600, .theme-contrast .allo-docsuite .to-purple-700, .theme-contrast .allo-docsuite [class~="to-purple-900/40"], .theme-contrast .allo-docsuite .to-red-600, .theme-contrast .allo-docsuite .to-rose-50, .theme-contrast .allo-docsuite [class~="to-rose-50/30"], .theme-contrast .allo-docsuite .to-rose-500, .theme-contrast .allo-docsuite .to-rose-600, .theme-contrast .allo-docsuite .to-rose-700, .theme-contrast .allo-docsuite .to-rose-800, .theme-contrast .allo-docsuite .to-rose-900, .theme-contrast .allo-docsuite [class~="to-rose-900/40"], .theme-contrast .allo-docsuite .to-sky-50, .theme-contrast .allo-docsuite .to-sky-600, .theme-contrast .allo-docsuite [class~="to-sky-900/40"], .theme-contrast .allo-docsuite .to-slate-50, .theme-contrast .allo-docsuite .to-slate-700, .theme-contrast .allo-docsuite .to-slate-800, .theme-contrast .allo-docsuite .to-slate-900, .theme-contrast .allo-docsuite .to-stone-600, .theme-contrast .allo-docsuite .to-stone-700, .theme-contrast .allo-docsuite [class~="to-teal-100/40"], .theme-contrast .allo-docsuite .to-teal-200, .theme-contrast .allo-docsuite .to-teal-50, .theme-contrast .allo-docsuite .to-teal-500, .theme-contrast .allo-docsuite .to-teal-600, .theme-contrast .allo-docsuite .to-violet-100, .theme-contrast .allo-docsuite .to-violet-50, .theme-contrast .allo-docsuite [class~="to-violet-50/30"], .theme-contrast .allo-docsuite [class~="to-violet-50/40"], .theme-contrast .allo-docsuite .to-violet-500, .theme-contrast .allo-docsuite .to-violet-600, .theme-contrast .allo-docsuite .to-violet-700, .theme-contrast .allo-docsuite [class~="to-violet-900/50"], .theme-contrast .allo-docsuite .to-white, .theme-contrast .allo-docsuite [class~="to-white/20"], .theme-contrast .allo-docsuite .to-yellow-300, .theme-contrast .allo-docsuite .to-yellow-50, .theme-contrast .allo-docsuite .to-yellow-500, .theme-contrast .allo-docsuite .to-yellow-600, .theme-contrast .allo-docsuite .to-zinc-700, .theme-contrast .allo-docsuite .via-amber-400, .theme-contrast .allo-docsuite [class~="via-black/40"], .theme-contrast .allo-docsuite [class~="via-blue-50/40"], .theme-contrast .allo-docsuite [class~="via-green-50/30"], .theme-contrast .allo-docsuite [class~="via-indigo-50/40"], .theme-contrast .allo-docsuite [class~="via-indigo-50/50"], .theme-contrast .allo-docsuite .via-indigo-950, .theme-contrast .allo-docsuite .via-orange-300, .theme-contrast .allo-docsuite [class~="via-orange-50/40"], .theme-contrast .allo-docsuite .via-purple-200, .theme-contrast .allo-docsuite .via-purple-500, .theme-contrast .allo-docsuite .via-white, .theme-contrast .allo-docsuite [class~="via-white/20"], .theme-contrast .allo-docsuite [class~="via-white/95"] { background-image:none !important;background-color:#000000 !important; }
 .theme-contrast .allo-docsuite .border-amber-100, .theme-contrast .allo-docsuite [class~="border-amber-100/50"], .theme-contrast .allo-docsuite [class~="border-amber-100/70"], .theme-contrast .allo-docsuite .border-amber-200, .theme-contrast .allo-docsuite [class~="border-amber-200/30"], .theme-contrast .allo-docsuite [class~="border-amber-200/50"], .theme-contrast .allo-docsuite [class~="border-amber-200/60"], .theme-contrast .allo-docsuite .border-amber-300, .theme-contrast .allo-docsuite .border-amber-400, .theme-contrast .allo-docsuite [class~="border-amber-400/40"], .theme-contrast .allo-docsuite [class~="border-amber-400/50"], .theme-contrast .allo-docsuite .border-amber-500, .theme-contrast .allo-docsuite [class~="border-amber-500/30"], .theme-contrast .allo-docsuite [class~="border-amber-500/40"], .theme-contrast .allo-docsuite [class~="border-amber-500/50"], .theme-contrast .allo-docsuite .border-amber-600, .theme-contrast .allo-docsuite [class~="border-amber-600/30"], .theme-contrast .allo-docsuite [class~="border-amber-600/40"], .theme-contrast .allo-docsuite [class~="border-amber-700/50"], .theme-contrast .allo-docsuite .border-black, .theme-contrast .allo-docsuite [class~="border-black/20"], .theme-contrast .allo-docsuite [class~="border-black/5"], .theme-contrast .allo-docsuite .border-blue-100, .theme-contrast .allo-docsuite .border-blue-200, .theme-contrast .allo-docsuite [class~="border-blue-200/50"], .theme-contrast .allo-docsuite .border-blue-300, .theme-contrast .allo-docsuite [class~="border-blue-300/30"], .theme-contrast .allo-docsuite [class~="border-blue-300/40"], .theme-contrast .allo-docsuite .border-blue-400, .theme-contrast .allo-docsuite [class~="border-blue-400/50"], .theme-contrast .allo-docsuite .border-blue-500, .theme-contrast .allo-docsuite [class~="border-blue-500/30"], .theme-contrast .allo-docsuite [class~="border-blue-500/40"], .theme-contrast .allo-docsuite .border-blue-600, .theme-contrast .allo-docsuite .border-blue-700, .theme-contrast .allo-docsuite .border-blue-800, .theme-contrast .allo-docsuite .border-cyan-100, .theme-contrast .allo-docsuite .border-cyan-200, .theme-contrast .allo-docsuite .border-cyan-300, .theme-contrast .allo-docsuite .border-cyan-400, .theme-contrast .allo-docsuite .border-cyan-500, .theme-contrast .allo-docsuite [class~="border-cyan-500/30"], .theme-contrast .allo-docsuite .border-cyan-600, .theme-contrast .allo-docsuite .border-cyan-700, .theme-contrast .allo-docsuite .border-emerald-100, .theme-contrast .allo-docsuite [class~="border-emerald-100/50"], .theme-contrast .allo-docsuite .border-emerald-200, .theme-contrast .allo-docsuite .border-emerald-300, .theme-contrast .allo-docsuite [class~="border-emerald-300/30"], .theme-contrast .allo-docsuite .border-emerald-400, .theme-contrast .allo-docsuite [class~="border-emerald-400/40"], .theme-contrast .allo-docsuite .border-emerald-500, .theme-contrast .allo-docsuite [class~="border-emerald-500/30"], .theme-contrast .allo-docsuite [class~="border-emerald-500/40"], .theme-contrast .allo-docsuite [class~="border-emerald-500/50"], .theme-contrast .allo-docsuite .border-emerald-600, .theme-contrast .allo-docsuite .border-emerald-700, .theme-contrast .allo-docsuite [class~="border-emerald-700/50"], .theme-contrast .allo-docsuite .border-fuchsia-200, .theme-contrast .allo-docsuite .border-fuchsia-300, .theme-contrast .allo-docsuite .border-fuchsia-400, .theme-contrast .allo-docsuite [class~="border-fuchsia-500/20"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/30"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/40"], .theme-contrast .allo-docsuite [class~="border-fuchsia-500/50"], .theme-contrast .allo-docsuite .border-fuchsia-600, .theme-contrast .allo-docsuite .border-green-100, .theme-contrast .allo-docsuite .border-green-200, .theme-contrast .allo-docsuite .border-green-300, .theme-contrast .allo-docsuite .border-green-400, .theme-contrast .allo-docsuite .border-green-500, .theme-contrast .allo-docsuite .border-green-600, .theme-contrast .allo-docsuite .border-indigo-100, .theme-contrast .allo-docsuite [class~="border-indigo-100/50"], .theme-contrast .allo-docsuite .border-indigo-200, .theme-contrast .allo-docsuite [class~="border-indigo-200/50"], .theme-contrast .allo-docsuite [class~="border-indigo-200/60"], .theme-contrast .allo-docsuite [class~="border-indigo-200/70"], .theme-contrast .allo-docsuite .border-indigo-300, .theme-contrast .allo-docsuite [class~="border-indigo-300/30"], .theme-contrast .allo-docsuite [class~="border-indigo-300/50"], .theme-contrast .allo-docsuite .border-indigo-400, .theme-contrast .allo-docsuite [class~="border-indigo-400/30"], .theme-contrast .allo-docsuite .border-indigo-50, .theme-contrast .allo-docsuite .border-indigo-500, .theme-contrast .allo-docsuite [class~="border-indigo-500/20"], .theme-contrast .allo-docsuite [class~="border-indigo-500/30"], .theme-contrast .allo-docsuite [class~="border-indigo-500/40"], .theme-contrast .allo-docsuite [class~="border-indigo-500/50"], .theme-contrast .allo-docsuite .border-indigo-600, .theme-contrast .allo-docsuite [class~="border-indigo-600/60"], .theme-contrast .allo-docsuite .border-indigo-700, .theme-contrast .allo-docsuite [class~="border-indigo-700/50"], .theme-contrast .allo-docsuite .border-indigo-800, .theme-contrast .allo-docsuite [class~="border-indigo-800/30"], .theme-contrast .allo-docsuite .border-indigo-900, .theme-contrast .allo-docsuite [class~="border-indigo-900/20"], .theme-contrast .allo-docsuite [class~="border-lime-500/30"], .theme-contrast .allo-docsuite .border-orange-100, .theme-contrast .allo-docsuite .border-orange-200, .theme-contrast .allo-docsuite .border-orange-300, .theme-contrast .allo-docsuite [class~="border-orange-300/30"], .theme-contrast .allo-docsuite .border-orange-400, .theme-contrast .allo-docsuite .border-orange-500, .theme-contrast .allo-docsuite .border-orange-600, .theme-contrast .allo-docsuite .border-pink-200, .theme-contrast .allo-docsuite .border-pink-300, .theme-contrast .allo-docsuite .border-pink-400, .theme-contrast .allo-docsuite .border-pink-500, .theme-contrast .allo-docsuite [class~="border-pink-500/30"], .theme-contrast .allo-docsuite .border-pink-600, .theme-contrast .allo-docsuite [class~="border-pink-700/50"], .theme-contrast .allo-docsuite .border-purple-100, .theme-contrast .allo-docsuite .border-purple-200, .theme-contrast .allo-docsuite .border-purple-300, .theme-contrast .allo-docsuite .border-purple-400, .theme-contrast .allo-docsuite .border-purple-500, .theme-contrast .allo-docsuite [class~="border-purple-500/30"], .theme-contrast .allo-docsuite [class~="border-purple-500/40"], .theme-contrast .allo-docsuite .border-purple-600, .theme-contrast .allo-docsuite [class~="border-purple-700/50"], .theme-contrast .allo-docsuite .border-red-100, .theme-contrast .allo-docsuite .border-red-200, .theme-contrast .allo-docsuite [class~="border-red-200/60"], .theme-contrast .allo-docsuite .border-red-300, .theme-contrast .allo-docsuite .border-red-400, .theme-contrast .allo-docsuite .border-red-500, .theme-contrast .allo-docsuite .border-red-600, .theme-contrast .allo-docsuite .border-red-700, .theme-contrast .allo-docsuite [class~="border-red-700/60"], .theme-contrast .allo-docsuite .border-rose-100, .theme-contrast .allo-docsuite .border-rose-200, .theme-contrast .allo-docsuite [class~="border-rose-200/50"], .theme-contrast .allo-docsuite .border-rose-300, .theme-contrast .allo-docsuite .border-rose-400, .theme-contrast .allo-docsuite .border-rose-500, .theme-contrast .allo-docsuite [class~="border-rose-500/30"], .theme-contrast .allo-docsuite [class~="border-rose-500/40"], .theme-contrast .allo-docsuite [class~="border-rose-500/50"], .theme-contrast .allo-docsuite .border-rose-600, .theme-contrast .allo-docsuite .border-rose-700, .theme-contrast .allo-docsuite .border-sky-100, .theme-contrast .allo-docsuite .border-sky-200, .theme-contrast .allo-docsuite [class~="border-sky-200/60"], .theme-contrast .allo-docsuite .border-sky-300, .theme-contrast .allo-docsuite .border-sky-500, .theme-contrast .allo-docsuite [class~="border-sky-500/30"], .theme-contrast .allo-docsuite [class~="border-sky-500/40"], .theme-contrast .allo-docsuite .border-sky-600, .theme-contrast .allo-docsuite .border-slate-100, .theme-contrast .allo-docsuite .border-slate-200, .theme-contrast .allo-docsuite .border-slate-300, .theme-contrast .allo-docsuite .border-slate-400, .theme-contrast .allo-docsuite .border-slate-50, .theme-contrast .allo-docsuite .border-slate-500, .theme-contrast .allo-docsuite [class~="border-slate-500/30"], .theme-contrast .allo-docsuite [class~="border-slate-500/40"], .theme-contrast .allo-docsuite .border-slate-600, .theme-contrast .allo-docsuite .border-slate-700, .theme-contrast .allo-docsuite [class~="border-slate-700/50"], .theme-contrast .allo-docsuite .border-slate-800, .theme-contrast .allo-docsuite .border-slate-900, .theme-contrast .allo-docsuite .border-stone-300, .theme-contrast .allo-docsuite .border-stone-500, .theme-contrast .allo-docsuite [class~="border-stone-500/20"], .theme-contrast .allo-docsuite [class~="border-stone-500/30"], .theme-contrast .allo-docsuite [class~="border-stone-500/40"], .theme-contrast .allo-docsuite .border-stone-700, .theme-contrast .allo-docsuite .border-teal-100, .theme-contrast .allo-docsuite [class~="border-teal-100/50"], .theme-contrast .allo-docsuite .border-teal-200, .theme-contrast .allo-docsuite .border-teal-300, .theme-contrast .allo-docsuite .border-teal-400, .theme-contrast .allo-docsuite .border-teal-500, .theme-contrast .allo-docsuite [class~="border-teal-500/30"], .theme-contrast .allo-docsuite [class~="border-teal-500/40"], .theme-contrast .allo-docsuite .border-teal-600, .theme-contrast .allo-docsuite .border-teal-700, .theme-contrast .allo-docsuite .border-violet-100, .theme-contrast .allo-docsuite .border-violet-200, .theme-contrast .allo-docsuite .border-violet-300, .theme-contrast .allo-docsuite .border-violet-400, .theme-contrast .allo-docsuite .border-violet-50, .theme-contrast .allo-docsuite .border-violet-500, .theme-contrast .allo-docsuite [class~="border-violet-500/30"], .theme-contrast .allo-docsuite .border-violet-600, .theme-contrast .allo-docsuite [class~="border-violet-700/50"], .theme-contrast .allo-docsuite .border-white, .theme-contrast .allo-docsuite [class~="border-white/10"], .theme-contrast .allo-docsuite [class~="border-white/15"], .theme-contrast .allo-docsuite [class~="border-white/20"], .theme-contrast .allo-docsuite [class~="border-white/30"], .theme-contrast .allo-docsuite [class~="border-white/50"], .theme-contrast .allo-docsuite .border-yellow-100, .theme-contrast .allo-docsuite .border-yellow-200, .theme-contrast .allo-docsuite [class~="border-yellow-200/50"], .theme-contrast .allo-docsuite .border-yellow-300, .theme-contrast .allo-docsuite .border-yellow-400, .theme-contrast .allo-docsuite [class~="border-yellow-400/30"], .theme-contrast .allo-docsuite .border-yellow-500, .theme-contrast .allo-docsuite [class~="border-yellow-500/30"], .theme-contrast .allo-docsuite .border-yellow-600, .theme-contrast .allo-docsuite [class~="border-zinc-500/30"], .theme-contrast .allo-docsuite .divide-slate-100 > * + *, .theme-contrast .allo-docsuite .divide-slate-200 > * + *, .theme-contrast .allo-docsuite .divide-slate-700 > * + *, .theme-contrast .allo-docsuite .divide-white > * + * { border-color:#ffff00 !important; }
-.theme-contrast .allo-docsuite .text-amber-100, .theme-contrast .allo-docsuite .text-amber-200, .theme-contrast .allo-docsuite [class~="text-amber-200/50"], .theme-contrast .allo-docsuite [class~="text-amber-200/80"], .theme-contrast .allo-docsuite .text-amber-300, .theme-contrast .allo-docsuite [class~="text-amber-300/60"], .theme-contrast .allo-docsuite [class~="text-amber-300/70"], .theme-contrast .allo-docsuite .text-amber-400, .theme-contrast .allo-docsuite [class~="text-amber-400/70"], .theme-contrast .allo-docsuite [class~="text-amber-400/80"], .theme-contrast .allo-docsuite .text-amber-500, .theme-contrast .allo-docsuite .text-amber-600, .theme-contrast .allo-docsuite .text-amber-700, .theme-contrast .allo-docsuite [class~="text-amber-700/90"], .theme-contrast .allo-docsuite .text-amber-800, .theme-contrast .allo-docsuite .text-amber-900, .theme-contrast .allo-docsuite .text-amber-950, .theme-contrast .allo-docsuite .text-black, .theme-contrast .allo-docsuite .text-blue-200, .theme-contrast .allo-docsuite .text-blue-300, .theme-contrast .allo-docsuite .text-blue-400, .theme-contrast .allo-docsuite [class~="text-blue-400/70"], .theme-contrast .allo-docsuite .text-blue-50, .theme-contrast .allo-docsuite .text-blue-500, .theme-contrast .allo-docsuite [class~="text-blue-500/70"], .theme-contrast .allo-docsuite .text-blue-600, .theme-contrast .allo-docsuite .text-blue-700, .theme-contrast .allo-docsuite .text-blue-800, .theme-contrast .allo-docsuite [class~="text-blue-800/80"], .theme-contrast .allo-docsuite .text-blue-900, .theme-contrast .allo-docsuite .text-blue-950, .theme-contrast .allo-docsuite .text-cyan-200, .theme-contrast .allo-docsuite .text-cyan-300, .theme-contrast .allo-docsuite .text-cyan-500, .theme-contrast .allo-docsuite .text-cyan-600, .theme-contrast .allo-docsuite [class~="text-cyan-600/60"], .theme-contrast .allo-docsuite .text-cyan-700, .theme-contrast .allo-docsuite .text-cyan-800, .theme-contrast .allo-docsuite .text-cyan-900, .theme-contrast .allo-docsuite .text-emerald-100, .theme-contrast .allo-docsuite .text-emerald-200, .theme-contrast .allo-docsuite .text-emerald-300, .theme-contrast .allo-docsuite .text-emerald-500, .theme-contrast .allo-docsuite .text-emerald-600, .theme-contrast .allo-docsuite [class~="text-emerald-600/70"], .theme-contrast .allo-docsuite .text-emerald-700, .theme-contrast .allo-docsuite [class~="text-emerald-700/70"], .theme-contrast .allo-docsuite .text-emerald-800, .theme-contrast .allo-docsuite .text-emerald-900, .theme-contrast .allo-docsuite [class~="text-emerald-900/90"], .theme-contrast .allo-docsuite .text-emerald-950, .theme-contrast .allo-docsuite .text-fuchsia-100, .theme-contrast .allo-docsuite .text-fuchsia-200, .theme-contrast .allo-docsuite .text-fuchsia-300, .theme-contrast .allo-docsuite [class~="text-fuchsia-300/70"], .theme-contrast .allo-docsuite .text-fuchsia-400, .theme-contrast .allo-docsuite .text-fuchsia-500, .theme-contrast .allo-docsuite .text-fuchsia-600, .theme-contrast .allo-docsuite .text-fuchsia-700, .theme-contrast .allo-docsuite .text-fuchsia-800, .theme-contrast .allo-docsuite .text-fuchsia-900, .theme-contrast .allo-docsuite .text-gray-600, .theme-contrast .allo-docsuite .text-green-200, .theme-contrast .allo-docsuite .text-green-300, .theme-contrast .allo-docsuite .text-green-400, .theme-contrast .allo-docsuite .text-green-500, .theme-contrast .allo-docsuite .text-green-600, .theme-contrast .allo-docsuite .text-green-700, .theme-contrast .allo-docsuite .text-green-800, .theme-contrast .allo-docsuite .text-green-900, .theme-contrast .allo-docsuite .text-indigo-100, .theme-contrast .allo-docsuite [class~="text-indigo-100/70"], .theme-contrast .allo-docsuite .text-indigo-200, .theme-contrast .allo-docsuite .text-indigo-300, .theme-contrast .allo-docsuite .text-indigo-400, .theme-contrast .allo-docsuite .text-indigo-500, .theme-contrast .allo-docsuite .text-indigo-600, .theme-contrast .allo-docsuite [class~="text-indigo-600/80"], .theme-contrast .allo-docsuite .text-indigo-700, .theme-contrast .allo-docsuite .text-indigo-800, .theme-contrast .allo-docsuite .text-indigo-900, .theme-contrast .allo-docsuite .text-lime-300, .theme-contrast .allo-docsuite .text-orange-100, .theme-contrast .allo-docsuite .text-orange-300, .theme-contrast .allo-docsuite .text-orange-400, .theme-contrast .allo-docsuite .text-orange-500, .theme-contrast .allo-docsuite .text-orange-600, .theme-contrast .allo-docsuite .text-orange-700, .theme-contrast .allo-docsuite .text-orange-800, .theme-contrast .allo-docsuite .text-orange-900, .theme-contrast .allo-docsuite .text-pink-100, .theme-contrast .allo-docsuite .text-pink-200, .theme-contrast .allo-docsuite .text-pink-300, .theme-contrast .allo-docsuite .text-pink-600, .theme-contrast .allo-docsuite .text-pink-700, .theme-contrast .allo-docsuite .text-pink-800, .theme-contrast .allo-docsuite .text-pink-900, .theme-contrast .allo-docsuite .text-purple-200, .theme-contrast .allo-docsuite .text-purple-300, .theme-contrast .allo-docsuite .text-purple-400, .theme-contrast .allo-docsuite .text-purple-500, .theme-contrast .allo-docsuite .text-purple-600, .theme-contrast .allo-docsuite .text-purple-700, .theme-contrast .allo-docsuite .text-purple-800, .theme-contrast .allo-docsuite .text-purple-900, .theme-contrast .allo-docsuite .text-purple-950, .theme-contrast .allo-docsuite .text-red-200, .theme-contrast .allo-docsuite .text-red-300, .theme-contrast .allo-docsuite .text-red-400, .theme-contrast .allo-docsuite .text-red-500, .theme-contrast .allo-docsuite .text-red-600, .theme-contrast .allo-docsuite .text-red-700, .theme-contrast .allo-docsuite [class~="text-red-700/70"], .theme-contrast .allo-docsuite [class~="text-red-700/80"], .theme-contrast .allo-docsuite .text-red-800, .theme-contrast .allo-docsuite .text-red-900, .theme-contrast .allo-docsuite .text-rose-100, .theme-contrast .allo-docsuite .text-rose-200, .theme-contrast .allo-docsuite .text-rose-300, .theme-contrast .allo-docsuite .text-rose-400, .theme-contrast .allo-docsuite .text-rose-500, .theme-contrast .allo-docsuite .text-rose-600, .theme-contrast .allo-docsuite .text-rose-700, .theme-contrast .allo-docsuite .text-rose-800, .theme-contrast .allo-docsuite .text-rose-900, .theme-contrast .allo-docsuite .text-sky-200, .theme-contrast .allo-docsuite .text-sky-300, .theme-contrast .allo-docsuite .text-sky-400, .theme-contrast .allo-docsuite .text-sky-500, .theme-contrast .allo-docsuite .text-sky-600, .theme-contrast .allo-docsuite .text-sky-700, .theme-contrast .allo-docsuite .text-sky-800, .theme-contrast .allo-docsuite .text-sky-900, .theme-contrast .allo-docsuite .text-slate-100, .theme-contrast .allo-docsuite .text-slate-200, .theme-contrast .allo-docsuite .text-slate-300, .theme-contrast .allo-docsuite [class~="text-slate-300/60"], .theme-contrast .allo-docsuite .text-slate-400, .theme-contrast .allo-docsuite .text-slate-500, .theme-contrast .allo-docsuite .text-slate-600, .theme-contrast .allo-docsuite .text-slate-700, .theme-contrast .allo-docsuite .text-slate-800, .theme-contrast .allo-docsuite .text-slate-900, .theme-contrast .allo-docsuite [class~="text-slate-900/95"], .theme-contrast .allo-docsuite .text-slate-950, .theme-contrast .allo-docsuite .text-stone-100, .theme-contrast .allo-docsuite .text-stone-300, .theme-contrast .allo-docsuite .text-stone-700, .theme-contrast .allo-docsuite .text-teal-100, .theme-contrast .allo-docsuite .text-teal-200, .theme-contrast .allo-docsuite .text-teal-300, .theme-contrast .allo-docsuite .text-teal-400, .theme-contrast .allo-docsuite .text-teal-500, .theme-contrast .allo-docsuite [class~="text-teal-500/70"], .theme-contrast .allo-docsuite .text-teal-600, .theme-contrast .allo-docsuite [class~="text-teal-600/60"], .theme-contrast .allo-docsuite .text-teal-700, .theme-contrast .allo-docsuite .text-teal-800, .theme-contrast .allo-docsuite .text-teal-900, .theme-contrast .allo-docsuite .text-teal-950, .theme-contrast .allo-docsuite .text-violet-200, .theme-contrast .allo-docsuite .text-violet-300, .theme-contrast .allo-docsuite .text-violet-400, .theme-contrast .allo-docsuite .text-violet-500, .theme-contrast .allo-docsuite .text-violet-600, .theme-contrast .allo-docsuite .text-violet-700, .theme-contrast .allo-docsuite .text-violet-800, .theme-contrast .allo-docsuite .text-violet-900, .theme-contrast .allo-docsuite .text-white, .theme-contrast .allo-docsuite [class~="text-white/40"], .theme-contrast .allo-docsuite [class~="text-white/50"], .theme-contrast .allo-docsuite [class~="text-white/70"], .theme-contrast .allo-docsuite [class~="text-white/80"], .theme-contrast .allo-docsuite [class~="text-white/90"], .theme-contrast .allo-docsuite .text-yellow-100, .theme-contrast .allo-docsuite .text-yellow-200, .theme-contrast .allo-docsuite .text-yellow-300, .theme-contrast .allo-docsuite [class~="text-yellow-300/50"], .theme-contrast .allo-docsuite .text-yellow-400, .theme-contrast .allo-docsuite .text-yellow-500, .theme-contrast .allo-docsuite .text-yellow-600, .theme-contrast .allo-docsuite [class~="text-yellow-600/70"], .theme-contrast .allo-docsuite .text-yellow-700, .theme-contrast .allo-docsuite .text-yellow-800, .theme-contrast .allo-docsuite .text-yellow-900, .theme-contrast .allo-docsuite .text-zinc-200, .theme-contrast .allo-docsuite .text-zinc-300 { color:#ffff00 !important; }
+.theme-contrast .allo-docsuite .text-amber-100, .theme-contrast .allo-docsuite .text-amber-200, .theme-contrast .allo-docsuite [class~="text-amber-200/50"], .theme-contrast .allo-docsuite [class~="text-amber-200/80"], .theme-contrast .allo-docsuite .text-amber-300, .theme-contrast .allo-docsuite [class~="text-amber-300/60"], .theme-contrast .allo-docsuite [class~="text-amber-300/70"], .theme-contrast .allo-docsuite .text-amber-400, .theme-contrast .allo-docsuite [class~="text-amber-400/70"], .theme-contrast .allo-docsuite [class~="text-amber-400/80"], .theme-contrast .allo-docsuite .text-amber-500, .theme-contrast .allo-docsuite .text-amber-600, .theme-contrast .allo-docsuite .text-amber-700, .theme-contrast .allo-docsuite [class~="text-amber-700/90"], .theme-contrast .allo-docsuite .text-amber-800, .theme-contrast .allo-docsuite .text-amber-900, .theme-contrast .allo-docsuite .text-amber-950, .theme-contrast .allo-docsuite .text-black, .theme-contrast .allo-docsuite .text-blue-200, .theme-contrast .allo-docsuite .text-blue-300, .theme-contrast .allo-docsuite .text-blue-400, .theme-contrast .allo-docsuite [class~="text-blue-400/70"], .theme-contrast .allo-docsuite .text-blue-50, .theme-contrast .allo-docsuite .text-blue-500, .theme-contrast .allo-docsuite [class~="text-blue-500/70"], .theme-contrast .allo-docsuite .text-blue-600, .theme-contrast .allo-docsuite .text-blue-700, .theme-contrast .allo-docsuite .text-blue-800, .theme-contrast .allo-docsuite [class~="text-blue-800/80"], .theme-contrast .allo-docsuite .text-blue-900, .theme-contrast .allo-docsuite .text-blue-950, .theme-contrast .allo-docsuite .text-cyan-200, .theme-contrast .allo-docsuite .text-cyan-300, .theme-contrast .allo-docsuite .text-cyan-500, .theme-contrast .allo-docsuite .text-cyan-600, .theme-contrast .allo-docsuite [class~="text-cyan-600/60"], .theme-contrast .allo-docsuite .text-cyan-700, .theme-contrast .allo-docsuite .text-cyan-800, .theme-contrast .allo-docsuite .text-cyan-900, .theme-contrast .allo-docsuite .text-emerald-100, .theme-contrast .allo-docsuite .text-emerald-200, .theme-contrast .allo-docsuite .text-emerald-300, .theme-contrast .allo-docsuite .text-emerald-500, .theme-contrast .allo-docsuite .text-emerald-600, .theme-contrast .allo-docsuite [class~="text-emerald-600/70"], .theme-contrast .allo-docsuite .text-emerald-700, .theme-contrast .allo-docsuite [class~="text-emerald-700/70"], .theme-contrast .allo-docsuite .text-emerald-800, .theme-contrast .allo-docsuite .text-emerald-900, .theme-contrast .allo-docsuite [class~="text-emerald-900/90"], .theme-contrast .allo-docsuite .text-emerald-950, .theme-contrast .allo-docsuite .text-fuchsia-100, .theme-contrast .allo-docsuite .text-fuchsia-200, .theme-contrast .allo-docsuite .text-fuchsia-300, .theme-contrast .allo-docsuite [class~="text-fuchsia-300/70"], .theme-contrast .allo-docsuite .text-fuchsia-400, .theme-contrast .allo-docsuite .text-fuchsia-500, .theme-contrast .allo-docsuite .text-fuchsia-600, .theme-contrast .allo-docsuite .text-fuchsia-700, .theme-contrast .allo-docsuite .text-fuchsia-800, .theme-contrast .allo-docsuite .text-fuchsia-900, .theme-contrast .allo-docsuite .text-gray-600, .theme-contrast .allo-docsuite .text-green-200, .theme-contrast .allo-docsuite .text-green-300, .theme-contrast .allo-docsuite .text-green-400, .theme-contrast .allo-docsuite .text-green-500, .theme-contrast .allo-docsuite .text-green-600, .theme-contrast .allo-docsuite .text-green-700, .theme-contrast .allo-docsuite .text-green-800, .theme-contrast .allo-docsuite .text-green-900, .theme-contrast .allo-docsuite .text-indigo-100, .theme-contrast .allo-docsuite [class~="text-indigo-100/70"], .theme-contrast .allo-docsuite .text-indigo-200, .theme-contrast .allo-docsuite .text-indigo-300, .theme-contrast .allo-docsuite .text-indigo-400, .theme-contrast .allo-docsuite .text-indigo-500, .theme-contrast .allo-docsuite .text-indigo-600, .theme-contrast .allo-docsuite [class~="text-indigo-600/80"], .theme-contrast .allo-docsuite .text-indigo-700, .theme-contrast .allo-docsuite .text-indigo-800, .theme-contrast .allo-docsuite .text-indigo-900, .theme-contrast .allo-docsuite .text-indigo-950, .theme-contrast .allo-docsuite .text-lime-300, .theme-contrast .allo-docsuite .text-orange-100, .theme-contrast .allo-docsuite .text-orange-300, .theme-contrast .allo-docsuite .text-orange-400, .theme-contrast .allo-docsuite .text-orange-500, .theme-contrast .allo-docsuite .text-orange-600, .theme-contrast .allo-docsuite .text-orange-700, .theme-contrast .allo-docsuite .text-orange-800, .theme-contrast .allo-docsuite .text-orange-900, .theme-contrast .allo-docsuite .text-pink-100, .theme-contrast .allo-docsuite .text-pink-200, .theme-contrast .allo-docsuite .text-pink-300, .theme-contrast .allo-docsuite .text-pink-600, .theme-contrast .allo-docsuite .text-pink-700, .theme-contrast .allo-docsuite .text-pink-800, .theme-contrast .allo-docsuite .text-pink-900, .theme-contrast .allo-docsuite .text-purple-200, .theme-contrast .allo-docsuite .text-purple-300, .theme-contrast .allo-docsuite .text-purple-400, .theme-contrast .allo-docsuite .text-purple-500, .theme-contrast .allo-docsuite .text-purple-600, .theme-contrast .allo-docsuite .text-purple-700, .theme-contrast .allo-docsuite .text-purple-800, .theme-contrast .allo-docsuite .text-purple-900, .theme-contrast .allo-docsuite .text-purple-950, .theme-contrast .allo-docsuite .text-red-200, .theme-contrast .allo-docsuite .text-red-300, .theme-contrast .allo-docsuite .text-red-400, .theme-contrast .allo-docsuite .text-red-500, .theme-contrast .allo-docsuite .text-red-600, .theme-contrast .allo-docsuite .text-red-700, .theme-contrast .allo-docsuite [class~="text-red-700/70"], .theme-contrast .allo-docsuite [class~="text-red-700/80"], .theme-contrast .allo-docsuite .text-red-800, .theme-contrast .allo-docsuite .text-red-900, .theme-contrast .allo-docsuite .text-rose-100, .theme-contrast .allo-docsuite .text-rose-200, .theme-contrast .allo-docsuite .text-rose-300, .theme-contrast .allo-docsuite .text-rose-400, .theme-contrast .allo-docsuite .text-rose-500, .theme-contrast .allo-docsuite .text-rose-600, .theme-contrast .allo-docsuite .text-rose-700, .theme-contrast .allo-docsuite .text-rose-800, .theme-contrast .allo-docsuite .text-rose-900, .theme-contrast .allo-docsuite .text-sky-200, .theme-contrast .allo-docsuite .text-sky-300, .theme-contrast .allo-docsuite .text-sky-400, .theme-contrast .allo-docsuite .text-sky-500, .theme-contrast .allo-docsuite .text-sky-600, .theme-contrast .allo-docsuite .text-sky-700, .theme-contrast .allo-docsuite .text-sky-800, .theme-contrast .allo-docsuite .text-sky-900, .theme-contrast .allo-docsuite .text-slate-100, .theme-contrast .allo-docsuite .text-slate-200, .theme-contrast .allo-docsuite .text-slate-300, .theme-contrast .allo-docsuite [class~="text-slate-300/60"], .theme-contrast .allo-docsuite .text-slate-400, .theme-contrast .allo-docsuite .text-slate-500, .theme-contrast .allo-docsuite .text-slate-600, .theme-contrast .allo-docsuite .text-slate-700, .theme-contrast .allo-docsuite .text-slate-800, .theme-contrast .allo-docsuite .text-slate-900, .theme-contrast .allo-docsuite [class~="text-slate-900/95"], .theme-contrast .allo-docsuite .text-slate-950, .theme-contrast .allo-docsuite .text-stone-100, .theme-contrast .allo-docsuite .text-stone-300, .theme-contrast .allo-docsuite .text-stone-700, .theme-contrast .allo-docsuite .text-teal-100, .theme-contrast .allo-docsuite .text-teal-200, .theme-contrast .allo-docsuite .text-teal-300, .theme-contrast .allo-docsuite .text-teal-400, .theme-contrast .allo-docsuite .text-teal-500, .theme-contrast .allo-docsuite [class~="text-teal-500/70"], .theme-contrast .allo-docsuite .text-teal-600, .theme-contrast .allo-docsuite [class~="text-teal-600/60"], .theme-contrast .allo-docsuite .text-teal-700, .theme-contrast .allo-docsuite .text-teal-800, .theme-contrast .allo-docsuite .text-teal-900, .theme-contrast .allo-docsuite .text-teal-950, .theme-contrast .allo-docsuite .text-violet-200, .theme-contrast .allo-docsuite .text-violet-300, .theme-contrast .allo-docsuite .text-violet-400, .theme-contrast .allo-docsuite .text-violet-500, .theme-contrast .allo-docsuite .text-violet-600, .theme-contrast .allo-docsuite .text-violet-700, .theme-contrast .allo-docsuite .text-violet-800, .theme-contrast .allo-docsuite .text-violet-900, .theme-contrast .allo-docsuite .text-white, .theme-contrast .allo-docsuite [class~="text-white/40"], .theme-contrast .allo-docsuite [class~="text-white/50"], .theme-contrast .allo-docsuite [class~="text-white/70"], .theme-contrast .allo-docsuite [class~="text-white/80"], .theme-contrast .allo-docsuite [class~="text-white/90"], .theme-contrast .allo-docsuite .text-yellow-100, .theme-contrast .allo-docsuite .text-yellow-200, .theme-contrast .allo-docsuite .text-yellow-300, .theme-contrast .allo-docsuite [class~="text-yellow-300/50"], .theme-contrast .allo-docsuite .text-yellow-400, .theme-contrast .allo-docsuite .text-yellow-500, .theme-contrast .allo-docsuite .text-yellow-600, .theme-contrast .allo-docsuite [class~="text-yellow-600/70"], .theme-contrast .allo-docsuite .text-yellow-700, .theme-contrast .allo-docsuite .text-yellow-800, .theme-contrast .allo-docsuite .text-yellow-900, .theme-contrast .allo-docsuite .text-zinc-200, .theme-contrast .allo-docsuite .text-zinc-300 { color:#ffff00 !important; }
       `}</style>
       <a
         href="#main-content"
@@ -33737,6 +33947,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         <FileDown size={12} /> {t('input.load_project') || 'Load Project'}
                         <input type="file" accept=".json" className="hidden" onChange={(e) => {
                           const file = e.target.files?.[0]; if (!file) return;
+                          if (file.size > 320 * 1024 * 1024) { addToast('This project file is larger than the 320 MB safety limit.', 'error'); e.target.value = ''; return; }
                           const _projectLoadEpoch = ++pdfProjectLoadEpochRef.current;
                           const reader = new FileReader();
                           reader.onload = async (ev) => {
@@ -33746,7 +33957,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                               if (!_savedProject.accessibleHtml || !_savedProject.version) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
                               // Ignore any serialized runtime snapshot. Rehydrate makes it live
                               // only when the persisted SHA-256 digest matches accessibleHtml.
-                              const project = await rehydrateVerificationHtmlBinding(_savedProject);
+                              const _projectSanitizer = window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.sanitizeRemediationProject;
+                              if (typeof _projectSanitizer !== 'function') throw new Error('Remediation security module is still loading. Please retry in a moment.');
+                              const _sanitizedImport = _projectSanitizer(_savedProject);
+                              const project = await rehydrateVerificationHtmlBinding(_sanitizedImport.project);
                               if (_projectLoadEpoch !== pdfProjectLoadEpochRef.current) return;
                               const _derivedProjectVerification = deriveVerificationState({
                                 ai: project.verificationAudit || null,
@@ -33774,6 +33988,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                               });
                               const _loadedPdfFixResult = {
                                 accessibleHtml: project.accessibleHtml,
+                                documentDigest: project.documentDigest || null,
                                 beforeScore: project.beforeScore, afterScore: project.afterScore,
                                 axeAudit: project.axeAudit || null, verificationAudit: project.verificationAudit || null,
                                 secondEngineAudit: project.secondEngineAudit || null,
@@ -35841,9 +36056,18 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                        _fingerprint: _wsFingerprint,
                    };
                    setGeneratedContent(wordSoundsResource);
-                   setHistory(prev => _existingWs
-                       ? prev.map(r => (r && r.id === _existingWs.id ? wordSoundsResource : r))
-                       : [wordSoundsResource, ...prev]);
+                   setHistory(prev => {
+                       const _latestHistory = Array.isArray(prev) ? prev : [];
+                       // Re-check inside the functional updater so multiple
+                       // completions queued before a render cannot both insert.
+                       const _latestWsIndex = _wsFingerprint
+                           ? _latestHistory.findIndex(r => r && r.type === 'word-sounds' && r._fingerprint === _wsFingerprint)
+                           : -1;
+                       if (_latestWsIndex < 0) return [wordSoundsResource, ..._latestHistory];
+                       const _updatedHistory = [..._latestHistory];
+                       _updatedHistory[_latestWsIndex] = wordSoundsResource;
+                       return _updatedHistory;
+                   });
                    setWsPreloadedWords(words);
                    if (sequence && sequence.length > 0) setWsActivitySequence(sequence);
                    setIsProbeMode(_isProbe);
@@ -36706,6 +36930,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit, _docPipeline, recomputeIssueResolution,
           _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit, addToast, agentActivityLog,
           agentLogFullView, applyWordRestorationInPlace, auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary,
+          remediationReady, remediationDependencyState, retryRemediationDependencies,
           boringPalettePrompt, callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
           applyFormBlanks, detectFormBlanks, detectPdfBlankFields, overlayPdfFormFields, languageToTTSCode, callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, simplifyAccessibleHtml, translateAccessibleHtml, t, theme, updatePdfPreview,
           diffLibReady, downloadAccessiblePdf, downloadBatchResults, ensurePdfBase64, expertCommandInput,
@@ -36718,6 +36943,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           pdfAutoSaveProject, pdfBatchCurrentIndex, pdfBatchMode, pdfBatchProcessing, pdfBatchQueue,
           pdfBatchStep, pdfBatchSummary, pdfFixLoading, pdfFixMode, pdfFixModeRef,
           pdfFixResult, pdfFixResultRef, pdfFixStep, pdfMultiSession, pdfPageRange,
+          capturePdfHtmlCommitToken, commitPdfFixResultIfCurrent,
           pdfPolishPasses, pdfPreviewA11yInspect, pdfPreviewFontSize, pdfPreviewOpen, pdfPreviewRef,
           pdfPreviewTheme, pdfTargetScore, pdfWebMode, pendingPdfBase64, pendingPdfFile,
           proceedWithPdfTransform, processExpertCommand, refixChunk, remediateSurgicallyThenAI, runAutoFixLoop,
@@ -37350,8 +37576,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             await wait(900);
                             await spotlight(step.anchorId);
                             await wait(900);
+                            const resultHoldMs = Math.round(Math.max(0.5, Math.min(8, Number(step.pauseAfter) || 2.2)) * 1000);
+                            for (let held = 0; held < resultHoldMs && !stopWanted(); held += 100) await wait(Math.min(100, resultHoldMs - held));
                             if (hooks && hooks.onStep) hooks.onStep(i, 'done', step.label, (successBeat && successBeat.text) || (step.label + ' ready.'));
                             completed++;
+                            if (stopWanted()) return { ok: false, stopped: true, completed, reason: 'Stopped by the teacher.' };
                         }
                         addToast('Official Text Adaptation tutorial finished. Video Studio is wrapping up the recording.', 'success');
                         return { ok: true, completed };
@@ -37373,14 +37602,14 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     // Demo Autopilot planning: reuses AlloBot's planUtterance over
                     // the live command registry (goal TEXT only goes to Gemini).
                     const AC = window.AlloModules && window.AlloModules.AlloCommands;
-                    if (!AC || typeof AC.planUtterance !== 'function' || typeof AC.buildAlloCommands !== 'function') {
+                    if (!AC || typeof AC.planUtterance !== 'function' || typeof AC.buildAlloCommands !== 'function' || typeof AC.validatePlan !== 'function') {
                         // AlloCommands loads eagerly at app boot — if it's absent the
                         // script is still arriving (or the CDN failed), so waiting is
                         // the honest remedy.
                         throw new Error('The command planner is still loading — wait a moment and try again.');
                     }
                     const cleanGoal = String(goal || '').slice(0, 300);
-                    let steps = await AC.planUtterance(_alloCmdCtx(), cleanGoal);
+                    let steps = await AC.planUtterance(_alloCmdCtx(), cleanGoal, { demoSafeOnly: true });
                     if ((!steps || !steps.length) && typeof AC.routeUtterance === 'function') {
                         // Single-action demos are legitimate ("show how to open the
                         // reading library") but planUtterance requires 2+ steps — an
@@ -37388,27 +37617,58 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         // single-command router and wrap its match as a 1-step plan.
                         try {
                             const m = await AC.routeUtterance(_alloCmdCtx(), cleanGoal, { allowAi: true, preview: true });
-                            if (m && m.commandId) steps = [{ commandId: m.commandId, params: m.params || {}, why: '' }];
+                            if (m && m.commandId) {
+                                const candidate = [{ commandId: m.commandId, params: m.params || {}, why: '' }];
+                                const report = AC.validatePlan(_alloCmdCtx(), candidate, { demoSafeOnly: true });
+                                if (report && report.ok) steps = candidate;
+                            }
                         } catch (_) {}
                     }
                     if (!steps || !steps.length) return { steps: [] };
                     const cmds = AC.buildAlloCommands(_alloCmdCtx(), { includeGated: true });
                     return { steps: steps.map(s => {
                         const c = cmds.find(x => x.id === s.commandId);
-                        return { commandId: s.commandId, params: s.params || {}, why: s.why || '', label: (c && c.label) || s.commandId };
+                        return { commandId: s.commandId, params: s.params || {}, paramNames: typeof AC.getCommandContract === 'function' ? AC.getCommandContract(c || s.commandId).params : [], why: s.why || '', label: (c && c.label) || s.commandId };
                     }) };
                 },
-                onRunDemoPlan: async (steps, hooks) => {
+                onValidateDemoPlan: async (steps) => {
+                    const AC = window.AlloModules && window.AlloModules.AlloCommands;
+                    if (!AC || typeof AC.validatePlan !== 'function') throw new Error('The command readiness checker has not loaded.');
+                    return AC.validatePlan(_alloCmdCtx(), steps, { demoSafeOnly: true });
+                },
+                onRunDemoPlan: async (steps, hooks, options) => {
                     // Demo Autopilot execution: one guarded runPlan call PER STEP so
                     // the demo breathes between steps (runPlan rechecks when-guards
                     // and never auto-runs destructive commands). Shares AlloBot's
                     // single-flight guard so a bot plan and a demo can't interleave.
                     const AC = window.AlloModules && window.AlloModules.AlloCommands;
-                    if (!AC || typeof AC.runPlan !== 'function') throw new Error('The command runner has not loaded.');
+                    const rehearsal = !!(options && options.rehearsal);
+                    if (!AC || typeof AC.runPlan !== 'function' || typeof AC.validatePlan !== 'function') throw new Error('The command runner has not loaded.');
+                    const readiness = AC.validatePlan(_alloCmdCtx(), steps, { demoSafeOnly: true });
+                    if (!readiness || !readiness.ok) {
+                        const blocked = readiness && readiness.items && readiness.items.find(item => item.status === 'block');
+                        return { ok: false, completed: 0, reason: (blocked && ((blocked.label || blocked.commandId) + ': ' + blocked.detail)) || 'This demo plan is not ready to run.' };
+                    }
                     if (_planRunRef.current && _planRunRef.current.running) throw new Error('AlloBot is already running a plan — stop it first.');
                     _planRunRef.current = { running: true, stop: false };
                     const stopWanted = () => (_planRunRef.current.stop || !!(hooks && hooks.shouldStop && hooks.shouldStop()));
                     try {
+                        if (rehearsal) {
+                            const previewList = (Array.isArray(steps) ? steps : []).slice(0, 8);
+                            let previewCompleted = 0;
+                            for (let i = 0; i < previewList.length; i++) {
+                                if (stopWanted()) return { ok: false, stopped: true, completed: previewCompleted, reason: 'Rehearsal stopped by the teacher.' };
+                                const readyItem = readiness.items[i] || {};
+                                const previewLabel = readyItem.label || previewList[i].commandId;
+                                try { if (hooks && hooks.onStep) hooks.onStep(i, 'start', previewLabel, 'Checking: ' + previewLabel + '.'); } catch (_) {}
+                                await new Promise(resolve => setTimeout(resolve, 220));
+                                if (stopWanted()) return { ok: false, stopped: true, completed: previewCompleted, reason: 'Rehearsal stopped by the teacher.' };
+                                try { if (hooks && hooks.onStep) hooks.onStep(i, 'done', previewLabel, readyItem.detail || 'Command and prerequisites are ready.'); } catch (_) {}
+                                previewCompleted++;
+                                await new Promise(resolve => setTimeout(resolve, 500));
+                            }
+                            return { ok: true, completed: previewCompleted, rehearsal: true };
+                        }
                         // The teacher just picked the tab in the share dialog — wait
                         // until this tab is actually visible before driving it.
                         for (let waited = 0; document.visibilityState !== 'visible' && waited < 15000 && !stopWanted(); waited += 250) {
@@ -37423,16 +37683,22 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         let completed = 0;
                         for (let i = 0; i < list.length; i++) {
                             if (stopWanted()) return { ok: false, stopped: true, completed, reason: 'Stopped by the teacher.' };
+                            let completionEvent = null;
                             const r = await AC.runPlan(() => _alloCmdCtx(), [list[i]], {
                                 shouldStop: stopWanted,
                                 onStep: (j, phase, cmd, narr) => {
-                                    try { if (hooks && hooks.onStep) hooks.onStep(i, phase, (cmd && cmd.label) || list[i].commandId, narr || ''); } catch (_) {}
+                                    const label = (cmd && cmd.label) || list[i].commandId;
+                                    if (phase === 'done') completionEvent = { label, narration: narr || '' };
+                                    else try { if (hooks && hooks.onStep) hooks.onStep(i, phase, label, narr || ''); } catch (_) {}
                                 }
                             });
                             if (!r || !r.ok) return { ok: false, completed, stopped: !!(r && r.stopped), reason: (r && r.reason) || ('Step ' + (i + 1) + ' did not finish.') };
+                            const resultHoldMs = Math.round(Math.max(0.5, Math.min(8, Number(list[i].pauseAfter) || 2.2)) * 1000);
+                            for (let held = 0; held < resultHoldMs && !stopWanted(); held += 100) await new Promise(resolve => setTimeout(resolve, Math.min(100, resultHoldMs - held)));
+                            const done = completionEvent || { label: list[i].commandId, narration: 'Step complete.' };
+                            try { if (hooks && hooks.onStep) hooks.onStep(i, 'done', done.label, done.narration); } catch (_) {}
                             completed++;
-                            // A beat between steps so viewers see each result land.
-                            await new Promise(r2 => setTimeout(r2, 2200));
+                            if (stopWanted()) return { ok: false, stopped: true, completed, reason: 'Stopped by the teacher.' };
                         }
                         addToast('🎉 Demo finished — Video Studio is wrapping up the recording.', 'success');
                         return { ok: true, completed };

@@ -93,18 +93,18 @@ describe('planUtterance', () => {
     expect(await AC.planUtterance(single.ctx, 'a then b')).toBeNull();
   });
 
-  // Regression (2026-07-10): the planner menu must include when-gated
-  // commands — before this fix, generate_quiz was invisible with no content
-  // loaded, so "create a lesson then quiz it" could never be planned.
-  it('plans steps whose commands only unlock AFTER an earlier step (gated menu)', async () => {
+  // Contract hardening (2026-07-13): gated commands stay visible to the
+  // planner, but a wizard cannot pretend it produced source content.
+  it('rejects a false create-lesson → quiz dependency while exposing requirements', async () => {
     const { ctx } = mkCtx({
-      hasSourceOrAnalysis: false, // generate_quiz is when-gated OFF right now
+      hasSourceOrAnalysis: false,
       startLessonFlow: () => {},
       callGemini: async (prompt) => {
-        // The menu shown to the model must still contain the gated command,
-        // annotated as not-yet-available.
         expect(prompt).toContain('generate_quiz');
-        expect(prompt).toContain('[not available yet');
+        expect(prompt).toContain('not available in the live state');
+        expect(prompt).toContain('requires source');
+        expect(prompt).toContain('create_lesson');
+        expect(prompt).toContain('must be final');
         return JSON.stringify({
           steps: [
             { commandId: 'create_lesson', params: { topic: 'volcanoes', grade: '5' }, why: 'make content' },
@@ -114,9 +114,7 @@ describe('planUtterance', () => {
         });
       },
     });
-    const steps = await AC.planUtterance(ctx, 'create a lesson about volcanoes then make a quiz');
-    expect(steps).toHaveLength(2);
-    expect(steps[1].commandId).toBe('generate_quiz');
+    expect(await AC.planUtterance(ctx, 'create a lesson about volcanoes then make a quiz')).toBeNull();
   });
 
   // Hardening (2026-07-10): destructive commands are excluded from plans
@@ -159,6 +157,48 @@ describe('planUtterance', () => {
 });
 
 describe('runPlan', () => {
+
+describe('command contracts and plan validation', () => {
+  it('marks the lesson wizard as interactive, terminal, and unsafe for automatic demos', () => {
+    expect(AC.getCommandContract('create_lesson')).toMatchObject({
+      demoSafe: false, interaction: 'guided', terminal: true, params: ['topic', 'grade'],
+    });
+  });
+
+  it('blocks missing prerequisites and privacy-sensitive demo commands', () => {
+    const { ctx } = mkCtx({ hasSourceOrAnalysis: false, startLessonFlow: () => {} });
+    const missing = AC.validatePlan(ctx, [{ commandId: 'generate_quiz', params: {} }], { demoSafeOnly: true });
+    expect(missing.ok).toBe(false);
+    expect(missing.items[0].detail).toContain('Needs source');
+    const unsafe = AC.validatePlan(ctx, [{ commandId: 'open_ai_settings', params: {} }], { demoSafeOnly: true });
+    expect(unsafe.ok).toBe(false);
+    expect(unsafe.items[0].status).toBe('block');
+  });
+
+  it('accepts a safe generation chain when source already exists', () => {
+    const { ctx } = mkCtx({ hasSourceOrAnalysis: true });
+    const report = AC.validatePlan(ctx, [
+      { commandId: 'generate_simplified', params: { grade: '3' } },
+      { commandId: 'generate_quiz', params: {} },
+    ], { demoSafeOnly: true });
+    expect(report.ok).toBe(true);
+    expect(report.blockingCount).toBe(0);
+  });
+
+  it('removes demo-blocked commands from the AI planner menu', async () => {
+    const { ctx } = mkCtx({
+      callGemini: async (prompt) => {
+        expect(prompt).not.toContain('create_lesson:');
+        expect(prompt).not.toContain('open_ai_settings:');
+        return JSON.stringify({ steps: [
+          { commandId: 'generate_simplified', params: { grade: '3' } },
+          { commandId: 'generate_quiz', params: {} },
+        ], confidence: 0.9 });
+      },
+    });
+    expect(await AC.planUtterance(ctx, 'simplify then quiz', { demoSafeOnly: true })).toHaveLength(2);
+  });
+});
   it('executes sequentially and AWAITS each async step to completion', async () => {
     const { ctx, log } = mkCtx();
     const events = [];

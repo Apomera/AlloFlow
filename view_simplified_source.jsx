@@ -476,6 +476,9 @@
         : text.split(/\n{2,}/).flatMap(function (p) { return isTableText(p) ? [] : splitTextToSentences(p); });
       return list.map(cleanSentenceForAudio).filter(function (s) { return s && s.trim().length > 0; });
     };
+    var karaokeReaderSentences = React.useMemo(function () {
+      return getReadAloudSentencesForText(generatedContent && generatedContent.data);
+    }, [generatedContent && generatedContent.data]);
     var handlePrepareReadAloudAudio = async function () {
       if (ttsPrepState.busy || typeof window.__alloPrepareReadAloud !== 'function') return;
       var sentences = getReadAloudSentencesForText(generatedContent && generatedContent.data);
@@ -804,7 +807,7 @@
           const sbs = getSideBySideContent(generatedContent?.data);
           const ps = sbs ? [...(sbs.source || []), ...(sbs.target || [])] : (generatedContent?.data || '').split(new RegExp('\\n{2,}'));
           return ps.flatMap(p => p.trim().startsWith('|') ? [] : splitTextToSentences(p)).length || 1;
-        })()} /><ErrorBoundary fallbackMessage="Focus reader encountered an error. Please close and reopen."><FocusReaderOverlay isOpen={isFocusReaderActive} onClose={handleCloseSpeedReader} text={(generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')} /><PerspectiveCrawlOverlay isOpen={isCrawlReaderActive} onClose={() => setIsCrawlReaderActive(false)} text={(generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')} /><KaraokeReaderOverlay isOpen={isKaraokeOverlayActive} isTeacher={isTeacherMode} onClose={() => setIsKaraokeOverlayActive(false)} getAudioUrl={getKaraokeAudioUrl} text={(generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')} /></ErrorBoundary>{immersiveSettings.lineFocus && <><div className="fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out" style={{
+        })()} /><ErrorBoundary fallbackMessage="Focus reader encountered an error. Please close and reopen."><FocusReaderOverlay isOpen={isFocusReaderActive} onClose={handleCloseSpeedReader} text={(generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')} /><PerspectiveCrawlOverlay isOpen={isCrawlReaderActive} onClose={() => setIsCrawlReaderActive(false)} text={(generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')} /><KaraokeReaderOverlay isOpen={isKaraokeOverlayActive} isTeacher={isTeacherMode} onClose={() => setIsKaraokeOverlayActive(false)} getAudioUrl={getKaraokeAudioUrl} sentenceList={karaokeReaderSentences} captureOn={saveTtsAsPlayed} onCaptureChange={setSaveTtsAsPlayedEnabled} text={(generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')} /></ErrorBoundary>{immersiveSettings.lineFocus && <><div className="fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out" style={{
             height: Math.max(0, immersiveRulerY - immersiveSettings.textSize * 2.5) + 'px'
           }} /><div className="fixed bottom-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[top] duration-75 ease-out" style={{
             top: immersiveRulerY + immersiveSettings.textSize * 2.5 + 'px'

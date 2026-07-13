@@ -17,6 +17,7 @@ const MODULES_DIR = resolve(process.cwd(), 'prismflow-deploy/node_modules');
 
 export const React = require(resolve(MODULES_DIR, 'react'));
 export const ReactDOMServer = require(resolve(MODULES_DIR, 'react-dom/server'));
+export const ReactDOMClient = require(resolve(MODULES_DIR, 'react-dom/client'));
 
 const noop = () => { };
 
@@ -84,7 +85,7 @@ export function loadTool(file, toolId) {
  * Build a defensive ctx with no-op stubs for every callback most tools
  * reach for. Per-tool overrides can be merged in by the test.
  */
-function makeCtx(overrides) {
+export function makeCtx(overrides) {
   const Icons = new Proxy({}, {
     get: function () {
       // Every icon is a function component that renders an empty span.

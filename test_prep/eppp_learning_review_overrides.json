@@ -631,6 +631,56 @@
         "bias-and-context": "editorial-pass-multilingual-culture-disability-aging-and-opportunity",
         "expert-review": "pending-independent-language-development-psychometrics-and-bilingual-assessment-review"
       }
+    },
+    "ch-1": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://asppb.net/future-eppp-content-areas-2027/",
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
+        "https://ncme.org/resources-publications/professional-learning/glossary",
+        "https://www.ets.org/Media/Research/pdf/RM-20-06.pdf",
+        "https://doi.org/10.1037/0003-066X.50.9.741",
+        "https://doi.org/10.1037/h0046016"
+      ],
+      "reviewNote": "Corrected current-versus-future EPPP blueprint scope, CTT true-score and SEM interpretation, alpha and split-half claims, modern validity framing, IRT location/invariance/CAT conditions, range-restriction overstatement, generalizability decision coefficients, and the reliability-limited correlation bound; grounded the AI coda and revised both accessible validity diagrams; added a 3PL location knowledge check.",
+      "checks": {
+        "source-support": "editorial-pass-primary-and-authoritative-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-13",
+        "instructional-quality": "editorial-pass-with-applied-irt-check",
+        "accessibility": "shared-renderer-pass-svg-text-alternatives-revised",
+        "bias-and-context": "editorial-pass",
+        "expert-review": "pending-independent-psychometrics-review"
+      }
+    },
+    "ch-2": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://asppb.net/future-eppp-content-areas-2027/",
+        "https://www.pearsonassessments.com/store/en/usd/p/P100071002.html?productId=A103000419947",
+        "https://www.pearsonassessments.com/store/usd/p/100000771.html",
+        "https://www.pearsonassessments.com/store/en/usd/p/100000102.html",
+        "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Cognition-%26-Neuro/Bayley-Scales-of-Infant-and-Toddler-Development-%7C-Fourth-Edition/p/100001996?tab=overviewFrom",
+        "https://www.pearsonassessments.com/store/en/usd/p/100001622.html",
+        "https://mocacognition.com/faq/",
+        "https://www.aaidd.org/intellectual-disability/definition",
+        "https://www.aaidd.org/intellectual-disability/faqs-on-intellectual-disability",
+        "https://www.tandfonline.com/doi/full/10.1080/13854046.2021.1896036",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4152423/",
+        "https://doi.org/10.1037/1040-3590.12.1.19",
+        "https://www.psychiatry.org/File%20Library/Psychiatrists/Practice/DSM/APA_DSM_Changes_from_DSM-IV-TR_-to_DSM-5.pdf",
+        "https://www.nia.nih.gov/health/cognitive-assessment-considerations-understanding-evidence"
+      ],
+      "reviewNote": "Corrected current-versus-future EPPP scope, CHC taxonomy and age-trajectory absolutes, current Wechsler and Bayley ranges, culture-free testing implications, universal cognitive-screening cutoffs, adaptive-behavior and developmental-onset criteria, mechanical Flynn-effect score subtraction, performance-validity-to-malingering inference, actuarial-prediction overgeneralization, stereotyped intellectual-disability descriptions, and speculative AI-disability analogies; added an accessible CHC hierarchy and a performance-validity knowledge check.",
+      "checks": {
+        "source-support": "editorial-pass-primary-and-authoritative-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-13",
+        "instructional-quality": "editorial-pass-with-screening-and-validity-checks",
+        "accessibility": "shared-renderer-pass-svg-labelled",
+        "bias-and-context": "editorial-pass",
+        "expert-review": "pending-independent-cognitive-assessment-review"
+      }
     }
   }
 }

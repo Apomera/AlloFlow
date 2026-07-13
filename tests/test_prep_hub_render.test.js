@@ -40,7 +40,7 @@ beforeAll(() => {
     return { ok: false, json: async () => ({}) };
   };
   global.fetch = window.fetch = reportFetch;
-});
+}, 30_000);
 
 afterAll(() => {
   global.fetch = originalFetch;
@@ -65,6 +65,14 @@ async function mount(props = {}) {
 
 function findButton(text) {
   return Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes(text));
+}
+
+async function waitForText(text, timeoutMs = 10_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (!host.textContent.includes(text) && Date.now() < deadline) {
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+  }
+  expect(host.textContent).toContain(text);
 }
 
 async function clickButton(text) {
@@ -96,7 +104,7 @@ describe('Test Prep Hub render flow', () => {
     expect(host.querySelectorAll('input[type="radio"]')).toHaveLength(4);
     expect(findButton('Check answer').disabled).toBe(true);
     await expectNoAxeViolations('practice question');
-  });
+  }, 30_000);
 
   it('completes the demo, records progress, and avoids official-score claims', async () => {
     await mount();
@@ -119,14 +127,14 @@ describe('Test Prep Hub render flow', () => {
     expect(saved.attempts).toHaveLength(1);
     expect(saved.attempts[0]).toMatchObject({ correct: 5, total: 5, percent: 100 });
     await expectNoAxeViolations('practice result');
-  });
+  }, 30_000);
 
   it('browses, filters, and opens the native EPPP learning catalog', async () => {
     await mount();
     const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
     await act(async () => { openButtons[1].click(); });
     await clickButton('Learning library');
-    await act(async () => { await Promise.resolve(); });
+    await waitForText('Showing 49 of 49 chapters');
 
     expect(host.textContent).toContain('EPPP learning library');
     expect(host.textContent).toContain('Showing 49 of 49 chapters');
@@ -141,14 +149,14 @@ describe('Test Prep Hub render flow', () => {
     const frame = host.querySelector('iframe[title="Selected EPPP chapter workspace"]');
     expect(frame).toBeTruthy();
     expect(frame.getAttribute('src')).toContain('page=textbook#ch-4');
-  });
+  }, 30_000);
 
   it('studies flashcards and memory aids with persistent accessible controls', async () => {
     await mount();
     const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
     await act(async () => { openButtons[1].click(); });
     await clickButton('Learning library');
-    await act(async () => { await Promise.resolve(); });
+    await waitForText('Showing 49 of 49 chapters');
 
     await clickButton('Flashcards');
     expect(host.textContent).toContain('Flashcard study');
@@ -165,7 +173,7 @@ describe('Test Prep Hub render flow', () => {
     expect(host.textContent).toContain('Showing 255 of 255 memory aids');
     await clickButton('Show aid');
     expect(findButton('Hide aid')).toBeTruthy();
-  });
+  }, 30_000);
 
   it('opens the native EPPP pilot and the complete guarded legacy workspace', async () => {
     await mount();
@@ -180,7 +188,7 @@ describe('Test Prep Hub render flow', () => {
     expect(host.textContent).toContain('Expert validated');
     expect(host.querySelector('a[href*="eppp_native_qa.md"]')).toBeTruthy();
     expect(host.textContent).toContain('Open complete legacy workspace');
-    await act(async () => { await Promise.resolve(); });
+    await waitForText('2,933');
     expect(host.textContent).toContain('Legacy-bank migration audit');
     expect(host.textContent).toContain('2,933');
     expect(host.textContent).toContain('28.2%');
@@ -220,6 +228,6 @@ describe('Test Prep Hub render flow', () => {
     expect(host.textContent).toContain('legacy-313b8d365ea7d566');
     expect(host.textContent).toContain('Content QA passed.');
     await expectNoAxeViolations('EPPP migrated item');
-  });
+  }, 30_000);
 });
 

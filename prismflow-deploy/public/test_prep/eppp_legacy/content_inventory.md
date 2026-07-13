@@ -1,6 +1,6 @@
 # Pass the EPPP learning-content inventory
 
-Generated: 2026-07-12T21:42:15.693Z
+Generated: 2026-07-13T18:42:38.070Z
 
 ## Inventory
 
@@ -16,11 +16,11 @@ Generated: 2026-07-12T21:42:15.693Z
 | Memory aids and mnemonics | 255 |
 | Textbook chapters | 49 |
 | Textbook sections | 278 |
-| Embedded knowledge checks | 91 |
+| Embedded knowledge checks | 93 |
 | Interactive diagram templates | 25 |
-| Diagram placements in chapters | 52 |
+| Diagram placements in chapters | 54 |
 | Searchable term definitions | 1583 |
-| Chapter reference entries | 293 |
+| Chapter reference entries | 297 |
 | AI-reflective chapter codas | 49 |
 | Learner modes/pages | 14 |
 
@@ -72,10 +72,10 @@ Recommended release gates: 100-question foundation, 300-question alpha, 1,000-qu
 | Content | Count | Status | Next gate |
 | --- | ---: | --- | --- |
 | legacy questions | 2933 | active-full-review | re-author or correct, source QA, item-writing QA, accessibility, independent expert validation |
-| textbook chapters | 49 | legacy-preserved-review-not-started | claim-level source audit, instructional edit, accessibility and expert review |
+| textbook chapters | 49 | review-in-progress | 21 chapters still need claim-level source audit and editorial review; all chapters still require independent expert review |
 | interactive diagrams | 25 | legacy-preserved-review-not-started | concept accuracy, labels, keyboard/screen-reader alternative, reduced-motion review |
-| flashcards | 415 | legacy-preserved-review-not-started | deduplication, atomic-answer review, source support and clue check |
-| memory aids | 255 | legacy-preserved-review-not-started | oversimplification, outdated clinical guidance, bias and source review |
+| flashcards | 415 | review-in-progress | remaining cards need deduplication, atomic-answer review, source support and clue checks |
+| memory aids | 255 | review-in-progress | remaining aids need oversimplification, outdated-guidance, bias, and source review |
 | term definitions | 1583 | legacy-preserved-review-not-started | definition/source/version audit and cross-link review |
 
 ## Learner modes

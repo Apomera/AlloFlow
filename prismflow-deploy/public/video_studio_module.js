@@ -2487,12 +2487,23 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       items.push({ id: id, label: label, status: status, detail: String(detail || '').slice(0, 220) });
     };
     add('plan', 'Approved steps', Number(s.planCount) > 0 ? 'ready' : 'block', Number(s.planCount) > 0 ? Number(s.planCount) + ' step(s) are ready.' : 'Draft or load a tutorial plan first.');
+    if (Number(s.planCount) > 0) {
+      if (s.officialPlan) add('commands', 'Command readiness', 'ready', 'This release-matched tutorial uses validated fixture steps.');
+      else if (!s.commandReadinessKnown) add('commands', 'Command readiness', 'block', s.commandReadinessDetail || 'AlloFlow could not verify these commands.');
+      else add('commands', 'Command readiness', s.commandReady ? 'ready' : 'block', s.commandReadinessDetail || (s.commandReady ? 'Every approved command and prerequisite is ready.' : 'One or more commands cannot run safely from the current app state.'));
+    }
     add('connection', 'AlloFlow connection', s.openerConnected ? 'ready' : 'block', s.openerConnected ? 'Video Studio is connected to AlloFlow.' : 'Reopen Video Studio from AlloFlow.');
     add('capture', 'Tab capture support', s.captureSupported ? 'ready' : 'block', s.captureSupported ? 'This browser can request tab capture.' : 'Screen capture is unavailable in this browser.');
     var mode = String(s.audioMode || 'captions');
     if (mode === 'mic') add('audio', 'Microphone', s.micSupported ? 'ready' : 'block', s.micSupported ? 'Microphone capture is available.' : 'Microphone capture is unavailable; choose captions or an automatic voice.');
     else if (mode.indexOf('auto-') === 0) add('audio', 'Automatic narration', s.openerConnected ? 'ready' : 'block', s.openerConnected ? 'Narration will be generated after recording; the microphone stays off.' : 'Automatic narration needs the AlloFlow connection.');
     else add('audio', 'Captions only', 'ready', 'No microphone or generated speech will be recorded.');
+    if (Number(s.planCount) > 0) {
+      var pacingWarnings = Math.max(0, Math.round(Number(s.scriptWarningCount) || 0));
+      var pacingTooLong = Math.max(0, Math.round(Number(s.scriptTooLongCount) || 0));
+      if (pacingWarnings) add('pacing', 'Narration timing', 'warn', pacingTooLong ? pacingWarnings + ' step(s) need pacing changes; ' + pacingTooLong + ' are too long for the maximum result hold. Shorten those lines before recording.' : pacingWarnings + ' step(s) may finish before their narration. Use Fit pacing to narration.');
+      else add('pacing', 'Narration timing', 'ready', 'Every approved script line fits its estimated visual time.');
+    }
     var available = Number(s.availableBytes);
     if (s.storageKnown && isFinite(available) && available < 50 * 1024 * 1024) add('storage', 'Local storage', 'block', 'Less than 50 MB appears available for the recording.');
     else if (s.storageKnown && isFinite(available) && available < 250 * 1024 * 1024) add('storage', 'Local storage', 'warn', 'Storage is limited; keep this demo short and export promptly.');
@@ -2566,19 +2577,21 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         phase: e.phase === 'done' ? 'done' : 'start',
         index: Math.max(0, Math.round(Number(e.index) || 0)),
         label: String(e.label).trim().replace(/[\r\n]+/g, ' ').slice(0, 140),
-        narration: String(e.narration || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 240)
+        narration: String(e.narration || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 240),
+        script: String(e.script || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 400)
       };
     }).sort(function (a, b) { return a.t - b.t; });
     var cues = [];
     evs.forEach(function (e) {
       var baseText = 'Step ' + (e.index + 1) + ': ' + e.label;
       if (e.phase === 'start') {
-        cues.push({ start: e.t, end: e.t + 8, text: baseText, _i: e.index, _label: e.label });
+        cues.push({ start: e.t, end: e.t + 8, text: e.script || baseText, _i: e.index, _label: e.label, _script: e.script });
       } else {
         for (var i = cues.length - 1; i >= 0; i--) {
           if (cues[i]._i === e.index) {
             cues[i].end = Math.max(cues[i].start + 0.8, e.t);
-            if (e.narration && e.narration.toLowerCase() !== cues[i]._label.toLowerCase()) cues[i].text = baseText + '. ' + e.narration;
+            if (e.script) cues[i].text = e.script;
+            else if (e.narration && e.narration.toLowerCase() !== cues[i]._label.toLowerCase()) cues[i].text = baseText + '. ' + e.narration;
             break;
           }
         }
@@ -3043,7 +3056,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var studioWinRef = useRef(null);
     var bridgeTokenRef = useRef(null);
     var rootRef = useRef(null);
-    var demoRunRef = useRef({ running: false, stop: false });
+    var demoRunRef = useRef({ running: false, stop: false, kind: null, cleanupAfterStop: false });
 
     function postToStudio(win, msg) {
       try {
@@ -3365,11 +3378,48 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           if (typeof planFn !== 'function') { dpRespond({ error: 'demo-planner-unavailable' }); return; }
           Promise.resolve().then(function () { return planFn(String(dpReq.goal || '').slice(0, 300)); }).then(function (out) {
             var steps = (out && Array.isArray(out.steps)) ? out.steps.slice(0, 8).map(function (s) {
-              return { commandId: String((s && s.commandId) || '').slice(0, 60), params: (s && s.params && typeof s.params === 'object') ? s.params : {}, why: String((s && s.why) || '').slice(0, 120), label: String((s && s.label) || (s && s.commandId) || '').slice(0, 90) };
+              return { commandId: String((s && s.commandId) || '').slice(0, 60), params: (s && s.params && typeof s.params === 'object') ? s.params : {}, paramNames: Array.isArray(s && s.paramNames) ? s.paramNames.slice(0, 8).map(function (p) { return String(p).slice(0, 40); }) : [], why: String((s && s.why) || '').slice(0, 120), label: String((s && s.label) || (s && s.commandId) || '').slice(0, 90) };
             }).filter(function (s) { return s.commandId; }) : [];
             dpRespond({ steps: steps });
           }).catch(function (e) {
             dpRespond({ error: String((e && e.message) || e).slice(0, 200) });
+          });
+        } else if (ev.data.type === 'allostudio-demovalidate-request') {
+          // Non-mutating readiness check shared with AlloBot. The app validates
+          // command safety, live guards, declared prerequisites, and parameters.
+          var dvReq = ev.data;
+          var dvReplyTo = studioWinRef.current;
+          var dvRespond = function (payload) {
+            postToStudio(dvReplyTo, Object.assign({ type: 'allostudio-demovalidate-response', id: dvReq.id }, payload));
+          };
+          var validateFn = propsRef.current.onValidateDemoPlan;
+          if (typeof validateFn !== 'function') { dvRespond({ error: 'demo-validator-unavailable' }); return; }
+          var dvSteps = (Array.isArray(dvReq.steps) ? dvReq.steps : []).slice(0, 8).map(function (s) {
+            var params = {};
+            if (s && s.params && typeof s.params === 'object') {
+              Object.keys(s.params).slice(0, 8).forEach(function (k) {
+                var pv = s.params[k];
+                if (typeof pv === 'string') params[String(k).slice(0, 40)] = pv.slice(0, 200);
+                else if ((typeof pv === 'number' && isFinite(pv)) || typeof pv === 'boolean') params[String(k).slice(0, 40)] = pv;
+              });
+            }
+            return { commandId: String((s && s.commandId) || '').slice(0, 60), params: params, why: String((s && s.why) || '').slice(0, 120) };
+          }).filter(function (s) { return s.commandId; });
+          Promise.resolve().then(function () { return validateFn(dvSteps); }).then(function (report) {
+            var items = (report && Array.isArray(report.items) ? report.items : []).slice(0, 8).map(function (item) {
+              var contract = item && item.contract && typeof item.contract === 'object' ? item.contract : {};
+              return {
+                commandId: String((item && item.commandId) || '').slice(0, 60),
+                label: String((item && item.label) || (item && item.commandId) || '').slice(0, 90),
+                status: item && item.status === 'block' ? 'block' : (item && item.status === 'warn' ? 'warn' : 'ready'),
+                detail: String((item && item.detail) || '').slice(0, 200),
+                params: (item && item.params && typeof item.params === 'object') ? item.params : {},
+                contract: { params: Array.isArray(contract.params) ? contract.params.slice(0, 8).map(function (p) { return String(p).slice(0, 40); }) : [] }
+              };
+            });
+            dvRespond({ report: { ok: !!(report && report.ok), blockingCount: Math.max(0, Number(report && report.blockingCount) || 0), warningCount: Math.max(0, Number(report && report.warningCount) || 0), items: items } });
+          }).catch(function (e) {
+            dvRespond({ error: String((e && e.message) || e).slice(0, 200) });
           });
         } else if (ev.data.type === 'allostudio-official-tutorial-run-request') {
           var otrReq = ev.data;
@@ -3384,10 +3434,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             var beats = Array.isArray(s && s.beats) ? s.beats.slice(0, 4).map(function (beat) {
               return { kind: beat && beat.kind === 'success' ? 'success' : 'action', text: String((beat && beat.text) || '').slice(0, 220) };
             }).filter(function (beat) { return beat.text; }) : [];
-            return { id: String((s && (s.id || s.commandId)) || '').slice(0, 60), anchorId: String((s && s.anchorId) || '').slice(0, 90), label: String((s && s.label) || '').slice(0, 90), beats: beats };
+            return { id: String((s && (s.id || s.commandId)) || '').slice(0, 60), anchorId: String((s && s.anchorId) || '').slice(0, 90), label: String((s && s.label) || '').slice(0, 90), beats: beats, script: String((s && s.script) || '').slice(0, 400), pauseAfter: Math.round(Math.max(0.5, Math.min(8, Number(s && s.pauseAfter) || 2.2)) * 10) / 10 };
           }).filter(function (s) { return s.id && s.beats.length; });
           if (!officialSteps.length) { otrRespond({ error: 'no tutorial steps' }); return; }
-          demoRunRef.current = { running: true, stop: false };
+          demoRunRef.current = { running: true, stop: false, kind: 'official', cleanupAfterStop: false };
           Promise.resolve().then(function () {
             return officialRunFn(String(otrReq.tutorialId || '').slice(0, 60), officialSteps, {
               shouldStop: function () { return demoRunRef.current.stop; },
@@ -3396,10 +3446,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
               }
             });
           }).then(function (result) {
-            demoRunRef.current = { running: false, stop: false };
+            var cleanupAfterStop = !!demoRunRef.current.cleanupAfterStop;
+            demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false };
+            if (cleanupAfterStop) { var delayedCleanup = propsRef.current.onCleanupOfficialTutorial; if (typeof delayedCleanup === 'function') { try { delayedCleanup(); } catch (_) {} } }
             otrRespond({ ok: !!(result && result.ok), stopped: !!(result && result.stopped), completed: (result && result.completed != null) ? result.completed : null, reason: (result && result.reason) ? String(result.reason).slice(0, 200) : null });
           }).catch(function (e) {
-            demoRunRef.current = { running: false, stop: false };
+            var cleanupAfterError = !!demoRunRef.current.cleanupAfterStop;
+            demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false };
+            if (cleanupAfterError) { var delayedErrorCleanup = propsRef.current.onCleanupOfficialTutorial; if (typeof delayedErrorCleanup === 'function') { try { delayedErrorCleanup(); } catch (_) {} } }
             otrRespond({ error: String((e && e.message) || e).slice(0, 200) });
           });
         } else if (ev.data.type === 'allostudio-demorun-request') {
@@ -3423,22 +3477,22 @@ function vsPcmToWav(pcmBytes, sampleRate) {
                 else if ((typeof pv === 'number' && isFinite(pv)) || typeof pv === 'boolean') params[String(k).slice(0, 40)] = pv;
               });
             }
-            return { commandId: String((s && s.commandId) || '').slice(0, 60), params: params };
+            return { commandId: String((s && s.commandId) || '').slice(0, 60), params: params, script: String((s && s.script) || '').slice(0, 400), pauseAfter: Math.round(Math.max(0.5, Math.min(8, Number(s && s.pauseAfter) || 2.2)) * 10) / 10 };
           }).filter(function (s) { return s.commandId; });
           if (!drSteps.length) { drRespond({ error: 'no runnable steps' }); return; }
-          demoRunRef.current = { running: true, stop: false };
+          demoRunRef.current = { running: true, stop: false, kind: 'generic', cleanupAfterStop: false };
           Promise.resolve().then(function () {
             return runFn(drSteps, {
               shouldStop: function () { return demoRunRef.current.stop; },
               onStep: function (i, phase, label, narration) {
                 postToStudio(drReplyTo, { type: 'allostudio-demostep', id: drReq.id, index: i, phase: phase, label: String(label || '').slice(0, 120), narration: String(narration || '').slice(0, 160) });
               }
-            });
+            }, { rehearsal: !!drReq.rehearsal });
           }).then(function (result) {
-            demoRunRef.current = { running: false, stop: false };
+            demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false };
             drRespond({ ok: !!(result && result.ok), stopped: !!(result && result.stopped), completed: (result && result.completed != null) ? result.completed : null, reason: (result && result.reason) ? String(result.reason).slice(0, 200) : null });
           }).catch(function (e) {
-            demoRunRef.current = { running: false, stop: false };
+            demoRunRef.current = { running: false, stop: false, kind: null, cleanupAfterStop: false };
             drRespond({ error: String((e && e.message) || e).slice(0, 200) });
           });
         } else if (ev.data.type === 'allostudio-demostop') {
@@ -3509,7 +3563,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           }
         } else if (ev.data.type === 'allostudio-closed') {
           var closeCleanupFn = propsRef.current.onCleanupOfficialTutorial;
-          if (typeof closeCleanupFn === 'function') { try { closeCleanupFn(); } catch (_) {} }
+          if (demoRunRef.current.running) {
+            demoRunRef.current.stop = true;
+            if (demoRunRef.current.kind === 'official') demoRunRef.current.cleanupAfterStop = true;
+          } else if (typeof closeCleanupFn === 'function') {
+            try { closeCleanupFn(); } catch (_) {}
+          }
           studioWinRef.current = null;
           bridgeTokenRef.current = null;
           setStudioState('closed');

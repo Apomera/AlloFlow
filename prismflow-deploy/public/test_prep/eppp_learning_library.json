@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-12T21:42:15.382Z",
+  "generatedAt": "2026-07-13T18:42:37.684Z",
   "libraryId": "eppp-learning-library",
   "reviewStandard": {
     "checks": [
@@ -18,12 +18,12 @@
     "chapters": 49,
     "sections": 278,
     "diagrams": 25,
-    "diagramPlacements": 52,
-    "knowledgeChecks": 91,
+    "diagramPlacements": 54,
+    "knowledgeChecks": 93,
     "flashcards": 415,
     "memoryAids": 255,
     "qaPassedChapters": 0,
-    "sourceReviewedChapters": 26,
+    "sourceReviewedChapters": 28,
     "qaPassedFlashcards": 0,
     "sourceReviewedFlashcards": 9,
     "qaPassedMemoryAids": 0,
@@ -39,26 +39,34 @@
       "examWeight": "16%",
       "sectionCount": 10,
       "diagramCount": 2,
-      "knowledgeCheckCount": 1,
-      "referenceCount": 9,
+      "knowledgeCheckCount": 2,
+      "referenceCount": 11,
       "hasAiReflectiveCoda": true,
       "legacySource": "js/textbook_ch5_1.js",
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "reviewReferences": [],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Corrected current-versus-future EPPP blueprint scope, CTT true-score and SEM interpretation, alpha and split-half claims, modern validity framing, IRT location/invariance/CAT conditions, range-restriction overstatement, generalizability decision coefficients, and the reliability-limited correlation bound; grounded the AI coda and revised both accessible validity diagrams; added a 3PL location knowledge check.",
+      "reviewReferences": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://asppb.net/future-eppp-content-areas-2027/",
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
+        "https://ncme.org/resources-publications/professional-learning/glossary",
+        "https://www.ets.org/Media/Research/pdf/RM-20-06.pdf",
+        "https://doi.org/10.1037/0003-066X.50.9.741",
+        "https://doi.org/10.1037/h0046016"
+      ],
       "checks": {
-        "source-support": "pending",
-        "accuracy-and-currency": "pending",
-        "instructional-quality": "pending",
-        "accessibility": "shared-renderer-pass-content-review-pending",
-        "bias-and-context": "pending",
-        "expert-review": "pending"
+        "source-support": "editorial-pass-primary-and-authoritative-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-13",
+        "instructional-quality": "editorial-pass-with-applied-irt-check",
+        "accessibility": "shared-renderer-pass-svg-text-alternatives-revised",
+        "bias-and-context": "editorial-pass",
+        "expert-review": "pending-independent-psychometrics-review"
       },
       "sections": [
         {
           "id": "ch-1-section-1",
           "heading": "Why This Chapter Matters",
-          "preview": "Assessment and Diagnosis accounts for 16% of the EPPP — the largest single content domain. Psychometrics is its foundation. Every question about whether a test \"works\" is really a question about reliability, validity, or measurement error. If you understand these three concepts deeply, you can reason your way through a",
+          "preview": "Assessment and Diagnosis accounts for 16% of the current EPPP Part 1–Knowledge blueprint used in 2026 and 2027 . Psychometrics is its foundation. ASPPB plans to introduce an integrated EPPP blueprint beginning in fall 2027, so candidates should confirm which examination pathway and blueprint apply in their jurisdiction",
           "keyTerms": [],
           "hasDiagram": false,
           "diagramDescription": "",
@@ -69,7 +77,7 @@
         {
           "id": "ch-1-section-2",
           "heading": "Classical Test Theory (CTT)",
-          "preview": "Classical Test Theory (CTT) rests on a deceptively simple equation: X = T + E Where X is the observed score, T is the true score (the hypothetical score you would get if measurement were perfect), and E is error (random fluctuation). Key assumptions of CTT: The expected value of error scores across repeated measurement",
+          "preview": "Classical Test Theory (CTT) rests on a deceptively simple equation: X = T + E Where X is the observed score, T is the true score (the expected score across a defined set of hypothetical replications of the testing procedure), and E is error (random fluctuation). Key assumptions of CTT: The expected value of error score",
           "keyTerms": [
             "True score",
             "Observed score",
@@ -99,7 +107,7 @@
             "Cohen's kappa"
           ],
           "hasDiagram": true,
-          "diagramDescription": "🎯 The classic Target Analogy for Measurement. Reliability = Consistency (grouping of the hits). Validity = Accuracy (hitting the center bullseye). A test must be reliable before it can be valid.",
+          "diagramDescription": "🎯 The classic Target Analogy for Measurement. Reliability/precision concerns consistency across defined replications (grouping of hits). The bullseye is only an analogy: validity concerns evidence for a specified score interpretation and use, not a test property called accuracy.",
           "hasKnowledgeCheck": false,
           "hasExpandableCase": false,
           "reviewStatus": "review-required"
@@ -107,7 +115,7 @@
         {
           "id": "ch-1-section-4",
           "heading": "The Standard Error of Measurement (SEM)",
-          "preview": "The SEM quantifies the amount of error expected in an individual's test score . It is the standard deviation of observed scores around the true score: SEM = SD × √(1 − r) Where SD is the standard deviation of the test and r is the reliability coefficient. Using the SEM to build confidence intervals: 68% CI: Score ± 1 S",
+          "preview": "The SEM summarizes score inconsistency across hypothetical replications for a specified population and testing procedure. In the conventional CTT formulation it is estimated as: SEM = SD × √(1 − r) Where SD is the standard deviation of the test and r is the reliability coefficient. Using the SEM to build confidence int",
           "keyTerms": [
             "SEM",
             "Confidence interval",
@@ -123,7 +131,7 @@
         {
           "id": "ch-1-section-5",
           "heading": "Validity: Does the Test Measure What It Claims?",
-          "preview": "Validity is the degree to which evidence supports the intended interpretation of test scores for its proposed purpose. Modern psychometrics (Messick, 1995) views validity as a unitary concept — there aren't really \"types\" of validity, but rather different sources of evidence for validity. Sources of validity evidence: ",
+          "preview": "Validity is the degree to which evidence supports the intended interpretation of test scores for its proposed purpose. Modern standards treat validity as a unitary argument about a proposed score interpretation and use. Evidence may come from test content, response processes, internal structure, relations to other vari",
           "keyTerms": [
             "Content validity",
             "Criterion validity",
@@ -134,7 +142,7 @@
             "Messick"
           ],
           "hasDiagram": true,
-          "diagramDescription": "📊 Construct Validity Framework. Construct validity is the \"umbrella\" term asking if your measure actually captures the theoretical construct. Content validity asks if you sampled all parts of the subject. Criterion validity relies on external data (Concurrent = NOW, Predictive = FUTURE). Convergent/Discriminant validity ensures your construct correlates with similar traits but NOT with unrelated traits.",
+          "diagramDescription": "📊 Construct Validity Framework. Validity is a unified argument for an intended score interpretation and use. Evidence may come from content representation, response processes, internal structure, and theoretically expected relations to concurrent or later criteria and to similar or distinct constructs. Face credibility can affect engagement but is not itself validity evidence.",
           "hasKnowledgeCheck": false,
           "hasExpandableCase": false,
           "reviewStatus": "review-required"
@@ -161,7 +169,7 @@
         {
           "id": "ch-1-section-7",
           "heading": "Item Response Theory (IRT)",
-          "preview": "Item Response Theory (IRT) is the modern alternative to CTT that focuses on the relationship between an individual test item and the test-taker's latent ability level. Key differences from CTT: Feature CTT IRT Unit of analysis Total test Individual item Measurement precision Constant (same SEM for everyone) Variable (p",
+          "preview": "Item Response Theory (IRT) is a family of latent-trait models that complements CTT by relating responses to individual items to a test-taker's location on a latent scale. Key differences from CTT: Feature CTT IRT Unit of analysis Total test Individual item Measurement precision Often summarized with one overall SEM; co",
           "keyTerms": [
             "IRT",
             "Item characteristic curve",
@@ -176,7 +184,7 @@
           ],
           "hasDiagram": false,
           "diagramDescription": "",
-          "hasKnowledgeCheck": false,
+          "hasKnowledgeCheck": true,
           "hasExpandableCase": true,
           "reviewStatus": "review-required"
         },
@@ -234,27 +242,43 @@
       "domainNumber": 1,
       "examWeight": "16%",
       "sectionCount": 10,
-      "diagramCount": 0,
-      "knowledgeCheckCount": 1,
-      "referenceCount": 11,
+      "diagramCount": 2,
+      "knowledgeCheckCount": 2,
+      "referenceCount": 13,
       "hasAiReflectiveCoda": true,
       "legacySource": "js/textbook_ch5_2.js",
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "reviewReferences": [],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Corrected current-versus-future EPPP scope, CHC taxonomy and age-trajectory absolutes, current Wechsler and Bayley ranges, culture-free testing implications, universal cognitive-screening cutoffs, adaptive-behavior and developmental-onset criteria, mechanical Flynn-effect score subtraction, performance-validity-to-malingering inference, actuarial-prediction overgeneralization, stereotyped intellectual-disability descriptions, and speculative AI-disability analogies; added an accessible CHC hierarchy and a performance-validity knowledge check.",
+      "reviewReferences": [
+        "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/eppp-exam-topics/",
+        "https://asppb.net/future-eppp-content-areas-2027/",
+        "https://www.pearsonassessments.com/store/en/usd/p/P100071002.html?productId=A103000419947",
+        "https://www.pearsonassessments.com/store/usd/p/100000771.html",
+        "https://www.pearsonassessments.com/store/en/usd/p/100000102.html",
+        "https://www.pearsonassessments.com/en-us/Store/Professional-Assessments/Cognition-%26-Neuro/Bayley-Scales-of-Infant-and-Toddler-Development-%7C-Fourth-Edition/p/100001996?tab=overviewFrom",
+        "https://www.pearsonassessments.com/store/en/usd/p/100001622.html",
+        "https://mocacognition.com/faq/",
+        "https://www.aaidd.org/intellectual-disability/definition",
+        "https://www.aaidd.org/intellectual-disability/faqs-on-intellectual-disability",
+        "https://www.tandfonline.com/doi/full/10.1080/13854046.2021.1896036",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4152423/",
+        "https://doi.org/10.1037/1040-3590.12.1.19",
+        "https://www.psychiatry.org/File%20Library/Psychiatrists/Practice/DSM/APA_DSM_Changes_from_DSM-IV-TR_-to_DSM-5.pdf",
+        "https://www.nia.nih.gov/health/cognitive-assessment-considerations-understanding-evidence"
+      ],
       "checks": {
-        "source-support": "pending",
-        "accuracy-and-currency": "pending",
-        "instructional-quality": "pending",
-        "accessibility": "shared-renderer-pass-content-review-pending",
-        "bias-and-context": "pending",
-        "expert-review": "pending"
+        "source-support": "editorial-pass-primary-and-authoritative-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-13",
+        "instructional-quality": "editorial-pass-with-screening-and-validity-checks",
+        "accessibility": "shared-renderer-pass-svg-labelled",
+        "bias-and-context": "editorial-pass",
+        "expert-review": "pending-independent-cognitive-assessment-review"
       },
       "sections": [
         {
           "id": "ch-2-section-1",
           "heading": "Why This Chapter Matters",
-          "preview": "Intelligence testing is one of the most frequently tested topics on the EPPP. You need to know the major instruments (Wechsler scales, Stanford-Binet, Bayley), the theory that organizes them (CHC), the clinical issues (Flynn effect, malingering, ID/giftedness), and the adaptive behavior measures that complement IQ test",
+          "preview": "Cognitive assessment questions require more than memorizing test names. The central skills are matching an instrument to the referral question and examinee, interpreting scores with their norms and measurement limits, and integrating intellectual, adaptive, developmental, cultural, linguistic, medical, and validity evi",
           "keyTerms": [],
           "hasDiagram": false,
           "diagramDescription": "",
@@ -265,7 +289,7 @@
         {
           "id": "ch-2-section-2",
           "heading": "CHC Theory: The Map of Human Intelligence",
-          "preview": "The Cattell-Horn-Carroll (CHC) model is the most empirically supported and widely used theory of cognitive abilities. It integrates: Cattell & Horn's Gf-Gc theory : Fluid intelligence (Gf) vs. Crystallized intelligence (Gc) Carroll's Three-Stratum theory : Hierarchical model from narrow to broad to general Three Strata",
+          "preview": "The Cattell-Horn-Carroll (CHC) framework is a prominent hierarchical account of cognitive abilities that integrates Cattell-Horn Gf-Gc traditions with Carroll's factor-analytic hierarchy. It is influential in test development and interpretation, but its taxonomy has evolved and should not be treated as a fixed list of ",
           "keyTerms": [
             "CHC theory",
             "Cattell-Horn-Carroll",
@@ -278,8 +302,8 @@
             "Three-stratum",
             "g factor"
           ],
-          "hasDiagram": false,
-          "diagramDescription": "",
+          "hasDiagram": true,
+          "diagramDescription": "Accessible hierarchy showing general ability, illustrative broad CHC abilities, and narrower examples, with a reminder that test tasks can reflect multiple abilities.",
           "hasKnowledgeCheck": false,
           "hasExpandableCase": false,
           "reviewStatus": "review-required"
@@ -287,9 +311,9 @@
         {
           "id": "ch-2-section-3",
           "heading": "The Wechsler Scales",
-          "preview": "David Wechsler's intelligence scales are the most widely used individually administered intelligence tests in the world . Three versions cover the lifespan: Test Ages Current Edition Core Subtests WPPSI (Preschool/Primary) 2:6 – 7:7 WPPSI-IV Varies by age band WISC (Children) 6:0 – 16:11 WISC-V 7 core for FSIQ WAIS (Ad",
+          "preview": "The Wechsler scales are major individually administered cognitive batteries. Select the edition and norms appropriate to the examinee and referral question, and verify administration, scoring, composite construction, and interpretation in the current manual. Test Published age range Current edition Use note WPPSI 2:6-7",
           "keyTerms": [
-            "WAIS-V",
+            "WAIS-5",
             "WISC-V",
             "WPPSI-IV",
             "FSIQ",
@@ -310,7 +334,7 @@
         {
           "id": "ch-2-section-4",
           "heading": "Other Major Intelligence Tests",
-          "preview": "Stanford-Binet Intelligence Scales, 5th Edition (SB5): Ages 2–85+ Originally developed by Binet and Simon (1905) in France; adapted by Terman at Stanford (1916) Measures 5 CHC factors: Fluid Reasoning, Knowledge, Quantitative Reasoning, Visual-Spatial Processing, Working Memory Nonverbal and Verbal subtests for each fa",
+          "preview": "Stanford-Binet Intelligence Scales, Fifth Edition (SB5): Published for ages 2 through 85+. Includes verbal and nonverbal routes across Fluid Reasoning, Knowledge, Quantitative Reasoning, Visual-Spatial Processing, and Working Memory. Modern scores are deviation scores; the historical ratio IQ formula was mental age / c",
           "keyTerms": [
             "Stanford-Binet",
             "SB5",
@@ -331,14 +355,15 @@
         {
           "id": "ch-2-section-5",
           "heading": "Cognitive Screening Tools",
-          "preview": "Screening tools are brief instruments used to flag potential cognitive impairment. They are NOT diagnostic — they identify who needs further evaluation. Tool Time Domains Assessed Cutoff Best For MMSE (Mini-Mental State Exam) 5–10 min Orientation, registration, attention/calculation, recall, language ≤23 = impairment M",
+          "preview": "Brief cognitive screeners identify whether more evaluation may be warranted; they do not by themselves diagnose mild cognitive impairment, dementia, or a specific disorder. Choose a validated version and interpret it with the person's baseline, education, language, culture, sensory or motor access, medical status, medi",
           "keyTerms": [
             "MMSE",
             "MoCA",
             "Screening",
             "MCI",
             "Sensitivity",
-            "Dementia"
+            "Dementia",
+            "Norms"
           ],
           "hasDiagram": false,
           "diagramDescription": "",
@@ -349,12 +374,13 @@
         {
           "id": "ch-2-section-6",
           "heading": "Adaptive Behavior Assessment",
-          "preview": "Adaptive behavior refers to the conceptual, social, and practical skills needed for daily functioning. It is required alongside IQ testing for diagnosing intellectual disability (DSM-5). Three domains (AAIDD framework): Conceptual : Language, reading, math, self-direction, memory Social : Interpersonal skills, social r",
+          "preview": "Adaptive behavior refers to learned conceptual, social, and practical skills used in everyday life. Under DSM-5-TR and AAIDD frameworks, evaluating intellectual disability requires evidence about both intellectual and adaptive functioning plus developmental onset; an IQ score alone is insufficient. Conceptual: language",
           "keyTerms": [
             "Adaptive behavior",
             "Vineland-3",
             "ABAS-3",
             "AAIDD",
+            "DSM-5-TR",
             "Conceptual",
             "Social",
             "Practical"
@@ -368,13 +394,13 @@
         {
           "id": "ch-2-section-7",
           "heading": "The Flynn Effect",
-          "preview": "The Flynn effect (Flynn, 1987) refers to the sustained increase in IQ scores across generations — approximately 3 points per decade (0.3 points per year). Why it matters for clinical practice: A test normed in 2010 will overestimate IQ by ~5 points if used in 2026 (because the comparison group performed worse) This is ",
+          "preview": "The Flynn effect describes historical cohort increases in performance on many intelligence-test measures. A large meta-analysis estimated an overall gain near 2.31 IQ points per decade, but effects varied greatly by ability, country, age, time period, and study design; some samples show slowing or reversal. Clinical im",
           "keyTerms": [
             "Flynn effect",
-            "IQ gain",
+            "Cohort effect",
             "Norm obsolescence",
-            "Reverse Flynn effect",
-            "Intellectual disability implications"
+            "Test norms",
+            "Measurement uncertainty"
           ],
           "hasDiagram": false,
           "diagramDescription": "",
@@ -384,32 +410,33 @@
         },
         {
           "id": "ch-2-section-8",
-          "heading": "Malingering and Effort Testing",
-          "preview": "Malingering is the intentional production of false or exaggerated symptoms motivated by external incentives (financial gain, avoiding responsibilities, legal advantage). It is NOT a mental disorder — it is a V-code (DSM-5). Distinguishing from related concepts: Concept Intentional? Motivation Malingering Yes External (",
+          "heading": "Malingering and Performance Validity",
+          "preview": "Malingering is the intentional production of false or grossly exaggerated symptoms for external incentives. DSM-5-TR lists it as a condition that may be a focus of clinical attention (Z76.5), not a mental disorder. Intent cannot be inferred from one low score. Concept Intentional symptom production? Defining context Ma",
           "keyTerms": [
             "Malingering",
+            "Performance validity",
+            "PVT",
             "TOMM",
             "Factitious disorder",
-            "Effort testing",
-            "Insufficient effort",
-            "V-code"
+            "Z76.5",
+            "Converging evidence"
           ],
-          "hasDiagram": false,
-          "diagramDescription": "",
-          "hasKnowledgeCheck": false,
+          "hasDiagram": true,
+          "diagramDescription": "🎯 The classic Target Analogy for Measurement. Reliability/precision concerns consistency across defined replications (grouping of hits). The bullseye is only an analogy: validity concerns evidence for a specified score interpretation and use, not a test property called accuracy.",
+          "hasKnowledgeCheck": true,
           "hasExpandableCase": false,
           "reviewStatus": "review-required"
         },
         {
           "id": "ch-2-section-9",
           "heading": "Clinical vs. Actuarial Prediction",
-          "preview": "Paul Meehl's (1954) landmark work established that actuarial (statistical) prediction generally outperforms clinical (subjective) prediction . This remains one of the most robust findings in psychology. Definitions: Clinical prediction : Clinician uses experience, intuition, and subjective judgment to make predictions ",
+          "preview": "Clinical prediction combines information through informal professional judgment; mechanical or actuarial prediction uses an explicit, reproducible rule. Grove and colleagues' meta-analysis found mechanical methods about 10% more accurate on average. Mechanical prediction was often equal or better, but not universally s",
           "keyTerms": [
             "Paul Meehl",
             "Clinical prediction",
             "Actuarial prediction",
-            "Statistical prediction",
-            "Broken leg exception",
+            "Mechanical prediction",
+            "Applicability",
             "Grove meta-analysis"
           ],
           "hasDiagram": false,
@@ -421,11 +448,13 @@
         {
           "id": "ch-2-section-10",
           "heading": "Intellectual Disability & Giftedness",
-          "preview": "Intellectual Disability (DSM-5): Requires all three criteria: Intellectual deficits : Confirmed by clinical assessment and standardized IQ testing (approximately 2+ SD below the mean, ~IQ 65–75 range) Adaptive functioning deficits : In at least one domain (conceptual, social, practical) Onset during the developmental p",
+          "preview": "Intellectual disability (DSM-5-TR): Diagnosis requires deficits in intellectual functions confirmed through clinical assessment and individualized standardized testing; deficits in adaptive functioning that limit independence and social responsibility; and onset during the developmental period. AAIDD similarly requires",
           "keyTerms": [
             "Intellectual disability",
-            "DSM-5 criteria",
+            "DSM-5-TR criteria",
+            "AAIDD",
             "Adaptive functioning severity",
+            "Measurement error",
             "Giftedness",
             "Renzulli",
             "Twice-exceptional"
@@ -524,7 +553,7 @@
             "Faking good"
           ],
           "hasDiagram": true,
-          "diagramDescription": "🎯 The classic Target Analogy for Measurement. Reliability = Consistency (grouping of the hits). Validity = Accuracy (hitting the center bullseye). A test must be reliable before it can be valid.",
+          "diagramDescription": "🎯 The classic Target Analogy for Measurement. Reliability/precision concerns consistency across defined replications (grouping of hits). The bullseye is only an analogy: validity concerns evidence for a specified score interpretation and use, not a test property called accuracy.",
           "hasKnowledgeCheck": true,
           "hasExpandableCase": false,
           "reviewStatus": "review-required"
@@ -5711,7 +5740,7 @@
             "Statistical conclusion validity"
           ],
           "hasDiagram": true,
-          "diagramDescription": "📊 Construct Validity Framework. Construct validity is the \"umbrella\" term asking if your measure actually captures the theoretical construct. Content validity asks if you sampled all parts of the subject. Criterion validity relies on external data (Concurrent = NOW, Predictive = FUTURE). Convergent/Discriminant validity ensures your construct correlates with similar traits but NOT with unrelated traits.",
+          "diagramDescription": "📊 Construct Validity Framework. Validity is a unified argument for an intended score interpretation and use. Evidence may come from content representation, response processes, internal structure, and theoretically expected relations to concurrent or later criteria and to similar or distinct constructs. Face credibility can affect engagement but is not itself validity evidence.",
           "hasKnowledgeCheck": true,
           "hasExpandableCase": false,
           "reviewStatus": "review-required"
@@ -6105,7 +6134,7 @@
             "Stevens"
           ],
           "hasDiagram": true,
-          "diagramDescription": "🎯 The classic Target Analogy for Measurement. Reliability = Consistency (grouping of the hits). Validity = Accuracy (hitting the center bullseye). A test must be reliable before it can be valid.",
+          "diagramDescription": "🎯 The classic Target Analogy for Measurement. Reliability/precision concerns consistency across defined replications (grouping of hits). The bullseye is only an analogy: validity concerns evidence for a specified score interpretation and use, not a test property called accuracy.",
           "hasKnowledgeCheck": false,
           "hasExpandableCase": true,
           "reviewStatus": "review-required"
@@ -6631,7 +6660,7 @@
     {
       "id": "diagram-reliabilityvalidity",
       "key": "reliabilityValidity",
-      "description": "🎯 The classic Target Analogy for Measurement. Reliability = Consistency (grouping of the hits). Validity = Accuracy (hitting the center bullseye). A test must be reliable before it can be valid.",
+      "description": "🎯 The classic Target Analogy for Measurement. Reliability/precision concerns consistency across defined replications (grouping of hits). The bullseye is only an analogy: validity concerns evidence for a specified score interpretation and use, not a test property called accuracy.",
       "hasSvg": true,
       "reviewStatus": "review-required",
       "checks": {
@@ -6701,7 +6730,7 @@
     {
       "id": "diagram-typesofvalidity",
       "key": "typesOfValidity",
-      "description": "📊 Construct Validity Framework. Construct validity is the \"umbrella\" term asking if your measure actually captures the theoretical construct. Content validity asks if you sampled all parts of the subject. Criterion validity relies on external data (Concurrent = NOW, Predictive = FUTURE). Convergent/Discriminant validity ensures your construct correlates with similar traits but NOT with unrelated traits.",
+      "description": "📊 Construct Validity Framework. Validity is a unified argument for an intended score interpretation and use. Evidence may come from content representation, response processes, internal structure, and theoretically expected relations to concurrent or later criteria and to similar or distinct constructs. Face credibility can affect engagement but is not itself validity evidence.",
       "hasSvg": true,
       "reviewStatus": "review-required",
       "checks": {
