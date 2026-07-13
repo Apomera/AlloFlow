@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-a2dee195-untitled",
+  "title": "نانِ گندم",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/GpUKEcSfqT"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fa2dee195-5207-4615-b83d-b4d3acd29fd6%2f%d9%86%d8%a7%d9%86%d9%90+%da%af%d9%86%d8%af%d9%85%2fبلبی.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fa2dee195-5207-4615-b83d-b4d3acd29fd6%2f%d9%86%d8%a7%d9%86%d9%90+%da%af%d9%86%d8%af%d9%85%2f02.jpg",
+      "text": "حسیب به کتابخانه رفت و کتابی را برداشت.\nدر کتاب چنین نوشته شده بود:"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "نان چگونه به دست می آید؟\nدهقان زمین را قلبه می کند.\nزمین آمادۀ کشت می شود.\nسپس گندم را می کارد."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fa2dee195-5207-4615-b83d-b4d3acd29fd6%2f%d9%86%d8%a7%d9%86%d9%90+%da%af%d9%86%d8%af%d9%85%2f04.jpg",
+      "text": "دهقان زمین را آب می دهد.\nگندم به قدرت خداوند (ج) سبز می شود."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "سپس، گندم خوشه می کند و پخته می شود.\nپس از آن گندم زرد و پخته می شود.\nگندم آمادۀ درو می گردد.\nدهقان گندم را درو می کند."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fa2dee195-5207-4615-b83d-b4d3acd29fd6%2f%d9%86%d8%a7%d9%86%d9%90+%da%af%d9%86%d8%af%d9%85%2f03.jpg",
+      "text": "دهقان گندم را خرمن می کند.\nدهقان گاو را بالای گندم می گرداند."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "تا دانه ها از خوشه جدا شوند.\nبعد از آن گندم را با شاخی باد می کند.\nدانه ها از کاه جدا و پاک می شوند.\nاین کار به وسیلۀ ماشین هم انجام می شود."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fa2dee195-5207-4615-b83d-b4d3acd29fd6%2f%d9%86%d8%a7%d9%86%d9%90+%da%af%d9%86%d8%af%d9%85%2f01.jpg",
+      "text": "گندم را در آسیاب آرد می کند.\nآرد را به بازار می برد."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "نانوا آرد را خمیر می کند.\nوقتی که خمیر رسید، آنرا در تنور می پزد.\nنان برای خوردن آماده می شود.\nحسیب فهمید که نان به اسانی به دست نمی آید."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 171
+  }
+}

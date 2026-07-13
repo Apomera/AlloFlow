@@ -1,0 +1,90 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-0dadad44-untitled",
+  "title": "ທຸກຄົນແມ່ນແຕກຕ່າງກັນ",
+  "description": "Let us describe how unique each person is.",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Lao"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Lao",
+  "license": "CC BY-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/sLVCKvzEA4"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/sLVCKvzEA4%2f1753676073272%2f%e0%ba%97%e0%ba%b8%e0%ba%81%e0%ba%84%e0%ba%bb%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99%e0%bb%81%e0%ba%95%e0%ba%81%e0%ba%95%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b1%e0%ba%99%2fDifferent+Cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sLVCKvzEA4%2f1753676073272%2f%e0%ba%97%e0%ba%b8%e0%ba%81%e0%ba%84%e0%ba%bb%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99%e0%bb%81%e0%ba%95%e0%ba%81%e0%ba%95%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b1%e0%ba%99%2f1+Woman2+copy+(Large).jpg",
+      "text": "ຜູ້ຍິງ"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sLVCKvzEA4%2f1753676073272%2f%e0%ba%97%e0%ba%b8%e0%ba%81%e0%ba%84%e0%ba%bb%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99%e0%bb%81%e0%ba%95%e0%ba%81%e0%ba%95%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b1%e0%ba%99%2f2+Man+copy+(Large).jpg",
+      "text": "ຜູ້ຊາຍ"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sLVCKvzEA4%2f1753676073272%2f%e0%ba%97%e0%ba%b8%e0%ba%81%e0%ba%84%e0%ba%bb%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99%e0%bb%81%e0%ba%95%e0%ba%81%e0%ba%95%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b1%e0%ba%99%2f3+Slow2+copy+(Large).jpg",
+      "text": "ຍ່າງຊ້າ"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sLVCKvzEA4%2f1753676073272%2f%e0%ba%97%e0%ba%b8%e0%ba%81%e0%ba%84%e0%ba%bb%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99%e0%bb%81%e0%ba%95%e0%ba%81%e0%ba%95%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b1%e0%ba%99%2f4+Fast2+copy+(Large).jpg",
+      "text": "ແລ່ນໄວ"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sLVCKvzEA4%2f1753676073272%2f%e0%ba%97%e0%ba%b8%e0%ba%81%e0%ba%84%e0%ba%bb%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99%e0%bb%81%e0%ba%95%e0%ba%81%e0%ba%95%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b1%e0%ba%99%2f5+Tall+copy+(Large).jpg",
+      "text": "ສູງ"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sLVCKvzEA4%2f1753676073272%2f%e0%ba%97%e0%ba%b8%e0%ba%81%e0%ba%84%e0%ba%bb%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99%e0%bb%81%e0%ba%95%e0%ba%81%e0%ba%95%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b1%e0%ba%99%2f6+Short+copy+(Large).jpg",
+      "text": "ເຕ້ຍ"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sLVCKvzEA4%2f1753676073272%2f%e0%ba%97%e0%ba%b8%e0%ba%81%e0%ba%84%e0%ba%bb%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99%e0%bb%81%e0%ba%95%e0%ba%81%e0%ba%95%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b1%e0%ba%99%2f7+Thin+copy+(Large).jpg",
+      "text": "ຈ່ອຍ"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sLVCKvzEA4%2f1753676073272%2f%e0%ba%97%e0%ba%b8%e0%ba%81%e0%ba%84%e0%ba%bb%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99%e0%bb%81%e0%ba%95%e0%ba%81%e0%ba%95%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b1%e0%ba%99%2f8+Fat+copy+(Large).jpg",
+      "text": "ຕຸ້ຍ"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sLVCKvzEA4%2f1753676073272%2f%e0%ba%97%e0%ba%b8%e0%ba%81%e0%ba%84%e0%ba%bb%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99%e0%bb%81%e0%ba%95%e0%ba%81%e0%ba%95%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b1%e0%ba%99%2f9+Young+(Large).jpg",
+      "text": "ໜຸ່ມ"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sLVCKvzEA4%2f1753676073272%2f%e0%ba%97%e0%ba%b8%e0%ba%81%e0%ba%84%e0%ba%bb%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99%e0%bb%81%e0%ba%95%e0%ba%81%e0%ba%95%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b1%e0%ba%99%2f10+Old+copy+(Large).jpg",
+      "text": "ເຖົ້າ"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/sLVCKvzEA4%2f1753676073272%2f%e0%ba%97%e0%ba%b8%e0%ba%81%e0%ba%84%e0%ba%bb%e0%ba%99%e0%bb%81%e0%ba%a1%e0%bb%88%e0%ba%99%e0%bb%81%e0%ba%95%e0%ba%81%e0%ba%95%e0%bb%88%e0%ba%b2%e0%ba%87%e0%ba%81%e0%ba%b1%e0%ba%99%2fDifferent+Cover1+(Large)2.jpg",
+      "text": "ທຸກຄົນແມ່ນແຕກຕ່າງກັນ"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 11
+  }
+}

@@ -336,7 +336,7 @@ describe('mirrored data contract (reading_library/)', () => {
     expect(indexFiles.slice().sort()).toEqual(physicalFiles.slice().sort());
   });
 
-  it('every book file parses, matches its index entry, and honors the full book contract', () => {
+  it('every book file parses, matches its index entry, and honors the full book contract', { timeout: 60000 }, () => {
     const errors = [];
     const fail = (condition, message) => { if (!condition) errors.push(message); };
     const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
@@ -406,7 +406,7 @@ describe('mirrored data contract (reading_library/)', () => {
     expect(errors).toEqual([]);
   }, 15_000);
 
-  it('mirrored Gutenberg full texts carry no print-era markup artifacts', () => {
+  it('mirrored Gutenberg full texts carry no print-era markup artifacts', { timeout: 60000 }, () => {
     // The importer strips [Illustration…] blocks, bracketed/boxed transcriber
     // notes, and _underscore_ emphasis (they render raw and TTS reads them
     // aloud). Guards both future imports and the 2026-07-12 cleanup pass.
@@ -447,7 +447,7 @@ describe('mirrored data contract (reading_library/)', () => {
     expect(source).not.toContain('MAX_VISIBLE_BOOKS');
   });
 
-  it('public mirror is byte-for-byte in sync with every runtime data file', () => {
+  it('public mirror is byte-for-byte in sync with every runtime data file', { timeout: 60000 }, () => {
     const pub = path.join(ROOT, 'prismflow-deploy', 'public', 'reading_library');
     const mismatches = [];
     ['index.json', 'open_catalog.json'].concat(index.books.map((entry) => entry.file)).forEach((name) => {

@@ -1,0 +1,90 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-239b1a74-23",
+  "title": "ພຣະເຈົ້າເປັນຜູ້ລ້ຽງຂອງຂ້ອຍ ສະຫລຸບຫຍໍ້ ເພງສັນລະເສີນ 23",
+  "description": "South African artist, Marleen Visser, beautifully illustrates Psalm 23 with images from life in rural Mozambique, giving us a fresh look at this classic psalm.",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Little Zebra Books"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Little Zebra Books",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/FsickSXGSj"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/FsickSXGSj%2f1752134585101%2f%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%bb%80%e0%ba%9b%e0%ba%b1%e0%ba%99%e0%ba%9c%e0%ba%b9%e0%bb%89%e0%ba%a5%e0%bb%89%e0%ba%bd%e0%ba%87%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d+%e0%ba%aa%e0%ba%b0%e0%ba%ab%e0%ba%a5%e0%ba%b8%e0%ba%9a%e0%ba%ab%e0%ba%8d%e0%bb%8d%e0%bb%89+%e0%bb%80%e0%ba%9e%e0%ba%87%e0%ba%aa%e0%ba%b1%e0%ba%99%e0%ba%a5%e0%ba%b0%e0%bb%80%e0%ba%aa%e0%ba%b5%e0%ba%99%2fPsalm+23+Pg1-9.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/FsickSXGSj%2f1752134585101%2f%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%bb%80%e0%ba%9b%e0%ba%b1%e0%ba%99%e0%ba%9c%e0%ba%b9%e0%bb%89%e0%ba%a5%e0%bb%89%e0%ba%bd%e0%ba%87%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d+%e0%ba%aa%e0%ba%b0%e0%ba%ab%e0%ba%a5%e0%ba%b8%e0%ba%9a%e0%ba%ab%e0%ba%8d%e0%bb%8d%e0%bb%89+%e0%bb%80%e0%ba%9e%e0%ba%87%e0%ba%aa%e0%ba%b1%e0%ba%99%e0%ba%a5%e0%ba%b0%e0%bb%80%e0%ba%aa%e0%ba%b5%e0%ba%99%2fPsalm+23+Pg1-5.jpg",
+      "text": "ພຣະເຈົ້າເປັນຜູ້ລ້ຽງຂອງຂ້ອຍ, ຂ້ອຍບໍ່ຂັດສົນສິ່ງໃດ."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/FsickSXGSj%2f1752134585101%2f%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%bb%80%e0%ba%9b%e0%ba%b1%e0%ba%99%e0%ba%9c%e0%ba%b9%e0%bb%89%e0%ba%a5%e0%bb%89%e0%ba%bd%e0%ba%87%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d+%e0%ba%aa%e0%ba%b0%e0%ba%ab%e0%ba%a5%e0%ba%b8%e0%ba%9a%e0%ba%ab%e0%ba%8d%e0%bb%8d%e0%bb%89+%e0%bb%80%e0%ba%9e%e0%ba%87%e0%ba%aa%e0%ba%b1%e0%ba%99%e0%ba%a5%e0%ba%b0%e0%bb%80%e0%ba%aa%e0%ba%b5%e0%ba%99%2fPsalm+23+Pg3-6.jpg",
+      "text": "ພຣະເຈົ້ານຳຂ້ອຍໄປທີ່ທົ່ງຫຍ້າອັນຂຽວສົດ."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/FsickSXGSj%2f1752134585101%2f%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%bb%80%e0%ba%9b%e0%ba%b1%e0%ba%99%e0%ba%9c%e0%ba%b9%e0%bb%89%e0%ba%a5%e0%bb%89%e0%ba%bd%e0%ba%87%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d+%e0%ba%aa%e0%ba%b0%e0%ba%ab%e0%ba%a5%e0%ba%b8%e0%ba%9a%e0%ba%ab%e0%ba%8d%e0%bb%8d%e0%bb%89+%e0%bb%80%e0%ba%9e%e0%ba%87%e0%ba%aa%e0%ba%b1%e0%ba%99%e0%ba%a5%e0%ba%b0%e0%bb%80%e0%ba%aa%e0%ba%b5%e0%ba%99%2fPsalm+23+Pg5-7.jpg",
+      "text": "ນຳຂ້ອຍໄປບ່ອນທີ່ມີບໍ່ນ້ຳອັນສົດໃສ."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/FsickSXGSj%2f1752134585101%2f%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%bb%80%e0%ba%9b%e0%ba%b1%e0%ba%99%e0%ba%9c%e0%ba%b9%e0%bb%89%e0%ba%a5%e0%bb%89%e0%ba%bd%e0%ba%87%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d+%e0%ba%aa%e0%ba%b0%e0%ba%ab%e0%ba%a5%e0%ba%b8%e0%ba%9a%e0%ba%ab%e0%ba%8d%e0%bb%8d%e0%bb%89+%e0%bb%80%e0%ba%9e%e0%ba%87%e0%ba%aa%e0%ba%b1%e0%ba%99%e0%ba%a5%e0%ba%b0%e0%bb%80%e0%ba%aa%e0%ba%b5%e0%ba%99%2fPsalm+23+Pg7-12.jpg",
+      "text": "ພຣະເຈົ້າໃຫ້ຂ້ອຍມີແຮງຂຶ້ນມາໃຫມ່\nແລະນຳໄປໃນທາງທີ່ຖືກຕ້ອງ."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/FsickSXGSj%2f1752134585101%2f%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%bb%80%e0%ba%9b%e0%ba%b1%e0%ba%99%e0%ba%9c%e0%ba%b9%e0%bb%89%e0%ba%a5%e0%bb%89%e0%ba%bd%e0%ba%87%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d+%e0%ba%aa%e0%ba%b0%e0%ba%ab%e0%ba%a5%e0%ba%b8%e0%ba%9a%e0%ba%ab%e0%ba%8d%e0%bb%8d%e0%bb%89+%e0%bb%80%e0%ba%9e%e0%ba%87%e0%ba%aa%e0%ba%b1%e0%ba%99%e0%ba%a5%e0%ba%b0%e0%bb%80%e0%ba%aa%e0%ba%b5%e0%ba%99%2fPsalm+23+Pg9-14.jpg",
+      "text": "ແມ້ໃນເວລາທີ່ຂ້ອຍຍ່າງຜ່ານຮ່ອມເຂົາທີ່ມືດມິດ"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/FsickSXGSj%2f1752134585101%2f%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%bb%80%e0%ba%9b%e0%ba%b1%e0%ba%99%e0%ba%9c%e0%ba%b9%e0%bb%89%e0%ba%a5%e0%bb%89%e0%ba%bd%e0%ba%87%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d+%e0%ba%aa%e0%ba%b0%e0%ba%ab%e0%ba%a5%e0%ba%b8%e0%ba%9a%e0%ba%ab%e0%ba%8d%e0%bb%8d%e0%bb%89+%e0%bb%80%e0%ba%9e%e0%ba%87%e0%ba%aa%e0%ba%b1%e0%ba%99%e0%ba%a5%e0%ba%b0%e0%bb%80%e0%ba%aa%e0%ba%b5%e0%ba%99%2fPsalm+23+Pg11-14.jpg",
+      "text": "ຂ້ອຍກໍຈະບໍ່ຢ້ານກົວເພາະມີພຣະເຈົ້າຢູ່ນຳ."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/FsickSXGSj%2f1752134585101%2f%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%bb%80%e0%ba%9b%e0%ba%b1%e0%ba%99%e0%ba%9c%e0%ba%b9%e0%bb%89%e0%ba%a5%e0%bb%89%e0%ba%bd%e0%ba%87%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d+%e0%ba%aa%e0%ba%b0%e0%ba%ab%e0%ba%a5%e0%ba%b8%e0%ba%9a%e0%ba%ab%e0%ba%8d%e0%bb%8d%e0%bb%89+%e0%bb%80%e0%ba%9e%e0%ba%87%e0%ba%aa%e0%ba%b1%e0%ba%99%e0%ba%a5%e0%ba%b0%e0%bb%80%e0%ba%aa%e0%ba%b5%e0%ba%99%2fPsalm+23+Pg13-16.jpg",
+      "text": "ໄມ້ຄອນເທົ້າຂອງພຣະເຈົ້າກໍປົກປ້ອງຮັກສາຂ້ອຍໄວ້."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/FsickSXGSj%2f1752134585101%2f%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%bb%80%e0%ba%9b%e0%ba%b1%e0%ba%99%e0%ba%9c%e0%ba%b9%e0%bb%89%e0%ba%a5%e0%bb%89%e0%ba%bd%e0%ba%87%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d+%e0%ba%aa%e0%ba%b0%e0%ba%ab%e0%ba%a5%e0%ba%b8%e0%ba%9a%e0%ba%ab%e0%ba%8d%e0%bb%8d%e0%bb%89+%e0%bb%80%e0%ba%9e%e0%ba%87%e0%ba%aa%e0%ba%b1%e0%ba%99%e0%ba%a5%e0%ba%b0%e0%bb%80%e0%ba%aa%e0%ba%b5%e0%ba%99%2fPsalm+23+Pg15-20.jpg",
+      "text": "ພຣະເຈົ້າຊົງຈັດຕຽມອາຫານສຳລັບຂ້ອຍ\nແມ້ຈະຢູ່ຕໍ່ໜ້າສັດຕູ."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/FsickSXGSj%2f1752134585101%2f%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%bb%80%e0%ba%9b%e0%ba%b1%e0%ba%99%e0%ba%9c%e0%ba%b9%e0%bb%89%e0%ba%a5%e0%bb%89%e0%ba%bd%e0%ba%87%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d+%e0%ba%aa%e0%ba%b0%e0%ba%ab%e0%ba%a5%e0%ba%b8%e0%ba%9a%e0%ba%ab%e0%ba%8d%e0%bb%8d%e0%bb%89+%e0%bb%80%e0%ba%9e%e0%ba%87%e0%ba%aa%e0%ba%b1%e0%ba%99%e0%ba%a5%e0%ba%b0%e0%bb%80%e0%ba%aa%e0%ba%b5%e0%ba%99%2fPsalm+23+Pg17-20.jpg",
+      "text": "ພຣະເຈົ້າຕອນຮັບຂ້ອຍດັ່ງແຂກຄົນສຳຄັນ,\nແລະຈອກຂອງຂ້ອຍກໍ່ເຕັມຢູ່."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/FsickSXGSj%2f1752134585101%2f%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%bb%80%e0%ba%9b%e0%ba%b1%e0%ba%99%e0%ba%9c%e0%ba%b9%e0%bb%89%e0%ba%a5%e0%bb%89%e0%ba%bd%e0%ba%87%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d+%e0%ba%aa%e0%ba%b0%e0%ba%ab%e0%ba%a5%e0%ba%b8%e0%ba%9a%e0%ba%ab%e0%ba%8d%e0%bb%8d%e0%bb%89+%e0%bb%80%e0%ba%9e%e0%ba%87%e0%ba%aa%e0%ba%b1%e0%ba%99%e0%ba%a5%e0%ba%b0%e0%bb%80%e0%ba%aa%e0%ba%b5%e0%ba%99%2fPsalm+23+Pg19-24.jpg",
+      "text": "ຄວາມດີແລະຄວາມຮັກຫມັ່ນຄົງຈະຢູ່ກັບຂ້ອຍຕະຫລອດໄປ."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/FsickSXGSj%2f1752134585101%2f%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%bb%80%e0%ba%9b%e0%ba%b1%e0%ba%99%e0%ba%9c%e0%ba%b9%e0%bb%89%e0%ba%a5%e0%bb%89%e0%ba%bd%e0%ba%87%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d+%e0%ba%aa%e0%ba%b0%e0%ba%ab%e0%ba%a5%e0%ba%b8%e0%ba%9a%e0%ba%ab%e0%ba%8d%e0%bb%8d%e0%bb%89+%e0%bb%80%e0%ba%9e%e0%ba%87%e0%ba%aa%e0%ba%b1%e0%ba%99%e0%ba%a5%e0%ba%b0%e0%bb%80%e0%ba%aa%e0%ba%b5%e0%ba%99%2fPsalm+23+Pg21-24.jpg",
+      "text": "ແລະຂ້ອຍຈະຢູ່ໃນເຮືອນຂອງພຣະເຈົ້າຕະຫລອດໄປ."
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 15
+  }
+}

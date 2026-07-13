@@ -1,0 +1,545 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-0328e0f7-untitled",
+  "title": "៤៥ ឆាផៅរូបមពោមពា",
+  "description": "Animal picture book (Easy Reader - Level 1)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/2Rqm8afsQf"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage2.png",
+      "text": "នេះ​គឺ​ចាប​មាស​ កំពុង​ចឹក​ផ្លែ​បញ្ញើ​ក្អែក​​ជា​ចំ​ណី។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage4.png",
+      "text": "នេះ​គឺ​ជា​ពពិច​កំពុង​ចឹក​ផ្លែ​ម្ទេស​ជា​ចំ​ណី។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage5.png",
+      "text": "នេះ​គឺ​ជា​ចាបពូក​ កំពុង​ស៊ី​ស្រូវ​ទុំ​ក្នុង​ចំការ​ជា​ចំ​ណី។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage6.png",
+      "text": "នេះ​គឺ​ចាប​ស្រុក​កំពុង​​តែចឹក​ផ្កា​ស្មៅ​ជា​ចំ​ណី។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage7.png",
+      "text": "នេះ​គឺសត្វ​ត្រ​ដេ​ខ្យល់​កំពុង​ចឹកស៊ីកណ្ដូប​នៅ​វាល​ស្មៅ។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage8.png",
+      "text": "នេះ​គឺសត្វ​រន្ទេប​កំពុង​ចឹក​ស៊ី​ផ្លែ​ព្រីងជា​ចំ​ណី។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage9.png",
+      "text": "នេះ​គឺ​សត្វ​គក្រលិង​គ្រលោង​កំ​ពុង​ចឹក​ដង្កូវ​ជា​ចំ​ណី។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage10.png",
+      "text": "នេះ​គឺ​ស្ទាំង​កំពុង​ឆាប​កូន​មាន់ដើម្បី​យក​ធ្វើ​ជាចំណី។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage11.png",
+      "text": "នេះគឺជាឥន្ទ្រី កំពុង​ស៊ីបក្សីជាចំណី​នៅលើ​មែក​ឈើ។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage12.png",
+      "text": "នេះគឺសត្វ​ខ្លែង​ស្រាក​កំពុង​ឆក់​ពស់​កើម្បី​មក​ស៊ី។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage13.png",
+      "text": "នេះ​គឺ​សត្វ​ព្រាប​កំពុង​ស៊ីផ្លែ​ឈើ​ក្នុង​ព្រៃ។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage14.png",
+      "text": "នេះគឺសត្វពពូលកំពុងចឹកស៊ីផ្លែឈើ។"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage15.png",
+      "text": "នេះគឺសត្វលលកកំពុងចឹកស៊ីស្រូវឯចំការ។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage16.png",
+      "text": "នេះគឺមាន់ព្រៃកំពុងចឹកស៊ីកណ្ដៀរជាចំណី។"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage17.png",
+      "text": "នេះគឺសត្វក្ងោកកំពុងចឹកស៊ីស្រមោចជាចំណី។"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage18.png",
+      "text": "នេះគឺសត្វក្រួចកំពុងចឹកស៊ីអង្ក្រងជាចំណី។"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage19.png",
+      "text": "នេះគឺសត្វមាន់ទោលកំពុងដើររកចំណី។"
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage20.png",
+      "text": "នេះគឺជាសត្វទទាកំពុងចឹកស៊ីដង្កូវដួងជាចំណី។"
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage21.png",
+      "text": "នេះគឺសត្វសេកកំពុងចឹកស៊ីស្រូវទុំក្នុងចំការ។"
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage22.png",
+      "text": "នេះគឺសត្វត្រសេះកំពុងចោះដើមឈើដើម្បីរកចំណី។"
+    },
+    {
+      "n": 21,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage23.png",
+      "text": "នេះគឺសត្វកុកកំពុងចឹកស៊ីត្រីក្នុងបឹងជាអាហារ។"
+    },
+    {
+      "n": 22,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage24.png",
+      "text": "នេះគឺសត្វក្អែកកំពុងចឹកស៊ីថ្លែនក្នុងស្រែជាចំណី។"
+    },
+    {
+      "n": 23,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage25.png",
+      "text": "នេះគឺសត្វចាបកំពុងចឹកស៊ីពីងពាងជាចំណី។"
+    },
+    {
+      "n": 24,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage102.png",
+      "text": "នេះគឺសត្វចាបមួយបែបកំពុងចឹកស៊ីផ្លែជ្រៃ។"
+    },
+    {
+      "n": 25,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage26.png",
+      "text": "នេះគឺសត្វក្រួចកំពុងចឹកស៊ីចង្អារជាចំណី។"
+    },
+    {
+      "n": 26,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage27.png",
+      "text": "នេះគឺសត្វពន្លាក់កំពុងចឹកស៊ីកន្ទុំរុយជាចំណី។"
+    },
+    {
+      "n": 27,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage28.png",
+      "text": "នេះគឺសត្វប្រចៀវកំពុងស៊ីមេភ្លៀងនៅលើអាកាស។"
+    },
+    {
+      "n": 28,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage29.png",
+      "text": "នេះគឺសត្វចាបចង្ក្រង់កំពុងចឹកស៊ីចង្កួយជាចំណី។"
+    },
+    {
+      "n": 29,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage30.png",
+      "text": "នេះគឺសត្វមាន់ទឹកកំពុងចឹកស៊ីកូនក្អាត់ក្នុងត្រពាំង។"
+    },
+    {
+      "n": 30,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage32.png",
+      "text": "នេះគឺសត្វមហោរីកំពុងចឹកស៊ីផ្លែជ្រៃជាចំណី។"
+    },
+    {
+      "n": 31,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage33.png",
+      "text": "នេះគឺសត្វបក្សីមួយបែបកំពុងចឹកស៊ីផ្លែពុទ្រាព្រៃជាចំណី។"
+    },
+    {
+      "n": 32,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage34.png",
+      "text": "នេះគឺសត្វទីទុយកំពុងចឹកស៊ីក្តាមក្នុងអូរាជាចំណី។"
+    },
+    {
+      "n": 33,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage35.png",
+      "text": "នេះគឺសេកសោមកំពុងចឹកស៊ីស្រទាប់ផ្កាជាចំណ។"
+    },
+    {
+      "n": 34,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage36.png",
+      "text": "នេះគឺសត្វមៀមកំពុងចឹកស៊ីកណ្ដុរជាចំណី។"
+    },
+    {
+      "n": 35,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage37.png",
+      "text": "នេះគឺសត្វក្រៀលកំពុងចឹកស៊ីត្រីតាមដងអូរ។"
+    },
+    {
+      "n": 36,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage38.png",
+      "text": "នេះគឺសត្វត្មាតកំពុងហែកស៊ីសាច់ស្អុយក្នុងព្រៃ។"
+    },
+    {
+      "n": 37,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage39.png",
+      "text": "នេះគឺសត្វកេងកងកំពុងស៊ីផ្លែជ្រៃក្នុងព្រៃជ្រៅជាចំណី។"
+    },
+    {
+      "n": 38,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage40.png",
+      "text": "នេះគឺសត្វកេងកងមួយបែបកំពុងចឹកស៊ីរៃជាចំណី។"
+    },
+    {
+      "n": 39,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage41.png",
+      "text": "នេះគឺសត្វបក្សីមួយបែបកំពុងតែចឹកស៊ីតុកកែជាចំណី។"
+    },
+    {
+      "n": 40,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage42.png",
+      "text": "នេះគឺចាបមួយបែបកំពុងចឹកស៊ីផ្លែម្រះព្រៃជាចំណី។"
+    },
+    {
+      "n": 41,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage43.png",
+      "text": "នេះគឺបក្សីមួយបែបកំពុងចឹកស៊ីកង្កែបជាចំណី។"
+    },
+    {
+      "n": 42,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage44.png",
+      "text": "នេះគឺសត្វតាវៅកំពុងចឹកស៊ីកណ្ដូបជាចំណី។"
+    },
+    {
+      "n": 43,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage45.png",
+      "text": "នេះគឺបក្សីមួយបែបកំពុងចឹកស៊ីឃ្មុំក្នុងសំបុក។"
+    },
+    {
+      "n": 44,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage46.png",
+      "text": "នេះគឺសត្វត្រចៀកកាំកំពុងស៊ីរុយជាចំណី។"
+    },
+    {
+      "n": 45,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage47.png",
+      "text": "នេះគឺសារិកាកែវកំពុងពាំកណ្ដូបដើម្បអោយកូន។"
+    },
+    {
+      "n": 46,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage48.png",
+      "text": "នេះគឺបក្សីមួយបែបកំពុងចឹកស៊ីចង្រិតជាចំណី។"
+    },
+    {
+      "n": 47,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage49.png",
+      "text": "នេះគឺសារិកាកែវអាចម៍គោកំពុងចឹកស៊ីកូនកង្កែប។"
+    },
+    {
+      "n": 48,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage50.png",
+      "text": "នេះគឺសត្វត្រសេះមួយបែបកំពុងចឹកស៊ីឌឹកឌឿជាចំណី។"
+    },
+    {
+      "n": 49,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage51.png",
+      "text": "នេះគឺសត្វត្រដេវវិចកំពុងចឹកស៊ីឪម៉ាល់ជាចំណី។"
+    },
+    {
+      "n": 50,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage52.png",
+      "text": "នេះគឺជាសត្វកន្ត្រងកំពុងស៊ីចំណីក្បែរមាត់អូរ។"
+    },
+    {
+      "n": 51,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage53.png",
+      "text": "នេះគឺផ្លែនកំពុងរកចំណីនៅវាលស្រែ។​"
+    },
+    {
+      "n": 52,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage54.png",
+      "text": "នេះគឺសត្វត្រកួតកំពុងស៊ីស្រមោចជាចំណី។"
+    },
+    {
+      "n": 53,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage55.png",
+      "text": "នេះគឺសត្វទន្សងកំពុងខាំស៊ីកណ្ដុរជាចំណី។"
+    },
+    {
+      "n": 54,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage56.png",
+      "text": "នេះគឺសត្វក្រពើកំពុងតែត្របាក់ត្រីស៊ីជាចំណី។"
+    },
+    {
+      "n": 55,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage57.png",
+      "text": "នេះគឺសត្វពង្រូលកំពុងស៊ីចំណីក្នុងរន្ធឈើ។"
+    },
+    {
+      "n": 56,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage58.png",
+      "text": "នេះគឺសត្វកណ្ដុរកំពុងស៊ីស្រូវក្នុងស្រែ។"
+    },
+    {
+      "n": 57,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage59.png",
+      "text": "នេះគឺកំប្រុកកំពុងស៊ីស្រូវក្នុងចំការ។"
+    },
+    {
+      "n": 58,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage60.png",
+      "text": "នេះគឺសត្វកង្ហែនកំពុងស៊ីពោតខ្ចីជាចំណី។"
+    },
+    {
+      "n": 59,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage61.png",
+      "text": "នេះគឺសត្វកន្តេះឆ្នូតក្បាលកំពុងស៊ីផ្លែឈើជាចំណី។"
+    },
+    {
+      "n": 60,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage62.png",
+      "text": "នេះគឺសត្វកន្ថឹកកំពុងស៊ីមើមដំឡូងព្រៃជាចំណី។"
+    },
+    {
+      "n": 61,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage63.png",
+      "text": "នេះគឺឆ្មាបាកំពុងស៊ីផ្លែពង់មាន់ព្រៃជាចំណី។"
+    },
+    {
+      "n": 62,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage64.png",
+      "text": "នេះគឺកំប្រុកធំស៊ីផ្លែឈើជាចំណី។"
+    },
+    {
+      "n": 63,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage65.png",
+      "text": "នេះគឺសត្វកណ្ដៀទៀកំពុងស៊ីផ្លែឈើជាចំណី។"
+    },
+    {
+      "n": 64,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage66.png",
+      "text": "នេះគឺរញីកំពុងឡើងដើមឈើដើម្បីរកចំណី។"
+    },
+    {
+      "n": 65,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage67.png",
+      "text": "នេះគឺសត្វស្វាកំពុងតែនាំគ្នាស៊ីស្រូវជាំចំណី។"
+    },
+    {
+      "n": 66,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage68.png",
+      "text": "នេះគឺស្វាអង្កាមកំពុងតែស៊ីពោតជាចំណី។"
+    },
+    {
+      "n": 67,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage69.png",
+      "text": "នេះគឺស្វាអង្គត់កំពុងស៊ីផ្លែល្វាជាចំណី។"
+    },
+    {
+      "n": 68,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage70.png",
+      "text": "នេះគឺស្វាថ្ពាល់លឿងកំពុងស៊ីផ្លែភ្ញៀវ។"
+    },
+    {
+      "n": 69,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage71.png",
+      "text": "នេះគឺទោចកំពុងស៊ីផ្លែពោនជាចំណី។"
+    },
+    {
+      "n": 70,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage72.png",
+      "text": "នេះគឺស្វាកន្ទុយសកំពុងស៊ីផ្លែឈើមួយបែបក្នុងព្រៃ។"
+    },
+    {
+      "n": 71,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage73.png",
+      "text": "នេះគឺខ្លាឃ្មុំកំពុងបេះឃ្មុំស៊ី។"
+    },
+    {
+      "n": 72,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage74.png",
+      "text": "នេះគឺខ្លាធំកំពុងខាំស៊ីប្រើសជាចំណី។"
+    },
+    {
+      "n": 73,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage75.png",
+      "text": "នេះគឺរមាសកំពុងដើររកចំណីក្នុងព្រី។"
+    },
+    {
+      "n": 74,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage76.png",
+      "text": "នេះគឺដំរីព្រៃកំពុងតេស៊ីដើប្រទាលព្រៃជាចំណី។"
+    },
+    {
+      "n": 75,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage77.png",
+      "text": "នេះគឺសត្វទន្សាយកំពុងស៊ីស្មៅខ្ចីនៅទីវាល។"
+    },
+    {
+      "n": 76,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage78.png",
+      "text": "នេះគឺក្តាន់ញែងកំពុងដើររកចំណីស៊ីនៅកៀនព្រៃ។"
+    },
+    {
+      "n": 77,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage79.png",
+      "text": "នេះគឺសំពោចកំពុងហិតក្លិនផ្លែមួយក្នុងព្រៃ។"
+    },
+    {
+      "n": 78,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage80.png",
+      "text": "នេះគឺសត្វកាំប្រម៉ាកំពុងស៊ីក្តួចនៅក្នុងព្រៃ។"
+    },
+    {
+      "n": 79,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage81.png",
+      "text": "នេះគឺជ្រូកពោនកំពុងស៊ីផ្សិតជាចំណី។"
+    },
+    {
+      "n": 80,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage82.png",
+      "text": "នេះគឺកណ្ដុរភ្នំកំពុងស៊ីគល់ឫស្សីជាចំណី។"
+    },
+    {
+      "n": 81,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage83.png",
+      "text": "នេះគឺសត្វឈ្លូសកំពុងស៊ីស្លឹកត្រមូងជាចំណី។"
+    },
+    {
+      "n": 82,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage1.png",
+      "text": "នេះគឺសត្វប្រើកំពុងរើសស៊ីផ្លែស្វាយព្រៃ។"
+    },
+    {
+      "n": 83,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage3.png",
+      "text": "នេះគឺជ្រូកព្រៃកំពុងស៊ីផ្លែចំបក់ជាចំណី។"
+    },
+    {
+      "n": 84,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage31.png",
+      "text": "នេះគឺសត្វកែសតែងតែរស់នៅក្នុងជ្រោះជ្រៅ។"
+    },
+    {
+      "n": 85,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage84.png",
+      "text": "នេះគឺកំពុងស៊ីទន្សោងទំពាង់ជាចំណី។"
+    },
+    {
+      "n": 86,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage85.png",
+      "text": "នេះគឺសត្វខ្ទីងកំពុងស៊ីស្មៅជាចំណី។"
+    },
+    {
+      "n": 87,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage86.png",
+      "text": "នេះគឺអណ្ដើកភ្នំកំពុងស៊ីផ្សិតនៅក្បែរអូរជាចំណី។"
+    },
+    {
+      "n": 88,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage87.png",
+      "text": "នេះគឺអណ្ដើកទឹកកំពុងស៊ីដើមត្រាវជាចំណី។"
+    },
+    {
+      "n": 89,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage88.png",
+      "text": "នេះគឺសត្វគន្ធាយកំពុងស៊ីត្រីក្នុងទឹក។"
+    },
+    {
+      "n": 90,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage89.png",
+      "text": "នេះគឺបង្កងកំពុងស៊ីស្លែក្នុងទឹកជាចំណី។"
+    },
+    {
+      "n": 91,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage90.png",
+      "text": "នេះគឺក្តាមកំពុងពាំជន្លេនដើម្បីស៊ី។"
+    },
+    {
+      "n": 92,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage91.png",
+      "text": "នេះគឺកង្កែបកំពុងស៊ីជន្លេនកក្បែរច្រាំងអូរ។"
+    },
+    {
+      "n": 93,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage92.png",
+      "text": "នេះគឺត្រីកំពុងត្របាក់ស៊ីផ្កាក្នុងទឹក។"
+    },
+    {
+      "n": 94,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage93.png",
+      "text": "នេះគឺមាន់កំពុងចឹកស្រូវក្នុងចង្អេរជាចំណី។"
+    },
+    {
+      "n": 95,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage94.png",
+      "text": "នេះគឺសត្វទាកំពុងស៊ីស្រូវកក្នុងឃ្លោកជាចំណី។"
+    },
+    {
+      "n": 96,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage95.png",
+      "text": "នេះគឺឆ្មាកំពុងដេញចាប់កណ្តុរជាចំណី។"
+    },
+    {
+      "n": 97,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage96.png",
+      "text": "នេះគឺឆ្កែកំពុងស៊ីបាយជ្រូកក្នុងឆ្នាំងជាចំណី។"
+    },
+    {
+      "n": 98,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage97.png",
+      "text": "នេះគឺជ្រូកកំពុងស៊ីចំណីក្នុងស្នូក។"
+    },
+    {
+      "n": 99,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage106.png",
+      "text": "នេះគឺពពែកំពុងស៊ីស្លឹកម្ទេសជាចំណី។"
+    },
+    {
+      "n": 100,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage105.png",
+      "text": "នេះគឺគោកំពុងស៊ីចំប៉ើងជាចំណី។"
+    },
+    {
+      "n": 101,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage103.png",
+      "text": "នេះគឺក្របីកំពុងដេកត្រាំនៅក្នុងទឹកត្រពាំង។"
+    },
+    {
+      "n": 102,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0328e0f7-1046-499e-a1c2-91550df5c50c%2f%e1%9f%a4%e1%9f%a5+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%95%e1%9f%85%e2%80%8b%e1%9e%9a%e1%9e%bc%e1%9e%94%e2%80%8b%e1%9e%98%e1%9e%96%e1%9f%84%e2%80%8b%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage104.png",
+      "text": "នេះគឺសត្វសេះកំពុងផឹកទឹកក្នុងកាធន់៕"
+    }
+  ],
+  "stats": {
+    "pages": 102,
+    "words": 105
+  }
+}

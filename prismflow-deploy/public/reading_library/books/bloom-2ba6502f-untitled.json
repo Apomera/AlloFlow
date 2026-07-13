@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-2ba6502f-untitled",
+  "title": "ဆီအဲနံင်ကနိုက်အီုန်ဒီႈ",
+  "description": "လော်င် ဂီတဂေန်း စာနံင်ကနိုက် ဘိူန်နံင်ကော်ည်အန်း ပံင်ကနိုက်ဂီုန်းယာဝ်း ကံပ်ဘူနာ်ႇဘိုး ပံင်နံင်တဇူႈကနိုက်။",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "2021, RBTT & NTC"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "2021, RBTT & NTC",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/evdHO8ORCE"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f8.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f1.jpg",
+      "text": "အဲနံင်ကနိုက်ဆီ နံင်ချဲမ်းအီုန်ဒီႈနီး။ ဟာႈ၊ အဲကနိုက် ကတားကလိူည်း။"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f3.jpg",
+      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊အဲကနိုက် အျိူဝ်းကိုင်ကပူည်း။"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f22.jpg",
+      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊ အဲကနိုက် ကတော်ဂျဲတ်။"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f4.jpg",
+      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊အဲကနိုက် ႎဲန်ႎည်း။"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f5.jpg",
+      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊ အဲကနိုက် ကဖာႇႎါးကော်ည်။"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f62.jpg",
+      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊အဲကနိုက် ကလိုက်ဆလေႇ။"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f7.jpg",
+      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊ အဲကနိုက် ကတော်ချိုင်းနာ်ႏ။"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f81.jpg",
+      "text": "ဆည်းလိူည်း၊ အချီုင်နံင်ကနိုက်အဲအီုန်ဒီႈနီး၊ အန်းဂေါ်ည်းခည်နာင့်။ အဲကနိုက်ပေါႇ အူမျိုးဟော်ည်ႇအူမျိုးနာ်ႏ။ ႎေး.. ႎေး..။"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 33
+  }
+}

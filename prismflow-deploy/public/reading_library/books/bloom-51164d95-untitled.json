@@ -1,0 +1,80 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-51164d95-untitled",
+  "title": "အံင်ဟိုမ်းအိူဝ် အံင်ဟိုမ်းအိူဝ်",
+  "description": "လော်င်ဘည်ဘာည်းပံင်ဟိုမ်း တိုဆံတ်ကဲ။",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "RBTT & NTC"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "RBTT & NTC",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/pDDjnwMpjC"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f51164d95-536d-4cc7-be24-22c5bb72c90b%2f%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba+%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%2f9.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f51164d95-536d-4cc7-be24-22c5bb72c90b%2f%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba+%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%2f1.jpg",
+      "text": "စံန်ႎှားယေဲဝ်းက္လောည်းမာ် အန်နံင်ဒါ်ႈပေါႇ “အံင်ဟိုမ်းအိူဝ် အံင်ဟိုမ်းအိူဝ်။”"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f51164d95-536d-4cc7-be24-22c5bb72c90b%2f%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba+%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%2f2.jpg",
+      "text": "စံန်ဆာင်းယေဲဝ်း ဆဲန်ငမာည်းမာ် အန်းဒါ်ႈပေါႇ “အံင်ဟိုမ်းအိူဝ် အံင်ဟိုမ်းအိူဝ်။”"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f51164d95-536d-4cc7-be24-22c5bb72c90b%2f%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba+%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%2f3.jpg",
+      "text": "စံန်ဆံဝ်းယေဲဝ်း ကအာင်းမာ် အန်းဒါ်ႈပေါႇ “အံင်ဟိုမ်အိူဝ် အံင်ဟိုမ်းအိူဝ်။”"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f51164d95-536d-4cc7-be24-22c5bb72c90b%2f%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba+%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%2fb.jpg",
+      "text": "အညဲဝ်မာ် စံန်အန်းယေဲဝ်း ကားခေါႈ အန်းနံင်ဒါ်ႈပေါႇ “အံင်ဟိုမ်းအိူဝ် အံင်ဟိုမ်းအိူဝ်။”"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f51164d95-536d-4cc7-be24-22c5bb72c90b%2f%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba+%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%2f5.jpg",
+      "text": "စံန်အျိူဝ်းကမား ယေဲဝ်းႎမာ် အန်းဒါ်ႈပေါႇ “အံင်ဟိုမ်းအိူဝ် အံင်ဟိုမ်းအိူဝ်။”"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f51164d95-536d-4cc7-be24-22c5bb72c90b%2f%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba+%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%2f6.jpg",
+      "text": "အကျိူန်းစီ ဆာ်ယေဲဝ်းဘဘူရာ်န်မာ် အန်းဒါ်ႈပေါႇ “အင်ဟိုမ်းအိူဝ် အံင်ဟိုမ်းအိူဝ်။”"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f51164d95-536d-4cc7-be24-22c5bb72c90b%2f%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba+%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%2f7.jpg",
+      "text": "မက်ဒဲ့ဆာ်ယေဲဝ်း ပါင်ဘတ်ချှီႇ အန်းစီဒါ်ႈပေါႇ “အံင်ဟိုမ်းအိူဝ် အံင်ဟိုမ်းအိူဝ်။”"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f51164d95-536d-4cc7-be24-22c5bb72c90b%2f%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba+%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%2f8.jpg",
+      "text": "ကော်န်းဘဲဒဲ့မာ် စံန်အန်းယေဲဝ်းဘျည်းဒဲ့ အန်းစီဒါ်ႈပေါႇ “အံင်ဟိုမ်းအိူဝ် အံင်ဟိုမ်းအိူဝ်။”"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f51164d95-536d-4cc7-be24-22c5bb72c90b%2f%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba+%e1%80%a1%e1%80%b6%e1%80%84%e1%80%ba%e1%80%9f%e1%80%ad%e1%80%af%e1%80%99%e1%80%ba%e1%80%b8%e1%80%a1%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%2f91.jpg",
+      "text": "ဆာ်တိုဆံတ်ကဲယေဲဝ်းပံင်ဟိုမ်းကဲ ကဲနံင်ဒါ်ႈဒို့ “အံင်ဟိုမ်းအိူဝ်...အံင်ဟိုမ်းအိူဝ်ဟာ့်။”"
+    }
+  ],
+  "stats": {
+    "pages": 9,
+    "words": 43
+  }
+}

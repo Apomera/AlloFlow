@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-38837f70-untitled",
+  "title": "ဟာ်မ်းတိုဆံတ်ကဲ",
+  "description": "လော်င်ဘည်ဘာည်းဟာ်မ်းတိုဆံတ်ကဲ တော်န်းမျိုးတော်န်းလှေ။",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "RBTT & NTC"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "RBTT & NTC",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/RPtSR5x6iv"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f38837f70-cb55-4312-989c-18fd58a719e9%2f%e1%80%9f%e1%80%ac%e1%80%ba%e1%80%99%e1%80%ba%e1%80%b8%e1%80%90%e1%80%ad%e1%80%af%e1%80%86%e1%80%b6%e1%80%90%e1%80%ba%e1%80%80%e1%80%b2%2fa+(4).jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f38837f70-cb55-4312-989c-18fd58a719e9%2f%e1%80%9f%e1%80%ac%e1%80%ba%e1%80%99%e1%80%ba%e1%80%b8%e1%80%90%e1%80%ad%e1%80%af%e1%80%86%e1%80%b6%e1%80%90%e1%80%ba%e1%80%80%e1%80%b2%2f1.jpg",
+      "text": "ဟာ်မ်းကဒိုးအျိူဝ်းကိုင်ဒါင်း စီကဒိုးဟာ်မ်းဒါ်ႈလာ် အောက်... အီး..အီး..အူတ်။"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f38837f70-cb55-4312-989c-18fd58a719e9%2f%e1%80%9f%e1%80%ac%e1%80%ba%e1%80%99%e1%80%ba%e1%80%b8%e1%80%90%e1%80%ad%e1%80%af%e1%80%86%e1%80%b6%e1%80%90%e1%80%ba%e1%80%80%e1%80%b2%2fa+(2).jpg",
+      "text": "အီးမိုႈဟာ်မ်းအျိူဝ်းကမားဒါင်း အီးပ္လေႈဘိူန်းအန်း စီဟာ်မ်းဘာည်း ကတောတ်...ကတောတ်။"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f38837f70-cb55-4312-989c-18fd58a719e9%2f%e1%80%9f%e1%80%ac%e1%80%ba%e1%80%99%e1%80%ba%e1%80%b8%e1%80%90%e1%80%ad%e1%80%af%e1%80%86%e1%80%b6%e1%80%90%e1%80%ba%e1%80%80%e1%80%b2%2f3.jpg",
+      "text": "ဟာ်မ်းပါဝ်လႎါည်းဒါင်း စီဟာ်မ်းဘာည်း ႎေါ်င်း...ႎေါ်င်း။"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f38837f70-cb55-4312-989c-18fd58a719e9%2f%e1%80%9f%e1%80%ac%e1%80%ba%e1%80%99%e1%80%ba%e1%80%b8%e1%80%90%e1%80%ad%e1%80%af%e1%80%86%e1%80%b6%e1%80%90%e1%80%ba%e1%80%80%e1%80%b2%2f8.jpg",
+      "text": "အီးမိုႈဟာ်မ်းအညျဲဝ် စီဟာ်မ်းဘာည်း ညောင်...ညောင်။"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f38837f70-cb55-4312-989c-18fd58a719e9%2f%e1%80%9f%e1%80%ac%e1%80%ba%e1%80%99%e1%80%ba%e1%80%b8%e1%80%90%e1%80%ad%e1%80%af%e1%80%86%e1%80%b6%e1%80%90%e1%80%ba%e1%80%80%e1%80%b2%2fv.jpg",
+      "text": "ဟာ်မ်းဘျောႈဆံဝ်းဒဲ့ စီဟာ်မ်းဘာည်း ႎေါက်... ႎေါက်။"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f38837f70-cb55-4312-989c-18fd58a719e9%2f%e1%80%9f%e1%80%ac%e1%80%ba%e1%80%99%e1%80%ba%e1%80%b8%e1%80%90%e1%80%ad%e1%80%af%e1%80%86%e1%80%b6%e1%80%90%e1%80%ba%e1%80%80%e1%80%b2%2fn.jpg",
+      "text": "အီးမိုႈဟာ်မ်းအရိုက် စီဟာ်မ်းဘာည်း အိုင်းႎါင်...အိုင်းႎါင်။"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f38837f70-cb55-4312-989c-18fd58a719e9%2f%e1%80%9f%e1%80%ac%e1%80%ba%e1%80%99%e1%80%ba%e1%80%b8%e1%80%90%e1%80%ad%e1%80%af%e1%80%86%e1%80%b6%e1%80%90%e1%80%ba%e1%80%80%e1%80%b2%2fs.jpg",
+      "text": "ဟာ်မ်းအပ္လိုည်း စီဟာ်မ်းဒါ်ႈလာ် တ...ကူးကူးကု။"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f38837f70-cb55-4312-989c-18fd58a719e9%2f%e1%80%9f%e1%80%ac%e1%80%ba%e1%80%99%e1%80%ba%e1%80%b8%e1%80%90%e1%80%ad%e1%80%af%e1%80%86%e1%80%b6%e1%80%90%e1%80%ba%e1%80%80%e1%80%b2%2fa+(4)1.jpg",
+      "text": "ဟာ်မ်းဒါ်ႈတိုဆံတ်ကဲ မအေဲႈမှေဲမ်ခိုည်းတညာဝ်းပေါႇအခည်းဟာ့်။"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 26
+  }
+}

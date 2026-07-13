@@ -1,0 +1,217 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-0cc8e478-untitled",
+  "title": "៣៧ខ នអើន ឞូនុយ្សគែសនាវទើយមាមពោមពា",
+  "description": "People have dominion over the animals (Easy Reader - Level 2)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/jRSDQq6Y3k"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage1.png",
+      "text": "​កាល​ពី​ដើម​ឡើយ ​មាន​មនុស្ស​ពីរ​នាក់​ប្តីប្រពន្ធ​បាន​បបួល​គ្នា​ដើរ​រក​សត្វ​ព្រៃ​ ​ដើម្បី​យក​មក​នៅ​ជា​មួយ ។​"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage4.png",
+      "text": "ជាដំបូងស្វែងរក​បាន​សត្វដំរីពីរ ​ឈ្មោល​មួយ​ ​ញី​មួយ​​ ។​"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage8.png",
+      "text": "ស្វែងរក​បាន​គោព្រៃពីរ ឈ្មោល​មួយ​ ញីមួយ​។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage9.png",
+      "text": "ដើរ​រក​បាន​ឆ្កែ​ព្រៃ​ពីរ​ ​ឈ្មោល​​​មួយ​ ញីមួយ​។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage10.png",
+      "text": "ដើរ​រក​បាន​ឆ្កែ​ព្រៃ​ពីរ​ ​ឈ្មោល​​​មួយ​ ញីមួយ​។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage11.png",
+      "text": "ដើរ​រក​បាន​ជ្រូក​ព្រៃពីរ ឈ្មោលមួយ​​ ​ញី​មួយ​ ។ ​"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage12.png",
+      "text": "​ដើរកបាន​ឆ្មាព្រៃពីរ ឈ្មោលមួយ​ ញី​មួយ។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage13.png",
+      "text": "ដើររក​បាន​​មាន់ព្រៃពីរ ឈ្មោលមួយ​ ​ញីមួយ​។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage14.png",
+      "text": "ដើរ​រក​បាន​ទា​ព្រៃពីរ ឈ្មោល​មួយ ញីមួយ​។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage2.png",
+      "text": "បន្ទាប់មកពួកគេធ្វើការបែងចែកចិញ្ចឹមនិងទទួលខុសត្រូវលើ​សត្វ​​ទាំង​នេះ​។ ​​ពូទាល់ទទួលខុសត្រូវនិងចិញ្ចឹម​ថែរក្សា​លើសត្វ​ដំរី ​គោ​ ​និងក្របី។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage3.png",
+      "text": "ចំណែកមីង​អ៊ើយ​ទទួល​ខុស​ត្រូវ​​ចិញ្ចឹមថែរក្សា​លើសត្វ ​ឆ្កែ​ ​ឆ្មា​ ទា​ និង​មាន់។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage5.png",
+      "text": "​ពូទាល់​ឃ្វាលចងដំរី​អោយស៊ីដើម​ឫស្សី​ក្នុងព្រៃមួយ។"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage6.png",
+      "text": "មីង​អ៊ើយ​ហាន់​ដើម​ចេក​ធ្វើបាយជ្រូក និងដាក់បាយអោយវា​។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage7.png",
+      "text": "ពូទាល់​កំពុងឃ្វាល​គោ​នៅទីវាលស្មៅ។​"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage15.png",
+      "text": "មីង​អ៊ើយ​កំពុង​​ដាក់​បាយអោយឆ្កែ។"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage16.png",
+      "text": "ពូទាល់​កំពុងឃ្វាល​ក្របី​នៅ​ក្នុងវាល​ស្រែ​។"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage17.png",
+      "text": "មីងអ៊ើយកំពុងដាក់បាយនិងត្រីក្រៀម​ទៅឆ្មា។"
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage18.png",
+      "text": "មីង​អ៊ើយ​កំពុងបាចចុង​អង្ករអោយទៅមាន់​និងទាស៊ីខាងមុខផ្ទះ។"
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage19.png",
+      "text": "ពួកគាត់ថែ​រក្សា​សត្វ​ពាហនៈទាំងនោះយូរៗ​ទៅ​កើត​បាន​កូន។ សត្វ​ដំរី​កើត​កូន​បាន​ពីរ​ ​ឈ្មោល​មួយ​ ​ញី​មួយ​។"
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage20.png",
+      "text": "គោ​កើត​កូន​បាន​ពីរ​ ​ឈ្មោល​មួយ ញី​មួយ។"
+    },
+    {
+      "n": 21,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage21.png",
+      "text": "ក្របី​កើត​បាន​កូន​ពីរ​ ​ឈ្មោល​មួយ​ ញី​មួយ។"
+    },
+    {
+      "n": 22,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage22.png",
+      "text": "ជ្រូក​កើត​កូន​បាន​ពីរ​ ​ឈ្មោល​មួយ ​ញី​មួយ។"
+    },
+    {
+      "n": 23,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage23.png",
+      "text": "​ឆ្កែ​កើត​កូន​បាន​ពីរ​ ​ឈ្មោល​មួយ ញី​មួយ ។"
+    },
+    {
+      "n": 24,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage24.png",
+      "text": "ឆ្មា​កើត​កូន​បាន​ពីរ​ ​ឈ្មោល​មួយ ​ញី​មួយ​​​។"
+    },
+    {
+      "n": 25,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage25.png",
+      "text": "ទានិងមាន់ក៏​កើត​កូន​បាន​ពីរ​ ​ឈ្មោល​មួយ ញី​មួយ។"
+    },
+    {
+      "n": 26,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage26.png",
+      "text": "​ពូទាល់​និង​មីង​អ៊ើយ​ពិភាក្សាគ្នា ​ដើម្បី​ប្រើប្រាស់​សត្វ​ទាំង​នោះ​​​។ សត្វដំរី​ ប្រើអូស​ឈើ​មក​ធ្វើផ្ទះ។"
+    },
+    {
+      "n": 27,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage27.png",
+      "text": "សត្វគោ​​ប្រើ​ទឹម​រទេះ។"
+    },
+    {
+      "n": 28,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage28.png",
+      "text": "សត្វក្របី​ប្រើភ្ជួរ​ស្រែ។"
+    },
+    {
+      "n": 29,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage29.png",
+      "text": "សត្វ​ជ្រូកកាប់ធ្វើសាច់​បរិភោគ​។"
+    },
+    {
+      "n": 30,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage30.png",
+      "text": "​សត្វឆ្កែព្រៃ​និង​ឆ្មា​ប្រើអោយ​ចាំ​ផ្ទះ។"
+    },
+    {
+      "n": 31,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage31.png",
+      "text": "សត្វមាន់ ​និង​ ទាកាប់យក​សាច់​ធ្វើម្ហូប​។"
+    },
+    {
+      "n": 32,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage36.png",
+      "text": "​សត្វទាំងនោះ​ដឹង​ថាមនុស្ស​មានបំណងចង់ត្រួតត្រា​និង​ប្រើប្រាស់វា​​ ក៏នាំគ្នា​រត់​ចូលព្រៃ​អស់ ​ទុកចោលកូនវា​អោយនៅ​ជាមួយ​មនុស្ស។"
+    },
+    {
+      "n": 33,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage37.png",
+      "text": "​ពួទាល់នឹង​មីង​អ៊ើយ​រកវិធីសាស្ត្រមួយ ដើម្បី​កុំ​អោយ​កូន​សត្វ​ទាំងនោះរត់ចូលព្រៃទៀត។ ពួក​គាត់ចងដំរី និង ​ដាក់​ឃ្នោះ​ជើងវា។"
+    },
+    {
+      "n": 34,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage38.png",
+      "text": "សត្វ​គោ​និង​ក្របីដាក់កន្លុះចងខ្សែរ ។"
+    },
+    {
+      "n": 35,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage34.png",
+      "text": "​សត្វជ្រូ​កដាក់ចូលទ្រុង។ សត្វមាន់ ​​និង​​ទា​ដាក់​ចូលទ្រុង។ ​ចំណែក​សត្វឆ្មា​និង​ឆ្កែព្រៃ ពួក​គាត់​ចងនឹងខ្សែភ្ជាប់​នឹង​សសរ។"
+    },
+    {
+      "n": 36,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0cc8e478-9735-4f0a-9646-f91c76370077%2f%e1%9f%a3%e1%9f%a7%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9e%e1%9e%bc%e1%9e%93%e1%9e%bb%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%93%e1%9e%b6%e1%9e%9c%e2%80%8b%e1%9e%91%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%b6%e1%9e%98%e1%9e%96%e1%9f%84%e1%9e%98%e1%9e%96%e1%9e%b6%2fimage35.png",
+      "text": "យូរៗទៅពូទាល់និងមីងអ៊ើយបានដាក់ឈ្មោះសត្វទាំងនោះថា ដំរី គោ ក្របី ឆ្កែ ឆ្មា ជ្រូក មាន់ ទា ​រហូតមក​ដល់​មនុស្ស​យើងសព្វថ្ងៃនេះទៅ៕​"
+    }
+  ],
+  "stats": {
+    "pages": 36,
+    "words": 107
+  }
+}

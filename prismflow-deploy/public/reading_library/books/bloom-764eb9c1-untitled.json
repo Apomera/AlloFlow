@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-764eb9c1-untitled",
+  "title": "دریاچۀ مهربان",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/XP8ZPS7aHk"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f764eb9c1-62cd-48bb-9496-dbed50744a63%2f%d8%af%d8%b1%db%8c%d8%a7%da%86%db%80+%d9%85%d9%87%d8%b1%d8%a8%d8%a7%d9%86%2f1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f764eb9c1-62cd-48bb-9496-dbed50744a63%2f%d8%af%d8%b1%db%8c%d8%a7%da%86%db%80+%d9%85%d9%87%d8%b1%d8%a8%d8%a7%d9%86%2f2.jpg",
+      "text": "دریک قریۀ سر سبز دریاچه ای جریان داشت.\nآب دریاچه زُلال و پاک بود.\nدهقانان برای آبیاری از آب دریاچه استفاده می کردند."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "ماهیان درآب زندگی می کردند.\nآب در جویبارها و کوچه باغ ها تقسیم می شد.\nباغ ها، باغچه ها و سبزیجات آبیاری می شدند.\nآب رود خانه همه جا را سرسبز کرده بود.\nآب برای مردم قریه نعمت بزرگی بود."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f764eb9c1-62cd-48bb-9496-dbed50744a63%2f%d8%af%d8%b1%db%8c%d8%a7%da%86%db%80+%d9%85%d9%87%d8%b1%d8%a8%d8%a7%d9%86%2fscan00121.jpg",
+      "text": "آب دریاچه باعث آبیاری زمین ها و\nروشنایی قریه می شد.\nبند برقی که در دریاچه فعال بود،\nباعث روشنایی قریه می شد.\nمردم از داشتن دریاچه خوشحال بودند."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "در یکی از روز های تابستانی، آب در باغ جریان داشت.\nدر باغ درختان بلند قامت و پُر میوه زیاد بود.\nدرختان بلند قامت و پُر میوه طبیعت را زیبا کرده بود.\nآب دریاچه وقتی این همه زیبایی را\nدید، خوشحال شد.\nآب به طرف درختان لبخند زد."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f764eb9c1-62cd-48bb-9496-dbed50744a63%2f%d8%af%d8%b1%db%8c%d8%a7%da%86%db%80+%d9%85%d9%87%d8%b1%d8%a8%d8%a7%d9%86%2fscan00112.jpg",
+      "text": "درخت شفتالو به آب گفت: تو برای ما طراوت و شادابی می بخشی.\nاو گفت: توباعث می شوی که ما میوه های بیشتربدهیم.\nما همه تو را دوست داریم."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "آب آهسته آهسته به طرف باغچۀ گل ها رفت.\nگل ها از دیدن آب خوشحال شدند.\nگل گلاب به آب گفت: وقتی تو را می بینم، شاداب می شوم.\nبرگ هایم تازه می شود.\nگل گلاب گفت: تو باعث می شوی من فضا را خوشبو کنم."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f764eb9c1-62cd-48bb-9496-dbed50744a63%2f%d8%af%d8%b1%db%8c%d8%a7%da%86%db%80+%d9%85%d9%87%d8%b1%d8%a8%d8%a7%d9%86%2fscan0013.jpg",
+      "text": "بلبل خوش صدا به آب گفت: وقتی تو گل ها را سیرآب می کنی، گل ها تازه می شوند.\nمن از تازه گی آن ها خوشحال می شوم."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "آب به طرف بته های بادنجان سیاه ، بادنجان رومی و دیگر سبزیجات رفت.\nآن ها گفتند: ما منتظرت بودیم.\nخوب شد آمدی، ما خیلی تشنه بودیم.\nتو برای ما زندگی می بخشی.\nآب خیلی خوشحال شد.\nآب به حیات انسان ها، حیوانات و نباتات ضروری می باشد.\nهمه با هم می گوییم: خداوند را سپاسگزاریم که آب را آفرید."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 303
+  }
+}

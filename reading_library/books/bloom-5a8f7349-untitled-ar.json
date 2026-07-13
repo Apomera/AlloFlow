@@ -1,0 +1,147 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-5a8f7349-untitled-ar",
+  "title": "من سرق ابتسامة أخي؟",
+  "description": "Bhaiya doesn't feel like playing these days. Could it be because of his new monster friend Dukduk, who is always hanging around him? No one in the family takes Bhaiya seriously. But Chiru knows there's more than what meets the eye. A story about the lingering effects of depression.",
+  "language": "Arabic",
+  "langCode": "ar",
+  "isRtl": true,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Education Above All (EAA)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Education Above All (EAA)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/jsGrv9V0Av"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_1S.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_2S.png",
+      "text": "اعتادت شادن وأخوها اللعب طوال الوقت؛ قد يكتشفان كهفًا مظلمًا أسفل عتبات الدرج، وفي أحيانٍ أخرى يتصدَّيان للكائنات الفضائية التي تُخَّطط لغزو شجرة المانجو في الفناء الخلفي."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_3S.jpg",
+      "text": "دائمًا ما كان يفلح أخوها في جعل أخته تضحك حين يصيح: \"المانجاسورا وحش المانجو الفتاك آتٍ من المريخ للقضاء على منزلك! واه-واه!\"\nفتردّ عليه شادن: \"آها! سألقي القبض عليه ثم سأبتلعه على الفور، باخ باخ!\""
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_4S.jpg",
+      "text": "ولكن، مرَّ وقت طويل دون أن يلعب الأخوان معًا؛ فأخوها لم يعد يريد اللعب هذه الأيام\nتوبخه شادن قائلة: \"لماذا لا تشعر برغبة في اللعب يا أخي؟\"\nفيردّ عليها: \"لا أريد وحسب، أشعر أن هناك وحشًا ضخمًا يجثم على صدري.\""
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_5S.jpg",
+      "text": "تقَّرر شادن أن تطلق اسم دنقل على ذلك الوحش الخفي.\nتفكر بصمت: \"لا بد أن يكون دنقل هذا شديد اللؤم، ينتابني شعور بأنه قد ابتلع ابتسامة أخي.\" ولسوء الحظ، فإن دنقل لا يفارق أخاها طوال الوقت، مما يستثير شادن، فتقول بحنق: \"اطلب من وحشك الرحيل، فأنا لا أطيقه.\""
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_6S.png",
+      "text": "في بعض الأيام يتضخَّم دنقل حتى يصير أكبر من شاحنة عملاقة، ويكون أخي حينها سريع الانفعال من كل شيء، حتى أنه يمضغ طعامه بغضب بالغ!"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_7S.jpg",
+      "text": "تعتقد أمي أن بمقدورها مساعدة أخي على الشعور بحال أفضل، فتطلب منه قائلة: \"يجب عليك التنزه؛ فالهواء المنعش سيشعرك بتحسن دون شك.\""
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_8S.jpg",
+      "text": "إلا أن أخي لا يستطيع الإفلات من دنقل؛ فهو شديد التشبث به، حتى أنه لا يسمح له بمغادرة الفراش في بعض الأحيان."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_9S.jpg",
+      "text": "أبي لا يتو قف عن سؤال أخي عن مزاجه وتقديم النصح له.\n\"لماذا لا تأكل طعامك؟ تغذى جيدًا وستتلاشى كل همومك.\""
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_10S.png",
+      "text": "هنالك أيام يتضاءل فيها دنقل ويحلق متراخيًا كطائرة ورقية، بحيث يمكن لأخي مغادرة الفراش واللعب مع شادن، لكنه سرعان ما يشعر بالتعب ويعود إلى فراشه منهك القوى."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_11.jpg",
+      "text": "ستفسر كلٌ من الجدِّ والجدَّة عمَّا حل ب أخي ، ثم تضيف الجدَّة:\"يا لكم من صبية! في أيامنا كنَّا أقوياء جدًا، ولم يستطع شيء النَّيل منَّا.\"\nويردف جدِّي قائلًا: \"أنت فقط مشتت للغاية.\""
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_12S.jpg",
+      "text": "الجميع يردد: \"تلك المشاعر هي نتاج أفكارك، ويجب عليك العمل للتخلُّص منها.\"\nوأخي يعِدُ بالمحاولة، لكنه لا يكف عن القول: \"إنه ليس بالأمر السهل.\""
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_13S.jpg",
+      "text": "تحاول شادن تشتيت أخيها عن الاستغراق في تعاسته: \"انظر إلى هذا الكتاب، أليست تلك الرسومات جميلة للغاية؟\"\nيجيب أخوها: \"إنها جيدة.\""
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_14.jpg",
+      "text": "تنادي شادن: \"أخي، هل رأيت هذا القطار الجديد؟\"\nفيجيب: \"أممم، جميل.\"\nتداعبه: \"اهرب يا أخي! مانجاسورا وحش المانجو هنا.\"\nلكنه يقول: \"ليس الآن يا شادن، فأنا لا أريد اللعب."
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_15S.jpg",
+      "text": "تعتقد شادن أن دنقل هو المسؤول عن هذا التَّحول في سلوك أخيها.\nفتأخذ وسادة وتنهال عليه ضربًا: \"خُذْ هذه أيُّها البشع! فلتغادر أخي الآن ولتعد إليه ابتسامته.\""
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_16S.png",
+      "text": "أعدَّت شادن قالبًا من الحلوى احتفالًا بذكرى ميلاد أخيها.\nابتسم قائلًا: \"شكرًا لكِ!\"\nلكن شادن لم تعجبها تلك الابتسامة؛ فلقد بدت أقل إشراقًا مما عهدت منه."
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_17S2.jpg",
+      "text": "وبعد أن استنفدت شادن جميع محاولاتها، جلست بهدوء إلى جوار أخيها وسألته: \"هل صديقك الجديد هو من يجعلك حزينًا للغاية؟\"\nأومأ أخوها برأسه."
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_18S.jpg",
+      "text": "ثُمَّ أضاف: \"أرغب حقًا في أن أكون سعيدًا، لكنها مهمة شاقة في معظم الأوقات.\"\nتساءلت شادن: \"كم من الوقت سيبقى صديقك؟\"\nأجاب أخوها : \"لا أعلم.\""
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_19S.jpg",
+      "text": "أخيرًا قالت شادن: \" لا بأس يا أخي، يمكننا اللعب حين ترغب في ذلك.\"\nابتسم أخوها ابتسامته السابقة وتصاغر دنقل بسبب ذلك."
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_20S.jpg",
+      "text": "والآن، يزور أخوها طبيبة مختصَّة لتساعده على الشعور بحال أفضل."
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_21S.png",
+      "text": "دنقل ما زال ملازمًا لأ خيها، لكن الأهم أنَّ شادن قدتعلَّمت كيف تتعامل معه؛ فحينما يصير عملاقًا للغاية، تنتظر حتى يتضاءل، أما عندما يكون صغيرًا كما هي الحال غالبًا، فإنها تستمتع باللعب مع أخيها."
+    },
+    {
+      "n": 21,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_22S.png",
+      "text": "دنقل = الاكتئاب\nعندما نصاب بأذى جسماني ككسر في ذراع أو أنفلونزا موسمية، نحتاج إلى أخذ الدواء كي نشعر بتحسن، كذلك يمكن لأدمغتنا أن تتأذى كأي عضو آخر، وقد تلزمنا المساعدة للشفاء. فالإنسان بطبعه يمر بتقلبات مختلفة من المشاعر، ففي بعض الأحيان نشعر بالحزن والغضب ورغبة في البكاء لكن تلك الأحاسيس لا تلبث أن تمر ويشعر الفرد منَّا بتحسن، فلا تقلق عند إحساسك بشيء من تلك المشاعر؛ فمن الطبيعي تمامًا أن تشعر بالحزن من وقت لآخر.\nأما البعض منَّا فلديه حزن يدوم لفترات طويلة. وبما أن أدمغتنا هي التي تساعدنا على التفكير والشعور والتصَّرف، فحينما نشعر بالحزن طوال الوقت، فهذا يؤثر على سلوكنا بشكل كبير، فلا نشعر برغبة في فعل أي شيء، وقد نشعر وكأن وحشًا كبيرًا يجلس على صدورنا ولا يريد التزحزح أبدًا، هذا الوحش يسمى بالاكتئاب.\nعندما تصادفون شخصًا حزينًا دون أن يكون هناك سبب واضح بادروا بالحديث معه، أخبروه أنكم ربما قد لا تفهمون طبيعة ما يشعر به على وجه الدقة، لكنكم تدركون صعوبة الأمر وتودُّون المساعدة. أما إذا كنتم أنتم من تُمُّرون بهذه المشاعر السوداوية، فأخبروا أحد أفراد عائلتكم أو أصدقائكم على الفور، وتذكروا أنه من المفيد أيضًا التَّحدث إلى شخص مختص كطبيب نفسي أو اختصاصي اجتماعي."
+    },
+    {
+      "n": 22,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/paul_frank%40sil-lead.org%2f5a8f7349-1336-4119-8034-fa9053a60cb7%2f%d9%85%d9%86+%d8%b3%d8%b1%d9%82+%d8%a7%d8%a8%d8%aa%d8%b3%d8%a7%d9%85%d8%a9+%d8%a3%d8%ae%d9%8a%d8%9f%2fimage_23S.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 22,
+    "words": 733
+  }
+}

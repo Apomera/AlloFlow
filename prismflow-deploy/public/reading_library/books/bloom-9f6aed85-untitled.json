@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-9f6aed85-untitled",
+  "title": "نظافت مکتب",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/3QAdBUWN1j"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f9f6aed85-76a7-4b14-bf7a-032d43eb6bf8%2f%d9%86%d8%b8%d8%a7%d9%81%d8%aa+%d9%85%da%a9%d8%aa%d8%a8%2f12.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f9f6aed85-76a7-4b14-bf7a-032d43eb6bf8%2f%d9%86%d8%b8%d8%a7%d9%81%d8%aa+%d9%85%da%a9%d8%aa%d8%a8%2f2.jpg",
+      "text": "فرزانه پیش از طلوع آفتاب از خواب بیدار شد.\nبعد از خوردن صبحانه آمادۀ رفتن به مکتب شد."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "فرزانه دوست داشت وقت به مکتب برسد.\nاو بازی با همصنفانش را در وقت تفریح دوست داشت.\nروزی در تفریح کیکش را خورد.\nسپس پوش آن را در زباله دانی انداخت."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f9f6aed85-76a7-4b14-bf7a-032d43eb6bf8%2f%d9%86%d8%b8%d8%a7%d9%81%d8%aa+%d9%85%da%a9%d8%aa%d8%a8%2f32.jpg",
+      "text": "در همان حال چشمش به همصنفی اش؛ صادق افتاد.\nصادق پوش کیکش را در صحن مکتب انداخته، مصروف بازی شد."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "فرزانه از این بی توجهی صادق ناراحت شد.\n‌در همان حال که به فکر فرو رفته بود، بابه صابر را دید.\nاو ناراحت در گوشۀ مکتب نشسته بود."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f9f6aed85-76a7-4b14-bf7a-032d43eb6bf8%2f%d9%86%d8%b8%d8%a7%d9%81%d8%aa+%d9%85%da%a9%d8%aa%d8%a8%2f4+%d9%86%d8%b8%d8%a7%d9%81%d8%aa+%d9%85%da%a9%d8%aa%d8%a8.jpg",
+      "text": "فرزانه نزد بابه صابر رفته و پرسید:\n‌بابه صابر! چرا ناراحت استی؟"
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "‌بابه صابر گفت:\nوقتی می بینم کودکان نظافت را رعایت نمی کنند، ناراحت می شوم.\n‌با این ناتوانی چقدر پاک کاری کنم؟\n‌فرزانه از شنیدن سخن های بابه صابر متأثر شد."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f9f6aed85-76a7-4b14-bf7a-032d43eb6bf8%2f%d9%86%d8%b8%d8%a7%d9%81%d8%aa+%d9%85%da%a9%d8%aa%d8%a8%2f%d9%86%d8%b8%d8%a7%d9%81%d8%aa+%d9%85%da%a9%d8%aa%d8%a8+5.jpg",
+      "text": "فرزانه در صنف بعد از پایان درس به معلم صاحب گفت: ‌برای نظافت و پاک کاری مکتب یک پیشنهاد دارم.\nفردا ما در پاک کاری مکتب با بابه صابر همکاری می کنیم."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "باید بَفهمیم که جمع کردن زباله ها چقدر زحمت دارد.\nبابه صابر چقدر خسته شده و زحمت می کشد.\n‌معلم صاحب از پیشنهاد فرزانه خوشحال شده آن را پذیرفت.\n‌فردای آن روز شاگردان شروع به پاک کاری کردند.\n‌وقتی مکتب پاک شد، همه خوشحال شدند.\n‌بابه صابر از همکاری شاگردان خوشحال شد."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 224
+  }
+}

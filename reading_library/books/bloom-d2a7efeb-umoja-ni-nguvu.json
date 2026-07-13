@@ -1,0 +1,72 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-d2a7efeb-umoja-ni-nguvu",
+  "title": "Umoja ni Nguvu",
+  "description": "A family joins a farm co-op to get better prices for their crops.",
+  "language": "Kiswahili",
+  "langCode": "sw",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Community Living"
+  ],
+  "authors": [
+    "Wyatt Perkins"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Wyatt Perkins",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/cbjIdwv72E"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fd2a7efeb-4b68-4f19-9dc0-ea12c4bbd25f%2fWorking+Better+Together%2fimage1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fd2a7efeb-4b68-4f19-9dc0-ea12c4bbd25f%2fWorking+Better+Together%2fimage4.jpg",
+      "text": "Baba Opio anafikiria namna yakulisha familia yake kwa mwaka. Mama Opio anafikiria kuhusu ada ya shule kila muhula."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fd2a7efeb-4b68-4f19-9dc0-ea12c4bbd25f%2fWorking+Better+Together%2fimage2.jpg",
+      "text": "Baba na Mama Opio wamepanda mahindi na mihogo. Mazao haya yatalisha familia. Mazao yatakayo baki yatauzwa ili kupata pesa za matumizi ya familia."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fd2a7efeb-4b68-4f19-9dc0-ea12c4bbd25f%2fWorking+Better+Together%2fimage6.jpg",
+      "text": "Baba na Mama Opio wamepeleka mavuno yao sokoni, lakini bei ilikuwa ndogo sana kwasababu watu wengi wanauza mahindi hawakupata pesa zakutosha kupeleka nyumbani."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fd2a7efeb-4b68-4f19-9dc0-ea12c4bbd25f%2fWorking+Better+Together%2fimage3.jpg",
+      "text": "Baba na Mama Opio hawana furaha kwasababu hawana pesa zakutosha kulipa ada ya shule na kununua mahitaji ya familia."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fd2a7efeb-4b68-4f19-9dc0-ea12c4bbd25f%2fWorking+Better+Together%2fimage8.jpg",
+      "text": "Baba na Mama Okello wanaishi mji wa karibu. Baba Okello amesikia kuhusu chama cha wakulima wanao saidiana. Akamwambia Mama Okello na akakubali kuonana nao."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fd2a7efeb-4b68-4f19-9dc0-ea12c4bbd25f%2fWorking+Better+Together%2fimage9.jpg",
+      "text": "Kikundi cha wakulima hufanya kazi pamoja kununua mbegu, miche, kusafinsha mazao sokoni, kuhifadhi pesa na kupeana mikopo. Mama na Baba Okello wali amua kujiunga na kikundi."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fd2a7efeb-4b68-4f19-9dc0-ea12c4bbd25f%2fWorking+Better+Together%2fimage10.jpg",
+      "text": "Mama na Baba Okello walipata pesa nyingi kutokana na kilimo kwa kufanya kazi na kikundi. Wana furaha kwasababu wanaweza kulipa ada ya shule na kulisha familia yao, kuweka akiba na kukuza shamba lao."
+    }
+  ],
+  "stats": {
+    "pages": 7,
+    "words": 166
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-539688d6-untitled",
+  "title": "मेरी गुरुआमा",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/6mUSSS7Luo"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f539688d6-3a05-4715-bec8-6e30efa5413d%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%80+%e0%a4%97%e0%a5%81%e0%a4%b0%e0%a5%81%e0%a4%86%e0%a4%ae%e0%a4%be%2fteacher11111.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f539688d6-3a05-4715-bec8-6e30efa5413d%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%80+%e0%a4%97%e0%a5%81%e0%a4%b0%e0%a5%81%e0%a4%86%e0%a4%ae%e0%a4%be%2fAOR_PMI018.png",
+      "text": "बिहानको नौ बजेको थियो। बाहिर पानी परिरहेको थियो। करण भने अझै बिछ्यौनामा सुतिरहेका थिए। “करण, ऐ करण, उठ्ने बेला भएन ?” आमाले करणालाई बोलाउनुभयो ।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f539688d6-3a05-4715-bec8-6e30efa5413d%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%80+%e0%a4%97%e0%a5%81%e0%a4%b0%e0%a5%81%e0%a4%86%e0%a4%ae%e0%a4%be%2fAOR_PMI0181.png",
+      "text": "कोठाभरि लुगाफाटो छरिएको थियो। करणको हालत देखी आमा दुःखी हुनभयो। “ल, उठउठ आज तिम्रो जन्मदिन हो”। करण जुरूक्‍क उठे। अनि हातमुख धुन गए।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f539688d6-3a05-4715-bec8-6e30efa5413d%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%80+%e0%a4%97%e0%a5%81%e0%a4%b0%e0%a5%81%e0%a4%86%e0%a4%ae%e0%a4%be%2fimage1.png",
+      "text": "करण आमासँग मन्दिर गएर आए। आमाले पकाउनुभएको मिठामिठा खाना खाए। तर पनि उनी खासै उत्साही थिएनन्।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f539688d6-3a05-4715-bec8-6e30efa5413d%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%80+%e0%a4%97%e0%a5%81%e0%a4%b0%e0%a5%81%e0%a4%86%e0%a4%ae%e0%a4%be%2fmom+scolding.png",
+      "text": "करण आफूलाई काम नलाग्ने मान्छे ठान्थे। सधैँ निरास रहन्थे। लोसे भएकोले उनी आमाबाको गाली खान्थे।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f539688d6-3a05-4715-bec8-6e30efa5413d%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%80+%e0%a4%97%e0%a5%81%e0%a4%b0%e0%a5%81%e0%a4%86%e0%a4%ae%e0%a4%be%2fAOR_ELK-014.png",
+      "text": "खाना खाइसकेर करण स्कुल गए। स्कुलमा उनीसँग कसैले पनि बोलेनन्। उनी निहुरिएर एक कुनामा बसिरहे। कक्षाका कामहरूमा पनि भाग लिएनन्।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f539688d6-3a05-4715-bec8-6e30efa5413d%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%80+%e0%a4%97%e0%a5%81%e0%a4%b0%e0%a5%81%e0%a4%86%e0%a4%ae%e0%a4%be%2fteacher1111.png",
+      "text": "आज नयाँ गुरुआमा कक्षामा आउनुभयो। बिद्यार्थीलाई भविष्यमा के बन्ने लेख्न लगाउनुभयो। सबैले चित्र सहित प्रस्तुत गरे। तर करण चुपचाप बसिरहे।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f539688d6-3a05-4715-bec8-6e30efa5413d%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%80+%e0%a4%97%e0%a5%81%e0%a4%b0%e0%a5%81%e0%a4%86%e0%a4%ae%e0%a4%be%2fimage3.png",
+      "text": "गुरुआमाले करणलाई धाप दिनुभयो। आफ्नो सपना कोर्न भन्नु भयो। बिस्तारै उनले भने। “मेरो सपना नै छैन ।” गुरुआमाले भन्‍नुभयो “किन र?”"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f539688d6-3a05-4715-bec8-6e30efa5413d%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%80+%e0%a4%97%e0%a5%81%e0%a4%b0%e0%a5%81%e0%a4%86%e0%a4%ae%e0%a4%be%2fAOR_pc075.png",
+      "text": "मुन्टो निहुराई करणले भने। “किनकि म सबै कुरामा कमजोर छु”। गुरुआमाले करणलाई अँगाल्नुभयो। “तिमीले चाहेको मान्छे बन्न सक्छौ।”"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f539688d6-3a05-4715-bec8-6e30efa5413d%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%80+%e0%a4%97%e0%a5%81%e0%a4%b0%e0%a5%81%e0%a4%86%e0%a4%ae%e0%a4%be%2fAOR_Pmr003.png",
+      "text": "करणको शिर अलि ठाडो भयो। “साँच्‍चै हो?” उनले भने। गुरुआमाले थप्नुभयो “हो त !” “ल अब तिम्रो सपना कोर ।” उनले थुप्रै सपनाहरू कोरे। अनि फेरि मेटे।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f539688d6-3a05-4715-bec8-6e30efa5413d%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%80+%e0%a4%97%e0%a5%81%e0%a4%b0%e0%a5%81%e0%a4%86%e0%a4%ae%e0%a4%be%2fAOR_th01055b.png",
+      "text": "“अ.. अ.. पख..” गुरुआमाले। कोर्न रोक्नुभयो। “ल भन त यो के हो?” करणले भन्नथाले। डाक्टर, इन्जिनियर, चित्रकार....।"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f539688d6-3a05-4715-bec8-6e30efa5413d%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%80+%e0%a4%97%e0%a5%81%e0%a4%b0%e0%a5%81%e0%a4%86%e0%a4%ae%e0%a4%be%2fAOR_CMB0448.png",
+      "text": "“म सक्छु भन्ने मनमा राख्ने गर। अलि बढि मेहनत गर।” त्यस दिनदेखि करण खुसी देखिन्थे। रमाएर मेहनतसाथ काम गर्न थाले।"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f539688d6-3a05-4715-bec8-6e30efa5413d%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%80+%e0%a4%97%e0%a5%81%e0%a4%b0%e0%a5%81%e0%a4%86%e0%a4%ae%e0%a4%be%2fAOR_boys-09.png",
+      "text": "उनी हरेक क्रियाकलापमा सफल हुनथाले। साथीहरूले पनि मनपराउन थाले। घरमा पनि आमाबाको माया पाउन थाले।"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f539688d6-3a05-4715-bec8-6e30efa5413d%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%80+%e0%a4%97%e0%a5%81%e0%a4%b0%e0%a5%81%e0%a4%86%e0%a4%ae%e0%a4%be%2fimage.jpg",
+      "text": "समय बित्दै गयो, करण ठुलो भए। ऊ नामी फोटोग्राफरको रूपमा परिचित भए।"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f539688d6-3a05-4715-bec8-6e30efa5413d%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%80+%e0%a4%97%e0%a5%81%e0%a4%b0%e0%a5%81%e0%a4%86%e0%a4%ae%e0%a4%be%2fteacher111111.png",
+      "text": "करणले आफ्नो गुरूआमालाई सम्झे। उहाँको हौसला, मेरो मेहनत। सफल जीवन, मेरी गुरूआमा....।"
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 261
+  }
+}

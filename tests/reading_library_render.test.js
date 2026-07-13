@@ -8,7 +8,13 @@
 //   browse grid → narrated-only filter → open an RTL book → reader dir/lang
 //   → 🌐 AI-translate (stubbed Gemini) → caveat banner → ✨ Use as source text.
 
-import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
+
+// The catalog is 3k+ entries and every mount() renders the full browse grid
+// in jsdom; when this suite runs alongside the data-contract suite on a
+// OneDrive-synced tree, the 5s default flakes on whichever test lands on a
+// busy worker. These are integration-weight tests; give them real headroom.
+vi.setConfig({ testTimeout: 30000 });
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
@@ -475,6 +481,29 @@ describe('browse view', () => {
     expect(textOf(host)).toContain(frontiersEntry.title);
     expect(textOf(host)).toContain('Frontiers for Young Minds');
     expect(textOf(host)).toContain('CC BY 4.0');
+  });
+});
+
+describe('reader view (Bloom book)', () => {
+  it('opens a mirrored Bloom picture book with page text, source label, and license', async () => {
+    // Deterministic fixture: first mirrored (non-card) Bloom book whose first
+    // page carries text, so the opening spread has an assertable string.
+    let bloomEntry = null, bloomBook = null;
+    for (const b of index.books) {
+      if (b.sourceId !== 'bloom' || /card/.test(b.contentType || '')) continue;
+      const data = JSON.parse(fs.readFileSync(path.join(LIB_DIR, b.file), 'utf8'));
+      if (data.pages[0] && (data.pages[0].text || '').trim().length > 10) { bloomEntry = b; bloomBook = data; break; }
+    }
+    expect(bloomEntry).toBeTruthy();
+    await mount();
+    await chooseStories();
+    selectLang(bloomEntry.language); await flush();
+    clickByText(host, 'button', bloomEntry.title.slice(0, 12));
+    await flush();
+    expect(textOf(host)).toContain(bloomBook.title);
+    expect(textOf(host)).toContain(bloomBook.pages[0].text.split('\n')[0].slice(0, 40));
+    expect(textOf(host)).toContain('Bloom Library');
+    expect(textOf(host)).toContain(bloomBook.license);
   });
 });
 

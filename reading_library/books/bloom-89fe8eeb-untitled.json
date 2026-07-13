@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-89fe8eeb-untitled",
+  "title": "همسایۀ مهربان",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/zmceeT9nJ7"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f89fe8eeb-d8e2-4f36-b3d5-c2eed05711fb%2f%d9%87%d9%85%d8%b3%d8%a7%db%8c%db%80+%d9%85%d9%87%d8%b1%d8%a8%d8%a7%d9%86%2f۱3.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f89fe8eeb-d8e2-4f36-b3d5-c2eed05711fb%2f%d9%87%d9%85%d8%b3%d8%a7%db%8c%db%80+%d9%85%d9%87%d8%b1%d8%a8%d8%a7%d9%86%2f%db%b2.jpg",
+      "text": "برف می بارید.\nهمه جا سفید شده بود.\nسمیرا لباس گرم پوشیده بود.\nاو کنار بخاری با پدر و مادرش غِذا می خورد."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "آنها یک خانواده مهربان بودند.\nمادرگفت:\nما امشب مهمان کاکا نادر استیم.\nسمیرا خوشحال شد.\nساعتی بعد آماده رفتن شدند.\nاز خانه بیرون شدند.\nآسیه را پریشان دیدند.\nاو با چشمانی اشک آلود به دروازه\nهمسایه در می زد."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f89fe8eeb-d8e2-4f36-b3d5-c2eed05711fb%2f%d9%87%d9%85%d8%b3%d8%a7%db%8c%db%80+%d9%85%d9%87%d8%b1%d8%a8%d8%a7%d9%86%2f%db%b3.jpg",
+      "text": "مادر سمیرا از دیدن آسیه پریشان شد.\nاو از آسیه پرسید: دخترم! چرا پریشان هستی؟\nآسیه گفت: خاله جان مادرم مریض است."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "مادر سمیرا با مهربانی به آسیه گفت: دخترم پریشان نباش.\nهمه با هم به خانه آسیه رفتند.\nمادر آسیه مریضی افتاده بود."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f89fe8eeb-d8e2-4f36-b3d5-c2eed05711fb%2f%d9%87%d9%85%d8%b3%d8%a7%db%8c%db%80+%d9%85%d9%87%d8%b1%d8%a8%d8%a7%d9%86%2f%db%b4.jpg",
+      "text": "مادر سمیرا مادر آسیه را از جایش بلند کرد.\nاو را نزد داکتر برد.\nداکتر مادر آسیه را معاینه کرد و برایش دوا داد."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "همه با هم به خانه سمیرا رفتند.\nمادر سمیرا دوا های مادر آسیه را داد.\nمادر آسیه از مهربانی این خانواده خوشحال شد."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f89fe8eeb-d8e2-4f36-b3d5-c2eed05711fb%2f%d9%87%d9%85%d8%b3%d8%a7%db%8c%db%80+%d9%85%d9%87%d8%b1%d8%a8%d8%a7%d9%86%2f%db%b14.jpg",
+      "text": "آسیه به پدر سمیرا گفت: کاکا جان من خوشحالم که شما کنار ما استید."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "پدر سمیرا با مهربانی گفت:\nدخترم! وظیفۀ هرهمسایه است تا به همسایه خود کمک کند.\nپدر به کاکا نادر زنگ زد.\nداستان مریضی مادر آسیه را گفت.\nآن ها همراه غِذای شان به دیدن مادر آسیه آمدند.\nهمه از دیدن همدیگر خوشحال شدند."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 210
+  }
+}

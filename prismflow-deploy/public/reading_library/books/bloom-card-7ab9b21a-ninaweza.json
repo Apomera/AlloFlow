@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-7ab9b21a-ninaweza",
+  "title": "Ninaweza!",
+  "description": "Ninaweza kukonyeza, kuimba na kufua nguo kwa mikono.",
+  "language": "Kiswahili",
+  "langCode": "sw",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "American University of Nigeria"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "American University of Nigeria",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ytf4IwgVfO"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f7ab9b21a-e870-4079-a84c-6f322b709896%2fNinaweza!%2f3m21yq1q.y5z.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"Ninaweza!\" (Kiswahili). Ninaweza kukonyeza, kuimba na kufua nguo kwa mikono."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 64
+  }
+}

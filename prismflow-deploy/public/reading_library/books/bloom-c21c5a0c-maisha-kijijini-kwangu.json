@@ -1,0 +1,117 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-c21c5a0c-maisha-kijijini-kwangu",
+  "title": "Maisha Kijijini Kwangu",
+  "description": "Various things about life in the village are described.",
+  "language": "Kiswahili",
+  "langCode": "sw",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Community Living"
+  ],
+  "authors": [
+    "African Storybook Initiative"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "African Storybook Initiative",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/mtZboDB40Q"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fc21c5a0c-637e-44a2-a96e-c4f9b7be55f2%2fLife+in+my+village%2fASP_161_Life_in_my_village_Page_01_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fc21c5a0c-637e-44a2-a96e-c4f9b7be55f2%2fLife+in+my+village%2fASP_161_Life_in_my_village_Page_02_Image_0001.png",
+      "text": "Kijiji changu kinaitwa Yimbo."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fc21c5a0c-637e-44a2-a96e-c4f9b7be55f2%2fLife+in+my+village%2fASP_161_Life_in_my_village_Page_03_Image_0001.png",
+      "text": "Kijiji changu kinakuwa na rangi ya kijani mvua zinapo nyesha."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fc21c5a0c-637e-44a2-a96e-c4f9b7be55f2%2fLife+in+my+village%2fASP_161_Life_in_my_village_Page_04_Image_0001.png",
+      "text": "Kuna hifadhi ya wanyama karibu na kijiji chetu. Tunapokuwa na muda wa ziada, baba yangu hutupeleka kule kwa matembezi."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fc21c5a0c-637e-44a2-a96e-c4f9b7be55f2%2fLife+in+my+village%2fASP_161_Life_in_my_village_Page_05_Image_0001.png",
+      "text": "Tunaona simba na tembo katika hifadhi ya wanyama."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fc21c5a0c-637e-44a2-a96e-c4f9b7be55f2%2fLife+in+my+village%2fASP_161_Life_in_my_village_Page_06_Image_0001.png",
+      "text": "Wanyama wanaishi pamoja kwa amani."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fc21c5a0c-637e-44a2-a96e-c4f9b7be55f2%2fLife+in+my+village%2fASP_161_Life_in_my_village_Page_07_Image_0001.png",
+      "text": "Watalii huja kuona wanyama katika hifadhi."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fc21c5a0c-637e-44a2-a96e-c4f9b7be55f2%2fLife+in+my+village%2fASP_161_Life_in_my_village_Page_08_Image_0001.png",
+      "text": "Tuna ng'ombe katika kijiji chetu. Ng'ombe wetu dume huwaogopesha watoto."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fc21c5a0c-637e-44a2-a96e-c4f9b7be55f2%2fLife+in+my+village%2fASP_161_Life_in_my_village_Page_09_Image_0001.png",
+      "text": "Ninapenda kuchora baada ya kazi."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fc21c5a0c-637e-44a2-a96e-c4f9b7be55f2%2fLife+in+my+village%2fASP_161_Life_in_my_village_Page_10_Image_0001.png",
+      "text": "Siku moja, nilimchora paka wetu."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fc21c5a0c-637e-44a2-a96e-c4f9b7be55f2%2fLife+in+my+village%2fASP_161_Life_in_my_village_Page_11_Image_0001.png",
+      "text": "Wanjiku ni rafiki yangu.\nAnaipenda michoro yangu."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fc21c5a0c-637e-44a2-a96e-c4f9b7be55f2%2fLife+in+my+village%2fASP_161_Life_in_my_village_Page_12_Image_0001.png",
+      "text": "Baba yangu anapenda kula damu ya ng'ombe. Anasema inaboresha afya."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fc21c5a0c-637e-44a2-a96e-c4f9b7be55f2%2fLife+in+my+village%2fASP_161_Life_in_my_village_Page_13_Image_0001.png",
+      "text": "Inapoletwa nyumbani, majirani pia hula."
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fc21c5a0c-637e-44a2-a96e-c4f9b7be55f2%2fLife+in+my+village%2fASP_161_Life_in_my_village_Page_14_Image_0001.png",
+      "text": "Tuna kondoo na wanyama wengine kijijini kwetu."
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fc21c5a0c-637e-44a2-a96e-c4f9b7be55f2%2fLife+in+my+village%2fASP_161_Life_in_my_village_Page_15_Image_0001.png",
+      "text": "Kunapokuna na ukame, watu na wanyama huwa hawana chakula."
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fc21c5a0c-637e-44a2-a96e-c4f9b7be55f2%2fLife+in+my+village%2fASP_161_Life_in_my_village_Page_16_Image_0001.png",
+      "text": "Kila asubuhi, hula chakula cha asubuhi kabla ya kwenda shule."
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fc21c5a0c-637e-44a2-a96e-c4f9b7be55f2%2fLife+in+my+village%2fASP_161_Life_in_my_village_Page_17_Image_0001.png",
+      "text": "Mimi na rafiki zangu hucheza pamoja."
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 126
+  }
+}

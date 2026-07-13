@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-32d1239c-untitled",
+  "title": "نوشتن",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/4jKeW4Lvvv"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/4jKeW4Lvvv%2f1774806445743%2f%d9%86%d9%88%d8%b4%d8%aa%d9%86%2fجلد1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "باحرفِ «پ» نَوِشتَم\nپـدر پـدر، پدر جان"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "باحرفِ «م» نَوِشتَم\nمادر مادر، مادرجان"
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "با حرفِ «خ» نَوِشتَم\nخواهرم است مِهربان"
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "باحرفِ «ب» نَوِشتَم\nبرادرم جِسم و جان"
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "پـدر برایـم نَوِشت\nقَندِ پدر، دخترجان"
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "مادر برایـم نَوِشت\nقَندِ مادر، پسرجان"
+    },
+    {
+      "n": 7,
+      "img": null,
+      "text": "باحرفِ «ب» نَوِشتَم\nبهار و بَرگ و باران"
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "با حرفِ «ش» نَوِشتَم\nشُکر شُکر، خـداجـان"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 54
+  }
+}

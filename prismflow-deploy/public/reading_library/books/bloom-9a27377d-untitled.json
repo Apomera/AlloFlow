@@ -1,0 +1,95 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-9a27377d-untitled",
+  "title": "အံဝ်းကော်န်းလိုည်းမာ် နံင်ကဇော်ည်တောႇ",
+  "description": "လော်င်ကော်န်အီးလိူည်းဒဲ့ ဆီင်ရေဲန်းဘာည်း ကူန်းအန်း ကာည်းမာအန်း။",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "RBTT & NTC"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "RBTT & NTC",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/0U6TD7e2yX"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9a27377d-62c7-4ce7-899f-081c41fd7624%2f%e1%80%a1%e1%80%b6%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%94%e1%80%ba%e1%80%b8%e1%80%9c%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%ac%e1%80%ba+%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%87%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%8a%e1%80%ba%e1%80%90%e1%80%b1%e1%80%ac%e1%82%87%2f101.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9a27377d-62c7-4ce7-899f-081c41fd7624%2f%e1%80%a1%e1%80%b6%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%94%e1%80%ba%e1%80%b8%e1%80%9c%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%ac%e1%80%ba+%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%87%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%8a%e1%80%ba%e1%80%90%e1%80%b1%e1%80%ac%e1%82%87%2f1.jpg",
+      "text": "အံဝ်းကော်န်းလိုည်း ဆီုင်ဒဲ့လိူည်။"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9a27377d-62c7-4ce7-899f-081c41fd7624%2f%e1%80%a1%e1%80%b6%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%94%e1%80%ba%e1%80%b8%e1%80%9c%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%ac%e1%80%ba+%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%87%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%8a%e1%80%ba%e1%80%90%e1%80%b1%e1%80%ac%e1%82%87%2f2.jpg",
+      "text": "အံဝ်းညျံမ်ဘယ်မ ကဇော်ည်ဂီုန်းဒဲႈ တောႇကူန်ကာည်းမာ။"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9a27377d-62c7-4ce7-899f-081c41fd7624%2f%e1%80%a1%e1%80%b6%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%94%e1%80%ba%e1%80%b8%e1%80%9c%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%ac%e1%80%ba+%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%87%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%8a%e1%80%ba%e1%80%90%e1%80%b1%e1%80%ac%e1%82%87%2f3.jpg",
+      "text": "ဘည်ဘာည်းမာ် အံဝ်းမေဲႈအိူဝ် ပံင်နင်ဘယ်တာ့်လာ်ကဇော်ည်ဒဲႈ ကော်။"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9a27377d-62c7-4ce7-899f-081c41fd7624%2f%e1%80%a1%e1%80%b6%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%94%e1%80%ba%e1%80%b8%e1%80%9c%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%ac%e1%80%ba+%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%87%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%8a%e1%80%ba%e1%80%90%e1%80%b1%e1%80%ac%e1%82%87%2f4.jpg",
+      "text": "အံဝ်းနံင်ကဇော်ည်ခိုည်ႇဆလေဲႇ တောႇမာ။"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9a27377d-62c7-4ce7-899f-081c41fd7624%2f%e1%80%a1%e1%80%b6%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%94%e1%80%ba%e1%80%b8%e1%80%9c%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%ac%e1%80%ba+%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%87%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%8a%e1%80%ba%e1%80%90%e1%80%b1%e1%80%ac%e1%82%87%2f5.jpg",
+      "text": "အံဝ်နံင်ကဇော်ည်ပီႈဒဲႈ တံင်ခေဲင်းႎါင်း။"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9a27377d-62c7-4ce7-899f-081c41fd7624%2f%e1%80%a1%e1%80%b6%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%94%e1%80%ba%e1%80%b8%e1%80%9c%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%ac%e1%80%ba+%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%87%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%8a%e1%80%ba%e1%80%90%e1%80%b1%e1%80%ac%e1%82%87%2f6.jpg",
+      "text": "ဆာ်ကူန်နူန်း အံဝ်းနံင်ဒံက်ဒဲႈ ကူန်းစိုင်းအေဲမ်းကိုက်။"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9a27377d-62c7-4ce7-899f-081c41fd7624%2f%e1%80%a1%e1%80%b6%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%94%e1%80%ba%e1%80%b8%e1%80%9c%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%ac%e1%80%ba+%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%87%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%8a%e1%80%ba%e1%80%90%e1%80%b1%e1%80%ac%e1%82%87%2f7.jpg",
+      "text": "ဆာ်ဇီုင်းကူန်ကာည်းမာဂီုန်း၊ အံဝ်းနံင်ဂေါ်ည်းဒါးချှီႇချှီႇ၊ အံဝ်းနံင်အာဝ်လလူးမ။"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9a27377d-62c7-4ce7-899f-081c41fd7624%2f%e1%80%a1%e1%80%b6%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%94%e1%80%ba%e1%80%b8%e1%80%9c%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%ac%e1%80%ba+%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%87%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%8a%e1%80%ba%e1%80%90%e1%80%b1%e1%80%ac%e1%82%87%2f8.jpg",
+      "text": "ဆာ်ဟိုမ်းပံင်ဟိုမ်းမာ် အံဝ်းနံင်ဟိုမ်းချှီႇချှီႇ။"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9a27377d-62c7-4ce7-899f-081c41fd7624%2f%e1%80%a1%e1%80%b6%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%94%e1%80%ba%e1%80%b8%e1%80%9c%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%ac%e1%80%ba+%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%87%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%8a%e1%80%ba%e1%80%90%e1%80%b1%e1%80%ac%e1%82%87%2f9.jpg",
+      "text": "အံဝ်းနံင်ဂေါ်ည်းဒဲႈတိုးအံဝ်း ဆငါးချှီႇ။"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9a27377d-62c7-4ce7-899f-081c41fd7624%2f%e1%80%a1%e1%80%b6%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%94%e1%80%ba%e1%80%b8%e1%80%9c%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%ac%e1%80%ba+%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%87%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%8a%e1%80%ba%e1%80%90%e1%80%b1%e1%80%ac%e1%82%87%2f10.jpg",
+      "text": "ဆာ်အံဝ်းလေႈခရာ်ည်ႇ တောႇကူန်ကာည်းမာ၊ အံဝ်းနံင်တညာဝ်း ပံင်ဒါ်ႈကာည်း။"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9a27377d-62c7-4ce7-899f-081c41fd7624%2f%e1%80%a1%e1%80%b6%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%94%e1%80%ba%e1%80%b8%e1%80%9c%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%ac%e1%80%ba+%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%87%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%8a%e1%80%ba%e1%80%90%e1%80%b1%e1%80%ac%e1%82%87%2f11.jpg",
+      "text": "အံဝ်းကော်န်းလိုည်းဆီုင်ဒဲ့လိူည်။"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9a27377d-62c7-4ce7-899f-081c41fd7624%2f%e1%80%a1%e1%80%b6%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%80%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%94%e1%80%ba%e1%80%b8%e1%80%9c%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%99%e1%80%ac%e1%80%ba+%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%87%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%8a%e1%80%ba%e1%80%90%e1%80%b1%e1%80%ac%e1%82%87%2f21.jpg",
+      "text": "ဘည်ဘာည်းမာ် အံဝ်းဘယ်အိူဝ်ကဇော်ည်ဒဲႈ\nပံင်ဘယ်အံဝ်းတာ့်လာ်ကဇော်ည်။"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 31
+  }
+}

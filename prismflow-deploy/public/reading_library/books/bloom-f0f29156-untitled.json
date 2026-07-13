@@ -1,0 +1,65 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-f0f29156-untitled",
+  "title": "अणुको गाई",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/CGR3RdzXql"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff0f29156-b75d-407e-827b-3a7e404dbc59%2f%e0%a4%85%e0%a4%a3%e0%a5%81%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%88%2fAOR_EAG00177.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff0f29156-b75d-407e-827b-3a7e404dbc59%2f%e0%a4%85%e0%a4%a3%e0%a5%81%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%88%2fAOR_AN31.png",
+      "text": "अणु गोठ गए।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff0f29156-b75d-407e-827b-3a7e404dbc59%2f%e0%a4%85%e0%a4%a3%e0%a5%81%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%88%2fAOR_CMB0739.png",
+      "text": "गाईको कान कनाए।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff0f29156-b75d-407e-827b-3a7e404dbc59%2f%e0%a4%85%e0%a4%a3%e0%a5%81%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%88%2fAOR_MSC67.png",
+      "text": "दुनाको नुन चटाए।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff0f29156-b75d-407e-827b-3a7e404dbc59%2f%e0%a4%85%e0%a4%a3%e0%a5%81%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%88%2fAOR_ofdb010m.png",
+      "text": "दाना खान दिए।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff0f29156-b75d-407e-827b-3a7e404dbc59%2f%e0%a4%85%e0%a4%a3%e0%a5%81%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%88%2fAOR_CMB06291.png",
+      "text": "अनि गाना गाए।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff0f29156-b75d-407e-827b-3a7e404dbc59%2f%e0%a4%85%e0%a4%a3%e0%a5%81%e0%a4%95%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%88%2fimage.png",
+      "text": "गाई, गधा नचाए।"
+    }
+  ],
+  "stats": {
+    "pages": 6,
+    "words": 18
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-6966c2bb-untitled",
+  "title": "៤១ នអើន ក៝នឆែមព៝ន",
+  "description": "A boy named Poan (Easy Reader - Level 3)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/LKio74J5ND"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6966c2bb-b7a6-46cc-8ad8-ffd0a5c38cba%2f%e1%9f%a4%e1%9f%a1+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%98%e1%9e%96%e1%9f%9d%e1%9e%93%2fimage2.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6966c2bb-b7a6-46cc-8ad8-ffd0a5c38cba%2f%e1%9f%a4%e1%9f%a1+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%98%e1%9e%96%e1%9f%9d%e1%9e%93%2fimage3.png",
+      "text": "នៅ​ថ្ងៃ​មួយ​កុមារ​ប៉ន​អោយឪពុក​ធ្វើ​កូន​ឡាន​អោយ​។ ​\nក្នុង​ពេល​ដែល? ឪពុក​វា​កំពុង​តែ​ធ្វើ​ឡាន​នោះ​វា​និយាយ​ទៅ​កាន់​ឪពុក​វា​ថា៖ ​“ធ្វើ​អោយ​ស្អាត​ណាពុក”។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6966c2bb-b7a6-46cc-8ad8-ffd0a5c38cba%2f%e1%9f%a4%e1%9f%a1+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%98%e1%9e%96%e1%9f%9d%e1%9e%93%2fimage5.png",
+      "text": "កុមារប៉ន លេងកូនឡាននោះរុញចុះ រុញឡើងធ្វើ​អោយ​បាក់​បែក​អស់។ វា​គិត​ក្នុង​ចិត្តទៀត​ថា៖ ​“អោយ​ពុក​ខ្ញុំ​ធ្វើ​មួយ​ទៀត”។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6966c2bb-b7a6-46cc-8ad8-ffd0a5c38cba%2f%e1%9f%a4%e1%9f%a1+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%98%e1%9e%96%e1%9f%9d%e1%9e%93%2fimage6.png",
+      "text": "គិត​ហើយ​ប៉ន​ក៏​ត្រឡប់ទៅ​ផ្ទះ ​វាក៏ប្រាប់​ឪពុក​ថា៖ ​“ពុក​ឡាន​នេះ​តូច​ពេក ពុកធ្វើអោយខ្ញុំធំ​ជាងនេះឲ្យខ្ញុំមួយ​ទៀត។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6966c2bb-b7a6-46cc-8ad8-ffd0a5c38cba%2f%e1%9f%a4%e1%9f%a1+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%98%e1%9e%96%e1%9f%9d%e1%9e%93%2fimage7.png",
+      "text": "ពុក​វា​ក៏យល់​ព្រម​ហើយ​កាប់​ចាង់​ដើម​ឈើ​ធ្វើ​ឡាន​ធំ​អោយ​ទៅ​ប៉ន​មួយ​ទៀត។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6966c2bb-b7a6-46cc-8ad8-ffd0a5c38cba%2f%e1%9f%a4%e1%9f%a1+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%98%e1%9e%96%e1%9f%9d%e1%9e%93%2fimage8.png",
+      "text": "​ប៉ន​អរ​ណាស់​ ​ពី​ព្រោះ​វា​បាន​ឡាន​ថ្មី​ហើយ​ធំ​និង​ស្អាត​ជាង​មុន។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6966c2bb-b7a6-46cc-8ad8-ffd0a5c38cba%2f%e1%9f%a4%e1%9f%a1+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%98%e1%9e%96%e1%9f%9d%e1%9e%93%2fimage10.png",
+      "text": "ឡាន​ថ្មី​នេះ​ពិបាក​អូស​ណាស់។​​ ​ពីព្រោះ​វា​ធ្ងន់ពេក។ ​វាព្យាយាម​អូសមិន​បាន​មួយ​សន្ទុះ​ផង​ក៏​ហត់​ទៅ​ហើយ​។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6966c2bb-b7a6-46cc-8ad8-ffd0a5c38cba%2f%e1%9f%a4%e1%9f%a1+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%98%e1%9e%96%e1%9f%9d%e1%9e%93%2fimage9.png",
+      "text": "​ប៉​នអង្គុយ​យំ​ដោយ​ខឹង​ខ្លាំង​ពេក ​ហើយ​រៀប​រាប់​ប្រាប់ឪពុក​វា​ថា៖ “ឡាន​នេះ​ធ្ងន់​ពេក​ខ្ញុំ​អូស​មិន​រួច​ទេ​ពុក”។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6966c2bb-b7a6-46cc-8ad8-ffd0a5c38cba%2f%e1%9f%a4%e1%9f%a1+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%98%e1%9e%96%e1%9f%9d%e1%9e%93%2fimage11.png",
+      "text": "ពុក​វា​យក​កានចាស់ធ្វើ​ឡាន​អោយ​ទៀត ​រួច​និយាយ​​ថា​៖​ឡាន​នេះ​មិន​ធ្ងន់​ទេ”។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6966c2bb-b7a6-46cc-8ad8-ffd0a5c38cba%2f%e1%9f%a4%e1%9f%a1+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%98%e1%9e%96%e1%9f%9d%e1%9e%93%2fimage12.png",
+      "text": "ប៉នអូស​ឡាន​នេះបបួល​មិត្ត​ភក្ដិ​ទៅ​លេង​នៅ​ឯ​ជំរាល​​ភ្នំ​ក្បែរ​ផ្លូវ។ ​ពួក​ម៉ាក​វា​សួរ៖ ​“ពុក​ឯង​ធ្វើ​ថ្មី​អោយ​ឯង​រឺ?” ​“អើ”។ ​"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6966c2bb-b7a6-46cc-8ad8-ffd0a5c38cba%2f%e1%9f%a4%e1%9f%a1+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%98%e1%9e%96%e1%9f%9d%e1%9e%93%2fimage13.png",
+      "text": "ពូក​វា​នាំ​គ្នា​ជិះ​ឡាន​ចុះ​ជំរាល​​ភ្នំ​មាក្បែរ​ភ្លូវ។ ​ជួន​ពេល​នោះ​មាន​តា​ម្នាក់​ជិះ​កង់​តាម​ផ្លូវ​នោះ​ដែរ។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6966c2bb-b7a6-46cc-8ad8-ffd0a5c38cba%2f%e1%9f%a4%e1%9f%a1+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%98%e1%9e%96%e1%9f%9d%e1%9e%93%2fimage14.png",
+      "text": "​តា​ចាស់​ជិះ​កង់​ដឹក​ទ្រុង​មាន់ ​ខ្លាច​បុក​ពូក​វា ក៏ចៀសទៅបុកដើឈើប្រាវ! ​បាក់​កង់​អស់​រលីង។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6966c2bb-b7a6-46cc-8ad8-ffd0a5c38cba%2f%e1%9f%a4%e1%9f%a1+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%98%e1%9e%96%e1%9f%9d%e1%9e%93%2fimage15.png",
+      "text": "តា​ចាស់​នោះ​ខឹង​ខ្លាំង​ណាស់ ​គាត់​ក៏​ស្រែក​ជេរ​ពួក​​ក្មេង​ៗទាំង​នោះ៖ “យើស! ​អា​របល់​យ៉ ​កុំ​អាល​រត់​សង​កង់​អញ​ភ្លាម” “អោយពួក​ខ្ញុំ​សំ​ទោស​លោក​តា​”​(ពួក​ប៉ន​និយាយ​)​"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6966c2bb-b7a6-46cc-8ad8-ffd0a5c38cba%2f%e1%9f%a4%e1%9f%a1+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%98%e1%9e%96%e1%9f%9d%e1%9e%93%2fimage16.png",
+      "text": "តា​និយាយ​៖ ​“ពួក​ឯង​ធ្វើ​អោយ​កង់​អញបាក​អស់ ​ឥឡូវ​ពូក​ឯង​​ត្រូវ​អូស​អញនឹង​ឡាន​ពួក​ឯង​ហ្នឹង​អោយ​ដល់​ចំការ​អញ​ នោះទើប​​មិន​អោយ​ពួក​ឯង​សង ​“បាទ​អញ្ចឹង​ក៏​បាន​ដែរ​តា”(ពួកប៉ន​ឆ្លើយ)រួច​ហើ​យ​តា​ចាស់​ក៏​ឡើង​ជិះ​លើ​ឡាន​ដែល​ធ្វើ​អំពី​កាន​របស់​ពួក​គេ​ ​ហើយ​ក៏​នាំ​គ្នា​ប្រឹង​អូស​តា​ចាស់​នោះ​ទៅ។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6966c2bb-b7a6-46cc-8ad8-ffd0a5c38cba%2f%e1%9f%a4%e1%9f%a1+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%98%e1%9e%96%e1%9f%9d%e1%9e%93%2fimage17.png",
+      "text": "ពួកគេអូសលោក​តា​នេះ​កាត់​តាម​ភ្នំ​បត់​បែន​ឡើង​ចុះ​​អស់​កំលាំង​ខ្លាំង​ប៉ន​និង​មិត្ត​ក៏​យំ​បណ្ដើរអូស​បណ្ដើរ​។"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6966c2bb-b7a6-46cc-8ad8-ffd0a5c38cba%2f%e1%9f%a4%e1%9f%a1+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%98%e1%9e%96%e1%9f%9d%e1%9e%93%2fimage18.png",
+      "text": "ពេល​ទៅ​ដល់​ចំការ​ហើយ​តា​ចាស់​ពោល​ពាក្យ​ប្រដៅ​ថា៖ “ថ្ងៃ​ក្រោយ​ឈប់​លេង​នៅ​តាម​មាត់​ផ្លូវ​ទៀត​វា​និង​មាន​ការ​លំបាក​ដល់​គេ​នឹង​ខ្លួន​ឯង​ដែរ។ ថ្ងៃក្រោយ​ត្រូវ​រាង​ណា​ចៅ​ បាន​ហើយ​ទៅ​ផ្ទះ​ចុះ”។"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6966c2bb-b7a6-46cc-8ad8-ffd0a5c38cba%2f%e1%9f%a4%e1%9f%a1+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e1%9e%86%e1%9f%82%e1%9e%98%e1%9e%96%e1%9f%9d%e1%9e%93%2fimage19.png",
+      "text": "ប៉ននឹង​មិត្ត​ក៏​នាំ​គ្នា​ត្រឡប់​ទៅ​ផ្ទះ។ ​ពួកវា​ដើរ​លែង​ត្រង់​ហើយងាក​ឆ្វេង​ងាក​ស្តាំ ​ពី​ព្រោះ​ហត់​ពេក។ ​កា​លេង​បែប​នេះ​ធ្វើ​អោយ​វា​រាង​​ចាល​យ៉ាង​ខ្លាំង៕"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 57
+  }
+}

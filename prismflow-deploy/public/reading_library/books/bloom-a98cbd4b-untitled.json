@@ -1,0 +1,175 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-a98cbd4b-untitled",
+  "title": "ໝວດຊື່ໝາກໄມ້",
+  "description": "What are the fruits and vegetables that you like to eat?",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Lao"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Lao",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/2DbHo1iKhN"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+Cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+1+Chilli+Peppers.png",
+      "text": "ໝາກເຜັດ"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+3+Pumpkin.png",
+      "text": "ໝາກອຶ"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+4+Cabbage.png",
+      "text": "ກະຫລໍ່າປີ"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+5+Peas.png",
+      "text": "ໝາກຖົ່ວຂຽວ"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+6+Green+Beans.png",
+      "text": "ໝາກຖົ່ວແປ"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+11+Tomato.png",
+      "text": "ໝາກເລັ່ນ"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+12+Lettuce.png",
+      "text": "ຜັກກາດ"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+14+Maize.png",
+      "text": "ສາລີ"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+16+Eggplant.png",
+      "text": "ໝາກເຂືອມ່ວງ"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+17+Carrot.png",
+      "text": "ກະລົດ"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+25+Garlic.png",
+      "text": "ຫົວຜັກທຽມ"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+26+Onions.png",
+      "text": "ຫົວຜັກບົ່ວ"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+27+Potatoes.png",
+      "text": "ມັນຝຣັ່ງ"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+28+Sweet+Potatoes.png",
+      "text": "ມັນດ່າງ"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+7+Watermelon.png",
+      "text": "ໝາກແຕ່ງໂມ"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+8+Strawberries.png",
+      "text": "ສະຕໍເບີຣີ"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+9+Passion+Fruit.png",
+      "text": "ໝາກນອດ"
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+10+Bananas.png",
+      "text": "ໝາກກ້ວຍ"
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+18+Pineapple.png",
+      "text": "ໝາກນັດ"
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+19+Papayas.png",
+      "text": "ໝາກຫຸ່ງ"
+    },
+    {
+      "n": 21,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+20+Avocado.png",
+      "text": "ໝາກອາໂວກາໂດ"
+    },
+    {
+      "n": 22,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+21+Apple.png",
+      "text": "ໝາກເອັບເປີນ"
+    },
+    {
+      "n": 23,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+22+Guavas.png",
+      "text": "ໝາກສີດາ"
+    },
+    {
+      "n": 24,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+23+Mango.png",
+      "text": "ໝາກມ່ວງ"
+    },
+    {
+      "n": 25,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+30+Lemons.png",
+      "text": "ໝາກນາວ"
+    },
+    {
+      "n": 26,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+31+Oranges.png",
+      "text": "ໝາກກ້ຽງ"
+    },
+    {
+      "n": 27,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+33+Peach.png",
+      "text": ""
+    },
+    {
+      "n": 28,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/2DbHo1iKhN%2f1752659251089%2f%e0%bb%9d%e0%ba%a7%e0%ba%94%e0%ba%8a%e0%ba%b7%e0%bb%88%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%bb%84%e0%ba%a1%e0%bb%89%2fFruit+34+Grapes.png",
+      "text": "ໝາກອະງົ່ນ"
+    }
+  ],
+  "stats": {
+    "pages": 28,
+    "words": 27
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-3b2b9115-salamat-panginoon",
+  "title": "Salamat, Panginoon",
+  "description": "A Filipino picture book from Bloom Library.",
+  "language": "Filipino",
+  "langCode": "fil",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Primer"
+  ],
+  "authors": [
+    "Resources for the Blind, Inc."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Resources for the Blind, Inc.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/L2EsKwe3vJ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f3b2b9115-8ced-4020-abe1-5b2258d91227%2fSalamat%2c+Panginoon%2fAOR_9-1d.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "\"Oh kayo'y mangagpasalamat sa Panginoon...\"\n1 Cronica 16:8 (TAB)\nAng aking bibig ay magsasalita ng kapurihan ng Panginoon, at purihin ng lahat na laman ang kaniyang banal na pangalan magpakailan-kailan pa man.\nAwit 145:21 (TAB)\nAking pupurihin ang Panginoon sa buong panahon: ang pagpuri sa kaniya ay laging sasa aking bibig.\nAwit 34:1 (TAB)"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f3b2b9115-8ced-4020-abe1-5b2258d91227%2fSalamat%2c+Panginoon%2fAOR_E-1-255.png",
+      "text": "Salamat po Panginoon, sa magandang araw."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f3b2b9115-8ced-4020-abe1-5b2258d91227%2fSalamat%2c+Panginoon%2fAOR_th01124b.png",
+      "text": "Salamat sa tubig\nat sa magandang malinis na damit.\nHanda na ako; nagsimula na ang aking araw."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f3b2b9115-8ced-4020-abe1-5b2258d91227%2fSalamat%2c+Panginoon%2fAOR_CMB0432.png",
+      "text": "Salamat sa aking ina at ama, at sa maraming pagkain sa araw na ito."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f3b2b9115-8ced-4020-abe1-5b2258d91227%2fSalamat%2c+Panginoon%2fAOR_MSC74.png",
+      "text": "Salamat sa malakas na bisig at binti, at sa mga kaibigan na aking kalaro."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f3b2b9115-8ced-4020-abe1-5b2258d91227%2fSalamat%2c+Panginoon%2fAOR_EAG00095.png",
+      "text": "Ako'y nagpapasalamat dahil ako'y nakakapunta sa eskuwelahan. Natututo akong bumasa at sumunod sa mga patakaran."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f3b2b9115-8ced-4020-abe1-5b2258d91227%2fSalamat%2c+Panginoon%2fAOR_E-1-249.png",
+      "text": "Salamat, Panginoon, sa mga halaman at mga puno.\nAt gayun din, sa malamig na simoy ng hangin."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f3b2b9115-8ced-4020-abe1-5b2258d91227%2fSalamat%2c+Panginoon%2fAOR_mother.png",
+      "text": "Salamat sa mga ibon na lumilipad ng mataas.\nAt salamat sa mga hayop na nakatira sa paligid."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f3b2b9115-8ced-4020-abe1-5b2258d91227%2fSalamat%2c+Panginoon%2fAOR_E-1-242.png",
+      "text": "Para sa buwan at bituin sa gabing maliwanag, salamat, Panginoon. Pakiramdam ko ay napakalapit Mo."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f3b2b9115-8ced-4020-abe1-5b2258d91227%2fSalamat%2c+Panginoon%2fAOR_D-5-361.png",
+      "text": "Higit sa lahat, ako'y nagpapasalamat, Panginoon, para sa Banal na Salita mo na minamahal namin.\nWAKAS"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 185
+  }
+}

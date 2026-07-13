@@ -1,0 +1,72 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-cbbe3c1c-mussa-na-shamba-bora",
+  "title": "Mussa na Shamba Bora",
+  "description": "Moses learns about good farming methods by visiting another farmer.",
+  "language": "Kiswahili",
+  "langCode": "sw",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Agriculture"
+  ],
+  "authors": [
+    "Rebecca Mol"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Rebecca Mol",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/osWJ1pLePv"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fcbbe3c1c-1a50-4206-9c8c-72b5880d42fb%2fMoses+and+the+Very+Good+Farm%2fAOR_4O1.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fcbbe3c1c-1a50-4206-9c8c-72b5880d42fb%2fMoses+and+the+Very+Good+Farm%2fAOR_ofdb146m1.png",
+      "text": "Mussa na familia yake wanaishi katika kijiji kidogo nchini Uganda.\nHupanda mahindi kwenye shamba lao dogo mara mbili kila mwaka."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fcbbe3c1c-1a50-4206-9c8c-72b5880d42fb%2fMoses+and+the+Very+Good+Farm%2fAOR_OFDB029.png",
+      "text": "Kadri miaka ilivyopita, familia ya Mussa iliendelea kulima kwenye ardhi na udongo ukachoka.\nMahindi hayakustawi vizuri.\nFamilia ya Mussa ikawa na hasira sana (ikagadhibika)"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fcbbe3c1c-1a50-4206-9c8c-72b5880d42fb%2fMoses+and+the+Very+Good+Farm%2fAOR_4O.png",
+      "text": "Mussa akatembelea shamba la mtu kijiji kingine.\nMussa akajifunza mengi kuhusu njia za kilimo bora toka kwa mtu na shamba lake."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fcbbe3c1c-1a50-4206-9c8c-72b5880d42fb%2fMoses+and+the+Very+Good+Farm%2fAOR_th00114b.png",
+      "text": "Mussa kajifunza kuandaa mbolea kwa kutumia majani yaliyo katwa mboji na maganda toka kwenye vyakula, matunda na mbogamboga. Mbolea ikarutubisha udongo."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fcbbe3c1c-1a50-4206-9c8c-72b5880d42fb%2fMoses+and+the+Very+Good+Farm%2fAOR_th00095b.png",
+      "text": "Mussa kajifunza kupanda aina mbalimbali ya mazao pamoja kwenye bustani moja ili kupunguza wadudu na kutunza virutubisho kwenye udongo."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fcbbe3c1c-1a50-4206-9c8c-72b5880d42fb%2fMoses+and+the+Very+Good+Farm%2fAOR_5F-P.png",
+      "text": ""
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2fcbbe3c1c-1a50-4206-9c8c-72b5880d42fb%2fMoses+and+the+Very+Good+Farm%2fAOR_EAG00307.png",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 7,
+    "words": 105
+  }
+}

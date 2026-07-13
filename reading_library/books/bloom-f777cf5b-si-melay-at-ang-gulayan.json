@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-f777cf5b-si-melay-at-ang-gulayan",
+  "title": "Si Melay at Ang Gulayan",
+  "description": "A Filipino picture book from Bloom Library.",
+  "language": "Filipino",
+  "langCode": "fil",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Agriculture"
+  ],
+  "authors": [
+    "Jorai Bible Association."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Jorai Bible Association.",
+  "license": "CC BY-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/eLyXMgnI5h"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/hendyasiu%40att.net%2ff777cf5b-4e56-493e-92de-06138b113b24%2fAn%c4%83+H%c6%a1m%c6%b0%cc%86+Djru+Am%c4%ad%2faor_Ca-1-218.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/hendyasiu%40att.net%2ff777cf5b-4e56-493e-92de-06138b113b24%2fAn%c4%83+H%c6%a1m%c6%b0%cc%86+Djru+Am%c4%ad%2faor_CA-1-205.png",
+      "text": "Umaga pa lang ay sinasabihan na ni Aling Berta si Melay na pupunta sila sa kanilang gulayan. Hindi sumasagot si Melay dahil naiinis siya kapag siya ay isinasama ng kanyang nanay sa pagtatanim ng gulay at paglilinis sa kanilang gulayan."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/hendyasiu%40att.net%2ff777cf5b-4e56-493e-92de-06138b113b24%2fAn%c4%83+H%c6%a1m%c6%b0%cc%86+Djru+Am%c4%ad%2faor_PG0332.png",
+      "text": "Napagsabihan si Melay ng kanyang ina sa hindi nito pagsagot. Sinabi ni Aling Berta na ang gulayan ang pinagkukunan nila ng kanilang kakainin sa araw araw at iba pang pangangailangan."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/hendyasiu%40att.net%2ff777cf5b-4e56-493e-92de-06138b113b24%2fAn%c4%83+H%c6%a1m%c6%b0%cc%86+Djru+Am%c4%ad%2faor_V4493.png",
+      "text": "Naunawaan ni Melay ang sinabi ng kanyang ina. Kaya siya ay sumama na sa kanilang gulayan at tumulong sa pagtatanim. Natuwa si Aling Berta sa magandang ugali ng kanyang anak."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/hendyasiu%40att.net%2ff777cf5b-4e56-493e-92de-06138b113b24%2fAn%c4%83+H%c6%a1m%c6%b0%cc%86+Djru+Am%c4%ad%2faor_pwwm030.png",
+      "text": "Pagkalipas ng ilang buwan, nagbunga na ang kanilang pananim. Tuwang tuwa ang mag-ina habang inaani ang mga bunga."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/hendyasiu%40att.net%2ff777cf5b-4e56-493e-92de-06138b113b24%2fAn%c4%83+H%c6%a1m%c6%b0%cc%86+Djru+Am%c4%ad%2faor_carryng2.png",
+      "text": "Pagkaani ng mga bunga ng kanilang pananim ay pumunta ang mag-ina sa palengke upang ipagbili ang kanilang mga naaning mga gulay."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/hendyasiu%40att.net%2ff777cf5b-4e56-493e-92de-06138b113b24%2fAn%c4%83+H%c6%a1m%c6%b0%cc%86+Djru+Am%c4%ad%2faor_girl-19.png",
+      "text": "Masayang masaya si Melay dahil naubos ang paninda nilang gulay. Mayroon na silang pambili ng mga kailangan nila sa kanilang bahay."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/hendyasiu%40att.net%2ff777cf5b-4e56-493e-92de-06138b113b24%2fAn%c4%83+H%c6%a1m%c6%b0%cc%86+Djru+Am%c4%ad%2faor_th01043b.png",
+      "text": "Pagkatapos bumili ng kanilang mga kailangan, umuwi na sila ng bahay. Masaya silang kumain."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/hendyasiu%40att.net%2ff777cf5b-4e56-493e-92de-06138b113b24%2fAn%c4%83+H%c6%a1m%c6%b0%cc%86+Djru+Am%c4%ad%2faor_girl-01.png",
+      "text": "Ngayon, naunawaan na ni Melay nga sinabi ng kanyang ina. Naintindihan na niya kung gaano kahalaga ang kanilang gulayan. Kaya mula ngayon, tutulong na siyang palagi sa kanyang ina.\nWAKAS"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 204
+  }
+}

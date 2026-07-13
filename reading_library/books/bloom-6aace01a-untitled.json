@@ -1,0 +1,92 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-6aace01a-untitled",
+  "title": "២៦ នអើន រាពាយអុច ឆាព្រីត",
+  "description": "The story of a rabbit who wants to eat bananas (Easy Reader - Level 1)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/QYnW5eFWC9"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6aace01a-874f-4b13-b324-dcd1856162ed%2f%e1%9f%a2%e1%9f%a6+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9e%b8%e1%9e%8f%2fCover+Book+Rabbit1.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6aace01a-874f-4b13-b324-dcd1856162ed%2f%e1%9f%a2%e1%9f%a6+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9e%b8%e1%9e%8f%2fimage.png",
+      "text": "ទន្សាយដេកគិតរកល្បិច ដើម្បីស៊ីចេកយាយដែលកំពុងស្ពាយនៅក្នុងសាស។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6aace01a-874f-4b13-b324-dcd1856162ed%2f%e1%9f%a2%e1%9f%a6+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9e%b8%e1%9e%8f%2fimage1.png",
+      "text": "ទន្សាយពញ្ញាក់យាយពីកម្ពោតព្រៃ ធ្វើអោយយាយដួលមួយរំពេច។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6aace01a-874f-4b13-b324-dcd1856162ed%2f%e1%9f%a2%e1%9f%a6+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9e%b8%e1%9e%8f%2fUntitled-26.png",
+      "text": "ទន្សាយក៏រត់កាត់មុខយាយដែលកំពុងតែដើរ។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6aace01a-874f-4b13-b324-dcd1856162ed%2f%e1%9f%a2%e1%9f%a6+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9e%b8%e1%9e%8f%2fUntitled-21.png",
+      "text": "ទន្សាយដេកននៀលនឹងភក់ ដើម្បីអោយខ្លួនរបស់វាប្រឡាក់ភក់។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6aace01a-874f-4b13-b324-dcd1856162ed%2f%e1%9f%a2%e1%9f%a6+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9e%b8%e1%9e%8f%2fUntitled-20.png",
+      "text": "ទន្សាយធ្វើពុតជាងាប់តាមផ្លូវដែលយាយកំពុងតែដើរ។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6aace01a-874f-4b13-b324-dcd1856162ed%2f%e1%9f%a2%e1%9f%a6+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9e%b8%e1%9e%8f%2fUntitled-23.png",
+      "text": "យាយស្មានថាទន្សាយនោះងាប់មែន។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6aace01a-874f-4b13-b324-dcd1856162ed%2f%e1%9f%a2%e1%9f%a6+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9e%b8%e1%9e%8f%2fimage2.png",
+      "text": "យាយក៏រើសទន្សាយដាក់ក្នុងសាសរបស់ខ្លួន។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6aace01a-874f-4b13-b324-dcd1856162ed%2f%e1%9f%a2%e1%9f%a6+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9e%b8%e1%9e%8f%2fUntitled-24.png",
+      "text": "ពេលយាយកំពុងតែដើរទន្សាយក៏ស៊ីចេកក្នុងសាសរហូតទាល់តែអស់។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6aace01a-874f-4b13-b324-dcd1856162ed%2f%e1%9f%a2%e1%9f%a6+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9e%b8%e1%9e%8f%2fUntitled-25.png",
+      "text": "ក្រោយមកទន្សាយក៏លោតចេញពីសាសរបស់យាយរត់ចូលក្នុងព្រៃបាត់។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6aace01a-874f-4b13-b324-dcd1856162ed%2f%e1%9f%a2%e1%9f%a6+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9e%b8%e1%9e%8f%2fUntitled-28.png",
+      "text": "មកដល់ផ្ទះយាយមើលទន្សាយក៏បាត់ចេកក៏អស់។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f6aace01a-874f-4b13-b324-dcd1856162ed%2f%e1%9f%a2%e1%9f%a6+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b+%e1%9e%86%e1%9e%b6%e2%80%8b%e1%9e%96%e1%9f%92%e1%9e%9a%e1%9e%b8%e1%9e%8f%2fUntitled-27.png",
+      "text": "យាយខឹងនឹងទន្សាយខ្លាំងណាស់៕"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 14
+  }
+}

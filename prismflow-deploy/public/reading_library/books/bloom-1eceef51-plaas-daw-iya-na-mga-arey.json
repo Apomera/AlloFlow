@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-1eceef51-plaas-daw-iya-na-mga-arey",
+  "title": "Plaas Daw Iya Na Mga Arey",
+  "description": "A Filipino picture book from Bloom Library.",
+  "language": "Filipino",
+  "langCode": "fil",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Math"
+  ],
+  "authors": [
+    "SIL International. CC BY-ND 3.0."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL International. CC BY-ND 3.0.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/aOCRhSfqrC"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/melaniefresnillo28%40gmail.com%2f1eceef51-200d-471b-a7bd-7f3f95ae88c2%2fPlaas+Daw+Iya+Na+Mga+Arey2%2fAOR_CMB04442.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/melaniefresnillo28%40gmail.com%2f1eceef51-200d-471b-a7bd-7f3f95ae88c2%2fPlaas+Daw+Iya+Na+Mga+Arey2%2fAOR_CMB0444.png",
+      "text": "Si Bayawak ay may maraming kaibigan."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/melaniefresnillo28%40gmail.com%2f1eceef51-200d-471b-a7bd-7f3f95ae88c2%2fPlaas+Daw+Iya+Na+Mga+Arey2%2fAOR_Cat31.png",
+      "text": "Isa sa kaibigan ni Bayawak ay ang Pusa"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/melaniefresnillo28%40gmail.com%2f1eceef51-200d-471b-a7bd-7f3f95ae88c2%2fPlaas+Daw+Iya+Na+Mga+Arey2%2fAOR_EAG00463.png",
+      "text": "Isa din sa kaibigan ni Bayawak ay si Kambing."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/melaniefresnillo28%40gmail.com%2f1eceef51-200d-471b-a7bd-7f3f95ae88c2%2fPlaas+Daw+Iya+Na+Mga+Arey2%2fAOR_Ind00008.png",
+      "text": "Ang Ibon ay isa din sa kaibigan ni Bayawak."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/melaniefresnillo28%40gmail.com%2f1eceef51-200d-471b-a7bd-7f3f95ae88c2%2fPlaas+Daw+Iya+Na+Mga+Arey2%2fAOR_CMB0701.png",
+      "text": "Kahit ang Pawikan ay isa rin sa kaibigan ni bayawak."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/melaniefresnillo28%40gmail.com%2f1eceef51-200d-471b-a7bd-7f3f95ae88c2%2fPlaas+Daw+Iya+Na+Mga+Arey2%2fAOR_IN00301.png",
+      "text": "Ang ibang kaibigan ni Bayawak ay si Unggoy."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/melaniefresnillo28%40gmail.com%2f1eceef51-200d-471b-a7bd-7f3f95ae88c2%2fPlaas+Daw+Iya+Na+Mga+Arey2%2fAOR_CMB04441.png",
+      "text": "Ilan lahat ang kaibigan ni Bayawak?"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/melaniefresnillo28%40gmail.com%2f1eceef51-200d-471b-a7bd-7f3f95ae88c2%2fPlaas+Daw+Iya+Na+Mga+Arey2%2fAOR_Cat3.png",
+      "text": "Si Bayawak ay may limang kaibigan."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 62
+  }
+}

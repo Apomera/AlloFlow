@@ -1,0 +1,117 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-f988b455-untitled",
+  "title": "២៧ក នអើន យៅជីង៝តឆា",
+  "description": "The story of the hungry tiger (Easy Reader - Level 1)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/tP06IVTLJM"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2ff988b455-e335-4a78-95ac-262a7423bc7a%2f%e1%9f%a2%e1%9f%a7%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%99%e1%9f%85%e2%80%8b%e1%9e%87%e1%9e%b8%e2%80%8b%e1%9e%84%e1%9f%9d%e1%9e%8f%e2%80%8b%e1%9e%86%e1%9e%b6%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2ff988b455-e335-4a78-95ac-262a7423bc7a%2f%e1%9f%a2%e1%9f%a7%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%99%e1%9f%85%e2%80%8b%e1%9e%87%e1%9e%b8%e2%80%8b%e1%9e%84%e1%9f%9d%e1%9e%8f%e2%80%8b%e1%9e%86%e1%9e%b6%2fimage1.png",
+      "text": "មាន​ខ្លា​មួយ​ចាក់​ចេញ​ពី​រូង​ថ្ម។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2ff988b455-e335-4a78-95ac-262a7423bc7a%2f%e1%9f%a2%e1%9f%a7%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%99%e1%9f%85%e2%80%8b%e1%9e%87%e1%9e%b8%e2%80%8b%e1%9e%84%e1%9f%9d%e1%9e%8f%e2%80%8b%e1%9e%86%e1%9e%b6%2fimage2.png",
+      "text": "ខ្លា​ស្វែង​រក​ចំ​ណី​អា​ហារ។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2ff988b455-e335-4a78-95ac-262a7423bc7a%2f%e1%9f%a2%e1%9f%a7%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%99%e1%9f%85%e2%80%8b%e1%9e%87%e1%9e%b8%e2%80%8b%e1%9e%84%e1%9f%9d%e1%9e%8f%e2%80%8b%e1%9e%86%e1%9e%b6%2fimage3.png",
+      "text": "ខ្លា​បាន​ជួប​ប្រទះ​នឹង​អណ្ដើក​ក្នុង​វាល​ស្បូវ។​"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2ff988b455-e335-4a78-95ac-262a7423bc7a%2f%e1%9f%a2%e1%9f%a7%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%99%e1%9f%85%e2%80%8b%e1%9e%87%e1%9e%b8%e2%80%8b%e1%9e%84%e1%9f%9d%e1%9e%8f%e2%80%8b%e1%9e%86%e1%9e%b6%2fimage4.png",
+      "text": "ខ្លា​ចាប់​អណ្ដើក​ដើម្បី​មក​ស៊ី តែ​ស៊ី​មិន​បាន។​"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2ff988b455-e335-4a78-95ac-262a7423bc7a%2f%e1%9f%a2%e1%9f%a7%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%99%e1%9f%85%e2%80%8b%e1%9e%87%e1%9e%b8%e2%80%8b%e1%9e%84%e1%9f%9d%e1%9e%8f%e2%80%8b%e1%9e%86%e1%9e%b6%2fimage5.png",
+      "text": "អណ្ដើក​លេច​ក្បាល​ខាំ​ច្រមុះ​ខ្លា។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2ff988b455-e335-4a78-95ac-262a7423bc7a%2f%e1%9f%a2%e1%9f%a7%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%99%e1%9f%85%e2%80%8b%e1%9e%87%e1%9e%b8%e2%80%8b%e1%9e%84%e1%9f%9d%e1%9e%8f%e2%80%8b%e1%9e%86%e1%9e%b6%2fimage6.png",
+      "text": "ខ្លា​ឈឺក៏​បោះ​ចោល​អណ្ដើក​ទៅ​ក្នុង​ដើម​រំចេក។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2ff988b455-e335-4a78-95ac-262a7423bc7a%2f%e1%9f%a2%e1%9f%a7%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%99%e1%9f%85%e2%80%8b%e1%9e%87%e1%9e%b8%e2%80%8b%e1%9e%84%e1%9f%9d%e1%9e%8f%e2%80%8b%e1%9e%86%e1%9e%b6%2fimage7.png",
+      "text": "អណ្ដើក​ខឹង​ហើយ​ដេញ​តាម​ដាន​ជើង​ខ្លា​ដើម្បី​ខាំ​សង​សឹក។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2ff988b455-e335-4a78-95ac-262a7423bc7a%2f%e1%9f%a2%e1%9f%a7%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%99%e1%9f%85%e2%80%8b%e1%9e%87%e1%9e%b8%e2%80%8b%e1%9e%84%e1%9f%9d%e1%9e%8f%e2%80%8b%e1%9e%86%e1%9e%b6%2fimage8.png",
+      "text": "ខ្លា​ធ្វើ​ដំណើរ​ទៅដល់​ត្រពាំង​បាន​ឃើញ​កង្កែប​មួយ។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2ff988b455-e335-4a78-95ac-262a7423bc7a%2f%e1%9f%a2%e1%9f%a7%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%99%e1%9f%85%e2%80%8b%e1%9e%87%e1%9e%b8%e2%80%8b%e1%9e%84%e1%9f%9d%e1%9e%8f%e2%80%8b%e1%9e%86%e1%9e%b6%2fimage9.png",
+      "text": "ខ្លា​ស្រែក​ឃ្លាន​ជា​ខ្លាំង ហើយ​ដេញ​ចាប់​កង្កែប​នោះ។​"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2ff988b455-e335-4a78-95ac-262a7423bc7a%2f%e1%9f%a2%e1%9f%a7%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%99%e1%9f%85%e2%80%8b%e1%9e%87%e1%9e%b8%e2%80%8b%e1%9e%84%e1%9f%9d%e1%9e%8f%e2%80%8b%e1%9e%86%e1%9e%b6%2fimage10.png",
+      "text": "អណ្ដើក​ឈរ​មើល​ខ្លា​ដែល​កំពុង​ដេញ​កង្កែប​ក្នុង​ត្រពាំង។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2ff988b455-e335-4a78-95ac-262a7423bc7a%2f%e1%9f%a2%e1%9f%a7%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%99%e1%9f%85%e2%80%8b%e1%9e%87%e1%9e%b8%e2%80%8b%e1%9e%84%e1%9f%9d%e1%9e%8f%e2%80%8b%e1%9e%86%e1%9e%b6%2fimage11.png",
+      "text": "ខ្លា​ដេញ​ចាប់​កង្កែប​ហត់​ពេក​ ហើយ​បាន​អង្គុយ​ពី​លើ​ខ្នង​អណ្ដើក​នោះ"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2ff988b455-e335-4a78-95ac-262a7423bc7a%2f%e1%9f%a2%e1%9f%a7%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%99%e1%9f%85%e2%80%8b%e1%9e%87%e1%9e%b8%e2%80%8b%e1%9e%84%e1%9f%9d%e1%9e%8f%e2%80%8b%e1%9e%86%e1%9e%b6%2fimage12.png",
+      "text": "អណ្ដើក​លេច​ក្បាល​ពី​ស្នូក ហើយ​ខាំ​ពង​ខ្លា។"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2ff988b455-e335-4a78-95ac-262a7423bc7a%2f%e1%9f%a2%e1%9f%a7%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%99%e1%9f%85%e2%80%8b%e1%9e%87%e1%9e%b8%e2%80%8b%e1%9e%84%e1%9f%9d%e1%9e%8f%e2%80%8b%e1%9e%86%e1%9e%b6%2fimage13.png",
+      "text": "ខ្លា​ឈឺ​ក៏​រត់​ចេញ​ពី​ទឹក​ត្រពាំង​នោះ​ភ្លាមៗ។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2ff988b455-e335-4a78-95ac-262a7423bc7a%2f%e1%9f%a2%e1%9f%a7%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%99%e1%9f%85%e2%80%8b%e1%9e%87%e1%9e%b8%e2%80%8b%e1%9e%84%e1%9f%9d%e1%9e%8f%e2%80%8b%e1%9e%86%e1%9e%b6%2fimage14.png",
+      "text": "មួយ​ឆ្នាំ​ក្រោយ​មក​ ពង​របស់​ខ្លា​បាន​ជា​សះ​ស្បើយ​ឡើង​វិញ។"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2ff988b455-e335-4a78-95ac-262a7423bc7a%2f%e1%9f%a2%e1%9f%a7%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%99%e1%9f%85%e2%80%8b%e1%9e%87%e1%9e%b8%e2%80%8b%e1%9e%84%e1%9f%9d%e1%9e%8f%e2%80%8b%e1%9e%86%e1%9e%b6%2fimage15.png",
+      "text": "ខ្លា​ឈ្មោល​បបួល​ខ្លា​ញី​ ដើម្បី​ដេញ​ចាប់​កង្កែប​និង​អណ្ដើក។"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2ff988b455-e335-4a78-95ac-262a7423bc7a%2f%e1%9f%a2%e1%9f%a7%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%99%e1%9f%85%e2%80%8b%e1%9e%87%e1%9e%b8%e2%80%8b%e1%9e%84%e1%9f%9d%e1%9e%8f%e2%80%8b%e1%9e%86%e1%9e%b6%2fimage16.png",
+      "text": "មក​ដល់​ត្រពាំង​ ខ្លា​បាន​ឃើញ​ទឹក​ឡើង​ច្រើន៕"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 23
+  }
+}

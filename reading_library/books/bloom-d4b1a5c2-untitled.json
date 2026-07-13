@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-d4b1a5c2-untitled",
+  "title": "کرونا چیست؟",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/k42Tmn4dhB"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd4b1a5c2-5e5a-4ee1-87a3-c15a891f8f7c%2f%da%a9%d8%b1%d9%88%d9%86%d8%a7+%da%86%db%8c%d8%b3%d8%aa%d8%9f%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd4b1a5c2-5e5a-4ee1-87a3-c15a891f8f7c%2f%da%a9%d8%b1%d9%88%d9%86%d8%a7+%da%86%db%8c%d8%b3%d8%aa%d8%9f%2f%da%a9%d8%b1%d9%88%d9%86%d8%a7+%da%86%db%8c%d8%b3%d8%aa+1.jpg",
+      "text": "معلم روی تخته نوشت: کرونا\nسپس ازشاگردان پرسید:\nمن چی نوشتم؟\nمستوره دستش را بلند کرد و با آواز بلند\nگفت: کرونا،\nمعلم گفت: آفرین مستوره جان!\nشکیبا پرسید: کرونا چیست؟"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd4b1a5c2-5e5a-4ee1-87a3-c15a891f8f7c%2f%da%a9%d8%b1%d9%88%d9%86%d8%a7+%da%86%db%8c%d8%b3%d8%aa%d8%9f%2f%d9%85%d8%b1%d8%b6+%da%a9%d8%b1%d9%88%d9%86%d8%a7+1.jpg",
+      "text": "معلم گفت: امروز می خواهم در باره کرونا برای تان معلومات بدهم.\nکرونا یک ویروس کوچک است که به چشم دیده نمی شود.\nکرونا از راه دهن، بینی وچشم وارد بدن انسان می شود.\nکرونا بسیارخطرناک است."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd4b1a5c2-5e5a-4ee1-87a3-c15a891f8f7c%2f%da%a9%d8%b1%d9%88%d9%86%d8%a7+%da%86%db%8c%d8%b3%d8%aa%d8%9f%2f%da%a9%d8%b1%d9%88%d9%86%d8%a7+%da%86%db%8c%d8%b3%d8%aa+3.jpg",
+      "text": "به همین خاطر، باید به دهن، بینی وچشم خود دست نزنیم.\nحامد پرسید: نشانه های مریضی کرونا چیست؟\nمعلم گفت: نشانه های مرض کرونا، تب،\nسرفه، آب ریزش بینی و نفس تنگی است."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd4b1a5c2-5e5a-4ee1-87a3-c15a891f8f7c%2f%da%a9%d8%b1%d9%88%d9%86%d8%a7+%da%86%db%8c%d8%b3%d8%aa%d8%9f%2fimage7.png",
+      "text": "فاطمه پرسید: چی کارکنیم تا به کرونا گرفتارنشویم؟\nمعلم گفت: شاگردان عزیز! حال به گفته هایم توجه کنید، تا گرفتارکرونا نشوید:\nدروقت سرفه وعطسه باید دهن وبینی خود\nرا با دستمال یا آرنج دست بپوشانید."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd4b1a5c2-5e5a-4ee1-87a3-c15a891f8f7c%2f%da%a9%d8%b1%d9%88%d9%86%d8%a7+%da%86%db%8c%d8%b3%d8%aa%d8%9f%2fimage31.jpg",
+      "text": "هرروزچندین باردست های تان را با آب وصابون پاک بشویید."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd4b1a5c2-5e5a-4ee1-87a3-c15a891f8f7c%2f%da%a9%d8%b1%d9%88%d9%86%d8%a7+%da%86%db%8c%d8%b3%d8%aa%d8%9f%2fimage4.jpg",
+      "text": "باید فاصله دومتر را بین هم دیگر مراعات کنید.\nاگرجایی می رویید باید به دهن وبینی خود ماسک ببندید. به هرچیز باید دست نزنید."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd4b1a5c2-5e5a-4ee1-87a3-c15a891f8f7c%2f%da%a9%d8%b1%d9%88%d9%86%d8%a7+%da%86%db%8c%d8%b3%d8%aa%d8%9f%2f%da%a9%d8%b1%d9%88%d9%86%d8%a7+%da%86%db%8c%d8%b3%d8%aa+7.jpg",
+      "text": "اگر کسی به این مرض گرفتارشد، ازدیگران باید دورباشد. مریض کرونا باید دراتاق تنها باشد. باید بسیاراحتیاط کنید."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fd4b1a5c2-5e5a-4ee1-87a3-c15a891f8f7c%2f%da%a9%d8%b1%d9%88%d9%86%d8%a7+%da%86%db%8c%d8%b3%d8%aa%d8%9f%2fimage2.jpg",
+      "text": "بیشترمیوه وسبزی بخورید. خوردن لیمو ونارنج بدن را قوی می کند. باید به صحت خود توجه کنید.\nهمه شاگردان با یک صدا گفتند: ما احتیاط\nمی کنیم و نمی گذاریم که کرونا نزدیک ما بیاید."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 223
+  }
+}

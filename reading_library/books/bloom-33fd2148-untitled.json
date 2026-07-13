@@ -1,0 +1,72 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-33fd2148-untitled",
+  "title": "ເຈົ້າກໍາລັງເຮັດຫຍັງ?",
+  "description": "An easy way to learn action words",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Bloom Lao"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Lao",
+  "license": "CC BY-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/U5GKwzvYlN"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/U5GKwzvYlN%2f1753677018234%2f%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%81%e0%bb%8d%e0%ba%b2%e0%ba%a5%e0%ba%b1%e0%ba%87%e0%bb%80%e0%ba%ae%e0%ba%b1%e0%ba%94%e0%ba%ab%e0%ba%8d%e0%ba%b1%e0%ba%87%2fASP_13_what_are_you_doing_Page_01_Image_Cover1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/U5GKwzvYlN%2f1753677018234%2f%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%81%e0%bb%8d%e0%ba%b2%e0%ba%a5%e0%ba%b1%e0%ba%87%e0%bb%80%e0%ba%ae%e0%ba%b1%e0%ba%94%e0%ba%ab%e0%ba%8d%e0%ba%b1%e0%ba%87%2fASP_13_what_are_you_doing_Page_02_Image_00011.jpg",
+      "text": "ຂ້ອຍກໍາລັງຮ້ອງເພງຢູ່"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/U5GKwzvYlN%2f1753677018234%2f%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%81%e0%bb%8d%e0%ba%b2%e0%ba%a5%e0%ba%b1%e0%ba%87%e0%bb%80%e0%ba%ae%e0%ba%b1%e0%ba%94%e0%ba%ab%e0%ba%8d%e0%ba%b1%e0%ba%87%2fASP_13_what_are_you_doing_Page_03_Image_00011.jpg",
+      "text": "ລາວກໍາລັງໂບກມືຢູ່"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/U5GKwzvYlN%2f1753677018234%2f%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%81%e0%bb%8d%e0%ba%b2%e0%ba%a5%e0%ba%b1%e0%ba%87%e0%bb%80%e0%ba%ae%e0%ba%b1%e0%ba%94%e0%ba%ab%e0%ba%8d%e0%ba%b1%e0%ba%87%2fASP_13_what_are_you_doing_Page_04_Image_00011.jpg",
+      "text": "ຂ້ອຍກໍາລັງຕົບມືຢູ່"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/U5GKwzvYlN%2f1753677018234%2f%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%81%e0%bb%8d%e0%ba%b2%e0%ba%a5%e0%ba%b1%e0%ba%87%e0%bb%80%e0%ba%ae%e0%ba%b1%e0%ba%94%e0%ba%ab%e0%ba%8d%e0%ba%b1%e0%ba%87%2fASP_13_what_are_you_doing_Page_05_Image_000111.jpg",
+      "text": "ລາວກໍາລັງຢຶດໂຕຢູ່"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/U5GKwzvYlN%2f1753677018234%2f%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%81%e0%bb%8d%e0%ba%b2%e0%ba%a5%e0%ba%b1%e0%ba%87%e0%bb%80%e0%ba%ae%e0%ba%b1%e0%ba%94%e0%ba%ab%e0%ba%8d%e0%ba%b1%e0%ba%87%2fASP_13_what_are_you_doing_Page_06_Image_00011.jpg",
+      "text": "ລາວກໍາລັງໂທລະສັບຢູ່"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/U5GKwzvYlN%2f1753677018234%2f%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%81%e0%bb%8d%e0%ba%b2%e0%ba%a5%e0%ba%b1%e0%ba%87%e0%bb%80%e0%ba%ae%e0%ba%b1%e0%ba%94%e0%ba%ab%e0%ba%8d%e0%ba%b1%e0%ba%87%2fASP_13_what_are_you_doing_Page_07_Image_00011.jpg",
+      "text": "ຂ້ອຍກໍາລັງຕອບຢູ່"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/U5GKwzvYlN%2f1753677018234%2f%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%81%e0%bb%8d%e0%ba%b2%e0%ba%a5%e0%ba%b1%e0%ba%87%e0%bb%80%e0%ba%ae%e0%ba%b1%e0%ba%94%e0%ba%ab%e0%ba%8d%e0%ba%b1%e0%ba%87%2fASP_13_what_are_you_doing_Page_08_Image_00011.jpg",
+      "text": "ຂ້ອຍກໍາລັງຮັບຟັງຢູ່"
+    }
+  ],
+  "stats": {
+    "pages": 7,
+    "words": 7
+  }
+}

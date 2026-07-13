@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-46e2b6e2-11",
+  "title": "11. ປັດສະຄາ",
+  "description": "Passover",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Spiritual"
+  ],
+  "authors": [
+    "“Original work available at http://door43.org.”"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "“Original work available at http://door43.org.”",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/DrWbVbHwWY"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2f46e2b6e2-86f1-4a10-9607-3fa234a18776%2f11.+%e0%ba%9b%e0%ba%b1%e0%ba%94%e0%ba%aa%e0%ba%b0%e0%ba%84%e0%ba%b2%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2f46e2b6e2-86f1-4a10-9607-3fa234a18776%2f11.+%e0%ba%9b%e0%ba%b1%e0%ba%94%e0%ba%aa%e0%ba%b0%e0%ba%84%e0%ba%b2%2fimage1.jpg",
+      "text": "ພຣະເຈົ້າໄດ້ເຕືອນກະສັດຟາໂລວ່າ: ຖ້າເຈົ້າບໍ່ປ່ອຍຊາວອິດສະລາເອນໄປ. ພຣະອົງກໍຈະຂ້າລູກຊາຍກົກທັງໝົດຂອງຄົນ ແລະ ສັດ. ເມື່ອກະສັດຟາໂລໄດ້ຍິນສິ່ງນີ້ ເພີ່ນຍັງຄົງບໍ່ເຊື່ອຟັງພຣະເຈົ້າ."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2f46e2b6e2-86f1-4a10-9607-3fa234a18776%2f11.+%e0%ba%9b%e0%ba%b1%e0%ba%94%e0%ba%aa%e0%ba%b0%e0%ba%84%e0%ba%b2%2fimage2.jpg",
+      "text": "ພຣະເຈົ້າຊົງໄດ້ຈັດຕຽມທາງເພື່ອຊ່ວຍ\nລູກຊາຍກົກທຸກຄົນທີ່ຕິດຕາມພຣະອົງ ແລະ ແຕ່ລະຄອບຄົວກໍໄດ້ຈັດເລືອກເອົາແກະໂຕທີ່ສົມບູນທີ່ສຸດ\nມາແລ້ວກໍຂ້າ."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2f46e2b6e2-86f1-4a10-9607-3fa234a18776%2f11.+%e0%ba%9b%e0%ba%b1%e0%ba%94%e0%ba%aa%e0%ba%b0%e0%ba%84%e0%ba%b2%2fimage3.jpg",
+      "text": "ພຣະເຈົ້າຊົງບອກໃຫ້ຊາວອິດສະລາເອນ\nເອົາເລືອດແກະທາໃສ່ອ້ອມຂອບປະຕູເຮືອນ\nຂອງເຂົາ. ແລະ ປີ້ງຊີ້ນກີນຢ່າງໄວ. ພ້ອມກັບກີນເຂົ້າຈີ່ທີ່ບໍ່ມີເຊື້ອແປ້ງ. ພຣະອົງຍັງຊົງບອກອີກວ່າໃຫ້ກຽມພ້ອມ\nທີ່ຈະອອກຈາກເອຢິບເມື່ອກີນແລ້ວ."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2f46e2b6e2-86f1-4a10-9607-3fa234a18776%2f11.+%e0%ba%9b%e0%ba%b1%e0%ba%94%e0%ba%aa%e0%ba%b0%e0%ba%84%e0%ba%b2%2fimage4.jpg",
+      "text": "ປະຊາຊົນອິດສະລາເອນໄດ້ປະຕິບັດຕາມທຸກສິ່ງທີ່ພຣະເຈົ້ານັ້ນ\nຊົງໄດ້ສັ່ງໄວ້ໃຫ້ພວກເຂົາເຮັດ. ໃນທ່ຽງຄືນນັ້ນ ພຣະເຈົ້າໄດ້ຊົງຂ້າລູກຊາຍກົກທັງໝົດຂອງຊາວເອຢິບ."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2f46e2b6e2-86f1-4a10-9607-3fa234a18776%2f11.+%e0%ba%9b%e0%ba%b1%e0%ba%94%e0%ba%aa%e0%ba%b0%e0%ba%84%e0%ba%b2%2fimage5.jpg",
+      "text": "ເຮືອນທຸກຫຼັງຂອງປະຊາຊົນອິດສະລາເອນ\nທີ່ມີເລືອດທາອ້ອມຂອບປະຕູ ພຣະເຈົ້າຊົງໄດ້ຜ່ານເຮືອນຫຼັງນັ້ນໄປທຸກຄົນ\nທີ່ຢູ່ໃນພວກເຂົາກໍປອດໄພ. ພວກເຂົາໄດ້ຮັບການປົກປ້ອງເພາະວ່າພວກເຂົາມີເລືອດແກະ."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2f46e2b6e2-86f1-4a10-9607-3fa234a18776%2f11.+%e0%ba%9b%e0%ba%b1%e0%ba%94%e0%ba%aa%e0%ba%b0%e0%ba%84%e0%ba%b2%2fimage6.jpg",
+      "text": "ແຕ່ວ່າປະຊາຊົນເອຢິບນັ້ນບໍ່ໄດ້ຟັງ ຫຼື ເຮັດຕາມພຣະເຈົ້າສັ່ງ. ດັ່ງນັ້ນພຣະເຈົ້າຈຶ່ງບໍ່ຜ່ານເຮືອນພວກເຂົາ. ພຣະເຈົ້າໄດ້ຂ້າລູກຊາຍກົກທຸກຄົນຂອງຊາວເອຢິບ."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2f46e2b6e2-86f1-4a10-9607-3fa234a18776%2f11.+%e0%ba%9b%e0%ba%b1%e0%ba%94%e0%ba%aa%e0%ba%b0%e0%ba%84%e0%ba%b2%2fimage7.jpg",
+      "text": "ລູກຊາຍກົກຂອງຊາວເອຢິບທຸກໆຄົນນັ້ນໄດ້ຕາຍ, ເລີ່ມຈາກລູກຊາຍກົກຂອງນັກໂທດໃນຄຸກ, ຈົນເຖິງລູກຊາຍກົກຂອງກະສັດຟາໂລ. ທຸກຄົນໃນເອຢິບຕ່າງກໍພາກັນຮ້ອງໄຫ້ຄວນຄາງເພາະພວກເຂົາ\nໂສກເສົ້າຫຼາຍ."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2f46e2b6e2-86f1-4a10-9607-3fa234a18776%2f11.+%e0%ba%9b%e0%ba%b1%e0%ba%94%e0%ba%aa%e0%ba%b0%e0%ba%84%e0%ba%b2%2fimage8.jpg",
+      "text": "ໃນຄືນນັ້ນ, ກະສັດຟາໂລໄດ້ເອີ້ນເອົາໂມເຊ\nແລະ ອາໂລນ ແລະ ໄດ້ເວົ້າວ່າ: “ໃຫ້ເອົາຊາວອິດສະລາເອນ\nແລະ ນຳອອກຈາກເອຢິບໂດຍທັນທີ !”\nປະຊາຊົນເອຢິບກໍຮີບເລັ່ງຊາວອິດສະລາເອນໃຫ້ອອກຈາກເອຢິບ\nໂດຍທັນທີ."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 51
+  }
+}

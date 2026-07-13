@@ -1,0 +1,65 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-a89ac957-untitled",
+  "title": "एक",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/wZIaeJ5Hiv"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa89ac957-d38c-4505-9fad-7d184f1c6919%2f%e0%a4%8f%e0%a4%95%2fIMG_20180421_065851.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa89ac957-d38c-4505-9fad-7d184f1c6919%2f%e0%a4%8f%e0%a4%95%2fAOR_EAG00812.png",
+      "text": "एक काग"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa89ac957-d38c-4505-9fad-7d184f1c6919%2f%e0%a4%8f%e0%a4%95%2fAOR_6B-D.png",
+      "text": "एक आँखा"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa89ac957-d38c-4505-9fad-7d184f1c6919%2f%e0%a4%8f%e0%a4%95%2fAOR_acf031.png",
+      "text": "एक गाई"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa89ac957-d38c-4505-9fad-7d184f1c6919%2f%e0%a4%8f%e0%a4%95%2fAOR_6M-P.png",
+      "text": "एक काका"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa89ac957-d38c-4505-9fad-7d184f1c6919%2f%e0%a4%8f%e0%a4%95%2fAOR_CMB0753.png",
+      "text": "एक काकी"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fa89ac957-d38c-4505-9fad-7d184f1c6919%2f%e0%a4%8f%e0%a4%95%2fmakai.jpg",
+      "text": "एक घोगा"
+    }
+  ],
+  "stats": {
+    "pages": 6,
+    "words": 12
+  }
+}

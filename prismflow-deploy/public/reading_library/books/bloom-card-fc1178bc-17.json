@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-fc1178bc-17",
+  "title": "17 - ድሙን ከልቢን ውዑይ ድስቲ",
+  "description": "Device Portrait Layout.",
+  "language": "Tigrinya",
+  "langCode": "ti",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "SIL-PNG Education for Life"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL-PNG Education for Life",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/eCgSNE0BCc"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2ffc1178bc-5527-44ba-a159-8651d422851f%2f17+-+%e1%8b%b5%e1%88%99%e1%8a%95+%e1%8a%a8%e1%88%8d%e1%89%a2%e1%8a%95+%e1%8b%8d%e1%8b%91%e1%8b%ad+%e1%8b%b5%e1%88%b5%e1%89%b2%2fCover-curved.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"17 - ድሙን ከልቢን ውዑይ ድስቲ\" (Tigrinya). Device Portrait Layout."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 64
+  }
+}

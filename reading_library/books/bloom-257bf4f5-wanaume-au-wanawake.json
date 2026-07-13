@@ -1,0 +1,97 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-257bf4f5-wanaume-au-wanawake",
+  "title": "Wanaume au Wanawake",
+  "description": "In a country where women are in charge, they become cruel towards men. But to avoid war, they decide to change, making a new agreement with the men. After that the women and men worked and lived together in peace in a country led by both men and women.",
+  "language": "Kiswahili",
+  "langCode": "sw",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Culture"
+  ],
+  "authors": [
+    "Lolupe pilot site"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Lolupe pilot site",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/8Lz6nxAlfN"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f257bf4f5-47a1-4112-b3c5-8cfbfc7c7404%2fMen+or+Women%2fASP_38_men_or_women__Page_01_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f257bf4f5-47a1-4112-b3c5-8cfbfc7c7404%2fMen+or+Women%2fASP_38_men_or_women__Page_02_Image_0001.jpg",
+      "text": "Hii ni hadithi ya nchi moja ambayo ilikuwa na uongozi wa kikatili. Katika nchi hii wanawake walitawala walishika nafasi zote za uongozi. Walikuwa machifu, wazee na watoa maamuzi wakuu."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f257bf4f5-47a1-4112-b3c5-8cfbfc7c7404%2fMen+or+Women%2fASP_38_men_or_women__Page_03_Image_0001.jpg",
+      "text": "Wanaume wote walifanya kazi za nyumbani waliwahudumia wake zao. Mwanzoni, kila kitu kilienda vizuri. Kila mtu alishiriki katika kazi vizuri."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f257bf4f5-47a1-4112-b3c5-8cfbfc7c7404%2fMen+or+Women%2fASP_38_men_or_women__Page_04_Image_0001.jpg",
+      "text": "Hata hivyo kutokana na muda mambo yalibadilika. Wanawake walianza kuwa wakatili kwa wanaume. Wanaume walifanya kazi za kutumikishwa. Walinyanyaswa na wanawake kutokukubaliana kwa kila familia walilaumiwa wanaume."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f257bf4f5-47a1-4112-b3c5-8cfbfc7c7404%2fMen+or+Women%2fASP_38_men_or_women__Page_05_Image_0001.jpg",
+      "text": "Wanaume waliadhibiwa hadharani bila haki ya kusikilizwa. Wanawake walibana sheria na hawakuheshimu haki za wanaume."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f257bf4f5-47a1-4112-b3c5-8cfbfc7c7404%2fMen+or+Women%2fASP_38_men_or_women__Page_06_Image_0001.jpg",
+      "text": "Licha ya mabaya waliyotendewa, wanaume walitaka mazungumzo kutatua shida zao. Waliitisha mikutano mbalimbali. Lakini pamoja na mikutano, wanawake hawakubadilika."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f257bf4f5-47a1-4112-b3c5-8cfbfc7c7404%2fMen+or+Women%2fASP_38_men_or_women__Page_07_Image_0001.jpg",
+      "text": "Sheria ziliwabana zaidi na zaidi. Wanaume hawakuruhusiwa kukutana hadharani tena. Walibaki nyumbani na wanawake walifanya kazi ofisini."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f257bf4f5-47a1-4112-b3c5-8cfbfc7c7404%2fMen+or+Women%2fASP_38_men_or_women__Page_08_Image_0001.jpg",
+      "text": "Wanawake hawakujua kwamba waliwapa nafasi wanaume ya kukutana kwa mikutano ya siri. Walipojua hakuna wanawake ambao wapo karibu, wanaume walikutana na walizungumza kuhusu hali yao."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f257bf4f5-47a1-4112-b3c5-8cfbfc7c7404%2fMen+or+Women%2fASP_38_men_or_women__Page_09_Image_0001.png",
+      "text": "Siku moja wanaume walikutana na kujadili kuwafungia wanawake wao katika ofisi zao."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f257bf4f5-47a1-4112-b3c5-8cfbfc7c7404%2fMen+or+Women%2fASP_38_men_or_women__Page_10_Image_0001.jpg",
+      "text": "Siku moja wanawake wote walifungiwa katika ofisi zao. Wanaume walianzisha vita zidi ya wanawake. Walitaka kushirikiana majukumu."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f257bf4f5-47a1-4112-b3c5-8cfbfc7c7404%2fMen+or+Women%2fASP_38_men_or_women__Page_11_Image_0001.jpg",
+      "text": "Wanawake hawakutaka kugombana na wanaume. Walikubalina kwamba ulikuwa muda wa kushirikiana kazi. Ulikuwa muda wa kuacha ukandamizaji."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f257bf4f5-47a1-4112-b3c5-8cfbfc7c7404%2fMen+or+Women%2fASP_38_men_or_women__Page_12_Image_0001.jpg",
+      "text": "Kwa makubaliano mapya, wanawake na wanaume walifanya kazi pamoja. Maisha yalikuwa mazuri kwa kila mmoja."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f257bf4f5-47a1-4112-b3c5-8cfbfc7c7404%2fMen+or+Women%2fASP_38_men_or_women__Page_13_Image_0001.jpg",
+      "text": "Tangu hapo, wanaume na wanawake waliishi kwa amani. Waliheshimiana na kupendana. Nchi ilifurahia demokrasia ya uongozi."
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 229
+  }
+}

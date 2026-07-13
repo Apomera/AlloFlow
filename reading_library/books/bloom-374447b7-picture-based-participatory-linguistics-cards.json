@@ -1,0 +1,45 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-374447b7-picture-based-participatory-linguistics-cards",
+  "title": "Picture-Based Participatory Linguistics Cards",
+  "description": "This is a template to build your own picture-based cards for participatory phonological analysis through word-sorting activities in orthography development workshops. The cards build on Kutsch Lojenga’s (2024) word-based participatory approach, aiming to empower language communities in their orthography development and literacy efforts.\n\nReference:\nKutsch Lojenga, C. (2024). 9: Participatory research in linguistics for language and orthography development: A practical guide. In T. Stirtz, M. Cahill, & P. Davison (Eds.), Participatory linguistics: Methods and case studies from around the world. Language Documentation & Conservation Special Publication no. 29 (pp. 136–158). University of Hawai’i Press; https://nflrc.hawaii.edu/ldc/. https://hdl.handle.net/10125/74780",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "-"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "-",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/fEJNk6PWwp"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fEJNk6PWwp%2f1742648363342%2fParticipatory+Linguistics+Card+Template%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "N/V/Other\nIPA\n1 OOOO .\n2\n3\nLWC gloss\nEnglish gloss\n#0000"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fEJNk6PWwp%2f1742648363342%2fParticipatory+Linguistics+Card+Template%2fimage3.png",
+      "text": "N/V/Other\nIPA\n1 OOOO .\n2\n3\nငှက်ပျောသီးတစ်ခိုင်\nbunch of bananas (fruit)\n#0232"
+    }
+  ],
+  "stats": {
+    "pages": 2,
+    "words": 25
+  }
+}

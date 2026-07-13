@@ -1,0 +1,90 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-4a2049ca-untitled",
+  "title": "گربه های وحشی! گربه های وحشی",
+  "description": "Example book in persian with widget",
+  "language": "Farsi",
+  "langCode": "fa",
+  "isRtl": true,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "SIL International"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL International",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/j4FUKBY3Bv"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2f4a2049ca-557f-4704-b7d3-fce6fa119795%2f%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c!+%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2f4a2049ca-557f-4704-b7d3-fce6fa119795%2f%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c!+%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c%2fimage1.jpg",
+      "text": "پوست بعضی از گربه های وحشی خط دار است، مثل پلنگ"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2f4a2049ca-557f-4704-b7d3-fce6fa119795%2f%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c!+%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c%2fimage2.jpg",
+      "text": "بعضی از گربه های وحشی یال دارند، مثل شیر"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2f4a2049ca-557f-4704-b7d3-fce6fa119795%2f%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c!+%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c%2fimage4.jpg",
+      "text": "بعضی از گربه های وحشی خال دارند، مثل گربه پلنگ"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2f4a2049ca-557f-4704-b7d3-fce6fa119795%2f%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c!+%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c%2fimage5.jpg",
+      "text": "بعضی از گربه های وحشی کوهنوردان خوبی اند، مثل پلنگ های ابری و پلنگ های آفریقایی"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2f4a2049ca-557f-4704-b7d3-fce6fa119795%2f%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c!+%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c%2fimage6.jpg",
+      "text": "بعضی از گربه های وحشی در کوه های بلند زندگی می کنند، مثل پلنگ های برفی و گربه های پالاس"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2f4a2049ca-557f-4704-b7d3-fce6fa119795%2f%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c!+%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c%2fimage7.jpg",
+      "text": "بعضی از گربه های وحشی در بیابان ها زندگی می کنند، مثل گربه های شنی"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2f4a2049ca-557f-4704-b7d3-fce6fa119795%2f%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c!+%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c%2fimage8.jpg",
+      "text": "بعضی از گربه های وحشی گوش های مودار دارند، مثل گربه های سیاه گوش"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2f4a2049ca-557f-4704-b7d3-fce6fa119795%2f%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c!+%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c%2fimage9.jpg",
+      "text": "بعضی از گربه های وحشی ماهی گیری را دوست دارند، مثل گربه های ماهی گیر"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2f4a2049ca-557f-4704-b7d3-fce6fa119795%2f%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c!+%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c%2fimage10.jpg",
+      "text": "بعضی از گربه های وحشی کوچک ترین گربه وحشی در جهان هستند، مثل گربه های خالدار زنگی"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2f4a2049ca-557f-4704-b7d3-fce6fa119795%2f%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c!+%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c%2fimage11.jpg",
+      "text": "بعضی از گربه های وحشی شبیه گربه های خانگی اند، مثل گربه های جنگلی و گربه های طلایی"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2f4a2049ca-557f-4704-b7d3-fce6fa119795%2f%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c!+%da%af%d8%b1%d8%a8%d9%87+%d9%87%d8%a7%db%8c+%d9%88%d8%ad%d8%b4%db%8c%2fimage12.jpg",
+      "text": "اما، همه آن ها گربه های وحشی اند"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 153
+  }
+}

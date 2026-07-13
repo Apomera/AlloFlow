@@ -1,0 +1,92 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-6645fa6e-sumbreroni-justin",
+  "title": "SUMBRERONI JUSTIN",
+  "description": "A Filipino picture book from Bloom Library.",
+  "language": "Filipino",
+  "langCode": "fil",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Jowen I. Samarita"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Jowen I. Samarita",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/FQ4B4fojhX"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/jowensamarita004%40gmail.com%2f6645fa6e-8c2c-41aa-8b29-911060f7cd9a%2fSUMBRERO+NI+JUSTIN%2fThe Moon and The Cap_Cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jowensamarita004%40gmail.com%2f6645fa6e-8c2c-41aa-8b29-911060f7cd9a%2fSUMBRERO+NI+JUSTIN%2fThe+Moon+and+The+Cap_Page+021.jpg",
+      "text": "Pista sa bayan ng San Juan. Namasyal ang mag-anak nina Justin. Tuwang-tuwa siya at ang kanyang mga kapatid.\n\"Gusto ko 'yun tatay', sabi ni Justin sabay turo sa mga prutas.\nAt nagpatuloy sa pamamasyal ang pamilya nila."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jowensamarita004%40gmail.com%2f6645fa6e-8c2c-41aa-8b29-911060f7cd9a%2fSUMBRERO+NI+JUSTIN%2fThe+Moon+and+The+Cap_Page+031.jpg",
+      "text": "\"Tingnan ninyo ang aking sumbrero. Maganda 'di ba?\" sabi ni Justin.\n\"Tingnan nyo naman ang aking salamin. Hugis bituin\", pagmamalaki ni Enzo.\n\"Ang sarap ng kendi na ito mga kuya. Gusto 'nyo ba?\" pag-aalok ni Betty.\nNagpatuloy sila sa pag-iikot sa bayan"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jowensamarita004%40gmail.com%2f6645fa6e-8c2c-41aa-8b29-911060f7cd9a%2fSUMBRERO+NI+JUSTIN%2fThe+Moon+and+The+Cap_Page+041.jpg",
+      "text": "Sa pamamasyal nila, biglang umihip ang malakas na hangin at nalipad ang sumbrero ni Justin.\n\"Hala, sumbrero koooooo.....\", sigaw ni Justin."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jowensamarita004%40gmail.com%2f6645fa6e-8c2c-41aa-8b29-911060f7cd9a%2fSUMBRERO+NI+JUSTIN%2fThe+Moon+and+The+Cap_Page+051.jpg",
+      "text": "\"Kuya, tulungan mo ako. Nilipad ang sumbrero ko at sumabit sa puno\", nalulungkot na sabi ni Justin sa kanyang kuya.\n\"Masyadong mataas ang puno. Hindi natin makukuha iyan. Walang hagdan o sungkit na maaari tayong magamit\", sagot ng kanyang kapatid."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jowensamarita004%40gmail.com%2f6645fa6e-8c2c-41aa-8b29-911060f7cd9a%2fSUMBRERO+NI+JUSTIN%2fThe+Moon+and+The+Cap_Page+061.jpg",
+      "text": "\"Anak, bakit ka umiiyak? Masakit ba ang iyong ngipin?\" tanong ng inay ni Justin.\n\"Hindi po inay, Nilipad po ang kanyang sumbrero at sumabit sa puno\", paliwanag ni Enzo sa kanyang inay."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jowensamarita004%40gmail.com%2f6645fa6e-8c2c-41aa-8b29-911060f7cd9a%2fSUMBRERO+NI+JUSTIN%2fThe+Moon+and+The+Cap_Page+071.jpg",
+      "text": "Gabi na subalit hindi pa rin natutulog si Justin. Iniisip niya kung paano makukuha ang kanyang sumbrero."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jowensamarita004%40gmail.com%2f6645fa6e-8c2c-41aa-8b29-911060f7cd9a%2fSUMBRERO+NI+JUSTIN%2fThe+Moon+and+The+Cap_Page+081.jpg",
+      "text": "\"Aking sumbrero, kailangan kita. Mas magiging masaya ako kung nandito ka. Patawad dahil hindi kita naingatan.\" bulong ni Justin sa kanyang sarili."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jowensamarita004%40gmail.com%2f6645fa6e-8c2c-41aa-8b29-911060f7cd9a%2fSUMBRERO+NI+JUSTIN%2fThe+Moon+and+The+Cap_Page+091.jpg",
+      "text": "\"Anak, may regalo ako sa iyo. Isang sumbrerong pula. Alam ko na paborito mo ang kulay na ito. Nagustuhan mo ba anak?\", tanong ng kanyang inay.\n\"Kayganda nito inay. Salamat po.\" wika ni Justin."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jowensamarita004%40gmail.com%2f6645fa6e-8c2c-41aa-8b29-911060f7cd9a%2fSUMBRERO+NI+JUSTIN%2fThe+Moon+and+The+Cap_Page+101.jpg",
+      "text": "Maliwanag ang buwan. Habang nakatingin si Justin sa kalawakan, naisip niya ang kanyang nilipad na sumbrero."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jowensamarita004%40gmail.com%2f6645fa6e-8c2c-41aa-8b29-911060f7cd9a%2fSUMBRERO+NI+JUSTIN%2fThe+Moon+and+The+Cap_Page+111.jpg",
+      "text": "\"Ang init ng araw kuya Enzo. Mabuti na lang at meron akong sumbrero. Gusto mo bang hiramin ito kuya? Pero, ingatan mo ito,\" sabi ni Justin sa kanyang kuya.\n\"Hindi na Justin, kailangan mo iyan. Bibili na lang ako ng sumbrero bukas pagbalik sa bayan.\", tugon ni Enzo sa kanaynag kapatid."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jowensamarita004%40gmail.com%2f6645fa6e-8c2c-41aa-8b29-911060f7cd9a%2fSUMBRERO+NI+JUSTIN%2fThe+Moon+and+The+Cap_Page+121.jpg",
+      "text": "Pagpasok ni Justin sa kwarto ng bahay nila, tiningnan niya ang kanyang mga sumbrero na may iba-ibang kulay tulad ng tsokolate, pula, puti at iba pa."
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 338
+  }
+}

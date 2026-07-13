@@ -1,0 +1,80 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-0ef6a889-untitled",
+  "title": "အီးမာည်းဒဲ့ဖိုးတား စီဂီအံက်လာ်ဒါးတိူဝ်ႈ",
+  "description": "လော်င်အီးမာည်းဒဲ့ဖိုးတား ဂီအံက်လာ်ဒါးတိူဝ်ႈ ဘည်ဘာည်းအီုန်ဟိုမ်းကဲ။",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "RBTT & NTC"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "RBTT & NTC",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/KVCk7RF3fV"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f0ef6a889-252b-487b-a953-77d32259cfee%2f%e1%80%a1%e1%80%ae%e1%80%b8%e1%80%99%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%92%e1%80%b2%e1%80%b7%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8+%e1%80%85%e1%80%ae%e1%80%82%e1%80%ae%e1%80%a1%e1%80%b6%e1%80%80%e1%80%ba%e1%80%9c%e1%80%ac%e1%80%ba%e1%80%92%e1%80%ab%e1%80%b8%e1%80%90%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%82%88%2f1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f0ef6a889-252b-487b-a953-77d32259cfee%2f%e1%80%a1%e1%80%ae%e1%80%b8%e1%80%99%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%92%e1%80%b2%e1%80%b7%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8+%e1%80%85%e1%80%ae%e1%80%82%e1%80%ae%e1%80%a1%e1%80%b6%e1%80%80%e1%80%ba%e1%80%9c%e1%80%ac%e1%80%ba%e1%80%92%e1%80%ab%e1%80%b8%e1%80%90%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%82%88%2f11.jpg",
+      "text": "အီးမာည်းဒဲ့ဖိုးတား စီဂီအံက်လာ်ဒါးတိူဝ်ႈ ပီဒါင်းအန်းဟာဝ်း ပါ့်စော်င်း။"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f0ef6a889-252b-487b-a953-77d32259cfee%2f%e1%80%a1%e1%80%ae%e1%80%b8%e1%80%99%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%92%e1%80%b2%e1%80%b7%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8+%e1%80%85%e1%80%ae%e1%80%82%e1%80%ae%e1%80%a1%e1%80%b6%e1%80%80%e1%80%ba%e1%80%9c%e1%80%ac%e1%80%ba%e1%80%92%e1%80%ab%e1%80%b8%e1%80%90%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%82%88%2f2.jpg",
+      "text": "အီးမာည်းဒဲ့ဖိုးတား စီဂီအံက်လာ်ဒါး ပည်နှံက်ပီဒါင်းအန်း ႎီးဒေဲႈဒ ပါ့်စော်င်း။"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f0ef6a889-252b-487b-a953-77d32259cfee%2f%e1%80%a1%e1%80%ae%e1%80%b8%e1%80%99%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%92%e1%80%b2%e1%80%b7%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8+%e1%80%85%e1%80%ae%e1%80%82%e1%80%ae%e1%80%a1%e1%80%b6%e1%80%80%e1%80%ba%e1%80%9c%e1%80%ac%e1%80%ba%e1%80%92%e1%80%ab%e1%80%b8%e1%80%90%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%82%88%2f5.jpg",
+      "text": "အီးမာည်းဒဲ့ဖိုးတား စီဂီအံက်လာ်ဒါးတိူဝ်ႈ ကူန်အန်းဟာဝ်း ပါ့်လုမ်း။"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f0ef6a889-252b-487b-a953-77d32259cfee%2f%e1%80%a1%e1%80%ae%e1%80%b8%e1%80%99%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%92%e1%80%b2%e1%80%b7%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8+%e1%80%85%e1%80%ae%e1%80%82%e1%80%ae%e1%80%a1%e1%80%b6%e1%80%80%e1%80%ba%e1%80%9c%e1%80%ac%e1%80%ba%e1%80%92%e1%80%ab%e1%80%b8%e1%80%90%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%82%88%2f6.jpg",
+      "text": "အီးမာည်းဒဲ့ဖိုးတား စီဂီအံက်လာ်ဒါး ပည်နှံက်ကူန်အန်း ႎီးဒေဲႈဒ ပါ့်လုမ်း။"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f0ef6a889-252b-487b-a953-77d32259cfee%2f%e1%80%a1%e1%80%ae%e1%80%b8%e1%80%99%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%92%e1%80%b2%e1%80%b7%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8+%e1%80%85%e1%80%ae%e1%80%82%e1%80%ae%e1%80%a1%e1%80%b6%e1%80%80%e1%80%ba%e1%80%9c%e1%80%ac%e1%80%ba%e1%80%92%e1%80%ab%e1%80%b8%e1%80%90%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%82%88%2f3.jpg",
+      "text": "အီးမာည်းဒဲ့ဖိုးတား စီဂီအံက်လာ်ဒါးတိူဝ်ႈ မာအန်းယံင်းပ္လါ်ည်း။"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f0ef6a889-252b-487b-a953-77d32259cfee%2f%e1%80%a1%e1%80%ae%e1%80%b8%e1%80%99%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%92%e1%80%b2%e1%80%b7%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8+%e1%80%85%e1%80%ae%e1%80%82%e1%80%ae%e1%80%a1%e1%80%b6%e1%80%80%e1%80%ba%e1%80%9c%e1%80%ac%e1%80%ba%e1%80%92%e1%80%ab%e1%80%b8%e1%80%90%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%82%88%2f4.jpg",
+      "text": "အီးမာည်းဒဲ့ဖိုးတား ဂီပည်တိူဝ်ႈအူန်း မာအန်းတကျေဲတ် ဂျိုးယံင်းကာည်း။"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f0ef6a889-252b-487b-a953-77d32259cfee%2f%e1%80%a1%e1%80%ae%e1%80%b8%e1%80%99%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%92%e1%80%b2%e1%80%b7%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8+%e1%80%85%e1%80%ae%e1%80%82%e1%80%ae%e1%80%a1%e1%80%b6%e1%80%80%e1%80%ba%e1%80%9c%e1%80%ac%e1%80%ba%e1%80%92%e1%80%ab%e1%80%b8%e1%80%90%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%82%88%2f7.jpg",
+      "text": "အီးမာည်းဒဲ့ဖိုးတား စီဒါ်ႈ “အံဝ်းနံင်ဟာဝ်းစော်င်း ဘာည်းပီဒါင်းအံဝ်း။”"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f0ef6a889-252b-487b-a953-77d32259cfee%2f%e1%80%a1%e1%80%ae%e1%80%b8%e1%80%99%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%92%e1%80%b2%e1%80%b7%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8+%e1%80%85%e1%80%ae%e1%80%82%e1%80%ae%e1%80%a1%e1%80%b6%e1%80%80%e1%80%ba%e1%80%9c%e1%80%ac%e1%80%ba%e1%80%92%e1%80%ab%e1%80%b8%e1%80%90%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%82%88%2f9.jpg",
+      "text": "အီးမာည်းဒဲ့ဖိုးတား စီတဂေန်းဒါ်ႈ နံင်ဟိုက်လုမ်းဘာည်းကူန်အန်း။"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f0ef6a889-252b-487b-a953-77d32259cfee%2f%e1%80%a1%e1%80%ae%e1%80%b8%e1%80%99%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%92%e1%80%b2%e1%80%b7%e1%80%96%e1%80%ad%e1%80%af%e1%80%b8%e1%80%90%e1%80%ac%e1%80%b8+%e1%80%85%e1%80%ae%e1%80%82%e1%80%ae%e1%80%a1%e1%80%b6%e1%80%80%e1%80%ba%e1%80%9c%e1%80%ac%e1%80%ba%e1%80%92%e1%80%ab%e1%80%b8%e1%80%90%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%82%88%2f8.jpg",
+      "text": "အီးမာည်းဒဲ့ဖိုးတား စီတဂေန်းဒါ်ႈ နံင်ကဇော်ည်ဒဲႈ မာအန်း။"
+    }
+  ],
+  "stats": {
+    "pages": 9,
+    "words": 36
+  }
+}

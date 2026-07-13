@@ -1,0 +1,50 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-9d7427ae-untitled",
+  "title": "አዞ በሰውነቴ ውስጥ",
+  "description": "A Amharic picture book, readable free at Bloom Library.",
+  "language": "Amharic",
+  "langCode": "am",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [],
+  "authors": [
+    "SIL Ethiopia"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL Ethiopia",
+  "license": "CC BY-NC-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Ir5HPz81LF"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/samuel_marew%40sil.org%2f9d7427ae-a144-4a90-ab74-6ed089598b7e%2f%e1%8a%a0%e1%8b%9e+%e1%89%a0%e1%88%b0%e1%8b%8d%e1%8a%90%e1%89%b4+%e1%8b%8d%e1%88%b5%e1%8c%a5%2fimage12.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"አዞ በሰውነቴ ውስጥ\" (Amharic)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-SA) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 58
+  }
+}

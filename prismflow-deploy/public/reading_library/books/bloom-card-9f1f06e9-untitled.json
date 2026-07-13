@@ -1,0 +1,50 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-9f1f06e9-untitled",
+  "title": "ປໍ່ເຈີເລີມ່າ ປໍ່ເຈີເລີມ່າ",
+  "description": "bloom library",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [],
+  "authors": [
+    "SIL - PNG"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL - PNG",
+  "license": "CC BY-NC-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/P7ycWWupgH"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/P7ycWWupgH%2f1753866153450%2f%e0%ba%9b%e0%bb%8d%e0%bb%88%e0%bb%80%e0%ba%88%e0%ba%b5%e0%bb%80%e0%ba%a5%e0%ba%b5%e0%ba%a1%e0%bb%88%e0%ba%b2+%e0%ba%9b%e0%bb%8d%e0%bb%88%e0%bb%80%e0%ba%88%e0%ba%b5%e0%bb%80%e0%ba%a5%e0%ba%b5%e0%ba%a1%e0%bb%88%e0%ba%b2%2fSC001602CV.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"ປໍ່ເຈີເລີມ່າ ປໍ່ເຈີເລີມ່າ\" (Lao). bloom library"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC-SA) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 59
+  }
+}

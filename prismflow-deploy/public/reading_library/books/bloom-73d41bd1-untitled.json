@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-73d41bd1-untitled",
+  "title": "کێم ئەندامی نە کێم شیانییە",
+  "description": "This story gives four examples of where disability is not inability - An African Storybook",
+  "language": "Kurdish",
+  "langCode": "kmr",
+  "isRtl": true,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Community Living"
+  ],
+  "authors": [
+    "Farhad Ramadhan and Jeremy Fowler"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Farhad Ramadhan and Jeremy Fowler",
+  "license": "CC BY-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/zsU4wbjOb1"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/jerry%40foundationsduhok.com%2f73d41bd1-3708-482c-bc66-c83e3259d70a%2f%da%a9%db%8e%d9%85+%d8%a6%db%95%d9%86%d8%af%d8%a7%d9%85%db%8c+%d9%86%db%95+%da%a9%db%8e%d9%85+%d8%b4%db%8c%d8%a7%d9%86%db%8c%db%8c%db%95%2fimage1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jerry%40foundationsduhok.com%2f73d41bd1-3708-482c-bc66-c83e3259d70a%2f%da%a9%db%8e%d9%85+%d8%a6%db%95%d9%86%d8%af%d8%a7%d9%85%db%8c+%d9%86%db%95+%da%a9%db%8e%d9%85+%d8%b4%db%8c%d8%a7%d9%86%db%8c%db%8c%db%95%2fimage2.jpg",
+      "text": "ئەڤە ئەگنێسە.\nئەو ماموستایا منە."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jerry%40foundationsduhok.com%2f73d41bd1-3708-482c-bc66-c83e3259d70a%2f%da%a9%db%8e%d9%85+%d8%a6%db%95%d9%86%d8%af%d8%a7%d9%85%db%8c+%d9%86%db%95+%da%a9%db%8e%d9%85+%d8%b4%db%8c%d8%a7%d9%86%db%8c%db%8c%db%95%2fimage3.jpg",
+      "text": "ئەگنێس ب گولتان برێڤە دچیت."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jerry%40foundationsduhok.com%2f73d41bd1-3708-482c-bc66-c83e3259d70a%2f%da%a9%db%8e%d9%85+%d8%a6%db%95%d9%86%d8%af%d8%a7%d9%85%db%8c+%d9%86%db%95+%da%a9%db%8e%d9%85+%d8%b4%db%8c%d8%a7%d9%86%db%8c%db%8c%db%95%2fimage4.jpg",
+      "text": "ئەڤە میتۆبۆیە.\nئەو خوشتڤیترین دی جەیێ من یێ رادیۆیێە."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jerry%40foundationsduhok.com%2f73d41bd1-3708-482c-bc66-c83e3259d70a%2f%da%a9%db%8e%d9%85+%d8%a6%db%95%d9%86%d8%af%d8%a7%d9%85%db%8c+%d9%86%db%95+%da%a9%db%8e%d9%85+%d8%b4%db%8c%d8%a7%d9%86%db%8c%db%8c%db%95%2fimage5.jpg",
+      "text": "ئەوی ئاریشەیێن چاڤان یێن هەین."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jerry%40foundationsduhok.com%2f73d41bd1-3708-482c-bc66-c83e3259d70a%2f%da%a9%db%8e%d9%85+%d8%a6%db%95%d9%86%d8%af%d8%a7%d9%85%db%8c+%d9%86%db%95+%da%a9%db%8e%d9%85+%d8%b4%db%8c%d8%a7%d9%86%db%8c%db%8c%db%95%2fimage6.jpg",
+      "text": "جیرانا من ناڤێ وێ مۆڕایە.\nئەو جوتیارە."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jerry%40foundationsduhok.com%2f73d41bd1-3708-482c-bc66-c83e3259d70a%2f%da%a9%db%8e%d9%85+%d8%a6%db%95%d9%86%d8%af%d8%a7%d9%85%db%8c+%d9%86%db%95+%da%a9%db%8e%d9%85+%d8%b4%db%8c%d8%a7%d9%86%db%8c%db%8c%db%95%2fimage7.jpg",
+      "text": "مۆڕایێ گوهـ لێ نابیت.\nئەو ب زمانێ نیشانان دئاخڤیت."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jerry%40foundationsduhok.com%2f73d41bd1-3708-482c-bc66-c83e3259d70a%2f%da%a9%db%8e%d9%85+%d8%a6%db%95%d9%86%d8%af%d8%a7%d9%85%db%8c+%d9%86%db%95+%da%a9%db%8e%d9%85+%d8%b4%db%8c%d8%a7%d9%86%db%8c%db%8c%db%95%2fimage8.jpg",
+      "text": "ئەڤە ژی ئۆسێرۆیە.\nئەو زیرەکترین یاریکەرێ تەپاپێیە ل قوتابخانا من."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/jerry%40foundationsduhok.com%2f73d41bd1-3708-482c-bc66-c83e3259d70a%2f%da%a9%db%8e%d9%85+%d8%a6%db%95%d9%86%d8%af%d8%a7%d9%85%db%8c+%d9%86%db%95+%da%a9%db%8e%d9%85+%d8%b4%db%8c%d8%a7%d9%86%db%8c%db%8c%db%95%2fimage9.jpg",
+      "text": "ئۆسێرۆی یێ بێ دەستە.\nبەلێ ئەو گەلەك گۆڵان بۆ تیما مە تۆمار دکەت!"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 63
+  }
+}

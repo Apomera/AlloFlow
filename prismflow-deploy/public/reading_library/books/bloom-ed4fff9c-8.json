@@ -1,0 +1,107 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-ed4fff9c-8",
+  "title": "8. ພຣະເຈົ້າຊ່ວຍຊີວິດຂອງໂຢເຊບແລະຄອບຄົວ",
+  "description": "Story of Joseph in Lao",
+  "language": "Lao",
+  "langCode": "lo",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Spiritual"
+  ],
+  "authors": [
+    "Unfoldingword.org"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Unfoldingword.org",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/r2sT6GnRio"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2fed4fff9c-b1c5-4ab9-8c3e-9072a4e33c49%2f8.+%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%8a%e0%bb%88%e0%ba%a7%e0%ba%8d%e0%ba%8a%e0%ba%b5%e0%ba%a7%e0%ba%b4%e0%ba%94+%e0%ba%82%e0%ba%ad%e0%ba%87%e0%bb%82%e0%ba%a2%e0%bb%80%e0%ba%8a%e0%ba%9a%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%84%e0%ba%ad%e0%ba%9a%e0%ba%84%e0%ba%bb%e0%ba%a7%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2fed4fff9c-b1c5-4ab9-8c3e-9072a4e33c49%2f8.+%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%8a%e0%bb%88%e0%ba%a7%e0%ba%8d%e0%ba%8a%e0%ba%b5%e0%ba%a7%e0%ba%b4%e0%ba%94+%e0%ba%82%e0%ba%ad%e0%ba%87%e0%bb%82%e0%ba%a2%e0%bb%80%e0%ba%8a%e0%ba%9a%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%84%e0%ba%ad%e0%ba%9a%e0%ba%84%e0%ba%bb%e0%ba%a7%2fimage1.jpg",
+      "text": "ມີຄັ້ງໜຶ່ງເມື່ອຢາໂຄບເຖົ້າແກ່ຫຼາຍແລ້ວລາວໄດ້ສົ່ງໂຢເຊບ\nລູກທີ່ລາວຮັກທີ່ສຸດໄປສັງເກດເບິ່ງອ້າຍຂອງລາວທີ່ກຳລັງ\nລ້ຽງແກະຢູ່. ພວກອ້າຍຂອງໂຢເຊບຊັງໂຢເຊບ\nເພາະພໍ່ຮັກໂຢເຊບຫຼາຍກວ່າ.\nພວກເຂົາແລະໂຢເຊບກໍເຄີຍບອກຄວາມຝັນ\nແກ່ພວກເຂົາວ່າລາວຈະເປັນຫົວໜ້າຂອງພວກເຂົາ.\nພໍເມື່ອໂຢເຊບມາຮອດພວກເຂົາທີ່ທົ່ງນາ ພວກອ້າຍກໍຈັບລາວແລະໄດ້ຂາຍລາວໃຫ້ແກ່ພໍ່\nຄ້າທາດຮັບໃຊ້ຂອງເອຢິບ."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2fed4fff9c-b1c5-4ab9-8c3e-9072a4e33c49%2f8.+%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%8a%e0%bb%88%e0%ba%a7%e0%ba%8d%e0%ba%8a%e0%ba%b5%e0%ba%a7%e0%ba%b4%e0%ba%94+%e0%ba%82%e0%ba%ad%e0%ba%87%e0%bb%82%e0%ba%a2%e0%bb%80%e0%ba%8a%e0%ba%9a%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%84%e0%ba%ad%e0%ba%9a%e0%ba%84%e0%ba%bb%e0%ba%a7%2fimage2.jpg",
+      "text": "ກ່ອນພວກອ້າຍຂອງໂຢເຊບກັບມາເຮືອນ ພວກເຂົາໄດ້ຈີກເສື້ອຄຸມຂອງໂຢເຊບແລະເອົາຈຸ່ມໄສເລືອດຂອງແກະ ແລ້ວພວກເຂົາເອົາເສຶ້ອຄຸມນັ້ນກັບມາບ້ານໃຫ້ພໍ່ຂອງພວກຕົນເບິ່ງ ເພື່ອໃຫ້ພໍ່ຄິດວ່າສັດປ່າໄດ້ຂ້າໂຢເຊບຕາຍ. ຢາໂຄບກໍເລີຍໂສກເສົ້າເສຍໃຈຫຼາຍ."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2fed4fff9c-b1c5-4ab9-8c3e-9072a4e33c49%2f8.+%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%8a%e0%bb%88%e0%ba%a7%e0%ba%8d%e0%ba%8a%e0%ba%b5%e0%ba%a7%e0%ba%b4%e0%ba%94+%e0%ba%82%e0%ba%ad%e0%ba%87%e0%bb%82%e0%ba%a2%e0%bb%80%e0%ba%8a%e0%ba%9a%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%84%e0%ba%ad%e0%ba%9a%e0%ba%84%e0%ba%bb%e0%ba%a7%2fimage3.jpg",
+      "text": "ພໍ່ຄ້າທາດຮັບໃຊ້ຂອງເອຢິບເອົາໂຢເຊບມາທີ່ປະເທດເອຢິບ\nຊຶ່ງໃຫຍ່ໂຕແລະເປັນປະເທດທີ່ມີອຳນາດໃນເຂດແມ່ນ້ຳນາຍ. ພໍ່ຄ້າຂາຍໂຢເຊບໃຫ້ເປັນທາດຮັບໃຊ້ຂອງຂ້າຣາຊການຂອງເອຢິບ. ໂຢເຊບໄດ້ຮັບໃຊ້ນາຍຂອງຕົນຢ່າງດີ ແລະພຣະເຈົ້າກໍໄດ້ອວຍພອນລາວດ້ວຍ."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2fed4fff9c-b1c5-4ab9-8c3e-9072a4e33c49%2f8.+%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%8a%e0%bb%88%e0%ba%a7%e0%ba%8d%e0%ba%8a%e0%ba%b5%e0%ba%a7%e0%ba%b4%e0%ba%94+%e0%ba%82%e0%ba%ad%e0%ba%87%e0%bb%82%e0%ba%a2%e0%bb%80%e0%ba%8a%e0%ba%9a%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%84%e0%ba%ad%e0%ba%9a%e0%ba%84%e0%ba%bb%e0%ba%a7%2fimage4.jpg",
+      "text": "ເມຍຂອງຫົວໜ້າຂອງໂຢເຊບຢາກຫຼັບນອນກັບໂຢເຊບ ແຕ່ໂຢເຊບປະຕິເສດທີ່ຈະເຮັດບາບຕໍ່ສູ້ພຣະເຈົ້າ\nດ້ວຍການເຮັດຢ່າງນັ້ນ. ນາງຈຶ່ງໃຈຮ້າຍແລະ\nຫາເລື່ອງຜິດໃສ່ໂຢເຊບ ເຮັດໃຫ້ໂຢເຊບຖືກຈັບເຂົ້າໃນຄຸກ. ຕອນທີ່ໂຢເຊບຢູ່ໃນຄຸກລາວຍັງຄົງສັດຊື່ຕໍ່ພຣະເຈົ້າ\nແລະພຣະອົງກໍຍັງຄົງອວຍພອນລາວ."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2fed4fff9c-b1c5-4ab9-8c3e-9072a4e33c49%2f8.+%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%8a%e0%bb%88%e0%ba%a7%e0%ba%8d%e0%ba%8a%e0%ba%b5%e0%ba%a7%e0%ba%b4%e0%ba%94+%e0%ba%82%e0%ba%ad%e0%ba%87%e0%bb%82%e0%ba%a2%e0%bb%80%e0%ba%8a%e0%ba%9a%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%84%e0%ba%ad%e0%ba%9a%e0%ba%84%e0%ba%bb%e0%ba%a7%2fimage5.jpg",
+      "text": "ສອງປີຜ່ານໄປ ໂຢເຊບຍັງຄົງຢູ່ໃນຄຸກເຖິງແມ່ນວ່າລາວບໍ່ມີຄວານຜິດ.\nມີຄືນໜຶ່ງ ຟາໂລຜູ້ເປັນກະສັດຂອງເອຢິບໄດ້ຝັນເຖິງ 2 ຢ່າງທີ່ເຮັດໃຫ້ລາວກັງວົນໃຈຫຼາຍ. ບໍ່ມີທີ່ປຶກສາຄົນໃດຂອງລາວ\nບອກຄວາມໝາຍຂອງຄວາມຝັນນັ້ນໄດ້."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2fed4fff9c-b1c5-4ab9-8c3e-9072a4e33c49%2f8.+%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%8a%e0%bb%88%e0%ba%a7%e0%ba%8d%e0%ba%8a%e0%ba%b5%e0%ba%a7%e0%ba%b4%e0%ba%94+%e0%ba%82%e0%ba%ad%e0%ba%87%e0%bb%82%e0%ba%a2%e0%bb%80%e0%ba%8a%e0%ba%9a%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%84%e0%ba%ad%e0%ba%9a%e0%ba%84%e0%ba%bb%e0%ba%a7%2fimage6.jpg",
+      "text": "ພຣະເຈົ້າໃຫ້ໂຢເຊບສາມາດແປຄວາມຝັນຂອງກະສັດໄດ້. ສະນັ້ນກະສັດຟາໂລຈິ່ງສັ່ງໃຫ້ພາໂຢເຊບອອກຈາກຄຸກມາພົບ. ໂຢເຊບໄດ້ແປຄວາມຝັນແລະບອກກັບກະສັດວ່າ. “ພຣະເຈົ້າຈະໃຫ້ມີການເກັບກ່ຽວທີ່ອຸດົມສົມບູນເປັນເວລາ 7ປີ ຈາກນັ້ນຈະແມ່ນ 7ປີ ແຫ່ງຄວາມອຶດຢາກ."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2fed4fff9c-b1c5-4ab9-8c3e-9072a4e33c49%2f8.+%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%8a%e0%bb%88%e0%ba%a7%e0%ba%8d%e0%ba%8a%e0%ba%b5%e0%ba%a7%e0%ba%b4%e0%ba%94+%e0%ba%82%e0%ba%ad%e0%ba%87%e0%bb%82%e0%ba%a2%e0%bb%80%e0%ba%8a%e0%ba%9a%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%84%e0%ba%ad%e0%ba%9a%e0%ba%84%e0%ba%bb%e0%ba%a7%2fimage7.jpg",
+      "text": "ກະສັດຟາໂລຮູ້ສຶກປະທັບໃຈໂຢເຊບຫຼາຍ.\nເພິ່ນຈຶ່ງແຕ່ງຕັ້ງໃຫ້ໂຢເຊບຮັບໜ້າທີ່\nຮອງຈາກເພິ່ນທີ່ມີອຳນາດໃນປະເທດເອຢິບ."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2fed4fff9c-b1c5-4ab9-8c3e-9072a4e33c49%2f8.+%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%8a%e0%bb%88%e0%ba%a7%e0%ba%8d%e0%ba%8a%e0%ba%b5%e0%ba%a7%e0%ba%b4%e0%ba%94+%e0%ba%82%e0%ba%ad%e0%ba%87%e0%bb%82%e0%ba%a2%e0%bb%80%e0%ba%8a%e0%ba%9a%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%84%e0%ba%ad%e0%ba%9a%e0%ba%84%e0%ba%bb%e0%ba%a7%2fimage8.jpg",
+      "text": "ໂຢເຊບບອກໃຫ້ປະຊາຊົນເກັບຮັກສາອາຫານ\nເປັນຈຳນວນຫຼວງຫຼາຍພາຍໃນລະຫວ່າງ7ປີ\nແຫ່ງການເກັບກ່ຽວທີ່ອຸດົມສົມບູນ. ແລ້ວໂຢເຊັບກໍບອກໃຫ້ປະຊາຊົນຂາຍອາຫານຈຳນວນນັ້ນໃຫ້ກັບ\nຄົນທັງຫຼາຍເພື່ອພວກເຂົາຈະມີອາຫານກິນ\nພຽງພໍສຳລັບ7ປີແຫ່ງຄວາມອຶດຢາກ."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2fed4fff9c-b1c5-4ab9-8c3e-9072a4e33c49%2f8.+%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%8a%e0%bb%88%e0%ba%a7%e0%ba%8d%e0%ba%8a%e0%ba%b5%e0%ba%a7%e0%ba%b4%e0%ba%94+%e0%ba%82%e0%ba%ad%e0%ba%87%e0%bb%82%e0%ba%a2%e0%bb%80%e0%ba%8a%e0%ba%9a%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%84%e0%ba%ad%e0%ba%9a%e0%ba%84%e0%ba%bb%e0%ba%a7%2fimage9.jpg",
+      "text": "ປີແຫ່ງຄວາມອຶດຢາກນັ້ນ\nບໍ່ພຽງແຕ່ເກີດຂຶ້ນຢູ່ໃນເອຢິບ.\nແຕ່ຍັງລວມທັງການາອານບ່ອນ\nທີ່ຢາໂຄບແລະຄອບຄົວຂອງເພິ່ນອາໄສຢູ່."
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2fed4fff9c-b1c5-4ab9-8c3e-9072a4e33c49%2f8.+%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%8a%e0%bb%88%e0%ba%a7%e0%ba%8d%e0%ba%8a%e0%ba%b5%e0%ba%a7%e0%ba%b4%e0%ba%94+%e0%ba%82%e0%ba%ad%e0%ba%87%e0%bb%82%e0%ba%a2%e0%bb%80%e0%ba%8a%e0%ba%9a%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%84%e0%ba%ad%e0%ba%9a%e0%ba%84%e0%ba%bb%e0%ba%a7%2fimage10.jpg",
+      "text": "ດັ່ງນັ້ນຢາໂຄບຈຶ່ງໄດ້ສົ່ງບັນດາລູກຊາຍຂອງລາວໄປ\nຍັງປະເທດເອຢິບເພື່ອຊື້ອາຫານ.\nພວກອ້າຍຂອງໂຢເຊບບໍ່ສາມາດຈື່ໂຢເຊບໄດ້ເມື່ອພວກເຂົາ\nຢືນຢູ່ຕໍ່ໜ້າໂຢເຊບເວລາທີ່ພວກເຂົາມາຂໍຊື້ອາຫານ.\nແຕ່ໂຢເຊບຈື່ພວກເຂົາໄດ້."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2fed4fff9c-b1c5-4ab9-8c3e-9072a4e33c49%2f8.+%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%8a%e0%bb%88%e0%ba%a7%e0%ba%8d%e0%ba%8a%e0%ba%b5%e0%ba%a7%e0%ba%b4%e0%ba%94+%e0%ba%82%e0%ba%ad%e0%ba%87%e0%bb%82%e0%ba%a2%e0%bb%80%e0%ba%8a%e0%ba%9a%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%84%e0%ba%ad%e0%ba%9a%e0%ba%84%e0%ba%bb%e0%ba%a7%2fimage11.jpg",
+      "text": "ຫຼັງຈາກທີ່ໂຢເຊບໄດ້ທົດລອງພວກອ້າຍຂອງລາວວ່າ\nພວກເຂົາມີການປ່ຽນແປງບໍ, ໂຢເຊບໄດ້ກ່າວຕໍ່ພວກເຂົາວ່າ.\n“ຂ້ອຍແມ່ນ ໂຢເຊບ! ນ້ອງຊາຍຂອງພວກເຈົ້າ. ຢ່າຕົກໃຈ. ພວກເຈົ້າໄດ້ພະຍາຍາມເຮັດສິ່ງທີ່ບໍ່ດີຕໍ່ຂ້ອຍ\nເມື່ອພວກເຈົ້າຂາຍໃຫ້ມາເປັນທາດ, ແຕ່ພຣະເຈົ້າຊົງໃຊ້ສິ່ງທີ່ບໍ່ດີນັ້ນເພື່ອການດີຂອງພຣະອົງ!\nຈົ່ງມາແລະອາໄສຢູ່ໃນປະເທດເອຢິບ.\nເພື່ອຂ້ອຍຈະສາມາດຊ່ວຍພວກເຈົ້າແລະຄອບຄົວຂອງພວກເຈົ້າໄດ້.”"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2fed4fff9c-b1c5-4ab9-8c3e-9072a4e33c49%2f8.+%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%8a%e0%bb%88%e0%ba%a7%e0%ba%8d%e0%ba%8a%e0%ba%b5%e0%ba%a7%e0%ba%b4%e0%ba%94+%e0%ba%82%e0%ba%ad%e0%ba%87%e0%bb%82%e0%ba%a2%e0%bb%80%e0%ba%8a%e0%ba%9a%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%84%e0%ba%ad%e0%ba%9a%e0%ba%84%e0%ba%bb%e0%ba%a7%2fimage12.jpg",
+      "text": "ເມື່ອພວກອ້າຍຂອງໂຢເຊບກັບຄືນເມື່ອບ້ານເຮືອນຂອງຕົນ ແລະເລົ່າເຖິງເຫດການຕ່າງໆສູ່ຢາໂຄບ ພໍ່ຂອງພວກເຂົາຟັງ ວ່າໂຢເຊບຍັງມີຊີວິດຢູ່, ຢາໂຄບກໍມີຄວາມຍິນດີຫຼາຍ."
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2fed4fff9c-b1c5-4ab9-8c3e-9072a4e33c49%2f8.+%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%8a%e0%bb%88%e0%ba%a7%e0%ba%8d%e0%ba%8a%e0%ba%b5%e0%ba%a7%e0%ba%b4%e0%ba%94+%e0%ba%82%e0%ba%ad%e0%ba%87%e0%bb%82%e0%ba%a2%e0%bb%80%e0%ba%8a%e0%ba%9a%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%84%e0%ba%ad%e0%ba%9a%e0%ba%84%e0%ba%bb%e0%ba%a7%2fimage13.jpg",
+      "text": "ເຖິງວ່າຢາໂຄບຈະເຖົ້າແກ່ລົງ, ລາວກໍຕັດສິນໃຈຍ້າຍໄປປະເທດເອຢິບພ້ອມກັບ\nສະມາຊິກຄອບຄົວທຸກຄົນແລະພວກເຂົາກໍມາຕັ້ງຖິ່ນຖານຢູ່ທີ່ນັ້ນ. ກ່ອນທີ່ຢາໂຄບຈະຕາຍ ລາວໄດ້ອວຍພອນໃຫ້ກັບລູກຊາຍຂອງລາວແຕ່ລະຄົນ."
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2fed4fff9c-b1c5-4ab9-8c3e-9072a4e33c49%2f8.+%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%8a%e0%bb%88%e0%ba%a7%e0%ba%8d%e0%ba%8a%e0%ba%b5%e0%ba%a7%e0%ba%b4%e0%ba%94+%e0%ba%82%e0%ba%ad%e0%ba%87%e0%bb%82%e0%ba%a2%e0%bb%80%e0%ba%8a%e0%ba%9a%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%84%e0%ba%ad%e0%ba%9a%e0%ba%84%e0%ba%bb%e0%ba%a7%2fimage14.jpg",
+      "text": "ພຣະສັນຍາຂອງພຣະເຈົ້າທີ່ໃຫ້ໄວ້ກັບອັບຣາຮາມ\nໄດ້ຕົກທອດມາເຖິງ ອີຊາກ, ຢາໂຄບແລະລູກຊາຍ ທັງ12ຄົນຂອງຢາໂຄບແລະຄອບຄົວຂອງພວກເຂົາ.\nເຊື້ອສາຍຂອງຢາໂຄບທັງ12ຄົນ ໄດ້ກາຍມາເປັນ12 ຊົນເຜົ່າຂອງປະເທດອິດສະລາເອນ."
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 92
+  }
+}

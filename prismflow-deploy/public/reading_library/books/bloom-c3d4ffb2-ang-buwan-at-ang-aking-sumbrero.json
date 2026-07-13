@@ -1,0 +1,92 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-c3d4ffb2-ang-buwan-at-ang-aking-sumbrero",
+  "title": "Ang Buwan at Ang Aking Sumbrero!",
+  "description": "This is about the story of a boy who lost his cap and at young age was able to experience connection to his environment.",
+  "language": "Filipino",
+  "langCode": "fil",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Marites D. Antonio"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Marites D. Antonio",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/jCuaXOj7wh"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2fc3d4ffb2-e23a-4f6e-a789-04f0d28d39ef%2fAng+Buwan+at+Ang+Aking+Sumbrero!%2fThe+Moon+and+The+Cap_Cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2fc3d4ffb2-e23a-4f6e-a789-04f0d28d39ef%2fAng+Buwan+at+Ang+Aking+Sumbrero!%2fThe+Moon+and+The+Cap_Page+021.jpg",
+      "text": "Kaming lahat ay namasyal."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2fc3d4ffb2-e23a-4f6e-a789-04f0d28d39ef%2fAng+Buwan+at+Ang+Aking+Sumbrero!%2fThe+Moon+and+The+Cap_Page+031.jpg",
+      "text": "Magarang salamin para kay Kuya\nBughaw na sumbrero para sa akin\nAt matamis na kendi para kay Bunso\nBinili nila Tatay at Nanay."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2fc3d4ffb2-e23a-4f6e-a789-04f0d28d39ef%2fAng+Buwan+at+Ang+Aking+Sumbrero!%2fThe+Moon+and+The+Cap_Page+041.jpg",
+      "text": "Sa aming pag-uwi, umihip ang napakalakas na hangin! Tinangay nito ang aking bughaw na sumbrero!"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2fc3d4ffb2-e23a-4f6e-a789-04f0d28d39ef%2fAng+Buwan+at+Ang+Aking+Sumbrero!%2fThe+Moon+and+The+Cap_Page+051.jpg",
+      "text": "Ang bughaw na sumbrero ay nasabit sa sanga ng isang malaki at matandang puno!"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2fc3d4ffb2-e23a-4f6e-a789-04f0d28d39ef%2fAng+Buwan+at+Ang+Aking+Sumbrero!%2fThe+Moon+and+The+Cap_Page+061.jpg",
+      "text": "Umiyak ako ng husto! Hindi tuloy ako nakakain ng masarap na hapunan."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2fc3d4ffb2-e23a-4f6e-a789-04f0d28d39ef%2fAng+Buwan+at+Ang+Aking+Sumbrero!%2fThe+Moon+and+The+Cap_Page+071.jpg",
+      "text": "Kinagabihan, lumitaw ang buwan! Tinitingnan nito ang bughaw kong sumbrero sa ituktok ng malaki at matandang puno."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2fc3d4ffb2-e23a-4f6e-a789-04f0d28d39ef%2fAng+Buwan+at+Ang+Aking+Sumbrero!%2fThe+Moon+and+The+Cap_Page+081.jpg",
+      "text": "Nakangiti ito at parang sinasabing, \"Ikaw'y huwag nang malumbay.\""
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2fc3d4ffb2-e23a-4f6e-a789-04f0d28d39ef%2fAng+Buwan+at+Ang+Aking+Sumbrero!%2fThe+Moon+and+The+Cap_Page+091.jpg",
+      "text": "Kinabukasan pagka galing sa eskwela, may ibinigay si ina! Isang makintab na sumbrerong pula! \"Ibinigay iyan ng buwan,\" ang sabi niya."
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2fc3d4ffb2-e23a-4f6e-a789-04f0d28d39ef%2fAng+Buwan+at+Ang+Aking+Sumbrero!%2fThe+Moon+and+The+Cap_Page+101.jpg",
+      "text": "Noong gabing iyon, ako at ang buwan ay parehong nakasuot ng sumbrero! Pula ang sa akin at bughaw ang sa kanya. Kami ay parehong masaya!"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2fc3d4ffb2-e23a-4f6e-a789-04f0d28d39ef%2fAng+Buwan+at+Ang+Aking+Sumbrero!%2fThe+Moon+and+The+Cap_Page+111.jpg",
+      "text": "Ikaw, sa palagay mo ba ay kailangan rin ng araw ng sumbrero?"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/antonio.md%40clsu.edu.ph%2fc3d4ffb2-e23a-4f6e-a789-04f0d28d39ef%2fAng+Buwan+at+Ang+Aking+Sumbrero!%2fThe+Moon+and+The+Cap_Page+121.jpg",
+      "text": "Hulaan mo kung aling sumbrero ang isusuot ko ngayon!"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 161
+  }
+}

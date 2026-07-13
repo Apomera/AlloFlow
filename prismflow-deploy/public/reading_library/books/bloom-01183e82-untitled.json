@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-01183e82-untitled",
+  "title": "मेरो गाउँ",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/qGpBfSBB0e"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f01183e82-a22e-489b-9010-891a276400cc%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%2fAOR_HS11.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f01183e82-a22e-489b-9010-891a276400cc%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%2fAOR_ohs028m.png",
+      "text": "नाल्दुमको डाँडा मुनि\nसानो मेरो गाउँ।\nसबै जना मिलि बस्ने\nकस्तो राम्रो ठाँउ।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f01183e82-a22e-489b-9010-891a276400cc%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%2fAOR_E-1-16.png",
+      "text": "माथितिर देखिने\nसेता हिमाल।\nतलतिर देखिने\nबेसी तिमाल।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f01183e82-a22e-489b-9010-891a276400cc%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%2fAOR_harvst-1.png",
+      "text": "बेसीितर धान झुल्ने\nगुराँस लेकतिर।\nसबैतिर फूल फूल्ने\nछैन केहि पीर।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f01183e82-a22e-489b-9010-891a276400cc%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%2fimage3.jpg",
+      "text": "संस्कृति र परम्परा\nसम्पति हो हाम्रो।\nजोगाउने हाम्रो काम\nगरौँ सबले राम्रो।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f01183e82-a22e-489b-9010-891a276400cc%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%2fAOR_CMB0530.png",
+      "text": "एक अर्कालाई सहयोग गर्ने\nहाम्रो आनी बानी।\nमेलापात एेंचो पैंचो\nमिलिजुली खानी।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f01183e82-a22e-489b-9010-891a276400cc%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%2fimage2.png",
+      "text": "ढुङ्गे र हिले खोला\nभेट्छन दोभानमा।\nसाह्रै खुसी भरेका छन्\nमानिसका मनमा।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f01183e82-a22e-489b-9010-891a276400cc%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%2fimage.jpg",
+      "text": "इन्द्रावती नदी बग्छिन्\nसुनकोसीलाई भेट्न।\nछेउछाउका बालीनालीका\nपानी प्यास मेट्न।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f01183e82-a22e-489b-9010-891a276400cc%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%2fAOR_EAG00685.png",
+      "text": "स्वर्ग जस्तो ठाउँ हेर्न\nआउँछन विदेशी।\nआफ्नो सामान बेचेर\nकमाउँछन् स्वदेशी।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f01183e82-a22e-489b-9010-891a276400cc%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%2fAOR_OCI003.png",
+      "text": "रानीवन भन्छन् गाउँलाई\nरानीको नाम लिएर।\nस्वच्छ स्वास फेर्छौँ\nप्रकृतिले दिएर।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f01183e82-a22e-489b-9010-891a276400cc%2f%e0%a4%ae%e0%a5%87%e0%a4%b0%e0%a5%8b+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%2fAOR_PA-04.png",
+      "text": "सदा सदा हेरौँ लाग्ने\nमेरो सानो गाउँ।\nरोग व्याधी आफैं भाग्ने\nअचम्मको ठाउँ।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 113
+  }
+}

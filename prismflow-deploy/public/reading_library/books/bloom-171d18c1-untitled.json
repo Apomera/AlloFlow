@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-171d18c1-untitled",
+  "title": "فرشتۀ زمینی",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/tRtXf2ndbT"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f171d18c1-0a63-4f23-a5d8-354f357e4576%2f%d9%81%d8%b1%d8%b4%d8%aa%db%80+%d8%b2%d9%85%db%8c%d9%86%db%8c%2f111.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f171d18c1-0a63-4f23-a5d8-354f357e4576%2f%d9%81%d8%b1%d8%b4%d8%aa%db%80+%d8%b2%d9%85%db%8c%d9%86%db%8c%2f%db%b2.jpg",
+      "text": "تویی مادر خوب وغمخوار من\nهمیشه به هر جا تویی یار من\nهمیشه تو باشی و درکم کنی\nمن از تو نخواهم که ترکم کنی"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "منم کودک کوچـک و ناز تو\nبسازم به هر خوی و هر ساز تو\nتویی مادر خوب و همراز من\nبسازی به هر خوی و هر ساز من"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f171d18c1-0a63-4f23-a5d8-354f357e4576%2f%d9%81%d8%b1%d8%b4%d8%aa%db%80+%d8%b2%d9%85%db%8c%d9%86%db%8c%2f%db%b3.jpg",
+      "text": "مـرا هیچگاهی تو تنـها نمان\nتویی بهترین نعمت این جهان\nبگیر دست من ای که تو قهرمان\nشــدی و بـودی در تمـام جـهـان"
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "تمام جهان از تو رنگین شود\nبه عطر حضور تو مشکین شود\nتویی مادر خوب و غمخوار من\nهمیشه به هر جا تویی یار من"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f171d18c1-0a63-4f23-a5d8-354f357e4576%2f%d9%81%d8%b1%d8%b4%d8%aa%db%80+%d8%b2%d9%85%db%8c%d9%86%db%8c%2f%db%b4.jpg",
+      "text": "تو آرام، خاموش و شب زنده دار\nبرای منِ کودکت جان نثار\nکشی زحمت و خواری بی شمار\nبسازی مرا خوب و هم رستگار"
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "بود بهترین نعمت این جهان\nحضور قشنگ همه مادران\nهمـه اشتباهــات ما را تمـام\nببخشند و ما را دهند این پیام"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f171d18c1-0a63-4f23-a5d8-354f357e4576%2f%d9%81%d8%b1%d8%b4%d8%aa%db%80+%d8%b2%d9%85%db%8c%d9%86%db%8c%2f%db%b511.jpg",
+      "text": "توخوبی بکن بر تمام جهان\nهـمیشه بمان خوب و هم مــهربان\nکه خوبی تو را در تمام جهان\nسرافراز سازد عزیزم، بدان!"
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "درست کار باشی و هم راستگوی\nبه جز از رضای خدا هیچ مجوی\nبهشت برینش بود زیر پای تو\nرضای خدایم بود در رضای تو\nالهی! به لطفت همه مادران\nبگردان پیروز هر دو جهان"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 203
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-9c44bcde-familia-yajifunza-chanjo",
+  "title": "Familia Yajifunza Chanjo",
+  "description": "A community health worker visits a village and explains to a mother how immunisations will protect her children from some kinds of diseases.",
+  "language": "Kiswahili",
+  "langCode": "sw",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Health"
+  ],
+  "authors": [
+    "Michael Shuji"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Michael Shuji",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/DFWg4nlPZE"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+13.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+1.jpg",
+      "text": "Nelli na Mattu walikuwa wakicheza katika shamba dogo. ​‟Nelli”, mama aliita. ‟Mchukue ndugu yako na mwelekee kuchota maji. Nahitaji kumwosha mtoto”"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+2.jpg",
+      "text": "Nelli na nduguye walichukua vibuyu na kuelekea kuyachota maji kidimbwini. Huko walimwona mwanadada wasiyemjua. Alikuwa akiwazungumzia waliokuwa wakichota maji."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+3.jpg",
+      "text": "Nelli alianza kuvijaza vibuyu maji. Wakati huo, mwanadada huyo akamwambia, \"Hujambo, Mimi ni nesi Kerol kutoka kwenye kliniki. Waitwa nani?\""
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+4.jpg",
+      "text": "Nelli akamjibu, \"Naitwa Nelli na huyu ni Mattu. Tunamchotea mama yetu maji ili akamwoshe dada yetu mdogo\".\n\"Nyinyi ni wasaidiza wema. Naweza wasaidia kuyabeba maji nyumbani? Ningependa kuzungumza na mama yenu?\""
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+7.jpg",
+      "text": "Wote walitembea pamoja wakielekea kwa nyumba. Walipokuwa karibu kufika nyumbani, Nelli aliita kwa sauti, \"Mama, mama! Kuna mtu hapa anayetaka kukuona.\""
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+8.jpg",
+      "text": "Mama alikuja mlangoni huku akibeba mtoto.\n\"Hujambo Nelli, namjua rafiki yako mgeni. Alikulia kijiji jirani na chetu. Karibu nyumbani mwetu, Kerol.\""
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+9.jpg",
+      "text": "Walikunywa chai na kuzungumza. Kerol alisema, \"Kama muuguzi, ninasikitika juu ya watoto vijijini mwetu. Wanahitaji chanjo za watoto ili kuzuia magonjwa.\" \"Lakini wakiwa wagonjwa, twaweza kuwapeleka kwenye kliniki wapate chanjo. Hata hivyo, watalia.\" Mama alisema."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+10.jpg",
+      "text": "\"Hizi sio chanjo zinazowafanya watoto wapate nafuu,\" Kerol alijibu. \"Hizi ni chanjo za kuwakinga dhidi ya magonjwa ya siku za usoni.\n\"Itakuaje chanjo itampa mtu kinga dhidi ya magonjwa ya siku za usoni? Nilidhani kuwa chanjo hizi zinamfanya mtu awe na uwezo wa kukabiliana na ugonjwa sasa?\""
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fnew+papua+10.jpg",
+      "text": "\"Kweli\", Kerol alisema, \"chanjo yafanya kazi kama fensi. Mtu hueka fensi shambani kwake ili mimea iwe salama. Na sasa una mimea nyingi tena bora inayomea huko - viazi vitamu, maharage, malenge na mimea nyingi zaidi.\""
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+12.jpg",
+      "text": "Mama alikubali. \"Kweli, sisi hujenga fensi dhabiti ili kuilinda mimea ili imee vizuri. Bila fensi nzuri, nguruwe na wanyama wengine wataharibu shamba letu.\n\"Kweli, kama fensi, chanjo hukinga watoto dhidi ya mashambulio ya magonjwa fulani,\" Kerol alijibu."
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+14.jpg",
+      "text": "\"Bila chanjo, watoto wako hawana kinga. Wanaweza pata magonjwa sugu kama kifuakikuu, pepopunda na kiharusi."
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+15.jpg",
+      "text": "\"Wamaanisha kuwa naeza zuia watoto wangu kupata magonjwa haya?\" aliuliza mama. \"Wapate chanjo hizi lini?\" Kerol alijibu. \"Tutakuja kijijini baada ya wiki tatu kuwapa watoto chanjo. Lakini waweza kuja kwenye kliniki kupata chanjo.\n\"Nafikiri kuwaleta kwenye kliniki kesho.\" Mama alisema. \"Wanahitaji fensi hiyo ya kinga sasa hivi!\""
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 349
+  }
+}

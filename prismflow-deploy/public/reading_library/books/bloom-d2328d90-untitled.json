@@ -1,0 +1,122 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-d2328d90-untitled",
+  "title": "៤៧ នអើន រាពាយអុចគែសទាកឆុត",
+  "description": "The Story of A Rabbit need some Honey (Easy Reader - Level 1)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/i1HFY2Eytg"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage1.png",
+      "text": "​​​​​​​​​​​​​ទន្សាយ​មាន​ចិញ្ចឹម​ឆ្កែ​មួយ​ឈ្មោះពាល។​"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage2.png",
+      "text": "​ទន្សាយ​សរសេរ​សំបុត្រ​​​ផ្ញើ​អោយ​ខ្លា​ឃ្មុំ។​"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage3.png",
+      "text": "ទន្សាយ​ប្រើ​​ពាល​​ជូន​សំបុត្រអោយ​ខ្លា​ឃ្មុំ​​។​"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage4.png",
+      "text": "​ទន្សាយ​ផ្ដាំ​ពាល​ថាកុំ​អោយ​បាត់​សំបុត្រ​។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage5.png",
+      "text": "ពាលពាំ​សំបុត្រ​ដល់​ពាក់​កណ្ដាល​ផ្លូវជួប​នឹង​ហ្វូង​ឆ្កែដេញ​ខាំ​។​"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage6.png",
+      "text": "ពាល​រត់​ទាំងភ័យពេក ក៏ត្រូវបុក​ចំទ្វា​ផ្ទះ​ខ្លា​ឃ្មុំ​តែម្ដង។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage7.png",
+      "text": "ខ្លាឃ្មុំ​ស្ទុះ​មក​បើក​ទ្វាអោយ​ ឆ្កែពាលក៏​ហុច​សំបុត្រ​។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage8.png",
+      "text": "ខ្លា​ឃ្មុំអាន​សំបុត្រ​ប្រាប់​ថា​អោយ​ទៅ​​លេង​និង​សុំទឹក​ឃ្មុំ​ផង។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage9.png",
+      "text": "ខ្លា​ឃ្មុំ​ច្រក​ទឹក​ឃ្មុំ​ក្នុងថូឆ្កែពាល​ជួយ​ទ្រ​ពីក្រោម​។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage10.png",
+      "text": "​ពាលនាំខ្លាឃ្មុំធ្វើដំណើរមកផ្ទះវិញ។​​"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage11.png",
+      "text": "មកដល់​មុខផ្ទះ​​ទន្សាយមកចាប់​ដៃ​​​​ខ្លាឃ្មុំ​ក៏​ហុច​​ទឹក​ឃ្មុំ​​អោយ​។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage12.png",
+      "text": "ទន្សាយ​និងខ្លាឃ្មុំ​នាំ​គ្នា​ប្រ​លេះ​ពោត​ ​ឆ្កែជាអ្នក​លីង​​​។​"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage13.png",
+      "text": "ទន្សាយ​និង​ខ្លាឃ្មុំ​នាំ​គ្នា​បុក​ពោត​លីង​​ឆ្កែ​ជា​អ្នក​ស្ទៃ​ពោត​។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage14.png",
+      "text": "ទន្សាយ​យក​ទឹក​ឃ្មុំ​លាយ​ច្របាច់​នឹងពោត​បុក។​"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage15.png",
+      "text": "ទន្សាយ​​ឆ្កែ​និង​ខ្លា​ឃ្មុំ​​នាំ​គ្នា​លាង​ដៃ​​ជូតនឹង​កន្សែងអោយស្ងួត។​"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage16.png",
+      "text": "ទន្សាយ​​ខ្លា​ឃ្មុំនិង​ឆ្កែ​​​នាំ​គ្នា​ញ្ញ៉ាំ​នំ​​​នៅ​លើ​តុ។"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd2328d90-56b7-4bfc-8ae3-5d1dd2c43127%2f%e1%9f%a4%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%9a%e1%9e%b6%e1%9e%96%e1%9e%b6%e1%9e%99%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%91%e1%9e%b6%e1%9e%80%e2%80%8b%e1%9e%86%e1%9e%bb%e1%9e%8f%2fimage17.png",
+      "text": "​​ពេលញ៉ាំហើយក៏​​ចូល​គេងនៅលើអង្រឹង​ទាំងអស់គ្នា​ទៅ៕​"
+    }
+  ],
+  "stats": {
+    "pages": 17,
+    "words": 20
+  }
+}

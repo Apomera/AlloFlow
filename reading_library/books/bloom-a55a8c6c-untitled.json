@@ -1,0 +1,247 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-a55a8c6c-untitled",
+  "title": "ត្រឡប់ចូលរៀនវិញ",
+  "description": "School-related terms. Added a term for white board to distinguish it from blackboard and propose a word for chalk. We also grouped these terms together.",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Community Living"
+  ],
+  "authors": [
+    "Bloom Khmer"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Khmer",
+  "license": "CC BY-SA",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/CxDQnKDdZM"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fKids+Back+to+School.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fSchool2.jpg",
+      "text": "សាលារៀន"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fStudent.jpg",
+      "text": "សិស្សសាលា"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fClassroom-wooden+floor.jpg",
+      "text": "បន្ទប់ថ្នាក់\nរៀន"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fTeacher+in+classroom.jpg",
+      "text": "អ្នកគ្រូ\nបង្រៀន"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fClassmates.jpg",
+      "text": "មិត្តរួមថ្នាក់"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fBlackboard.jpg",
+      "text": "ក្តារខៀន"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fChalk-three+colors.jpg",
+      "text": "ដីស"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2f%e2%80%94Pngtree%e2%80%94whiteboard+work+and+study+tools_82708.png",
+      "text": "ក្តារខៀនស"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fMarkers.jpg",
+      "text": "ខ្វើត"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fDesk.jpg",
+      "text": "តុ"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fChair+2.jpg",
+      "text": "កៅ​អ​ី​"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fClock4.jpg",
+      "text": "នាឡិកា"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fPosters-PNG+animals.jpg",
+      "text": "រូបភ្យួរលើជញ្ជាំង"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fMap.jpg",
+      "text": "ផែនទី"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fBackpack.jpg",
+      "text": "កាតាប"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fBook2.jpg",
+      "text": "សៀវភៅ"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fTextbooks2.jpg",
+      "text": "សៀវភៅ\nមុខវិជ្ជា"
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fNotebook.jpg",
+      "text": "សៀវភៅកត់ត្រា"
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fPencil2.jpg",
+      "text": "ខ្មៅដៃ"
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fEraser.jpg",
+      "text": "ជ័រលុប"
+    },
+    {
+      "n": 21,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fSharpener.jpg",
+      "text": "ដែកខួងខ្មៅដៃ"
+    },
+    {
+      "n": 22,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fPen.jpg",
+      "text": "ប៊ិក"
+    },
+    {
+      "n": 23,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fPaintbrush.jpg",
+      "text": "ជក់គូគំនូរ"
+    },
+    {
+      "n": 24,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fCrayon4.jpg",
+      "text": "ពណ៍ផាត់រូប"
+    },
+    {
+      "n": 25,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fRuler2.jpg",
+      "text": "បន្ទាត់"
+    },
+    {
+      "n": 26,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fScissors.jpg",
+      "text": "កន្ត្រៃ"
+    },
+    {
+      "n": 27,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fGlue.jpg",
+      "text": "កាវ"
+    },
+    {
+      "n": 28,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fStapler.jpg",
+      "text": "ប្រដាប់កិប"
+    },
+    {
+      "n": 29,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fCalculator+2.jpg",
+      "text": "ម៉ាស៊ីនគិតលេខ"
+    },
+    {
+      "n": 30,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fComputer.jpg",
+      "text": "កុំព្យូរទ័រ"
+    },
+    {
+      "n": 31,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fPaperclip2.jpg",
+      "text": "ឃ្នាបកៀបក្រដាស"
+    },
+    {
+      "n": 32,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fEnglish2.jpg",
+      "text": "ភាសា\nអង់គ្លេស"
+    },
+    {
+      "n": 33,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fReading4.jpg",
+      "text": "ការអាន"
+    },
+    {
+      "n": 34,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fWriting2.jpg",
+      "text": "ការសរសេរ"
+    },
+    {
+      "n": 35,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fMath4.jpg",
+      "text": "គណិតវិទ្យា"
+    },
+    {
+      "n": 36,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fScience.jpg",
+      "text": "វិទ្យាសាស្ត្រ"
+    },
+    {
+      "n": 37,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fGeography.jpg",
+      "text": "ភូមិវិទ្យា"
+    },
+    {
+      "n": 38,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fHistory.jpg",
+      "text": "ប្រវត្តិវិទ្យា"
+    },
+    {
+      "n": 39,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fMusic.jpg",
+      "text": "សិល្ប:តន្ត្រី"
+    },
+    {
+      "n": 40,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fArt4.jpg",
+      "text": "គំនូរ"
+    },
+    {
+      "n": 41,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fPhysical+Ed2.jpg",
+      "text": "កីឡា"
+    },
+    {
+      "n": 42,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/CxDQnKDdZM%2f1753848567952%2f%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9e%a1%e1%9e%94%e1%9f%8b%e1%9e%85%e1%9e%bc%e1%9e%9b%e1%9e%9a%e1%9f%80%e1%9e%93%e1%9e%9c%e1%9e%b7%e1%9e%89%2fPlayground1.jpg",
+      "text": "សួនកំសាន្ត"
+    }
+  ],
+  "stats": {
+    "pages": 42,
+    "words": 46
+  }
+}

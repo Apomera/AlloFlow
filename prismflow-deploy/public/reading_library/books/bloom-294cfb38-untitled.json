@@ -1,0 +1,65 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-294cfb38-untitled",
+  "title": "नेपालको हिमाल",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/e8zRvrP4Ay"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f294cfb38-d55d-4367-b116-9542dc5af750%2f%e0%a4%a8%e0%a5%87%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a4%95%e0%a5%8b+%e0%a4%b9%e0%a4%bf%e0%a4%ae%e0%a4%be%e0%a4%b2%2fimage1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f294cfb38-d55d-4367-b116-9542dc5af750%2f%e0%a4%a8%e0%a5%87%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a4%95%e0%a5%8b+%e0%a4%b9%e0%a4%bf%e0%a4%ae%e0%a4%be%e0%a4%b2%2fimage.png",
+      "text": "आहा, हिमाल हेर।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f294cfb38-d55d-4367-b116-9542dc5af750%2f%e0%a4%a8%e0%a5%87%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a4%95%e0%a5%8b+%e0%a4%b9%e0%a4%bf%e0%a4%ae%e0%a4%be%e0%a4%b2%2fimage1.png",
+      "text": "सेतो हिमाल मात्रै टलटल।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f294cfb38-d55d-4367-b116-9542dc5af750%2f%e0%a4%a8%e0%a5%87%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a4%95%e0%a5%8b+%e0%a4%b9%e0%a4%bf%e0%a4%ae%e0%a4%be%e0%a4%b2%2fimage2.png",
+      "text": "सगरमाथा शिरमा रहेको।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f294cfb38-d55d-4367-b116-9542dc5af750%2f%e0%a4%a8%e0%a5%87%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a4%95%e0%a5%8b+%e0%a4%b9%e0%a4%bf%e0%a4%ae%e0%a4%be%e0%a4%b2%2fimage3.png",
+      "text": "सेतो हिमाल टलटल।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f294cfb38-d55d-4367-b116-9542dc5af750%2f%e0%a4%a8%e0%a5%87%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a4%95%e0%a5%8b+%e0%a4%b9%e0%a4%bf%e0%a4%ae%e0%a4%be%e0%a4%b2%2fimage4.png",
+      "text": "डाँफे, मुनाल, मयूर नाचेका।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f294cfb38-d55d-4367-b116-9542dc5af750%2f%e0%a4%a8%e0%a5%87%e0%a4%aa%e0%a4%be%e0%a4%b2%e0%a4%95%e0%a5%8b+%e0%a4%b9%e0%a4%bf%e0%a4%ae%e0%a4%be%e0%a4%b2%2fimage.jpg",
+      "text": "मेरो हिमाल।\nसफा हिमाल।"
+    }
+  ],
+  "stats": {
+    "pages": 6,
+    "words": 21
+  }
+}

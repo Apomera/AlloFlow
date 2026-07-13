@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-294f99f8-untitled",
+  "title": "ႎဲန်ဇိုည်ႇ ႎဲန်ဇိုည်ႇ ကာည်း ပီုဝ် ပီုဝ်",
+  "description": "လော်င်ဘည်ဘာည်းတိုဆံတ်ကဲ။",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "RBTT & NTC"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "RBTT & NTC",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/GwDSIXjTvZ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2f81.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2f21.jpg",
+      "text": "အရိုက်စီႎဲန်ဇိုည်ႇ....ႎဲန်ဇိုည်ႇ။"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2f31.jpg",
+      "text": "အဘျိူက်မာ် ႎဲန်ဇိုည်ႇ...ႎဲန်ဇိုည်ႇ။"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2f4.jpg",
+      "text": "အီးမိုႈအကျိူန်းမာ် ႎဲန်ဇိုည်ႇ...ႎဲန်ဇိုည်ႇ။"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2f8.jpg",
+      "text": "ဆည်း၊ ရေဲန်းတိူဝ်ႈဟံင်း ႎဲန်ဇိုည်ႇ...ႎဲန်ဇိုည်ႇ။"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2fa+(1).jpg",
+      "text": "ႎဲန်ဇိုည်ႇ ႎဲန်ဇိုည်ႇ ႎဲန်ဇိုည်ႇ ႎဲန်ဇိုည်ႇ။"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2fsdsds.jpg",
+      "text": "ဆီမ်းဒဲ့စီ ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း။"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2f6.jpg",
+      "text": "ကလမာ် ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း။"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2f7.jpg",
+      "text": "အီးမိုႈဖျိူဝ်းမာ် ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း။"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2f9.jpg",
+      "text": "ဆည်း၊ ရေဲန်းတိူဝ်ႈဟံင်း ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း။"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2fa+(3).jpg",
+      "text": "ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း။"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 29
+  }
+}

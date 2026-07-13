@@ -1,0 +1,77 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-9c6cd8f0-ulemavu-si-ugonjwa",
+  "title": "Ulemavu si ugonjwa",
+  "description": "This story gives four examples of where disability is not inability - An African Storybook",
+  "language": "Kiswahili",
+  "langCode": "sw",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Community Living"
+  ],
+  "authors": [
+    "African Storybook Initiative"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "African Storybook Initiative",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/4UfwbuTXHE"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f9c6cd8f0-cf3c-47a6-a2cd-ec1fdb392964%2fDisability+is+not+inability%2fimage1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f9c6cd8f0-cf3c-47a6-a2cd-ec1fdb392964%2fDisability+is+not+inability%2fimage2.jpg",
+      "text": "Huyu ni Agnes.\nYeye ni mwalimu wangu."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f9c6cd8f0-cf3c-47a6-a2cd-ec1fdb392964%2fDisability+is+not+inability%2fimage3.jpg",
+      "text": "Agnes hutumia magongo kutembelea."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f9c6cd8f0-cf3c-47a6-a2cd-ec1fdb392964%2fDisability+is+not+inability%2fimage4.jpg",
+      "text": "Huyu ni Metobo.\nYeye ni mtangazaji wa redio ninaye mpenda."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f9c6cd8f0-cf3c-47a6-a2cd-ec1fdb392964%2fDisability+is+not+inability%2fimage5.jpg",
+      "text": "Ana matatizo ya macho."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f9c6cd8f0-cf3c-47a6-a2cd-ec1fdb392964%2fDisability+is+not+inability%2fimage6.jpg",
+      "text": "Jirani yangu ni Moraa.\nYeye ni mkulima."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f9c6cd8f0-cf3c-47a6-a2cd-ec1fdb392964%2fDisability+is+not+inability%2fimage7.jpg",
+      "text": "Moraa hasikii.\nAnazungumza kwa kutumia lugha ya alama."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f9c6cd8f0-cf3c-47a6-a2cd-ec1fdb392964%2fDisability+is+not+inability%2fimage8.jpg",
+      "text": "Huyu ni Osero.\nYeye ni mchezaji bora wa mpira wa miguu katika shule yangu."
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/venmaitran%40hotmail.com%2f9c6cd8f0-cf3c-47a6-a2cd-ec1fdb392964%2fDisability+is+not+inability%2fimage9.jpg",
+      "text": "Osero hana mikono.\nLakini hufunga magoli mengi katika timu yetu!"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 64
+  }
+}

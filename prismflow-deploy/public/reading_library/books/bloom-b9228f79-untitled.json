@@ -1,0 +1,57 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-b9228f79-untitled",
+  "title": "ٻلِي",
+  "description": "A Urdu picture book from Bloom Library.",
+  "language": "Urdu",
+  "langCode": "ur",
+  "isRtl": true,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Michelle David"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Michelle David",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ezUD6PEPtf"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/michelle.olcdo%40gmail.com%2fb9228f79-6c35-4329-a174-926adaa1465f%2f%d9%bb%d9%84%d9%90%d9%8a%2fAOR_ACC031M1.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/michelle.olcdo%40gmail.com%2fb9228f79-6c35-4329-a174-926adaa1465f%2f%d9%bb%d9%84%d9%90%d9%8a%2fAOR_ACC031M.png",
+      "text": "یہ میری بلی ہے۔"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/michelle.olcdo%40gmail.com%2fb9228f79-6c35-4329-a174-926adaa1465f%2f%d9%bb%d9%84%d9%90%d9%8a%2fAOR_acc034m1.png",
+      "text": "میری بلی کالی ہے۔"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/michelle.olcdo%40gmail.com%2fb9228f79-6c35-4329-a174-926adaa1465f%2f%d9%bb%d9%84%d9%90%d9%8a%2fAOR_ACC028M.png",
+      "text": "میری بلی کو دودہ پسند ہے۔"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/michelle.olcdo%40gmail.com%2fb9228f79-6c35-4329-a174-926adaa1465f%2f%d9%bb%d9%84%d9%90%d9%8a%2fAOR_pa106m.png",
+      "text": "میری بلی میرے ساتھ کھیلتی ہے"
+    }
+  ],
+  "stats": {
+    "pages": 4,
+    "words": 20
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-4f70cf10-untitled",
+  "title": "ورزش کار هر روز است",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/2ABAEcKZCE"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f4f70cf10-8683-496b-858c-f40b2860495c%2f%d9%88%d8%b1%d8%b2%d8%b4+%da%a9%d8%a7%d8%b1+%d9%87%d8%b1+%d8%b1%d9%88%d8%b2+%d8%a7%d8%b3%d8%aa%2f۱.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f4f70cf10-8683-496b-858c-f40b2860495c%2f%d9%88%d8%b1%d8%b2%d8%b4+%da%a9%d8%a7%d8%b1+%d9%87%d8%b1+%d8%b1%d9%88%d8%b2+%d8%a7%d8%b3%d8%aa%2f%db%b2.jpg",
+      "text": "برخیز برخیز ای کودک\nکـودک ناز و کوچــک\nهـر روز بکن تو ورزش\nیا بــازی و یا نــرمـــش\nای کودک برومند\nبا ورزشی نیرومند"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "سلامتی با ورزش\nاول بکن تو نرمش\nهفتـه که هفت روز است\nنرمش کار هر روز است\nاولِ هر صبح نماز\nبعداً ورزش است نیاز\nخواهی که ورزش کنی\nباید تو نرمـــش کنی\nســلامتی هــمیـشه\nبی ورزش هیچ نمیشه"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f4f70cf10-8683-496b-858c-f40b2860495c%2f%d9%88%d8%b1%d8%b2%d8%b4+%da%a9%d8%a7%d8%b1+%d9%87%d8%b1+%d8%b1%d9%88%d8%b2+%d8%a7%d8%b3%d8%aa%2f%db%b3.jpg",
+      "text": "هفتــه که هفت روز است\nورزش کار هر روز است\nخواهی باشی صحت مند\nبه ورزشی نیــازمـــند\nخسته گی ها دور شود\nذهن تو پُــر نور شود"
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "بــدن باشد نیــازمــند\nتا که باشی صحت مند\nورزش دارد فراوان\nفایده به پیر و جوان\nدر مکتب و در خانه\nهرگز مجوی بهانه\nتو ورزش کن فروان\nتاکه باشی شادمان"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f4f70cf10-8683-496b-858c-f40b2860495c%2f%d9%88%d8%b1%d8%b2%d8%b4+%da%a9%d8%a7%d8%b1+%d9%87%d8%b1+%d8%b1%d9%88%d8%b2+%d8%a7%d8%b3%d8%aa%2f%db%b4.jpg",
+      "text": "زنگ ورزش که میشه\nشور و شوق پیدا میشه\nبا نشاط و با شادی\nبا هم می کنیم بازی"
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "با پا کنیم توپ را شوت\nبِرَویــم دنبــال تــــوپ\nگُل پِیکرش چه زیبا\nیک فوتبال با صفا\nتا که باشی صحت مند\nبه ورزشی نیــازمـــند\nمن ورزش ارزشمند\nتو را سازم صحتمند"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f4f70cf10-8683-496b-858c-f40b2860495c%2f%d9%88%d8%b1%d8%b2%d8%b4+%da%a9%d8%a7%d8%b1+%d9%87%d8%b1+%d8%b1%d9%88%d8%b2+%d8%a7%d8%b3%d8%aa%2f%db%b5.jpg",
+      "text": "با من باشی تو هر روز\nسلامتــی شب و روز\nفوتبال است و والیبال\nهندبال است و بسکتبال"
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "در ورزش گروهی\nبا هم استیم چو کوهی\nای کودک برومــند\nبا ورزشی نیرومند\nهفتـه که هفت روز است\nورزش کار هر روز است\nکودکان و بزرگان\nورزش کنید فراوان\nتا که باشید صحتمند\nصحتمند و توانمــند"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 227
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-6f7f9c66-untitled",
+  "title": "የፋሲካ ታሪክ",
+  "description": "A Amharic picture book, readable free at Bloom Library.",
+  "language": "Amharic",
+  "langCode": "am",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Spiritual"
+  ],
+  "authors": [
+    "SIL Cameroon"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "SIL Cameroon",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/TFPbExKlvi"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/musie_menna%40sil.org%2f6f7f9c66-0ce9-40d9-acf9-45e1fb624c2b%2f%e1%8b%a8%e1%8d%8b%e1%88%b2%e1%8a%ab+%e1%89%b3%e1%88%aa%e1%8a%ad%2faualq023.n2h.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"የፋሲካ ታሪክ\" (Amharic)."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 57
+  }
+}

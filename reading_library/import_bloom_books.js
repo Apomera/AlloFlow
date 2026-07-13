@@ -48,7 +48,9 @@ const API = 'https://api.bloomlibrary.org/v1/books';
 const UA = 'AlloFlow reading library Bloom importer';
 
 // Display names must match StoryWeaver's exactly where both sources have the
-// language, so the browse language filter merges the shelves (ht, rw).
+// language, so the browse language filter merges the shelves. `code` is what
+// Bloom's API and HTML lang attributes use; `langCode` (optional) is what we
+// store when StoryWeaver spells it differently (Filipino: tl vs fil).
 const PLAN = [
   { code: 'so', name: 'Somali', cap: 20 },
   { code: 'ymm', name: 'Maay Maay', cap: 20 },
@@ -59,7 +61,25 @@ const PLAN = [
   { code: 'uk', name: 'Ukrainian', cap: 20 },
   { code: 'ht', name: 'Haitian Creole', cap: 20 },
   { code: 'rw', name: 'Kinyarwanda', cap: 20 },
+  // ---- 2026-07-13 wave 2: Portland-relevant + StoryWeaver-thin languages.
+  { code: 'ti', name: 'Tigrinya', cap: 20 },
+  { code: 'am', name: 'Amharic', cap: 20 },
+  { code: 'prs', name: 'Dari', cap: 20 },
+  { code: 'km', name: 'Khmer', cap: 20 },
+  { code: 'my', name: 'Burmese', cap: 20 },
+  { code: 'ne', name: 'Nepali', cap: 20 },
+  { code: 'lo', name: 'Lao', cap: 20 },
+  { code: 'vi', name: 'Vietnamese', cap: 12 },
+  { code: 'mww', name: 'Hmong', cap: 20 },
+  { code: 'sw', name: 'Kiswahili', cap: 20 },
+  { code: 'ur', name: 'Urdu', cap: 12 },
+  { code: 'tl', name: 'Filipino', cap: 12, langCode: 'fil' },
+  { code: 'ar', name: 'Arabic', cap: 5 },
+  { code: 'fa', name: 'Farsi', cap: 2 },
+  { code: 'kmr', name: 'Kurdish', cap: 20 },
 ];
+
+const RTL_CODES = new Set(['ar', 'fa', 'ur', 'prs', 'ps', 'he']);
 
 const LICENSES = {
   'cc-by': { label: 'CC BY', url: 'https://creativecommons.org/licenses/by/4.0/' },
@@ -230,15 +250,20 @@ function makeBook(record, meta, lang, parsed) {
   const holder = copyrightHolder(meta);
   const author = String(meta.author || '').trim();
   const pages = parsed.pages;
+  // Non-Latin titles slugify to 'untitled'; a multilingual record (one
+  // instanceId, several language editions) would then collide with itself —
+  // suffix the language so each edition gets its own slug.
+  const titleSlug = slugify(title);
   return {
     schema: 'allo-reading-book@1',
-    slug: 'bloom-' + String(record.instanceId || record.id).slice(0, 8).toLowerCase() + '-' + slugify(title),
+    slug: 'bloom-' + String(record.instanceId || record.id).slice(0, 8).toLowerCase() + '-' +
+      (titleSlug === 'untitled' ? 'untitled-' + (lang.langCode || lang.code) : titleSlug),
     title,
     description: String(meta.summary || record.summary || '').trim() ||
       ('A ' + lang.name + ' picture book from Bloom Library.'),
     language: lang.name,
-    langCode: lang.code,
-    isRtl: !!meta.isRtl,
+    langCode: lang.langCode || lang.code,
+    isRtl: !!meta.isRtl || RTL_CODES.has(lang.code),
     level: computedLevel(record),
     orientation: 'portrait',
     sourceId: 'bloom',
@@ -296,8 +321,8 @@ function makeCard(record, meta, lang, cover) {
     title,
     description: summary || ('A ' + lang.name + ' picture book, readable free at Bloom Library.'),
     language: lang.name,
-    langCode: lang.code,
-    isRtl: !!(meta && meta.isRtl),
+    langCode: lang.langCode || lang.code,
+    isRtl: !!(meta && meta.isRtl) || RTL_CODES.has(lang.code),
     level: computedLevel(record),
     orientation: 'portrait',
     sourceId: 'bloom',
