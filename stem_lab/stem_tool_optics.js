@@ -1395,21 +1395,6 @@
           );
         })
       ),
-      // Quest auto-tracking on the calc render: award once per category
-      !lens.error && (function() {
-        if (lens.isReal && !state.realImageFormed) {
-          setTimeout(function() {
-            upd({ realImageFormed: true });
-            if (awardXP) awardXP(10, 'OpticsLab — formed a real image', 'opticsLab');
-          }, 50);
-        } else if (!lens.isReal && !state.virtualImageFormed) {
-          setTimeout(function() {
-            upd({ virtualImageFormed: true });
-            if (awardXP) awardXP(10, 'OpticsLab — formed a virtual image', 'opticsLab');
-          }, 50);
-        }
-        return null;
-      })(),
       h('button', {
         onClick: function() { upd('lensShowMath', !state.lensShowMath); },
         'data-op-focusable': 'true',
@@ -2887,26 +2872,31 @@
         });
       }
 
-      // Quest auto-tracking based on state changes
-      // (Refraction TIR detection)
-      try {
-        var n1 = d.refrN1, n2 = d.refrN2, t1 = degToRad(d.refrTheta1 || 0);
-        var snellRes = snell(t1, n1, n2);
-        if (snellRes.tir && !d.tirTriggered) {
-          // Set later via upd to avoid re-render storm; defer
-          setTimeout(function() {
-            setLabToolData(function(prev) {
-              if (!prev.opticsLab || prev.opticsLab.tirTriggered) return prev;
-              var next = Object.assign({}, prev);
-              next.opticsLab = Object.assign({}, prev.opticsLab, { tirTriggered: true });
-              if (awardXP) awardXP(10, 'OpticsLab — TIR triggered', 'opticsLab');
-              return next;
-            });
-          }, 50);
-        }
-      } catch (e) {}
+      // Award simulation milestones from effects, never from render paths.
+      React.useEffect(function() {
+        if (d.tirTriggered) return;
+        var result = snell(degToRad(d.refrTheta1 || 0), d.refrN1, d.refrN2);
+        if (!result.tir) return;
+        upd({ tirTriggered: true });
+        if (awardXP) awardXP(10, 'OpticsLab â€” TIR triggered', 'opticsLab');
+      }, [d.refrN1, d.refrN2, d.refrTheta1, d.tirTriggered]);
 
-      // ── Build UI ──
+      React.useEffect(function() {
+        if (d.mode !== 'lenses') return;
+        var focal = Math.abs(d.lensFocal != null ? d.lensFocal : 12);
+        var signedFocal = (d.lensType || 'converging') === 'converging' ? focal : -focal;
+        var result = thinLens(d.lensDo != null ? d.lensDo : 25, signedFocal);
+        if (result.error) return;
+        if (result.isReal && !d.realImageFormed) {
+          upd({ realImageFormed: true });
+          if (awardXP) awardXP(10, 'OpticsLab â€” formed a real image', 'opticsLab');
+        } else if (!result.isReal && !d.virtualImageFormed) {
+          upd({ virtualImageFormed: true });
+          if (awardXP) awardXP(10, 'OpticsLab â€” formed a virtual image', 'opticsLab');
+        }
+      }, [d.mode, d.lensType, d.lensFocal, d.lensDo, d.realImageFormed, d.virtualImageFormed]);
+
+      // Build UI
       var OP_CORE_MODES = ['home', 'reflection', 'refraction', 'lenses', 'interference', 'diffraction', 'polarization', 'quiz', 'mastery', 'inquiry'];
       var opMastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
       var opTotalQuestions = AP_OPTICS_QUIZ.length || 0;

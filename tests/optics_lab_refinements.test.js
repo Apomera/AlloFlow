@@ -50,4 +50,13 @@ describe('Optics Lab refinements', () => {
     expect(source).toContain('Lens ray tracer showing object and image formation.');
     expect(source).toContain('Comparison of coherent and incoherent light waves.');
   });
+  it('tracks simulation milestones from effects instead of render timers', () => {
+    const source = readFileSync('stem_lab/stem_tool_optics.js', 'utf8');
+
+    expect(source).toContain('Award simulation milestones from effects, never from render paths.');
+    expect(source).toContain("}, [d.refrN1, d.refrN2, d.refrTheta1, d.tirTriggered]);");
+    expect(source).toContain("}, [d.mode, d.lensType, d.lensFocal, d.lensDo, d.realImageFormed, d.virtualImageFormed]);");
+    expect(source).not.toContain('Quest auto-tracking on the calc render');
+    expect(source).not.toContain('Set later via upd to avoid re-render storm');
+  });
 });
