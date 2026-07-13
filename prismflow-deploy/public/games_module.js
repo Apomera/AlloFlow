@@ -5154,6 +5154,7 @@ const _MultiZoneColorMap = {
 };
 const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "", gameKey, gameLabel, zoneConfig, layoutMode = "columns", captionText = "" }) => {
   const { t } = useContext(LanguageContext);
+  const reducedMotion = useReducedMotion();
   const scoreTrackerRef = useRef(null);
   if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
@@ -5165,21 +5166,10 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
   const [keyboardSelectedItemId, setKeyboardSelectedItemId] = useState(null);
   const [announcement, setAnnouncement] = useState("");
   const gameContainerRef = useRef(null);
-  const triggerElRef = useRef(null);
+  const closeButtonRef = useRef(null);
   const playAgainRef = useRef(null);
   const winDialogRef = useRef(null);
-  useEffect(() => {
-    triggerElRef.current = typeof document !== "undefined" ? document.activeElement : null;
-    if (gameContainerRef.current) gameContainerRef.current.focus();
-    return () => {
-      if (triggerElRef.current && typeof triggerElRef.current.focus === "function") {
-        try {
-          triggerElRef.current.focus();
-        } catch (_) {
-        }
-      }
-    };
-  }, []);
+  useGameDialogFocus(gameContainerRef, closeButtonRef, onClose);
   useEffect(() => {
     if (isWon && playAgainRef.current) playAgainRef.current.focus();
   }, [isWon]);
@@ -5276,6 +5266,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
       const allCorrect = items.every((i) => i.currentZone === i.correctZone);
       if (allCorrect) {
         setIsWon(true);
+        setAnnouncement(`${t("games.bucket_sort.all_sorted") || "All sorted!"}. ${t("games.bucket_sort.final_score_label") || "Final score:"} ${score}`);
         if (onScoreUpdate) onScoreUpdate(score, gameLabel);
         if (playSound) playSound("correct");
         if (onGameComplete) onGameComplete(gameKey, { score, itemsSorted: items.length, totalItems: items.length, incorrectAttempts: attempts });
@@ -5295,6 +5286,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
     window.setTimeout(() => gameContainerRef.current?.focus(), 0);
   };
   const bankItems = useMemo(() => items.filter((i) => i.currentZone === "bank"), [items]);
+  const hasKeyboardSelection = !!keyboardSelectedItemId;
   const zoneCountClass = layoutMode === "grid-2x2" ? "grid-cols-2" : zoneConfig.length === 3 ? "grid-cols-1 md:grid-cols-3" : zoneConfig.length === 5 ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-5" : "grid-cols-1 md:grid-cols-3";
   const renderZone = (zone) => {
     const c = _MultiZoneColorMap[zone.color] || _MultiZoneColorMap.indigo;
@@ -5318,7 +5310,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
           }
         } : void 0,
         "aria-label": `Drop zone: ${zone.label}`,
-        className: `${c.panel} border-2 ${c.border} rounded-xl p-3 min-h-[140px] transition-all ${isActive ? `ring-4 ${c.ring} scale-[1.02]` : ""} ${hasSelection ? "cursor-pointer hover:ring-4 hover:" + c.ring : ""}`
+        className: `${c.panel} border-2 ${c.border} rounded-xl p-3 min-h-[140px] ${!reducedMotion ? "transition-all" : ""} ${isActive ? `ring-4 ${c.ring} ${!reducedMotion ? "scale-[1.02]" : ""}` : ""} ${hasSelection ? "cursor-pointer hover:ring-4 hover:" + c.ring + " focus:outline-none focus:ring-4" : ""}`
       },
       /* @__PURE__ */ React.createElement("h4", { className: `${c.header} font-black text-sm uppercase tracking-wide text-center py-1.5 px-2 rounded-md mb-2` }, zone.label),
       /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, zoneItems.map((item) => /* @__PURE__ */ React.createElement(
@@ -5330,7 +5322,8 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
           tabIndex: 0,
           role: "button",
           "aria-pressed": keyboardSelectedItemId === item.id,
-          onClick: () => {
+          onClick: (event) => {
+            event.stopPropagation();
             if (keyboardSelectedItemId === item.id) {
               setKeyboardSelectedItemId(null);
             } else {
@@ -5339,7 +5332,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
             }
           },
           onKeyDown: (e) => handleItemKeyDown(e, item),
-          className: `bg-white border ${c.border} rounded-md px-2 py-1.5 text-xs text-slate-700 cursor-grab active:cursor-grabbing shadow-sm animate-in zoom-in duration-300 ${keyboardSelectedItemId === item.id ? `ring-2 ${c.ring}` : ""}`
+          className: `min-h-11 bg-white border ${c.border} rounded-md px-2 py-1.5 text-xs text-slate-700 cursor-grab active:cursor-grabbing shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${!reducedMotion ? "animate-in zoom-in duration-300" : ""} ${keyboardSelectedItemId === item.id ? `ring-2 ${c.ring}` : ""}`
         },
         item.text
       )))
@@ -5353,15 +5346,25 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
       className: "fixed inset-0 z-[200] bg-slate-900/85 backdrop-blur-sm flex items-center justify-center p-4 outline-none",
       role: "dialog",
       "aria-modal": "true",
-      "aria-label": `${gameLabel} sorting game`
+      "aria-labelledby": "multi-zone-game-title"
     },
-    /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[92vh] overflow-y-auto p-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start gap-4 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-xl font-black text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Gamepad2, { size: 22, className: "text-indigo-600" }), gameLabel), topicTitle ? /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-0.5" }, "Topic: ", /* @__PURE__ */ React.createElement("strong", null, topicTitle)) : null, captionText ? /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic mt-1" }, captionText) : null), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-100 px-3 py-1.5 rounded-full text-sm font-bold text-slate-700" }, "Score: ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600" }, score)), /* @__PURE__ */ React.createElement("button", { onClick: reset, className: "px-3 py-1.5 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded-md hover:bg-amber-100" }, "Reset"), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "px-3 py-1.5 text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 rounded-md hover:bg-slate-200" }, "Close"))), /* @__PURE__ */ React.createElement("div", { className: "sr-only", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[92vh] overflow-y-auto p-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start gap-4 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "multi-zone-game-title", className: "text-xl font-black text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Gamepad2, { size: 22, className: "text-indigo-600", "aria-hidden": "true" }), gameLabel), topicTitle ? /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 mt-0.5" }, "Topic: ", /* @__PURE__ */ React.createElement("strong", null, topicTitle)) : null, captionText ? /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic mt-1" }, captionText) : null), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-100 px-3 py-1.5 rounded-full text-sm font-bold text-slate-700" }, "Score: ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600" }, score)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: reset, className: "min-h-11 px-3 py-1.5 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded-md hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-2" }, "Reset"), /* @__PURE__ */ React.createElement("button", { ref: closeButtonRef, type: "button", onClick: onClose, className: "min-h-11 px-3 py-1.5 text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 rounded-md hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" }, "Close"))), /* @__PURE__ */ React.createElement("div", { className: "sr-only", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement(
       "div",
       {
         onDrop: (e) => handleDrop(e, "bank"),
         onDragOver: (e) => handleDragOver(e, "bank"),
         onDragLeave: handleDragLeave,
-        className: `bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-3 mb-3 ${activeDropZone === "bank" ? "ring-4 ring-slate-300" : ""}`
+        onClick: hasKeyboardSelection ? () => handleKeyboardMove("bank") : void 0,
+        role: hasKeyboardSelection ? "button" : void 0,
+        tabIndex: hasKeyboardSelection ? 0 : void 0,
+        onKeyDown: hasKeyboardSelection ? (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            handleKeyboardMove("bank");
+          }
+        } : void 0,
+        "aria-label": hasKeyboardSelection ? t("games.bucket_sort.move_to_bank") || "Move selected item back to the bank" : void 0,
+        className: `bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-3 mb-3 ${activeDropZone === "bank" ? "ring-4 ring-slate-300" : ""} ${hasKeyboardSelection ? "cursor-pointer focus:outline-none focus:ring-4 focus:ring-indigo-500" : ""}`
       },
       /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 text-center" }, "Bank (", bankItems.length, " item", bankItems.length === 1 ? "" : "s", " remaining)"),
       /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center min-h-[50px]" }, bankItems.length === 0 ? /* @__PURE__ */ React.createElement("span", { className: "text-xs italic text-slate-600" }, t("games.bucket_sort.bank_empty") || "All items placed.") : bankItems.map((item) => /* @__PURE__ */ React.createElement(
@@ -5373,7 +5376,8 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
           tabIndex: 0,
           role: "button",
           "aria-pressed": keyboardSelectedItemId === item.id,
-          onClick: () => {
+          onClick: (event) => {
+            event.stopPropagation();
             if (keyboardSelectedItemId === item.id) {
               setKeyboardSelectedItemId(null);
             } else {
@@ -5382,11 +5386,11 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
             }
           },
           onKeyDown: (e) => handleItemKeyDown(e, item),
-          className: `bg-white border-2 border-slate-300 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-700 cursor-grab active:cursor-grabbing shadow-sm hover:border-indigo-400 ${keyboardSelectedItemId === item.id ? "ring-2 ring-indigo-400" : ""}`
+          className: `min-h-11 bg-white border-2 border-slate-300 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-700 cursor-grab active:cursor-grabbing shadow-sm hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${keyboardSelectedItemId === item.id ? "ring-2 ring-indigo-400" : ""}`
         },
         item.text
       )))
-    ), /* @__PURE__ */ React.createElement("div", { className: `grid ${zoneCountClass} gap-3` }, zoneConfig.map(renderZone)), isWon && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[210] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4" }, !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: `grid ${zoneCountClass} gap-3` }, zoneConfig.map(renderZone)), isWon && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[210] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4" }, !reducedMotion && /* @__PURE__ */ React.createElement(ConfettiExplosion, null), /* @__PURE__ */ React.createElement(
       "div",
       {
         ref: winDialogRef,
@@ -5395,6 +5399,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
         "aria-labelledby": "multi-zone-win-title",
         "aria-describedby": "multi-zone-win-description",
         onKeyDown: (event) => {
+          event.stopPropagation();
           if (event.key === "Escape") {
             event.preventDefault();
             onClose();
@@ -5416,7 +5421,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
             first.focus();
           }
         },
-        className: `bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full text-center${useReducedMotion() ? "" : " animate-in zoom-in-95 duration-300"}`
+        className: `bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full text-center${reducedMotion ? "" : " animate-in zoom-in-95 duration-300"}`
       },
       /* @__PURE__ */ React.createElement("div", { className: "text-5xl mb-3", "aria-hidden": "true" }, "\u{1F389}"),
       /* @__PURE__ */ React.createElement("h3", { id: "multi-zone-win-title", className: "text-2xl font-black text-slate-800 mb-2" }, t("games.bucket_sort.all_sorted") || "All sorted!"),
