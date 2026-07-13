@@ -70,7 +70,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       '.fl-sim-canvas:focus-visible { outline: 4px solid #fbbf24; outline-offset: -4px; }',
       '.fl-sim-stage { position: relative; overflow: hidden; border-radius: 0 0 8px 8px; background: #06131f; }',
       '.fl-sim-touch { position: absolute; z-index: 20; left: 50%; bottom: 116px; transform: translateX(-50%); display: flex; gap: 6px; padding: 6px; border-radius: 8px; background: rgba(2,6,23,0.78); border: 1px solid rgba(125,211,252,0.28); }',
-      '@media (max-width: 760px) { .fl-sim-stage { display: grid; overflow: visible; } .fl-sim-stage .fl-sim-canvas { height: 330px !important; } .fl-sim-instruments, .fl-sim-mission, .fl-sim-log, .fl-sim-touch { position: static !important; width: auto !important; max-width: none !important; margin: 8px 8px 0 !important; transform: none !important; } .fl-sim-touch { justify-self: stretch; justify-content: center; flex-wrap: wrap; } }'
+      '.fl-nav-cue { position: absolute; z-index: 18; top: 58px; left: 50%; transform: translateX(-50%); width: min(280px, 32%); min-width: 190px; pointer-events: none; }',
+      '@media (max-width: 760px) { .fl-sim-stage { display: grid; overflow: visible; } .fl-sim-stage .fl-sim-canvas { height: 330px !important; } .fl-sim-instruments, .fl-sim-mission, .fl-sim-log, .fl-sim-touch, .fl-nav-cue { position: static !important; width: auto !important; min-width: 0 !important; max-width: none !important; margin: 8px 8px 0 !important; transform: none !important; } .fl-sim-touch { justify-self: stretch; justify-content: center; flex-wrap: wrap; } }'
     ].join('\n');
     document.head.appendChild(s);
   })();
@@ -435,18 +436,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     pnw: { title: 'Salish Sea Stewardship Run', targetFishId: 'chinook', targetFish: 'Chinook salmon', trapCatch: 'Dungeness crab', destination: 'Burrows Island grounds' },
     greatlakes: { title: 'St. Marys Stewardship Run', targetFishId: 'laketrout', targetFish: 'lake trout', trapCatch: 'crayfish', destination: 'Point Iroquois grounds' }
   };
+  var CORE_VOYAGE_MODES = {
+    guided: { id: 'guided', label: 'Guided', tagline: 'Full fuel, calm daylight, generous targets', startFuel: 100, fuelBurn: 0.42, scoreMultiplier: 1, requiredFuel: 15, requiredAccuracy: 60, safeSpeed: 5, weather: 'clear', timeOfDay: 'day' },
+    skipper: { id: 'skipper', label: 'Skipper', tagline: 'Fog, tighter fuel planning, stronger standards', startFuel: 85, fuelBurn: 0.56, scoreMultiplier: 1.25, requiredFuel: 25, requiredAccuracy: 80, safeSpeed: 4, weather: 'foggy', timeOfDay: 'day' },
+    master: { id: 'master', label: 'Master', tagline: 'Rain at sunset, lean reserves, expert accuracy', startFuel: 72, fuelBurn: 0.7, scoreMultiplier: 1.5, requiredFuel: 30, requiredAccuracy: 90, safeSpeed: 3.5, weather: 'rainy', timeOfDay: 'sunset' }
+  };
   function getCoreSimProfile(region) {
     return CORE_SIM_PROFILES[region] || CORE_SIM_PROFILES.maine;
   }
-  function scoreCoreDecision(score, streak, correct) {
+  function getCoreVoyageMode(mode) {
+    return CORE_VOYAGE_MODES[mode] || CORE_VOYAGE_MODES.guided;
+  }
+  function scoreCoreDecision(score, streak, correct, multiplier) {
     var nextStreak = correct ? streak + 1 : 0;
-    var delta = correct ? 25 + Math.min(20, Math.max(0, nextStreak - 1) * 5) : -15;
+    var baseReward = 25 + Math.min(20, Math.max(0, nextStreak - 1) * 5);
+    var delta = correct ? Math.round(baseReward * (multiplier || 1)) : -15;
     return { score: Math.max(0, score + delta), streak: nextStreak, delta: delta };
   }
   function isCoreMissionReady(state) {
     return !!(state && state.passedRedNun && state.reachedHalfwayRock && state.targetFishDecision && state.trapDecisionMade);
   }
-  window.__FisherLabCore = { getCoreSimProfile: getCoreSimProfile, scoreCoreDecision: scoreCoreDecision, isCoreMissionReady: isCoreMissionReady };
+  function getCoreObjective(state, profile) {
+    if (!state || !state.passedRedNun) return { id: 'buoy', label: 'Pass red nun on starboard' };
+    if (!state.reachedHalfwayRock) return { id: 'grounds', label: 'Reach ' + profile.destination };
+    if (!state.targetFishDecision) return { id: 'fish', label: 'Classify ' + profile.targetFish };
+    if (!state.trapDecisionMade) return { id: 'trap', label: 'Classify ' + profile.trapCatch };
+    return { id: 'dock', label: 'Return safely to dock' };
+  }
+  function relativeCoreBearing(heading, fromX, fromZ, toX, toZ) {
+    var absoluteBearing = Math.atan2(toX - fromX, -(toZ - fromZ));
+    var relative = absoluteBearing - heading;
+    while (relative > Math.PI) relative -= Math.PI * 2;
+    while (relative < -Math.PI) relative += Math.PI * 2;
+    return relative;
+  }
+  function getCoreVoyageRank(score, accuracy, fuel) {
+    if (score >= 200 && accuracy >= 90 && fuel >= 30) return { id: 'gold', label: 'Gold Wheelhouse', stars: 3, color: '#fde68a' };
+    if (score >= 145 && accuracy >= 80 && fuel >= 20) return { id: 'silver', label: 'Silver Skipper', stars: 2, color: '#dbeafe' };
+    return { id: 'bronze', label: 'Bronze Deckhand', stars: 1, color: '#fdba74' };
+  }
+  window.__FisherLabCore = {
+    getCoreSimProfile: getCoreSimProfile,
+    getCoreVoyageMode: getCoreVoyageMode,
+    scoreCoreDecision: scoreCoreDecision,
+    isCoreMissionReady: isCoreMissionReady,
+    getCoreObjective: getCoreObjective,
+    relativeCoreBearing: relativeCoreBearing,
+    getCoreVoyageRank: getCoreVoyageRank
+  };
 
   // ───────────────────────────────────────────────────────────
   // DATA: GEAR & METHODS
@@ -8705,6 +8742,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     // ─── Boat state
     var missionProfile = getCoreSimProfile(activeRegion);
+    var voyageMode = getCoreVoyageMode((opts && opts.mode) || 'guided');
     var boatState = {
       pos: new THREE.Vector3(0, 0, 5.5),
       heading: Math.PI, // facing south (out of harbor)
@@ -8715,15 +8753,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       passedRedNun: false,
       reachedHalfwayRock: false,
       returnedHome: false,
-      fuel: 100,
+      fuel: voyageMode.startFuel,
       fishLanded: 0,
       keptKeeperCod: false,
       lobstersHauled: 0,
       keeperLobsters: 0,
       closestTrapId: null,
       closestTrapHauled: false,
-      timeOfDay: 'day',
-      weather: 'clear',
+      timeOfDay: voyageMode.timeOfDay,
+      weather: voyageMode.weather,
       cameraView: 'chase',
       paused: false,
       stewardshipScore: 0,
@@ -8734,7 +8772,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       trapDecisionMade: false,
       missionComplete: false,
       fuelDepletedWarned: false,
-      earlyDockWarned: false
+      earlyDockWarned: false,
+      unsafeSpeedWarned: false,
+      unsafeSpeedSeconds: 0
     };
     boat.position.copy(boatState.pos);
 
@@ -8880,7 +8920,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       hudCb(Object.assign({}, lastHud, { paused: boatState.paused }));
     }
     function resolveCatch(kind, action, correct, speciesId) {
-      var scored = scoreCoreDecision(boatState.stewardshipScore, boatState.decisionStreak, correct);
+      var scored = scoreCoreDecision(boatState.stewardshipScore, boatState.decisionStreak, correct, voyageMode.scoreMultiplier);
       boatState.stewardshipScore = scored.score;
       boatState.decisionStreak = scored.streak;
       boatState.totalDecisions += 1;
@@ -8936,8 +8976,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       boatState.throttle += (accel - boatState.throttle) * throttleResponse;
       boatState.speed += boatState.throttle * 6 * dt;
       boatState.speed *= Math.exp(-0.9 * dt);
+      var conditionSpeedLimit = boatState.weather === 'foggy' ? voyageMode.safeSpeed : boatState.weather === 'rainy' ? Math.min(5, voyageMode.safeSpeed + 1) : 8;
       if (boatState.speed > 8) boatState.speed = 8;
       if (boatState.speed < -3) boatState.speed = -3;
+      if (boatState.weather !== 'clear' && Math.abs(boatState.speed) > conditionSpeedLimit) {
+        boatState.unsafeSpeedSeconds += dt;
+        if (boatState.unsafeSpeedSeconds >= 3 && !boatState.unsafeSpeedWarned) {
+          boatState.unsafeSpeedWarned = true;
+          boatState.stewardshipScore = Math.max(0, boatState.stewardshipScore - 10);
+          statusCb({ type: 'violation', text: 'Unsafe speed for visibility and sea state: -10 points. Reduce below ' + conditionSpeedLimit.toFixed(1) + ' kt.' });
+          flAnnounce('Unsafe speed for current conditions. Reduce speed.');
+        }
+      } else {
+        boatState.unsafeSpeedSeconds = Math.max(0, boatState.unsafeSpeedSeconds - dt * 2);
+      }
       boatState.heading += steer * dt * 0.9 * Math.min(1, Math.abs(boatState.speed) / 2 + 0.2);
       
       var targetRoll = -steer * 0.12 * Math.min(1.0, Math.abs(boatState.speed) / 2.0);
@@ -8950,7 +9002,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var dz = Math.cos(boatState.heading) * boatState.speed * dt;
       boatState.pos.x += dx;
       boatState.pos.z -= dz;
-      boatState.fuel = Math.max(0, boatState.fuel - Math.abs(boatState.throttle) * dt * 0.5);
+      var weatherFuelFactor = boatState.weather === 'rainy' ? 1.25 : boatState.weather === 'foggy' ? 1.08 : 1;
+      boatState.fuel = Math.max(0, boatState.fuel - Math.abs(boatState.throttle) * dt * voyageMode.fuelBurn * weatherFuelFactor);
 
       boat.position.x = boatState.pos.x;
       boat.position.z = boatState.pos.z;
@@ -9162,7 +9215,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             var localX = Math.cos(boatState.heading) * toBuoy.x + Math.sin(boatState.heading) * toBuoy.z;
             if (localX > 0.5) {
               boatState.passedRedNun = true;
-              boatState.stewardshipScore += 20;
+              boatState.stewardshipScore += Math.round(20 * voyageMode.scoreMultiplier);
               flAnnounce('Passed red nun on starboard. Twenty navigation points earned.');
               statusCb({ type: 'milestone', text: 'Passed first red nun on starboard ✓' });
             } else if (localX < -0.5) {
@@ -9178,7 +9231,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         var dRock = boat.position.distanceTo(rock.position);
         if (dRock < 6) {
           boatState.reachedHalfwayRock = true;
-          boatState.stewardshipScore += 30;
+          boatState.stewardshipScore += Math.round(30 * voyageMode.scoreMultiplier);
           flAnnounce('Reached the fishing grounds. Drop a jig with F.');
           statusCb({ type: 'milestone', text: 'Reached ' + missionProfile.destination + ' — press F to fish' });
         }
@@ -9191,10 +9244,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           if (isCoreMissionReady(boatState)) {
             boatState.returnedHome = true;
             boatState.missionComplete = true;
-            boatState.stewardshipScore += 50;
+            var returnBonus = Math.round(50 * voyageMode.scoreMultiplier);
+            boatState.stewardshipScore += returnBonus;
+            var finalAccuracy = boatState.totalDecisions ? Math.round(boatState.correctDecisions / boatState.totalDecisions * 100) : 0;
+            var finalRank = getCoreVoyageRank(boatState.stewardshipScore, finalAccuracy, boatState.fuel);
             setPaused(true, false);
-            flAnnounce('Docked safely. Mission complete. Review your stewardship debrief.');
-            statusCb({ type: 'mission-complete', score: boatState.stewardshipScore, text: 'Mission complete — safe return bonus +50' });
+            flAnnounce('Docked safely. Mission complete. ' + finalRank.label + ' earned.');
+            statusCb({ type: 'mission-complete', score: boatState.stewardshipScore, accuracy: finalAccuracy, fuel: boatState.fuel, elapsed: elapsed, mode: voyageMode.id, rank: finalRank, text: 'Mission complete — safe return bonus +' + returnBonus });
           } else if (!boatState.earlyDockWarned) {
             boatState.earlyDockWarned = true;
             statusCb({ type: 'guidance', text: 'Not ready to dock: finish the fish and trap decisions before returning.' });
@@ -9300,6 +9356,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         camera.lookAt(cameraTarget);
       }
 
+      var objective = getCoreObjective(boatState, missionProfile);
+      var objectiveTarget = rock;
+      if (objective.id === 'buoy') {
+        for (var ob = 0; ob < buoys.length; ob++) {
+          if (buoys[ob].userData.type === 'red-nun') { objectiveTarget = buoys[ob]; break; }
+        }
+      } else if (objective.id === 'trap') {
+        var nearestTrap = null;
+        var nearestTrapDistance = Infinity;
+        for (var ot = 0; ot < buoys.length; ot++) {
+          if (buoys[ot].userData.type !== 'lobster-buoy' || buoys[ot].userData.hauled) continue;
+          var trapDistance = boat.position.distanceTo(buoys[ot].position);
+          if (trapDistance < nearestTrapDistance) { nearestTrap = buoys[ot]; nearestTrapDistance = trapDistance; }
+        }
+        if (nearestTrap) objectiveTarget = nearestTrap;
+      } else if (objective.id === 'dock') {
+        objectiveTarget = dock;
+      }
+      var objectiveDistance = boat.position.distanceTo(objectiveTarget.position);
+      var objectiveBearing = relativeCoreBearing(boatState.heading, boat.position.x, boat.position.z, objectiveTarget.position.x, objectiveTarget.position.z) * 180 / Math.PI;
+
       var hudPayload = {
         speed: boatState.speed,
         heading: boatState.heading,
@@ -9326,7 +9403,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         totalDecisions: boatState.totalDecisions,
         targetFishDecision: boatState.targetFishDecision,
         trapDecisionMade: boatState.trapDecisionMade,
-        missionComplete: boatState.missionComplete
+        missionComplete: boatState.missionComplete,
+        mode: voyageMode.id,
+        modeLabel: voyageMode.label,
+        requiredFuel: voyageMode.requiredFuel,
+        requiredAccuracy: voyageMode.requiredAccuracy,
+        safeSpeed: conditionSpeedLimit,
+        unsafeSpeed: boatState.weather !== 'clear' && Math.abs(boatState.speed) > conditionSpeedLimit,
+        objectiveId: objective.id,
+        objectiveLabel: objective.label,
+        objectiveDistance: objectiveDistance,
+        objectiveBearing: objectiveBearing,
+        boatX: boatState.pos.x,
+        boatZ: boatState.pos.z
       };
       lastHud = hudPayload;
       hudCb(hudPayload);
@@ -9402,7 +9491,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatState.passedRedNun = false;
         boatState.reachedHalfwayRock = false;
         boatState.returnedHome = false;
-        boatState.fuel = 100;
+        boatState.fuel = voyageMode.startFuel;
         boatState.fishLanded = 0;
         boatState.lobstersHauled = 0;
         boatState.keeperLobsters = 0;
@@ -9415,6 +9504,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatState.totalDecisions = 0;
         boatState.fuelDepletedWarned = false;
         boatState.earlyDockWarned = false;
+        boatState.unsafeSpeedWarned = false;
+        boatState.unsafeSpeedSeconds = 0;
         buoys.forEach(function(b) { if (b.userData.type === 'lobster-buoy') b.userData.hauled = false; });
         setPaused(false, false);
         statusCb({ type: 'system', text: missionProfile.title + ' restarted' });
@@ -9475,6 +9566,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var cameraView = camHook[0], setCameraViewState = camHook[1];
     var weatherHook = useState('clear');
     var weather = weatherHook[0], setWeatherState = weatherHook[1];
+    var voyageModeHook = useState(stateInit.coreVoyageMode || 'guided');
+    var voyageMode = voyageModeHook[0], setVoyageMode = voyageModeHook[1];
     var activeLobsterHook = useState(null);
     var activeLobster = activeLobsterHook[0], setActiveLobster = activeLobsterHook[1];
     var activeFishHook = useState(null);
@@ -9601,6 +9694,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       saveState(s);
     }, [region]);
 
+    useEffect(function() {
+      var s = loadState();
+      s.coreVoyageMode = voyageMode;
+      saveState(s);
+    }, [voyageMode]);
+
     function recordCatch(speciesId, length) {
       var saved = loadState();
       var priorLog = Array.isArray(saved.lifeLog) ? saved.lifeLog : (lifeLog || []);
@@ -9632,14 +9731,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         var saved = loadState();
         saved.completedMissions = saved.completedMissions || {};
         saved.completedMissions['core-' + region] = true;
+        saved.completedMissions['core-' + region + '-' + (ev.mode || 'guided')] = true;
         saved.bestCoreScores = saved.bestCoreScores || {};
         saved.bestCoreScores[region] = Math.max(saved.bestCoreScores[region] || 0, ev.score || 0);
+        saved.bestCoreRanks = saved.bestCoreRanks || {};
+        var rankWeight = { bronze: 1, silver: 2, gold: 3 };
+        var rankKey = region + ':' + (ev.mode || 'guided');
+        var priorRank = saved.bestCoreRanks[rankKey];
+        if (!priorRank || (rankWeight[ev.rank && ev.rank.id] || 0) > (rankWeight[priorRank] || 0)) saved.bestCoreRanks[rankKey] = ev.rank ? ev.rank.id : 'bronze';
         saved.coreTrips = (saved.coreTrips || 0) + 1;
         saveState(saved);
       }
     }
 
     function startSim() {
+      var selectedMode = getCoreVoyageMode(voyageMode);
+      setTimeOfDayState(selectedMode.timeOfDay);
+      setWeatherState(selectedMode.weather);
       setStatus([]);
       setHud({});
       setActiveFish(null);
@@ -9675,6 +9783,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             activeSimRegionRef.current = region;
             harborRef.current = initHarborSim(canvasRef.current, {
               region: region,
+              mode: voyageMode,
               onHudUpdate: setHud,
               onStatus: pushStatus,
               onSoundToggle: setSoundOn,
@@ -10333,6 +10442,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var missionProgressPct = completedObjectives * 20;
       var fuelValue = hud.fuel == null ? 100 : Math.max(0, hud.fuel);
       var decisionAccuracy = hud.totalDecisions ? Math.round((hud.correctDecisions || 0) / hud.totalDecisions * 100) : 0;
+      var modeProfile = getCoreVoyageMode(voyageMode);
+      var voyageRank = getCoreVoyageRank(hud.stewardshipScore || 0, decisionAccuracy, fuelValue);
       function setHeldControl(key, pressed) {
         if (harborRef.current && harborRef.current.setControl) harborRef.current.setControl(key, pressed);
       }
@@ -10350,11 +10461,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('section', { 'aria-labelledby': 'fl-core-mission-title', style: { marginBottom: 12, padding: 12, borderRadius: 8, background: 'linear-gradient(135deg, rgba(8,47,73,0.9), rgba(6,78,59,0.72))', border: '1px solid rgba(125,211,252,0.32)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 12, alignItems: 'center' } },
             h('div', { style: { minWidth: 0 } },
               h('h3', { id: 'fl-core-mission-title', style: { margin: '0 0 4px', color: '#f8fafc', fontSize: 16 } }, mission.title),
-              h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 11, lineHeight: 1.5 } }, 'Navigate correctly, reach ' + mission.destination + ', classify a ' + mission.targetFish + ' and a ' + mission.trapCatch + ', then return with fuel in reserve. Correct decisions build a streak; unsafe or incorrect choices reduce your score.')),
+              h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 11, lineHeight: 1.5 } }, 'Navigate correctly, reach ' + mission.destination + ', classify a ' + mission.targetFish + ' and a ' + mission.trapCatch + ', then return with fuel in reserve. ' + modeProfile.label + ' target: at least ' + modeProfile.requiredAccuracy + '% accuracy and ' + modeProfile.requiredFuel + '% fuel remaining.')),
             h('div', { style: { display: 'grid', gap: 3, textAlign: 'right', fontFamily: 'ui-monospace, monospace' } },
               h('strong', { style: { color: '#fde68a', fontSize: 18 } }, (hud.stewardshipScore || 0) + ' pts'),
               h('span', { style: { color: '#a7f3d0', fontSize: 10 } }, completedObjectives + '/5 objectives'),
               h('span', { style: { color: '#bae6fd', fontSize: 10 } }, fuelValue.toFixed(0) + '% fuel'))
+          ),
+          h('fieldset', { disabled: sim.active, style: { margin: '0 0 12px', padding: 0, border: 0 } },
+            h('legend', { style: { marginBottom: 7, color: '#bae6fd', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, 'Voyage challenge'),
+            h('div', { role: 'radiogroup', 'aria-label': 'Voyage challenge', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 8 } },
+              ['guided', 'skipper', 'master'].map(function(modeId) {
+                var candidate = getCoreVoyageMode(modeId);
+                var selected = voyageMode === modeId;
+                return h('button', { key: modeId, type: 'button', role: 'radio', 'aria-checked': selected, disabled: sim.active,
+                  onClick: function() { setVoyageMode(modeId); setTimeOfDayState(candidate.timeOfDay); setWeatherState(candidate.weather); flAnnounce(candidate.label + ' voyage selected. ' + candidate.tagline); },
+                  style: { minHeight: 72, padding: 10, textAlign: 'left', borderRadius: 7, border: '1px solid ' + (selected ? '#38bdf8' : 'rgba(148,163,184,0.3)'), background: selected ? 'rgba(14,116,144,0.42)' : 'rgba(15,23,42,0.55)', color: '#f8fafc', cursor: sim.active ? 'not-allowed' : 'pointer', opacity: sim.active && !selected ? 0.55 : 1 } },
+                  h('strong', { style: { display: 'block', color: selected ? '#7dd3fc' : '#e2e8f0', fontSize: 13 } }, candidate.label),
+                  h('span', { style: { display: 'block', marginTop: 4, color: '#cbd5e1', fontSize: 10, lineHeight: 1.35 } }, candidate.tagline),
+                  h('span', { style: { display: 'block', marginTop: 4, color: '#a7f3d0', fontSize: 9, fontWeight: 800 } }, candidate.scoreMultiplier + 'x score · ' + candidate.startFuel + '% starting fuel'));
+              })
+            )
           ),
           !sim.threeLoaded && !sim.threeError && !sim.loading ? h('div', { style: { textAlign: 'center', padding: 20 } },
             h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 14 } }, 'The 3D engine (three.js r128, ~600 KB) loads on demand from cdnjs.'),
@@ -10377,10 +10503,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           sim.threeLoaded && !sim.active ? h('div', { style: { textAlign: 'center', padding: 14 } },
             h('button', { className: 'fl-btn', onClick: startSim,
               style: { padding: '12px 24px', background: '#0ea5e9', color: '#04141f', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
-              '▶ Cast off — start Mission 1')) : null,
+              '▶ Cast off — ' + modeProfile.label + ' voyage')) : null,
           sim.active ? h('div', { className: 'fl-sim-stage' },
             // Sound, View and Weather Controls bar
             h('div', { style: { display: 'flex', gap: 10, padding: 10, background: 'rgba(15,23,42,0.85)', borderRadius: '8px 8px 0 0', border: '1px solid rgba(56,189,248,0.22)', borderBottom: 'none', flexWrap: 'wrap', alignItems: 'center' } },
+              h('span', { className: 'fl-pill', style: { background: 'rgba(251,191,36,0.16)', color: '#fde68a' } }, modeProfile.label + ' · ' + modeProfile.scoreMultiplier + 'x'),
               h('button', {
                 className: 'fl-btn',
                 onClick: function() { setSoundOn(!soundOn); },
@@ -10407,8 +10534,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                     key: tod,
                     className: 'fl-btn',
                     'aria-pressed': isSel,
+                    disabled: voyageMode !== 'guided',
                     onClick: function() { setTimeOfDayState(tod); },
-                    style: { padding: '6px 10px', background: isSel ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: isSel ? '#04141f' : '#cbd5e1', border: '1px solid ' + (isSel ? '#38bdf8' : 'rgba(100,116,139,0.2)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                    style: { padding: '6px 10px', background: isSel ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: isSel ? '#04141f' : '#cbd5e1', border: '1px solid ' + (isSel ? '#38bdf8' : 'rgba(100,116,139,0.2)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: voyageMode === 'guided' ? 'pointer' : 'not-allowed', opacity: voyageMode === 'guided' || isSel ? 1 : 0.5 }
                   }, labels[tod]);
                 })
               ),
@@ -10420,8 +10548,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                     key: w,
                     className: 'fl-btn',
                     'aria-pressed': isSel,
+                    disabled: voyageMode !== 'guided',
                     onClick: function() { setWeatherState(w); },
-                    style: { padding: '6px 10px', background: isSel ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: isSel ? '#04141f' : '#cbd5e1', border: '1px solid ' + (isSel ? '#38bdf8' : 'rgba(100,116,139,0.2)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                    style: { padding: '6px 10px', background: isSel ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: isSel ? '#04141f' : '#cbd5e1', border: '1px solid ' + (isSel ? '#38bdf8' : 'rgba(100,116,139,0.2)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: voyageMode === 'guided' ? 'pointer' : 'not-allowed', opacity: voyageMode === 'guided' || isSel ? 1 : 0.5 }
                   }, labels[w]);
                 })
               ),
@@ -10438,6 +10567,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight Space F H P V M Escape',
               onClick: function(e) { if (e.currentTarget && e.currentTarget.focus) e.currentTarget.focus(); },
               onFocus: function() { flAnnounce('Harbor controls active. Steer with WASD or arrows. Press P to pause.'); } }),
+
+            h('div', { className: 'fl-nav-cue', 'aria-label': 'Next voyage objective and relative bearing', style: { padding: '8px 10px', borderRadius: 8, background: 'rgba(3,18,31,0.88)', border: '1px solid rgba(125,211,252,0.45)', boxShadow: '0 8px 24px rgba(0,0,0,0.38)', color: '#e0f2fe', textAlign: 'center' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 } },
+                h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', color: '#fbbf24', fontSize: 22, lineHeight: 1, transform: 'rotate(' + (hud.objectiveBearing || 0) + 'deg)', transition: 'transform 0.2s ease' } }, '↑'),
+                h('div', { style: { minWidth: 0, textAlign: 'left' } },
+                  h('strong', { style: { display: 'block', color: '#f8fafc', fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, hud.objectiveLabel || 'Preparing route'),
+                  h('span', { style: { display: 'block', color: '#bae6fd', fontSize: 9 } }, hud.objectiveDistance == null ? 'Acquiring waypoint' : hud.objectiveDistance.toFixed(1) + ' sim range · ' + (Math.abs(hud.objectiveBearing || 0) < 12 ? 'on course' : (hud.objectiveBearing || 0) < 0 ? 'turn port' : 'turn starboard'))
+                )
+              )
+            ),
             
             // HUD Instruments and Compass Dial overlay
             h('div', { className: 'fl-sim-instruments', style: { position: 'absolute', top: 58, left: 10, background: 'rgba(8,18,32,0.85)', padding: '12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace', zIndex: 10, border: '1px solid rgba(56,189,248,0.3)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', width: 140 } },
@@ -10458,7 +10597,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('div', { style: { position: 'absolute', top: -3, left: 'calc(50% - 5px)', width: 0, height: 0, borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderBottom: '6px solid #ef4444', zIndex: 11 } })
               ),
               h('div', { style: { borderTop: '1px solid rgba(56,189,248,0.2)', paddingTop: 6, display: 'flex', flexDirection: 'column', gap: 3 } },
-                h('div', null, 'Speed: ', h('b', { style: { color: '#86efac' } }, (hud.speed || 0).toFixed(1) + ' kt')),
+                h('div', null, 'Speed: ', h('b', { style: { color: hud.unsafeSpeed ? '#fb923c' : '#86efac' } }, (hud.speed || 0).toFixed(1) + ' kt')),
+                h('div', null, 'Safe speed: ', h('b', { style: { color: hud.unsafeSpeed ? '#fb923c' : '#bae6fd' } }, (hud.safeSpeed == null ? 8 : hud.safeSpeed).toFixed(1) + ' kt')),
                 h('div', null, 'Heading: ', h('b', { style: { color: '#bae6fd' } }, headingToCompass(hud.heading))),
                 h('div', null, 'Fuel: ', h('b', { style: { color: fuelValue < 30 ? '#fb923c' : '#86efac' } }, fuelValue.toFixed(0) + '%')),
                 h('div', null, 'Fish: ', h('b', { style: { color: '#fbbf24' } }, hud.fishLanded || 0)),
@@ -10482,8 +10622,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('div', { style: { fontSize: 10 } }, hud.reachedHalfwayRock ? '✓ Reach ' + mission.destination : '○ Reach ' + mission.destination),
               h('div', { style: { fontSize: 10 } }, hud.targetFishDecision ? '✓ Classify ' + mission.targetFish : '○ Classify ' + mission.targetFish),
               h('div', { style: { fontSize: 10 } }, hud.trapDecisionMade ? '✓ Classify ' + mission.trapCatch : '○ Classify ' + mission.trapCatch),
-              h('div', { style: { fontSize: 10 } }, hud.returnedHome ? '✓ Return safely' : '○ Return with fuel reserve'),
-              h('div', { style: { marginTop: 5, fontSize: 9, color: '#a7f3d0' } }, (hud.decisionStreak || 0) ? 'Decision streak ×' + hud.decisionStreak + ' · ' + decisionAccuracy + '% accurate' : 'Build a streak with correct classifications')),
+              h('div', { style: { fontSize: 10 } }, hud.returnedHome ? '✓ Return safely' : '○ Return with ' + modeProfile.requiredFuel + '% fuel reserve'),
+              h('div', { style: { marginTop: 5, fontSize: 9, color: hud.unsafeSpeed ? '#fb923c' : '#a7f3d0', fontWeight: hud.unsafeSpeed ? 900 : 600 } }, hud.unsafeSpeed ? 'Reduce speed for current conditions' : (hud.decisionStreak || 0) ? 'Decision streak ×' + hud.decisionStreak + ' · ' + decisionAccuracy + '% accurate' : 'Build a streak with correct classifications')),
             
             // Status log
             h('div', { className: 'fl-sim-log', role: 'log', 'aria-live': 'polite', 'aria-label': 'Voyage log', style: { position: 'absolute', bottom: 10, left: 10, right: 10, maxHeight: 100, overflowY: 'auto', background: 'rgba(8,18,32,0.85)', padding: 8, borderRadius: 8, zIndex: 10 } },
@@ -10529,11 +10669,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
             hud.missionComplete ? h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-debrief-title', style: { position: 'absolute', inset: 0, zIndex: 85, display: 'grid', placeItems: 'center', padding: 16, background: 'rgba(2,8,23,0.88)' } },
               h('div', { style: { width: 'min(500px,100%)', padding: 20, borderRadius: 8, border: '1px solid rgba(52,211,153,0.55)', background: 'linear-gradient(145deg,#064e3b,#082f49 58%,#0f172a)', textAlign: 'center', boxShadow: '0 24px 70px rgba(0,0,0,0.65)' } },
-                h('div', { style: { color: '#6ee7b7', fontSize: 12, fontWeight: 900, textTransform: 'uppercase' } }, 'Safe return · voyage complete'),
-                h('h3', { id: 'fl-debrief-title', style: { margin: '6px 0', color: '#fff', fontSize: 24 } }, mission.title),
-                h('div', { style: { color: '#fde68a', fontSize: 34, fontWeight: 900 } }, (hud.stewardshipScore || 0) + ' pts'),
-                h('p', { style: { color: '#dbeafe', fontSize: 12 } }, (hud.correctDecisions || 0) + ' of ' + (hud.totalDecisions || 0) + ' catch classifications correct · ' + fuelValue.toFixed(0) + '% fuel remaining'),
-                h('p', { style: { color: '#a7f3d0', fontSize: 11, lineHeight: 1.5 } }, fuelValue >= 25 && decisionAccuracy >= 80 ? 'Excellent command: accurate decisions and a prudent fuel reserve.' : 'Replay target: finish with at least 25% fuel and 80% classification accuracy.'),
+                h('div', { style: { color: '#6ee7b7', fontSize: 12, fontWeight: 900, textTransform: 'uppercase' } }, modeProfile.label + ' voyage · safe return'),
+                h('h3', { id: 'fl-debrief-title', style: { margin: '6px 0 2px', color: '#fff', fontSize: 24 } }, mission.title),
+                h('div', { style: { color: voyageRank.color, fontSize: 13, fontWeight: 900, textTransform: 'uppercase' } }, Array(voyageRank.stars + 1).join('★') + ' ' + voyageRank.label),
+                h('div', { style: { color: '#fde68a', fontSize: 34, fontWeight: 900, marginTop: 4 } }, (hud.stewardshipScore || 0) + ' pts'),
+                h('p', { style: { color: '#dbeafe', fontSize: 12 } }, (hud.correctDecisions || 0) + ' of ' + (hud.totalDecisions || 0) + ' catch classifications correct · ' + fuelValue.toFixed(0) + '% fuel remaining · ' + Math.max(0, Math.round((hud.elapsed || 0) / 60)) + ' min'),
+                h('p', { style: { color: fuelValue >= modeProfile.requiredFuel && decisionAccuracy >= modeProfile.requiredAccuracy ? '#a7f3d0' : '#fdba74', fontSize: 11, lineHeight: 1.5 } }, fuelValue >= modeProfile.requiredFuel && decisionAccuracy >= modeProfile.requiredAccuracy ? 'Challenge standard met: accurate decisions and a prudent reserve.' : 'Next target: at least ' + modeProfile.requiredFuel + '% fuel and ' + modeProfile.requiredAccuracy + '% classification accuracy.'),
                 h('div', { style: { display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 8 } },
                   h('button', { type: 'button', className: 'fl-btn', onClick: restartCoreMission, style: { padding: '10px 16px', border: 0, borderRadius: 7, background: '#34d399', color: '#052e2b', fontWeight: 900, cursor: 'pointer' } }, 'Replay voyage'),
                   h('button', { type: 'button', className: 'fl-btn', onClick: stopSim, style: { padding: '10px 16px', border: '1px solid rgba(186,230,253,0.4)', borderRadius: 7, background: 'rgba(15,23,42,0.7)', color: '#e0f2fe', fontWeight: 900, cursor: 'pointer' } }, 'Return to briefing')

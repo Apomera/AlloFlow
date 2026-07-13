@@ -40,6 +40,43 @@ describe('Fisher Lab stewardship scoring', () => {
     expect(scoreCoreDecision(0, 0, true)).toEqual({ score: 25, streak: 1, delta: 25 });
     expect(scoreCoreDecision(25, 1, true)).toEqual({ score: 55, streak: 2, delta: 30 });
     expect(scoreCoreDecision(10, 4, false)).toEqual({ score: 0, streak: 0, delta: -15 });
+    expect(scoreCoreDecision(25, 1, true, 1.5)).toEqual({ score: 70, streak: 2, delta: 45 });
+  });
+});
+
+describe('Fisher Lab voyage progression', () => {
+  it('offers increasingly demanding fuel, accuracy, and condition profiles', () => {
+    const { getCoreVoyageMode } = window.__FisherLabCore;
+    const guided = getCoreVoyageMode('guided');
+    const skipper = getCoreVoyageMode('skipper');
+    const master = getCoreVoyageMode('master');
+
+    expect(guided).toMatchObject({ startFuel: 100, weather: 'clear', requiredAccuracy: 60 });
+    expect(skipper.startFuel).toBeLessThan(guided.startFuel);
+    expect(master.startFuel).toBeLessThan(skipper.startFuel);
+    expect(master.requiredAccuracy).toBeGreaterThan(skipper.requiredAccuracy);
+    expect(master.scoreMultiplier).toBeGreaterThan(skipper.scoreMultiplier);
+  });
+
+  it('sequences the next learning objective and computes relative bearings', () => {
+    const { getCoreObjective, getCoreSimProfile, relativeCoreBearing } = window.__FisherLabCore;
+    const profile = getCoreSimProfile('maine');
+    const state = { passedRedNun: true, reachedHalfwayRock: true, targetFishDecision: false, trapDecisionMade: false };
+
+    expect(getCoreObjective({}, profile).id).toBe('buoy');
+    expect(getCoreObjective(state, profile)).toMatchObject({ id: 'fish', label: 'Classify Atlantic cod' });
+    expect(getCoreObjective({ ...state, targetFishDecision: true }, profile).id).toBe('trap');
+    expect(getCoreObjective({ ...state, targetFishDecision: true, trapDecisionMade: true }, profile).id).toBe('dock');
+    expect(relativeCoreBearing(0, 0, 0, 0, -10)).toBeCloseTo(0);
+    expect(relativeCoreBearing(0, 0, 0, 10, 0)).toBeCloseTo(Math.PI / 2);
+  });
+
+  it('awards ranks from combined score, accuracy, and fuel stewardship', () => {
+    const { getCoreVoyageRank } = window.__FisherLabCore;
+
+    expect(getCoreVoyageRank(220, 95, 35).id).toBe('gold');
+    expect(getCoreVoyageRank(160, 85, 24).id).toBe('silver');
+    expect(getCoreVoyageRank(300, 50, 80).id).toBe('bronze');
   });
 });
 
@@ -51,6 +88,9 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain("role: 'application', tabIndex: 0");
     expect(source).toContain('boatState.fuel = Math.max(0');
     expect(source).toContain('boatState.speed *= Math.exp(-0.9 * dt);');
+    expect(source).toContain('unsafeSpeedSeconds >= 3');
+    expect(source).toContain('weatherFuelFactor');
+    expect(source).toContain('objectiveBearing');
     expect(source).toContain("type: 'fish-haul'");
     expect(source).toContain("role: 'dialog', 'aria-modal': 'true'");
     expect(source).not.toContain('resumeSim');
