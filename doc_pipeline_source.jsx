@@ -1904,13 +1904,39 @@ function _alloDocFingerprint(input) {
 // same-origin preview receives their HTML. DOMParser parses inertly; if it is
 // unavailable, fail closed by rendering the source as text.
 var _ALLO_MAX_IMPORTED_HTML_CHARS = 128 * 1024 * 1024;
+function _alloDecodeImportedCss(css) {
+  var out = String(css || '');
+  for (var pass = 0; pass < 3; pass++) {
+    var before = out;
+    out = out
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\\(?:\r\n|[\n\r\f])/g, '')
+      .replace(/\\([0-9a-f]{1,6})(?:\r\n|[ \t\r\n\f])?/gi, function(_, hex) {
+        var code = parseInt(hex, 16);
+        if (!code || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) return '\ufffd';
+        try { return String.fromCodePoint(code); } catch (_) { return '\ufffd'; }
+      })
+      .replace(/\\([^\r\n\f0-9a-f])/gi, '$1');
+    if (out === before) break;
+  }
+  return out.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '');
+}
 function _alloSanitizeImportedCss(css) {
-  return String(css || '')
-    .replace(/@import\s+(?:url\s*\([^)]*\)|[^;]+);?/gi, '')
-    .replace(/@font-face\s*\{[\s\S]*?\}/gi, '')
-    .replace(/url\s*\([^)]*\)/gi, 'none')
-    .replace(/expression\s*\([^)]*\)/gi, '')
-    .replace(/(?:-moz-binding|behavior)\s*:[^;}]*(?:;|(?=\}))/gi, '');
+  var clean = _alloDecodeImportedCss(css);
+  for (var pass = 0; pass < 3; pass++) {
+    var before = clean;
+    clean = clean
+      .replace(/@import\b[^;{}]*(?:;|$)/gi, '')
+      .replace(/@font-face\b[^{}]*\{[\s\S]*?\}/gi, '')
+      .replace(/url\s*\(\s*(?:"[^"]*"|'[^']*'|[^)]*)\)/gi, 'none')
+      .replace(/(?:-webkit-)?image-set\s*\((?:[^()]|\([^()]*\))*\)/gi, 'none')
+      .replace(/expression\s*\((?:[^()]|\([^()]*\))*\)/gi, '')
+      .replace(/(?:-moz-binding|behavior)\s*:[^;}]*(?:;|(?=\}))/gi, '');
+    if (clean === before) break;
+  }
+  // Unknown escapes or any residual fetch/execution primitive fail closed for this style block.
+  if (/\\|@(?:import|font-face)\b|\b(?:url|expression|(?:-webkit-)?image-set)\s*\(|(?:-moz-binding|behavior)\s*:/i.test(clean)) return '';
+  return clean;
 }
 function _alloSanitizeRemediationHtml(rawHtml) {
   var source = String(rawHtml == null ? '' : rawHtml);
@@ -10388,7 +10414,8 @@ var createDocPipeline = function(deps) {
   const _ACTIVE_BATCH_STATUS_KEY = 'pdf_active_batch_status_v1';
   const _ACTIVE_BATCH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
   // Strip the heavy base64 + result payloads so the status delta stays tiny.
-  const _ACTIVE_BATCH_RESULT_PREFIX = 'pdf_active_batch_result_v2_';
+  const _ACTIVE_BATCH_LEGACY_RESULT_PREFIX = 'pdf_active_batch_result_v2_';
+  const _ACTIVE_BATCH_RESULT_PREFIX = 'pdf_active_batch_result_v3_';
   const _ACTIVE_BATCH_RESULT_MAX_BYTES = 32 * 1024 * 1024;
   const _ACTIVE_BATCH_RESULTS_MAX_BYTES = 128 * 1024 * 1024;
   let _batchCheckpointWarningShown = false;
@@ -10398,8 +10425,28 @@ var createDocPipeline = function(deps) {
     warnLog('[Batch Resume] ' + message);
     try { if (typeof addToast === 'function') addToast(message, 'warning'); } catch (_) {}
   };
-  const _batchResultKeyFor = (f) => {
-    return _ACTIVE_BATCH_RESULT_PREFIX + encodeURIComponent(String(f && f.id != null ? f.id : f.fileName || 'file'));
+  const _normalizeBatchCheckpointId = (value) => {
+    const id = String(value || '').trim();
+    return /^[a-z0-9_-]{8,160}$/i.test(id) ? id : null;
+  };
+  const _newBatchCheckpointId = () => {
+    try {
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return 'batch_' + crypto.randomUUID().replace(/-/g, '');
+      }
+      if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+        const bytes = new Uint8Array(16);
+        crypto.getRandomValues(bytes);
+        return 'batch_' + Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+      }
+    } catch (_) {}
+    return 'batch_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 14);
+  };
+  const _batchResultPrefixFor = (batchId) => {
+    return _ACTIVE_BATCH_RESULT_PREFIX + encodeURIComponent(_normalizeBatchCheckpointId(batchId) || 'invalid') + '_';
+  };
+  const _batchResultKeyFor = (batchId, f) => {
+    return _batchResultPrefixFor(batchId) + encodeURIComponent(String(f && f.id != null ? f.id : f.fileName || 'file'));
   };
   const _batchResultSummary = (result) => {
     if (!result) return null;
@@ -10420,11 +10467,15 @@ var createDocPipeline = function(deps) {
     resultStored: !!f._checkpointResultKey,
     resultSummary: _batchResultSummary(f.result),
   });
-  const _saveBatchFiles = async (files, settings, startedAt) => {
+  const _saveBatchFiles = async (files, settings, startedAt, batchId) => {
     if (typeof window === 'undefined' || !window.idbKeyval || !Array.isArray(files)) return;
+    const cleanBatchId = _normalizeBatchCheckpointId(batchId);
+    if (!cleanBatchId) return;
     try {
       // Heavy payload: base64 per file + settings. Written once at batch start.
       await storageDB.set(_ACTIVE_BATCH_FILES_KEY, {
+        schemaVersion: 3,
+        batchId: cleanBatchId,
         files: files.map(f => ({ id: f.id, fileName: f.fileName, fileSize: f.fileSize, base64: f.base64 })),
         settings,
         startedAt,
@@ -10433,9 +10484,13 @@ var createDocPipeline = function(deps) {
       });
     } catch (e) { warnLog('[Batch Resume] saveFiles failed:', e?.message || e); }
   };
-  const _saveBatchStatusNow = async (files) => {
+  const _saveBatchStatusNow = async (files, batchId) => {
     if (typeof window === 'undefined' || !window.idbKeyval || !Array.isArray(files)) return;
+    const cleanBatchId = _normalizeBatchCheckpointId(batchId);
+    if (!cleanBatchId) return;
     try {
+      const initialFilesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+      if (!initialFilesRec || _normalizeBatchCheckpointId(initialFilesRec.batchId) !== cleanBatchId) return;
       let storedBytes = files.reduce((sum, f) => sum + (Number(f._checkpointResultBytes) || 0), 0);
       for (const f of files) {
         if (!f.result || f._checkpointResultKey || f._checkpointResultOmitted) continue;
@@ -10452,7 +10507,7 @@ var createDocPipeline = function(deps) {
           _warnBatchCheckpointOnce('Some large batch results exceed the safe checkpoint budget. Those files will be safely re-run if you resume.');
           continue;
         }
-        const resultKey = _batchResultKeyFor(f);
+        const resultKey = _batchResultKeyFor(cleanBatchId, f);
         try {
           await storageDB.set(resultKey, { serialized, bytes, savedAt: Date.now(), promptVersion: _PIPELINE_PROMPT_VERSION });
         } catch (_) {
@@ -10464,15 +10519,18 @@ var createDocPipeline = function(deps) {
         f._checkpointResultBytes = bytes;
         storedBytes += bytes;
       }
-      await storageDB.set(_ACTIVE_BATCH_STATUS_KEY, { schemaVersion: 2, statuses: files.map(_toStatusEntry), lastUpdatedAt: Date.now() });
+      const activeFilesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+      if (!activeFilesRec || _normalizeBatchCheckpointId(activeFilesRec.batchId) !== cleanBatchId) return;
+      await storageDB.set(_ACTIVE_BATCH_STATUS_KEY, {
+        schemaVersion: 3, batchId: cleanBatchId, statuses: files.map(_toStatusEntry), lastUpdatedAt: Date.now() });
     } catch (e) {
       warnLog('[Batch Resume] saveStatus failed:', e?.message || e);
       _warnBatchCheckpointOnce('Browser storage could not update the batch checkpoint. Keep this tab open until the batch finishes.');
     }
   };
   let _batchStatusWriteTail = Promise.resolve();
-  const _saveBatchStatus = (files) => {
-    const next = _batchStatusWriteTail.then(() => _saveBatchStatusNow(files), () => _saveBatchStatusNow(files));
+  const _saveBatchStatus = (files, batchId) => {
+    const next = _batchStatusWriteTail.then(() => _saveBatchStatusNow(files, batchId), () => _saveBatchStatusNow(files, batchId));
     _batchStatusWriteTail = next.catch(() => {});
     return next;
   };
@@ -10481,16 +10539,29 @@ var createDocPipeline = function(deps) {
     try {
       const filesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
       if (!filesRec || !filesRec.files || !filesRec.savedAt) return null;
-      if (Date.now() - filesRec.savedAt > _ACTIVE_BATCH_TTL_MS) return null;
-      if (filesRec.promptVersion && filesRec.promptVersion !== _PIPELINE_PROMPT_VERSION) return null;
+      const batchId = _normalizeBatchCheckpointId(filesRec.batchId);
+      if (filesRec.batchId && !batchId) {
+        await _clearActiveBatch();
+        return null;
+      }
+      if (Date.now() - filesRec.savedAt > _ACTIVE_BATCH_TTL_MS
+          || (filesRec.promptVersion && filesRec.promptVersion !== _PIPELINE_PROMPT_VERSION)) {
+        await _clearActiveBatch(batchId);
+        return null;
+      }
       const statusRec = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
+      const statusMatches = batchId
+        ? !!(statusRec && _normalizeBatchCheckpointId(statusRec.batchId) === batchId)
+        : !!(statusRec && !statusRec.batchId);
       const byId = {};
-      (statusRec && statusRec.statuses || []).forEach(s => { byId[s.id] = s; });
+      (statusMatches && statusRec.statuses || []).forEach(s => { byId[s.id] = s; });
       // Merge the heavy input payload with lightweight status and separately bounded results.
       const merged = await Promise.all(filesRec.files.map(async f => {
         const s = byId[f.id] || {};
         let restoredResult = null;
-        if (s.resultKey) {
+        const expectedResultPrefix = batchId ? _batchResultPrefixFor(batchId) : _ACTIVE_BATCH_LEGACY_RESULT_PREFIX;
+        const resultKeyMatches = typeof s.resultKey === 'string' && s.resultKey.startsWith(expectedResultPrefix);
+        if (resultKeyMatches) {
           try {
             const rec = await storageDB.get(s.resultKey);
             const valid = rec && typeof rec.serialized === 'string' && rec.savedAt
@@ -10520,6 +10591,7 @@ var createDocPipeline = function(deps) {
       const incomplete = merged.filter(f => f.status !== 'done' && f.status !== 'failed').length;
       const done = merged.filter(f => f.status === 'done').length;
       return {
+        batchId,
         files: merged,
         settings: filesRec.settings,
         startedAt: filesRec.startedAt,
@@ -10528,21 +10600,55 @@ var createDocPipeline = function(deps) {
       };
     } catch (_) { return null; }
   };
-  const _clearActiveBatch = async () => {
-    if (typeof window === 'undefined' || !window.idbKeyval) return;
+  const _clearActiveBatch = async (batchId) => {
+    if (typeof window === 'undefined' || !window.idbKeyval) return false;
     try {
       await _batchStatusWriteTail.catch(() => {});
+      const requestedRaw = batchId == null ? '' : String(batchId).trim();
+      const requestedId = _normalizeBatchCheckpointId(requestedRaw);
+      if (requestedRaw && !requestedId) return false;
+      const filesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+      if (!filesRec || !filesRec.files || !filesRec.savedAt) return false;
+      const activeId = _normalizeBatchCheckpointId(filesRec.batchId);
+      if (requestedId && activeId !== requestedId) return false;
+
+      const statusRec = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
+      const statusMatches = activeId
+        ? !!(statusRec && _normalizeBatchCheckpointId(statusRec.batchId) === activeId)
+        : !!(statusRec && !statusRec.batchId);
+      const legacyResultKeys = new Set((statusMatches && statusRec.statuses || [])
+        .map(s => s && s.resultKey)
+        .filter(key => typeof key === 'string' && key.startsWith(_ACTIVE_BATCH_LEGACY_RESULT_PREFIX)));
       if (typeof window.idbKeyval.keys === 'function' && typeof window.idbKeyval.del === 'function') {
         const keys = await window.idbKeyval.keys();
+        const scopedPrefix = activeId ? _batchResultPrefixFor(activeId) : null;
         for (const key of (keys || [])) {
-          if (typeof key === 'string' && key.startsWith(_ACTIVE_BATCH_RESULT_PREFIX)) {
+          const owned = typeof key === 'string' && (scopedPrefix
+            ? key.startsWith(scopedPrefix)
+            : legacyResultKeys.has(key));
+          if (owned) {
             try { await window.idbKeyval.del(key); } catch (_) {}
           }
         }
       }
+
+      const filesStillActive = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+      const sameFiles = filesStillActive && filesStillActive.savedAt === filesRec.savedAt
+        && _normalizeBatchCheckpointId(filesStillActive.batchId) === activeId;
+      if (!sameFiles) return false;
+      const statusStillActive = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
+      const sameStatus = activeId
+        ? !!(statusStillActive && _normalizeBatchCheckpointId(statusStillActive.batchId) === activeId)
+        : !!(statusStillActive && !statusStillActive.batchId);
+      if (statusMatches && sameStatus) await storageDB.set(_ACTIVE_BATCH_STATUS_KEY, null);
+
+      const filesBeforeClear = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+      const mayClearFiles = filesBeforeClear && filesBeforeClear.savedAt === filesRec.savedAt
+        && _normalizeBatchCheckpointId(filesBeforeClear.batchId) === activeId;
+      if (!mayClearFiles) return false;
       await storageDB.set(_ACTIVE_BATCH_FILES_KEY, null);
-      await storageDB.set(_ACTIVE_BATCH_STATUS_KEY, null);
-    } catch (_) {}
+      return true;
+    } catch (_) { return false; }
   };
 
   // ── PDF Accessibility Audit ──
@@ -11510,6 +11616,8 @@ Return ONLY valid JSON:
     // races with React's commit cycle after a setPdfBatchQueue from the
     // Resume banner. Falls back to the proxy queue for the normal flow.
     const _resumeQueue = opts && Array.isArray(opts.resumeQueue) ? opts.resumeQueue : null;
+    const _resumeBatchId = _resumeQueue
+      ? _normalizeBatchCheckpointId(opts && opts.resumeBatchId) : null;
     // S1 step 6: run-entry snapshot — queue and settings lock here for the whole batch.
     const _run = _makeRunCtx();
     const _sourceQueue = _resumeQueue || _run.batchQueue;
@@ -11523,6 +11631,14 @@ Return ONLY valid JSON:
     setPdfBatchSummary(null);
     const queue = [..._sourceQueue];
     const startTime = Date.now();
+    const _batchId = _resumeBatchId || _newBatchCheckpointId();
+    const _ownedResultPrefix = _batchResultPrefixFor(_batchId);
+    for (const item of queue) {
+      if (item && item._checkpointResultKey && !String(item._checkpointResultKey).startsWith(_ownedResultPrefix)) {
+        item._checkpointResultKey = null;
+        item._checkpointResultBytes = 0;
+      }
+    }
 
     // ── Tier 4: persist batch state so a closed tab can be resumed ──
     // Two-store split: heavy payload (base64) written once at start;
@@ -11555,12 +11671,12 @@ Return ONLY valid JSON:
     };
     if (_saved) { try { warnLog('[Batch] Resuming with the batch\'s ORIGINAL settings (auditors ' + _batchSettings.pdfAuditorCount + ', target ' + _batchSettings.pdfTargetScore + ', passes ' + _batchSettings.pdfAutoFixPasses + ') — current slider values apply to NEW batches.'); } catch (_) {}
     }
+    // Complete the heavy owner record before any lightweight status write.
+    const _batchStartWrite = _saveBatchFiles(queue, _batchSettings, startTime, _batchId);
     const _persistBatchStatus = () => {
       // Fire-and-forget — never block the loop on storage writes.
-      _saveBatchStatus(queue).catch(() => {});
+      _batchStartWrite.then(() => _saveBatchStatus(queue, _batchId)).catch(() => {});
     };
-    // One-time heavy write at start
-    _saveBatchFiles(queue, _batchSettings, startTime).catch(() => {});
     _persistBatchStatus();
 
     // Batch AbortController — separate global from auto-continue so the Stop
@@ -11820,7 +11936,7 @@ Return ONLY valid JSON:
     // quota resets", so clearing here (pre-2026-07-01 behavior) destroyed the
     // very resume it advertised.
     if (!_batchAbortCtrl.signal.aborted && !_quotaStopped) {
-      _clearActiveBatch().catch(() => {});
+      _clearActiveBatch(_batchId).catch(() => {});
     } else {
       // Keep the state, but persist the latest queue (so any in-progress
       // items show as still pending on resume rather than locked at

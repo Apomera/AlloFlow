@@ -165,6 +165,23 @@ async function _sha256OfBytes(bytes) {
     return null;
   }
 }
+const _VIEW_MAX_PROJECT_FILE_BYTES = 320 * 1024 * 1024;
+async function _viewSha256Text(text) {
+  try {
+    if (typeof TextEncoder === "undefined") return null;
+    return await _sha256OfBytes(new TextEncoder().encode(String(text || "")));
+  } catch (_) {
+    return null;
+  }
+}
+function _viewSanitizeProjectImport(parsed, pipeline) {
+  const factory = typeof window !== "undefined" && window.AlloModules && window.AlloModules.createDocPipeline;
+  const helper = pipeline && pipeline.sanitizeRemediationProject || factory && factory.sanitizeRemediationProject;
+  if (typeof helper !== "function") throw new Error("Remediation security module is still loading. Please retry in a moment.");
+  const result = helper(parsed);
+  if (!result || !result.project) throw new Error("The project could not be sanitized safely.");
+  return result;
+}
 function _viewVerificationBindingHelper(pipeline, name) {
   try {
     const factory = typeof window !== "undefined" && window.AlloModules && window.AlloModules.createDocPipeline;
@@ -2185,6 +2202,8 @@ function PdfAuditView(props) {
     pdfFixModeRef,
     pdfFixResult,
     pdfFixResultRef,
+    capturePdfHtmlCommitToken,
+    commitPdfFixResultIfCurrent,
     pdfFixStep,
     pdfMultiSession,
     pdfPageRange,
@@ -2205,6 +2224,9 @@ function PdfAuditView(props) {
     runAutoFixLoop,
     runAxeAudit,
     runPdfAccessibilityAudit,
+    remediationReady,
+    remediationDependencyState,
+    retryRemediationDependencies,
     runPdfBatchRemediation,
     runTier2SurgicalFixes,
     runTier2_5SectionScopedFixes,
@@ -2267,6 +2289,52 @@ function PdfAuditView(props) {
     pdfRunHistory,
     setPdfRunHistory
   } = props;
+  const _captureAsyncHtmlToken = () => {
+    if (typeof capturePdfHtmlCommitToken === "function") return capturePdfHtmlCommitToken();
+    const current = pdfFixResultRef && pdfFixResultRef.current;
+    return { revision: null, html: current && typeof current.accessibleHtml === "string" ? current.accessibleHtml : pdfFixResult && pdfFixResult.accessibleHtml };
+  };
+  const _commitAsyncHtmlIfCurrent = (token, updater) => {
+    if (typeof commitPdfFixResultIfCurrent === "function") return commitPdfFixResultIfCurrent(token, updater);
+    const current = pdfFixResultRef && pdfFixResultRef.current;
+    if (!token || !current || current.accessibleHtml !== token.html) return false;
+    setPdfFixResult((prev) => prev && prev.accessibleHtml === token.html ? updater(prev) : prev);
+    return true;
+  };
+  const [currentRemediationDigest, setCurrentRemediationDigest] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    const html = String(pdfFixResult && pdfFixResult.accessibleHtml || "");
+    setCurrentRemediationDigest(null);
+    if (!html) return () => {
+      cancelled = true;
+    };
+    _viewSha256Text(html).then((digest) => {
+      if (!cancelled) setCurrentRemediationDigest(digest ? "sha256:" + digest : null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [pdfFixResult && pdfFixResult.accessibleHtml]);
+  const _companionIsStale = (companion) => !!(companion && (!currentRemediationDigest || companion.sourceDigest !== currentRemediationDigest));
+  const _requireFreshCompanion = (companion, label) => {
+    if (!_companionIsStale(companion)) return true;
+    addToast((label || "This companion version") + " is out of date because the remediated document changed. Regenerate it before exporting or creating audio.", "info");
+    return false;
+  };
+  const _sourceDigestForToken = async (token) => {
+    const digest = await _viewSha256Text(String(token && token.html || ""));
+    if (!digest) throw new Error("Could not bind this companion version to the source document.");
+    return "sha256:" + digest;
+  };
+  const _requireRemediationReady = () => {
+    if (remediationReady !== false) return true;
+    const state = remediationDependencyState || { pending: [], failed: [] };
+    const names = (state.failed || []).concat(state.pending || []);
+    addToast("The remediation engine is still loading" + (names.length ? ": " + names.join(", ") : "") + ". Retry when the dependencies are ready.", state.failed && state.failed.length ? "error" : "info");
+    return false;
+  };
+  const _remediationDependencies = remediationDependencyState || { pending: [], failed: [] };
   const pdfModalRef = useRef(null);
   _alloUseFocusTrap(pdfModalRef, !!(pdfAuditResult || pdfAuditLoading));
   const _inputIsPdf = !!(pendingPdfFile && (pendingPdfFile.type === "application/pdf" || /\.pdf$/i.test(pendingPdfFile.name || "")) || typeof pendingPdfBase64 === "string" && pendingPdfBase64.slice(0, 5) === "JVBER");
@@ -4039,6 +4107,8 @@ function PdfAuditView(props) {
     }
     const original = String(ed && ed.original || "");
     if (!original) return;
+    const _commitToken = _captureAsyncHtmlToken();
+    const _sourceHtml = String(_commitToken && _commitToken.html || "");
     _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: true } }));
     addToast(t("pdf_audit.issue.ai_running") || "\u2728 Asking the AI to apply that to this section\u2026", "info");
     let result = null;
@@ -4056,7 +4126,7 @@ function PdfAuditView(props) {
       addToast(t("pdf_audit.issue.ai_nochange") || "The AI made no change here (or it was busy) \u2014 rephrase, or edit the HTML directly above.", "info");
       return;
     }
-    const sp = _spliceBlock(pdfFixResult.accessibleHtml, original, edited);
+    const sp = _spliceBlock(_sourceHtml, original, edited);
     if (!sp.ok) {
       _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: false } }));
       addToast(
@@ -4065,8 +4135,12 @@ function PdfAuditView(props) {
       );
       return;
     }
-    const _before = pdfFixResult.accessibleHtml;
-    setPdfFixResult((p) => p ? { ...p, accessibleHtml: sp.html, _preCmdHtml: _before } : p);
+    const _before = _sourceHtml;
+    if (!_commitAsyncHtmlIfCurrent(_commitToken, (p) => ({ ...p, accessibleHtml: sp.html, _preCmdHtml: _before }))) {
+      _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: false } }));
+      addToast(t("pdf_audit.issue.edit_moved") || "The document changed while the AI was working ? its stale result was discarded.", "info");
+      return;
+    }
     _setIssueEdit((prev) => {
       const n = { ...prev };
       delete n[key];
@@ -4815,7 +4889,7 @@ function PdfAuditView(props) {
             addToast(t("pdf_audit.batch.resume.settings_toast") || "Resuming with the batch\u2019s original settings \u2014 current slider values apply to new batches.", "info");
           }
           try {
-            runPdfBatchRemediation({ resumeQueue, resumeSettings: resumableBatch.settings || null });
+            runPdfBatchRemediation({ resumeQueue, resumeSettings: resumableBatch.settings || null, resumeBatchId: resumableBatch.batchId || null });
           } catch (e) {
             warnLog("[Batch Resume] start failed:", e);
           }
@@ -4831,7 +4905,7 @@ function PdfAuditView(props) {
       {
         onClick: async () => {
           try {
-            if (_docPipeline && _docPipeline.discardResumableBatch) await _docPipeline.discardResumableBatch();
+            if (_docPipeline && _docPipeline.discardResumableBatch) await _docPipeline.discardResumableBatch(resumableBatch.batchId || null);
           } catch (_) {
           }
           setResumableBatch(null);
@@ -5073,11 +5147,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         }
         setMediaDigesting(false);
       }, className: "px-4 py-2 bg-cyan-600 text-white rounded-xl font-bold text-xs hover:bg-cyan-700 disabled:opacity-50" }, mediaDigesting ? "\u23F3 " + (mediaDigestProgress || (t("pdf_audit.media.digesting") || "Digesting\u2026 (large recordings take a while)")) : "\u25B6 " + (t("pdf_audit.media.go") || "Digest recording")), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 ml-2" }, t("pdf_audit.media.unlock_note") || "The buttons below unlock once the digest is ready."));
-    })(), /* @__PURE__ */ React.createElement("div", { className: "mb-4 bg-gradient-to-br from-indigo-50 to-violet-50 border-2 border-indigo-300 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-snug text-slate-700 mb-3 pb-2 border-b border-indigo-200" }, "\u{1F512} ", t("pdf_audit.gemini_disclosure") || "Privacy: this document\u2019s text and images are sent to Google Gemini (a third-party AI service) for the AI parts of the audit. The automated WCAG checks run locally in your browser. Don\u2019t upload documents containing student personal information you aren\u2019t permitted to share with a third-party AI service."), /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_make_accessible_btn", onClick: async () => {
+    })(), /* @__PURE__ */ React.createElement("div", { className: "mb-4 bg-gradient-to-br from-indigo-50 to-violet-50 border-2 border-indigo-300 rounded-2xl p-4" }, remediationReady === false && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "mb-3 rounded-xl border border-amber-400 bg-amber-50 p-3 text-xs text-amber-900" }, /* @__PURE__ */ React.createElement("div", { className: "font-black" }, "Remediation engine not ready"), /* @__PURE__ */ React.createElement("div", null, _remediationDependencies.failed.length ? "Required modules failed to load: " + _remediationDependencies.failed.join(", ") : "Required modules are still loading: " + _remediationDependencies.pending.join(", ")), _remediationDependencies.failed.length > 0 && typeof retryRemediationDependencies === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: retryRemediationDependencies, className: "mt-2 rounded-lg border border-amber-500 bg-white px-3 py-1 font-bold hover:bg-amber-100" }, "Retry required modules")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-snug text-slate-700 mb-3 pb-2 border-b border-indigo-200" }, "\u{1F512} ", t("pdf_audit.gemini_disclosure") || "Privacy: this document\u2019s text and images are sent to Google Gemini (a third-party AI service) for the AI parts of the audit. The automated WCAG checks run locally in your browser. Don\u2019t upload documents containing student personal information you aren\u2019t permitted to share with a third-party AI service."), /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_make_accessible_btn", disabled: remediationReady === false, onClick: async () => {
       if (pdfAuditResult?._mediaPending) {
         addToast(t("toasts.digest_first") || "Digest the recording first (Step 0 above).", "info");
         return;
       }
+      if (!_requireRemediationReady()) return;
       try {
         pdfAutoContinueAbortRef.current = false;
       } catch (_) {
@@ -5107,13 +5182,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
       let _audit = null;
       try {
         _audit = await runPdfAccessibilityAudit(pendingPdfBase64);
+        if (!_audit) return;
       } catch (auditErr) {
         addToast(t("toasts.audit_error_continuing") || "\u26A0 The audit hit an error \u2014 attempting remediation anyway.", "warning");
       }
       await new Promise((res) => setTimeout(res, 250));
       addToast(t("toasts.make_accessible_fixing") || "\u2728 Audit done \u2014 remediating automatically (no clicks needed)\u2026", "info");
       const _HANDSOFF_MAX = 3;
-      const _permanentRegex = /\b(api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block|offline|cdn|mirror|failed to (?:load|fetch)|load timeout)\b/i;
+      const _permanentRegex = /\b(api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block|offline|cdn|mirror|dependency|module unavailable|modules? finish loading|failed to (?:load|fetch)|load timeout)\b/i;
       const _handsDisposition = (e) => {
         if (!e) return "retry";
         const _m = String(e && (e.message || e) || "");
@@ -5281,7 +5357,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         } catch (_) {
         }
       }
-    }, className: "w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl" }, "\u2728 ", t("pdf_audit.one_click.label") || "Make Accessible", " ", /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] font-bold opacity-80 mt-0.5" }, t("pdf_audit.one_click.badge") || "fully automatic \u2014 audit, fix, verify, repeat to target")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-2 text-center" }, t("pdf_audit.one_click.desc") || 'One click runs the whole pipeline hands-free with the default settings; downloads are ready at the end. Prefer control? Use "Run Audit" below, review the results, then click Fix & Verify yourself.', typeof startPipelineTour === "function" && /* @__PURE__ */ React.createElement("button", { onClick: () => startPipelineTour("triage"), className: "ml-2 text-indigo-600 underline font-bold hover:text-indigo-800", "data-help-ignore": "true" }, "\u2728 ", t("pdf_audit.tour.triage_cta") || "60-second tour")), /* @__PURE__ */ React.createElement("details", { className: "text-left mt-2 text-[11px] text-slate-500" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-center hover:text-slate-700" }, "\u2139\uFE0F ", t("pdf_audit.title2.summary") || "Why schools are required to do this (ADA Title II)"), /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 px-2" }, t("pdf_audit.title2.body") || "The US Department of Justice\u2019s ADA Title II rule requires WCAG 2.2 AA digital accessibility from state and local government entities \u2014 including public schools, districts, and universities. In April 2026, DOJ extended the compliance deadlines to April 2027 (entities serving 50,000+) and April 2028 (smaller entities), citing in part that automated and AI remediation tools are not yet reliable enough at scale. That caution is why AlloFlow pairs AI with deterministic checks, verifies its own output, and never claims conformance without evidence \u2014 every document you fix now is one fewer at the deadline. (Informational, not legal advice.)"))), /* @__PURE__ */ React.createElement("details", { "data-help-key": "pdf_audit_view_settings_panel", className: "text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-400" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600" }, "\u2699\uFE0F Pipeline Settings"), /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Audit Passes: ", pdfAuditorCount), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfAuditorCount <= 2 ? "Fast" : pdfAuditorCount <= 5 ? "Balanced" : pdfAuditorCount <= 7 ? "Thorough" : "Research-grade")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_audit_passes_slider", type: "range", min: "1", max: "10", value: pdfAuditorCount, onChange: (e) => setPdfAuditorCount(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.audit_passes_aria") || "Number of audit passes" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "1 (quick)"), /* @__PURE__ */ React.createElement("span", null, "5 (default)"), /* @__PURE__ */ React.createElement("span", null, "10 (max)"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Target Score: ", pdfTargetScore), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfTargetScore >= 95 ? "Near-perfect" : pdfTargetScore >= 90 ? "Excellent" : pdfTargetScore >= 80 ? "Good" : "Minimum")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_target_score_slider", type: "range", min: "60", max: "100", step: "5", value: pdfTargetScore, onChange: (e) => setPdfTargetScore(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.target_score_aria") || "Target accessibility score" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "60 (min)"), /* @__PURE__ */ React.createElement("span", null, "95 (default)"), /* @__PURE__ */ React.createElement("span", null, "100"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Max Fix Passes: ", pdfAutoFixPasses), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfAutoFixPasses === 0 ? "Disabled" : pdfAutoFixPasses <= 3 ? "Quick" : pdfAutoFixPasses <= 5 ? "Standard" : pdfAutoFixPasses <= 8 ? "Thorough" : "Maximum")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_max_fix_passes_slider", type: "range", min: "0", max: "15", value: pdfAutoFixPasses, onChange: (e) => setPdfAutoFixPasses(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.max_fix_passes_aria") || "Max fix pass count" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "0 (off)"), /* @__PURE__ */ React.createElement("span", null, "8 (default)"), /* @__PURE__ */ React.createElement("span", null, "15 (max)"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] mb-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, t("pdf_audit.settings.ocr_lang") || "Scanned-doc OCR language"), !pdfOcrLanguage && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, t("pdf_audit.settings.ocr_auto") || "Auto-detect")), /* @__PURE__ */ React.createElement("select", { "data-help-key": "pdf_audit_view_ocr_language", value: pdfOcrLanguage || "", onChange: (e) => setPdfOcrLanguage(e.target.value), "aria-label": t("pdf_audit.settings.ocr_lang_aria") || "OCR language for scanned documents", className: "w-full text-[12px] border border-slate-300 rounded-lg px-2 py-1.5 bg-white text-slate-700" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u{1F310} ", t("pdf_audit.settings.ocr_auto_long") || "Auto-detect (recommended)"), OCR_LANG_OPTIONS.map((o) => /* @__PURE__ */ React.createElement("option", { key: o.code, value: o.code }, o.label))), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5" }, t("pdf_audit.settings.ocr_lang_hint") || "Only affects scanned/image PDFs. Set the language so OCR reads non-English text accurately (helps ELL documents). Auto-detect works for most.")), /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 rounded-lg p-2 border border-indigo-200" }, /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_auto_continue_toggle", type: "checkbox", checked: pdfAutoContinue, onChange: (e) => setPdfAutoContinue(e.target.checked), className: "mt-0.5 rounded", "aria-label": t("pdf_audit.settings.auto_continue_aria") || "Auto-continue remediation until target score" }), /* @__PURE__ */ React.createElement("span", null, "\u{1F501} ", /* @__PURE__ */ React.createElement("b", null, "Auto-continue"), " until score \u2265 ", /* @__PURE__ */ React.createElement("b", null, pdfTargetScore), " \u2014 runs up to 3 extra rounds of fixes automatically, stopping early when no more progress is possible.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Polish Passes: ", pdfPolishPasses), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfPolishPasses === 0 ? "None" : pdfPolishPasses === 1 ? "Standard" : "Extra polish")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_polish_passes_slider", type: "range", min: "0", max: "3", value: pdfPolishPasses, onChange: (e) => setPdfPolishPasses(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.polish_passes_aria") || "Polish pass count" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "0"), /* @__PURE__ */ React.createElement("span", null, "2 (default)"), /* @__PURE__ */ React.createElement("span", null, "3"))), (pdfFixLoading || pdfAutoContinueRunning) && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1" }, "\u24D8 ", t("pdf_audit.settings.locked_midrun") || "A run is in progress \u2014 changes here apply to the NEXT run; the current run keeps the settings it started with."))), /* @__PURE__ */ React.createElement("details", { "data-help-key": "pdf_audit_view_branding_panel", className: "bg-slate-50 rounded-lg border border-slate-400 overflow-hidden mb-3" }, /* @__PURE__ */ React.createElement("summary", { className: "px-3 py-2 text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors" }, "\u2728 Output Style & Branding (optional)"), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t("pdf_audit.brand.heading") || "Brand Colors"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, t("pdf_audit.brand.where_from") || "Where do the colors come from?"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement(
+    }, className: "w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed" }, "\u2728 ", t("pdf_audit.one_click.label") || "Make Accessible", " ", /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] font-bold opacity-80 mt-0.5" }, t("pdf_audit.one_click.badge") || "fully automatic \u2014 audit, fix, verify, repeat to target")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-2 text-center" }, t("pdf_audit.one_click.desc") || 'One click runs the whole pipeline hands-free with the default settings; downloads are ready at the end. Prefer control? Use "Run Audit" below, review the results, then click Fix & Verify yourself.', typeof startPipelineTour === "function" && /* @__PURE__ */ React.createElement("button", { onClick: () => startPipelineTour("triage"), className: "ml-2 text-indigo-600 underline font-bold hover:text-indigo-800", "data-help-ignore": "true" }, "\u2728 ", t("pdf_audit.tour.triage_cta") || "60-second tour")), /* @__PURE__ */ React.createElement("details", { className: "text-left mt-2 text-[11px] text-slate-500" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-center hover:text-slate-700" }, "\u2139\uFE0F ", t("pdf_audit.title2.summary") || "Why schools are required to do this (ADA Title II)"), /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 px-2" }, t("pdf_audit.title2.body") || "The US Department of Justice\u2019s ADA Title II rule requires WCAG 2.2 AA digital accessibility from state and local government entities \u2014 including public schools, districts, and universities. In April 2026, DOJ extended the compliance deadlines to April 2027 (entities serving 50,000+) and April 2028 (smaller entities), citing in part that automated and AI remediation tools are not yet reliable enough at scale. That caution is why AlloFlow pairs AI with deterministic checks, verifies its own output, and never claims conformance without evidence \u2014 every document you fix now is one fewer at the deadline. (Informational, not legal advice.)"))), /* @__PURE__ */ React.createElement("details", { "data-help-key": "pdf_audit_view_settings_panel", className: "text-left mb-4 bg-slate-50 rounded-xl p-3 border border-slate-400" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600" }, "\u2699\uFE0F Pipeline Settings"), /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Audit Passes: ", pdfAuditorCount), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfAuditorCount <= 2 ? "Fast" : pdfAuditorCount <= 5 ? "Balanced" : pdfAuditorCount <= 7 ? "Thorough" : "Research-grade")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_audit_passes_slider", type: "range", min: "1", max: "10", value: pdfAuditorCount, onChange: (e) => setPdfAuditorCount(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.audit_passes_aria") || "Number of audit passes" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "1 (quick)"), /* @__PURE__ */ React.createElement("span", null, "5 (default)"), /* @__PURE__ */ React.createElement("span", null, "10 (max)"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Target Score: ", pdfTargetScore), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfTargetScore >= 95 ? "Near-perfect" : pdfTargetScore >= 90 ? "Excellent" : pdfTargetScore >= 80 ? "Good" : "Minimum")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_target_score_slider", type: "range", min: "60", max: "100", step: "5", value: pdfTargetScore, onChange: (e) => setPdfTargetScore(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.target_score_aria") || "Target accessibility score" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "60 (min)"), /* @__PURE__ */ React.createElement("span", null, "95 (default)"), /* @__PURE__ */ React.createElement("span", null, "100"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Max Fix Passes: ", pdfAutoFixPasses), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfAutoFixPasses === 0 ? "Disabled" : pdfAutoFixPasses <= 3 ? "Quick" : pdfAutoFixPasses <= 5 ? "Standard" : pdfAutoFixPasses <= 8 ? "Thorough" : "Maximum")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_max_fix_passes_slider", type: "range", min: "0", max: "15", value: pdfAutoFixPasses, onChange: (e) => setPdfAutoFixPasses(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.max_fix_passes_aria") || "Max fix pass count" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "0 (off)"), /* @__PURE__ */ React.createElement("span", null, "8 (default)"), /* @__PURE__ */ React.createElement("span", null, "15 (max)"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] mb-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, t("pdf_audit.settings.ocr_lang") || "Scanned-doc OCR language"), !pdfOcrLanguage && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, t("pdf_audit.settings.ocr_auto") || "Auto-detect")), /* @__PURE__ */ React.createElement("select", { "data-help-key": "pdf_audit_view_ocr_language", value: pdfOcrLanguage || "", onChange: (e) => setPdfOcrLanguage(e.target.value), "aria-label": t("pdf_audit.settings.ocr_lang_aria") || "OCR language for scanned documents", className: "w-full text-[12px] border border-slate-300 rounded-lg px-2 py-1.5 bg-white text-slate-700" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "\u{1F310} ", t("pdf_audit.settings.ocr_auto_long") || "Auto-detect (recommended)"), OCR_LANG_OPTIONS.map((o) => /* @__PURE__ */ React.createElement("option", { key: o.code, value: o.code }, o.label))), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5" }, t("pdf_audit.settings.ocr_lang_hint") || "Only affects scanned/image PDFs. Set the language so OCR reads non-English text accurately (helps ELL documents). Auto-detect works for most.")), /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 rounded-lg p-2 border border-indigo-200" }, /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_auto_continue_toggle", type: "checkbox", checked: pdfAutoContinue, onChange: (e) => setPdfAutoContinue(e.target.checked), className: "mt-0.5 rounded", "aria-label": t("pdf_audit.settings.auto_continue_aria") || "Auto-continue remediation until target score" }), /* @__PURE__ */ React.createElement("span", null, "\u{1F501} ", /* @__PURE__ */ React.createElement("b", null, "Auto-continue"), " until score \u2265 ", /* @__PURE__ */ React.createElement("b", null, pdfTargetScore), " \u2014 runs up to 3 extra rounds of fixes automatically, stopping early when no more progress is possible.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600" }, "Polish Passes: ", pdfPolishPasses), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, pdfPolishPasses === 0 ? "None" : pdfPolishPasses === 1 ? "Standard" : "Extra polish")), /* @__PURE__ */ React.createElement("input", { "data-help-key": "pdf_audit_view_polish_passes_slider", type: "range", min: "0", max: "3", value: pdfPolishPasses, onChange: (e) => setPdfPolishPasses(parseInt(e.target.value)), className: "w-full", "aria-label": t("pdf_audit.settings.polish_passes_aria") || "Polish pass count" }), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "0"), /* @__PURE__ */ React.createElement("span", null, "2 (default)"), /* @__PURE__ */ React.createElement("span", null, "3"))), (pdfFixLoading || pdfAutoContinueRunning) && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1" }, "\u24D8 ", t("pdf_audit.settings.locked_midrun") || "A run is in progress \u2014 changes here apply to the NEXT run; the current run keeps the settings it started with."))), /* @__PURE__ */ React.createElement("details", { "data-help-key": "pdf_audit_view_branding_panel", className: "bg-slate-50 rounded-lg border border-slate-400 overflow-hidden mb-3" }, /* @__PURE__ */ React.createElement("summary", { className: "px-3 py-2 text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors" }, "\u2728 Output Style & Branding (optional)"), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-0.5" }, t("pdf_audit.brand.heading") || "Brand Colors"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, t("pdf_audit.brand.where_from") || "Where do the colors come from?"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => {
@@ -5442,7 +5518,13 @@ Return ONLY JSON:
         window.__pdfCustomStyle = style;
         addToast && addToast(t("toasts.custom_style_2") + name + '" saved & applied!', "success");
       }, className: "w-full py-1.5 bg-indigo-600 text-white rounded text-[11px] font-bold hover:bg-indigo-700 transition-colors" }, "Save & Apply Style"))));
-    })()))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_start_btn", onClick: async () => {
+    })()))), /* @__PURE__ */ React.createElement("div", { className: `flex gap-3 justify-center ${remediationReady === false ? "opacity-50" : ""}`, "aria-disabled": remediationReady === false, onClickCapture: (event) => {
+      if (remediationReady === false) {
+        event.preventDefault();
+        event.stopPropagation();
+        _requireRemediationReady();
+      }
+    } }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_start_btn", onClick: async () => {
       if (pdfAuditResult?._mediaPending) {
         addToast(t("toasts.digest_first") || "Digest the recording first (Step 0 above).", "info");
         return;
@@ -5585,13 +5667,19 @@ Return ONLY JSON:
     })()), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mt-3 pt-3 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("label", { className: "flex-1 px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors flex items-center justify-center gap-2 cursor-pointer border border-amber-200", title: t("pdf_audit.load_project_tooltip") || "Open a .alloflow.json project file (AlloFlow saves one to your Downloads after each remediation) \u2014 your document, scores, history, and settings all come back." }, "\u{1F4C2} ", t("pdf_audit.continue_session") || "Continue a previous session", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "hidden", onChange: (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
+      if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) {
+        addToast("This project file is larger than the 320 MB safety limit.", "error");
+        e.target.value = "";
+        return;
+      }
       const _projectLoadToken = ++_projectLoadSelectionRef.current;
       const reader = new FileReader();
       reader.onload = async (ev) => {
         if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
         try {
           const parsedProject = JSON.parse(ev.target.result);
-          const project = await _viewRehydrateVerificationHtmlBinding(parsedProject, _docPipeline);
+          const sanitizedImport = _viewSanitizeProjectImport(parsedProject, _docPipeline);
+          const project = await _viewRehydrateVerificationHtmlBinding(sanitizedImport.project, _docPipeline);
           if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
           if (!project.version || !project.accessibleHtml && !project.incomplete) {
             addToast(t("toasts.valid_alloflow_project_file"), "error");
@@ -5667,6 +5755,7 @@ Return ONLY JSON:
           });
           const _loadedFixResult = {
             accessibleHtml: project.accessibleHtml,
+            documentDigest: project.documentDigest || null,
             beforeScore: project.beforeScore,
             afterScore: project.afterScore,
             _aiVerificationIncomplete: !!project._aiVerificationIncomplete,
@@ -6224,6 +6313,7 @@ Return ONLY JSON:
       }
     }, disabled: pdfFixLoading, className: "flex-1 px-5 py-3 bg-gradient-to-r from-amber-800 to-orange-800 text-white rounded-xl font-bold text-sm hover:from-amber-900 hover:to-orange-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40" }, pdfFixLoading && pdfFixModeRef.current === "fix" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "animate-spin" }, "\u23F3"), " ", pdfFixStep || "Fixing...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Wrench, { size: 16 }), " ", (pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0) > 0 ? `Fix ${(pdfFixResult.verificationAudit?.issues?.length || 0) + (pdfFixResult.axeAudit?.totalViolations || 0)} Remaining` : "Run Additional Fix Pass"))) : /* @__PURE__ */ React.createElement("button", { onClick: async () => {
       console.warn("[Fix&Verify btn] clicked \u2014 pendingPdfBase64:", !!pendingPdfBase64, "pdfAuditResult:", !!pdfAuditResult, "pageRange:", pdfPageRange);
+      if (!_requireRemediationReady()) return;
       const freshBase64 = await ensurePdfBase64();
       if (!freshBase64) return;
       if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) {
@@ -6233,7 +6323,7 @@ Return ONLY JSON:
         fixAndVerifyPdf({ base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {
         });
       }
-    }, disabled: pdfFixLoading, className: "flex-1 px-5 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40" }, pdfFixLoading ? /* @__PURE__ */ React.createElement("span", { className: "animate-spin" }, "\u23F3") : /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), pdfFixLoading ? pdfFixStep || "Fixing..." : pdfPageRange ? `\u267F Fix Pages ${pdfPageRange.start}\u2013${pdfPageRange.end}` : `\u267F Fix & Verify${pdfAuditResult.pageCount > 1 ? ` (${pdfAuditResult.pageCount} pages)` : ""}`), pdfFixLoading && /* @__PURE__ */ React.createElement("div", { className: "basis-full mt-1", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-1.5 overflow-hidden", role: "progressbar", "aria-label": t("pdf_audit.fix_pass.progress_aria") || "Fix and verify progress", "aria-valuenow": pdfFixStep.includes("Step 1") ? 15 : pdfFixStep.includes("Step 2") ? 50 : pdfFixStep.includes("Step 3") ? 80 : pdfFixStep.includes("Step 4") ? 92 : pdfFixStep.includes("Auto-fix") ? 96 : 5, "aria-valuemin": 0, "aria-valuemax": 100 }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full", style: { width: pdfFixStep.includes("Step 1") ? "15%" : pdfFixStep.includes("Step 2") ? "50%" : pdfFixStep.includes("Step 3") ? "80%" : pdfFixStep.includes("Step 4") ? "92%" : pdfFixStep.includes("Auto-fix") || pdfFixStep.includes("Auto-continue") ? "96%" : "5%" } })), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-700 mt-0.5 text-center", role: "status", "aria-live": "polite" }, pdfFixStep), (() => {
+    }, disabled: pdfFixLoading || remediationReady === false, className: "flex-1 px-5 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40" }, pdfFixLoading ? /* @__PURE__ */ React.createElement("span", { className: "animate-spin" }, "\u23F3") : /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), pdfFixLoading ? pdfFixStep || "Fixing..." : pdfPageRange ? `\u267F Fix Pages ${pdfPageRange.start}\u2013${pdfPageRange.end}` : `\u267F Fix & Verify${pdfAuditResult.pageCount > 1 ? ` (${pdfAuditResult.pageCount} pages)` : ""}`), pdfFixLoading && /* @__PURE__ */ React.createElement("div", { className: "basis-full mt-1", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-1.5 overflow-hidden", role: "progressbar", "aria-label": t("pdf_audit.fix_pass.progress_aria") || "Fix and verify progress", "aria-valuenow": pdfFixStep.includes("Step 1") ? 15 : pdfFixStep.includes("Step 2") ? 50 : pdfFixStep.includes("Step 3") ? 80 : pdfFixStep.includes("Step 4") ? 92 : pdfFixStep.includes("Auto-fix") ? 96 : 5, "aria-valuemin": 0, "aria-valuemax": 100 }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full", style: { width: pdfFixStep.includes("Step 1") ? "15%" : pdfFixStep.includes("Step 2") ? "50%" : pdfFixStep.includes("Step 3") ? "80%" : pdfFixStep.includes("Step 4") ? "92%" : pdfFixStep.includes("Auto-fix") || pdfFixStep.includes("Auto-continue") ? "96%" : "5%" } })), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-700 mt-0.5 text-center", role: "status", "aria-live": "polite" }, pdfFixStep), (() => {
       const steps = [
         { step: 1, label: "Extract", icon: "\u{1F4C4}" },
         { step: 2, label: "Build HTML", icon: "\u{1F3D7}\uFE0F" },
@@ -9174,6 +9264,11 @@ Return ONLY JSON:
     })(), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_save_project_btn", onClick: () => {
       saveProjectToFile(false);
     }, className: "flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5" }, "\u{1F4BE} Save Project"), /* @__PURE__ */ React.createElement("label", { "data-help-key": "pdf_audit_view_load_project_btn", className: "flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer" }, "\u{1F4C2} Load Project", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json,.alloflow.json", className: "hidden", onChange: (e) => {
+      if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) {
+        addToast("This project file is larger than the 320 MB safety limit.", "error");
+        e.target.value = "";
+        return;
+      }
       const file = e.target.files?.[0];
       if (!file) return;
       const _projectLoadToken = ++_projectLoadSelectionRef.current;
@@ -9182,7 +9277,8 @@ Return ONLY JSON:
         if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
         try {
           const parsedProject = JSON.parse(ev.target.result);
-          const project = await _viewRehydrateVerificationHtmlBinding(parsedProject, _docPipeline);
+          const sanitizedImport = _viewSanitizeProjectImport(parsedProject, _docPipeline);
+          const project = await _viewRehydrateVerificationHtmlBinding(sanitizedImport.project, _docPipeline);
           if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
           if (project && project.incomplete && project.version) {
             addToast(t("toasts.incomplete_use_continue") || "This is an unfinished project. Close this and use \u201CContinue a previous session\u201D on the start screen to pick up where it stopped (no re-scanning needed).", "info");
@@ -9195,6 +9291,7 @@ Return ONLY JSON:
           }
           const _loadedFixResult = {
             accessibleHtml: project.accessibleHtml,
+            documentDigest: project.documentDigest || null,
             beforeScore: project.beforeScore,
             afterScore: project.afterScore,
             _aiVerificationIncomplete: !!project._aiVerificationIncomplete,
@@ -9603,13 +9700,15 @@ Return ONLY JSON:
       e.preventDefault();
       if (!expertCommandInput.trim() || isAgentRunning || !pdfFixResult?.accessibleHtml) return;
       const cmd = expertCommandInput.trim();
+      const _commitToken = _captureAsyncHtmlToken();
+      const _commandSourceHtml = String(_commitToken && _commitToken.html || "");
       setExpertCommandInput("");
       setIsAgentRunning(true);
       console.info("[ExpertWorkbench] start command=" + JSON.stringify(cmd));
       addToast(`\u{1F916} Workbench running: ${cmd}`, "info");
       setAgentActivityLog((prev) => [...prev, { text: "\u25B6 " + cmd, type: "command", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
       try {
-        const result = await processExpertCommand(cmd, pdfFixResult.accessibleHtml, {
+        const result = await processExpertCommand(cmd, _commandSourceHtml, {
           onProgress: () => {
           },
           onActivity: (entry) => {
@@ -9617,11 +9716,16 @@ Return ONLY JSON:
             setAgentActivityLog((prev) => [...prev, entry]);
           }
         });
-        if (result && result.html && result.html !== pdfFixResult.accessibleHtml) {
+        if (result && result.html && result.html !== _commandSourceHtml) {
           const _stripT = (h) => String(h || "").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&[a-z]+;/gi, " ").replace(/\s+/g, " ").trim();
-          const _cmdDiff = { before: _stripT(pdfFixResult.accessibleHtml), after: _stripT(result.html), label: cmd };
-          const _preCmdHtml = pdfFixResult.accessibleHtml;
-          setPdfFixResult((prev) => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff, _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }));
+          const _cmdDiff = { before: _stripT(_commandSourceHtml), after: _stripT(result.html), label: cmd };
+          const _preCmdHtml = _commandSourceHtml;
+          if (!_commitAsyncHtmlIfCurrent(_commitToken, (prev) => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff, _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }))) {
+            setAgentActivityLog((prev) => [...prev, { text: "? Stale result discarded ? document changed", type: "info", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
+            addToast(t("toasts.workbench_stale") || "The document changed while Workbench was running ? its stale result was discarded.", "info");
+            setIsAgentRunning(false);
+            return;
+          }
           const _ra = await _reauditAndScore(result.html, (entry) => setAgentActivityLog((prev) => [...prev, entry]));
           if (!_ra.ok && result.score !== void 0) setAgentActivityLog((prev) => [...prev, { text: "\u{1F4CA} Score: " + result.score + "/100", type: "score", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
           console.info("[ExpertWorkbench] complete command=" + JSON.stringify(cmd) + " score=" + (result.score !== void 0 ? result.score : "n/a") + " miniAudit=" + (result.miniAudit ? result.miniAudit.verdict : "none"));
@@ -9995,6 +10099,9 @@ DOCUMENT:
           if (!pdfFixResult?.accessibleHtml) return;
           setPdfTranslateBusy(true);
           try {
+            const _translationToken = _captureAsyncHtmlToken();
+            const _translationSource = String(_translationToken && _translationToken.html || "");
+            const _translationSourceDigest = await _sourceDigestForToken(_translationToken);
             let _code = "";
             try {
               const _u = typeof languageToTTSCode === "function" ? languageToTTSCode(pdfTranslateLang) : "";
@@ -10008,11 +10115,14 @@ DOCUMENT:
               } catch (_) {
               }
             }
-            const r = await translateAccessibleHtml(pdfFixResult.accessibleHtml, pdfTranslateLang, {
+            const r = await translateAccessibleHtml(_translationSource, pdfTranslateLang, {
               langCode: _code,
               onProgress: (i, total) => setPdfTranslateProgress(i + "/" + total)
             });
-            setPdfFixResult((prev) => prev ? { ...prev, _translation: { lang: r.lang, langCode: r.langCode, rtl: r.rtl, html: r.html, at: Date.now(), srcLen: (pdfFixResult.accessibleHtml || "").length, chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
+            const _translationCommitted = _commitAsyncHtmlIfCurrent(_translationToken, (prev) => prev ? { ...prev, _translation: { lang: r.lang, langCode: r.langCode, rtl: r.rtl, html: r.html, at: Date.now(), sourceDigest: _translationSourceDigest, srcLen: _translationSource.length, chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
+            if (!_translationCommitted) {
+              throw new Error("The document changed while translation was running, so the stale result was discarded. Run translation again.");
+            }
             addToast("\u{1F310} " + (t("toasts.translated_doc") || "Document translated to ") + r.lang + (r.chunksFailed > 0 ? " \u2014 " + r.chunksFailed + "/" + r.chunksTotal + (t("toasts.translated_doc_partial") || " sections kept the original text (structure check failed); review them in Compare.") : t("toasts.translated_doc_ok") || " \u2014 structure verified on every section.") + " " + (t("toasts.translated_doc_review") || "AI translation: have a bilingual reviewer check before official use."), r.chunksFailed > 0 ? "info" : "success");
           } catch (e) {
             addToast((t("toasts.translate_failed") || "Translation failed: ") + (e && e.message || "unknown"), "error");
@@ -10027,10 +10137,12 @@ DOCUMENT:
       " ",
       pdfTranslateBusy ? t("pdf_audit.translate.busy") || "Translating" : t("pdf_audit.translate.btn") || "Translate document"
     ), pdfFixResult._translation && !pdfTranslateBusy && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: () => setShowTranslationCompare(true), className: "px-3 py-2 bg-sky-100 border border-sky-300 text-sky-800 rounded-xl font-bold text-xs hover:bg-sky-200", title: t("pdf_audit.translate.compare_title") || "Side-by-side: the remediated original and the translation." }, "\u2696 ", t("pdf_audit.translate.compare") || "Compare", " (", pdfFixResult._translation.lang, ")"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      if (!_requireFreshCompanion(pdfFixResult._translation, "This translation")) return;
       const blob = new Blob([pdfFixResult._translation.html], { type: "text/html" });
       safeDownloadBlob(blob, (pendingPdfFile?.name || "document").replace(/\.(pdf|docx|pptx)$/i, "") + "-" + (pdfFixResult._translation.langCode || "translated") + ".html");
       addToast("\u{1F310} " + (t("toasts.translated_html_dl") || "Translated HTML downloaded."), "success");
     }, className: "px-3 py-2 bg-sky-100 border border-sky-300 text-sky-800 rounded-xl font-bold text-xs hover:bg-sky-200" }, "\u{1F4C4} HTML (", pdfFixResult._translation.langCode || "\u2026", ")"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+      if (!_requireFreshCompanion(pdfFixResult._translation, "This translation")) return;
       try {
         addToast(t("toasts.typeset_translated") || "\u{1F4C4} Typesetting the translated document \u2014 same tagger, same gates\u2026", "info");
         const _result = await createTypesetTaggedPdf({ accessibleHtml: pdfFixResult._translation.html }, { title: (pendingPdfFile?.name || "document").replace(/\.(pdf|docx|pptx)$/i, "") + " (" + pdfFixResult._translation.lang + ")", lang: pdfFixResult._translation.langCode || "en" });
@@ -10052,6 +10164,7 @@ DOCUMENT:
         addToast((t("toasts.typeset_failed") || "Typeset tagging failed: ") + (e && e.message || "unknown"), "error");
       }
     }, className: "px-3 py-2 bg-sky-100 border border-sky-300 text-sky-800 rounded-xl font-bold text-xs hover:bg-sky-200", title: t("pdf_audit.translate.tagged_title") || "A clean typeset tagged PDF of the TRANSLATION \u2014 correct lang metadata, the Noto fonts handle non-Latin scripts, and RTL targets warn honestly (use the HTML export for those)." }, "\u{1F4D1} ", t("pdf_audit.translate.tagged") || "Tagged PDF", " (", pdfFixResult._translation.langCode || "\u2026", ")"), callTTS && !audioJob && /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      if (!_requireFreshCompanion(pdfFixResult._translation, "This translation")) return;
       const fullText = _audioReadyText(pdfFixResult._translation.html);
       if (!fullText) {
         addToast(t("toasts.text_content_convert"), "error");
@@ -10082,8 +10195,17 @@ DOCUMENT:
           if (!pdfFixResult?.accessibleHtml) return;
           setPlainLangBusy(true);
           try {
-            const r = await simplifyAccessibleHtml(pdfFixResult.accessibleHtml, { gradeBand: plainLangLevel, onProgress: (i, total) => setPlainLangProgress(i + "/" + total) });
-            setPdfFixResult((prev) => prev ? { ...prev, _plainLanguage: { html: r.html, at: Date.now(), srcLen: (pdfFixResult.accessibleHtml || "").length, chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
+            const _plainToken = _captureAsyncHtmlToken();
+            const _plainSource = String(_plainToken && _plainToken.html || "");
+            const _plainSourceDigest = await _sourceDigestForToken(_plainToken);
+            const r = await simplifyAccessibleHtml(_plainSource, {
+              gradeBand: plainLangLevel,
+              onProgress: (i, total) => setPlainLangProgress(i + "/" + total)
+            });
+            const _plainCommitted = _commitAsyncHtmlIfCurrent(_plainToken, (prev) => prev ? { ...prev, _plainLanguage: { html: r.html, at: Date.now(), sourceDigest: _plainSourceDigest, srcLen: _plainSource.length, chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
+            if (!_plainCommitted) {
+              throw new Error("The document changed while simplification was running, so the stale result was discarded. Run it again.");
+            }
             addToast("\u{1FAB6} " + (t("toasts.plain_done") || "Plain-language version ready") + (r.chunksFailed > 0 ? " \u2014 " + r.chunksFailed + "/" + r.chunksTotal + (t("toasts.plain_partial") || " sections kept the original text (structure check failed).") : t("toasts.plain_ok") || " \u2014 structure verified on every section.") + " " + (t("toasts.plain_review") || "Wording simplified, facts kept; the original remains authoritative."), r.chunksFailed > 0 ? "info" : "success");
           } catch (e) {
             addToast((t("toasts.plain_failed") || "Plain-language version failed: ") + (e && e.message || "unknown"), "error");
@@ -10098,10 +10220,12 @@ DOCUMENT:
       " ",
       plainLangBusy ? t("pdf_audit.plain.busy") || "Simplifying" : t("pdf_audit.plain.btn") || "Plain-language version"
     ), pdfFixResult._plainLanguage && !plainLangBusy && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: () => setShowPlainCompare(true), className: "px-3 py-2 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl font-bold text-xs hover:bg-emerald-200", title: t("pdf_audit.plain.compare_title") || "Side-by-side: the original and the plain-language version." }, "\u2696 ", t("pdf_audit.plain.compare") || "Compare"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      if (!_requireFreshCompanion(pdfFixResult._plainLanguage, "This plain-language version")) return;
       const blob = new Blob([pdfFixResult._plainLanguage.html], { type: "text/html" });
       safeDownloadBlob(blob, (pendingPdfFile?.name || "document").replace(/\.(pdf|docx|pptx)$/i, "") + "-plain-language.html");
       addToast("\u{1FAB6} " + (t("toasts.plain_html_dl") || "Plain-language HTML downloaded."), "success");
     }, className: "px-3 py-2 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl font-bold text-xs hover:bg-emerald-200" }, "\u{1F4C4} HTML"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+      if (!_requireFreshCompanion(pdfFixResult._plainLanguage, "This plain-language version")) return;
       try {
         addToast(t("toasts.typeset_plain") || "\u{1F4C4} Typesetting the plain-language version \u2014 same tagger, same gates\u2026", "info");
         const _result = await createTypesetTaggedPdf({ accessibleHtml: pdfFixResult._plainLanguage.html }, { title: (pendingPdfFile?.name || "document").replace(/\.(pdf|docx|pptx)$/i, "") + " (plain language)", lang: "en" });
@@ -10122,6 +10246,7 @@ DOCUMENT:
         addToast((t("toasts.typeset_failed") || "Typeset tagging failed: ") + (e && e.message || "unknown"), "error");
       }
     }, className: "px-3 py-2 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl font-bold text-xs hover:bg-emerald-200" }, "\u{1F4D1} ", t("pdf_audit.plain.tagged") || "Tagged PDF"), callTTS && !audioJob && /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      if (!_requireFreshCompanion(pdfFixResult._plainLanguage, "This plain-language version")) return;
       const fullText = _audioReadyText(pdfFixResult._plainLanguage.html);
       if (!fullText) {
         addToast(t("toasts.text_content_convert"), "error");
@@ -13876,7 +14001,7 @@ Return ONLY JSON:
             }
           }
         },
-        /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-4 py-2.5 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-black text-slate-800" }, "\u2696 ", t("pdf_audit.plain.compare_heading") || "Original \u2194 Plain language"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, pdfFixResult._plainLanguage.chunksFailed > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5" }, "\u26A0 ", pdfFixResult._plainLanguage.chunksFailed, "/", pdfFixResult._plainLanguage.chunksTotal, " ", t("pdf_audit.translate.kept_original") || "sections kept the original text"), pdfFixResult._plainLanguage.srcLen != null && pdfFixResult._plainLanguage.srcLen !== (pdfFixResult.accessibleHtml || "").length && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5", title: t("pdf_audit.plain.stale_title") || "The document changed after this plain-language version was made \u2014 regenerate it to re-sync." }, "\u26A0 ", t("pdf_audit.companion.stale") || "out of date \u2014 regenerate"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowPlainCompare(false), className: "px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200", "aria-label": t("pdf_audit.translate.compare_close") || "Close comparison" }, "\u2715 ", t("pdf_audit.translate.close") || "Close"))),
+        /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-4 py-2.5 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-black text-slate-800" }, "\u2696 ", t("pdf_audit.plain.compare_heading") || "Original \u2194 Plain language"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, pdfFixResult._plainLanguage.chunksFailed > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5" }, "\u26A0 ", pdfFixResult._plainLanguage.chunksFailed, "/", pdfFixResult._plainLanguage.chunksTotal, " ", t("pdf_audit.translate.kept_original") || "sections kept the original text"), _companionIsStale(pdfFixResult._plainLanguage) && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5", title: t("pdf_audit.plain.stale_title") || "The document changed after this plain-language version was made \u2014 regenerate it to re-sync." }, "\u26A0 ", t("pdf_audit.companion.stale") || "out of date \u2014 regenerate"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowPlainCompare(false), className: "px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200", "aria-label": t("pdf_audit.translate.compare_close") || "Close comparison" }, "\u2715 ", t("pdf_audit.translate.close") || "Close"))),
         /* @__PURE__ */ React.createElement("div", { className: "flex-1 grid grid-cols-2 gap-0 min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col min-h-0 border-r border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-1.5 text-[11px] font-bold text-slate-600 bg-slate-50 border-b border-slate-200" }, t("pdf_audit.translate.pane_original") || "Remediated original"), /* @__PURE__ */ React.createElement("iframe", { title: t("pdf_audit.translate.iframe_original") || "Remediated original document", sandbox: "allow-same-origin", srcDoc: pdfFixResult.accessibleHtml, className: "flex-1 w-full border-0" })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 border-b border-slate-200" }, "\u{1FAB6} ", t("pdf_audit.plain.pane_note") || "Plain language \u2014 AI-simplified, original stays authoritative"), /* @__PURE__ */ React.createElement("iframe", { title: t("pdf_audit.plain.iframe") || "Plain-language version", sandbox: "allow-same-origin", srcDoc: pdfFixResult._plainLanguage.html, className: "flex-1 w-full border-0" })))
       )), showTranslationCompare && pdfFixResult && pdfFixResult._translation && /* @__PURE__ */ React.createElement("div", { className: "allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4", role: "presentation", onClick: () => setShowTranslationCompare(false) }, /* @__PURE__ */ React.createElement(
         "div",
@@ -13895,7 +14020,7 @@ Return ONLY JSON:
             }
           }
         },
-        /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-4 py-2.5 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-black text-slate-800" }, "\u2696 ", (t("pdf_audit.translate.compare_heading") || "Original \u2194 ") + pdfFixResult._translation.lang), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, pdfFixResult._translation.chunksFailed > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5" }, "\u26A0 ", pdfFixResult._translation.chunksFailed, "/", pdfFixResult._translation.chunksTotal, " ", t("pdf_audit.translate.kept_original") || "sections kept the original text"), pdfFixResult._translation.srcLen != null && pdfFixResult._translation.srcLen !== (pdfFixResult.accessibleHtml || "").length && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5", title: t("pdf_audit.translate.stale_title") || "The document changed after this translation was made \u2014 regenerate it to re-sync." }, "\u26A0 ", t("pdf_audit.companion.stale") || "out of date \u2014 regenerate"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowTranslationCompare(false), className: "px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200", "aria-label": t("pdf_audit.translate.compare_close") || "Close comparison" }, "\u2715 ", t("pdf_audit.translate.close") || "Close"))),
+        /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-4 py-2.5 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-black text-slate-800" }, "\u2696 ", (t("pdf_audit.translate.compare_heading") || "Original \u2194 ") + pdfFixResult._translation.lang), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, pdfFixResult._translation.chunksFailed > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5" }, "\u26A0 ", pdfFixResult._translation.chunksFailed, "/", pdfFixResult._translation.chunksTotal, " ", t("pdf_audit.translate.kept_original") || "sections kept the original text"), _companionIsStale(pdfFixResult._translation) && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5", title: t("pdf_audit.translate.stale_title") || "The document changed after this translation was made \u2014 regenerate it to re-sync." }, "\u26A0 ", t("pdf_audit.companion.stale") || "out of date \u2014 regenerate"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowTranslationCompare(false), className: "px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200", "aria-label": t("pdf_audit.translate.compare_close") || "Close comparison" }, "\u2715 ", t("pdf_audit.translate.close") || "Close"))),
         /* @__PURE__ */ React.createElement("div", { className: "flex-1 grid grid-cols-2 gap-0 min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col min-h-0 border-r border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-1.5 text-[11px] font-bold text-slate-600 bg-slate-50 border-b border-slate-200" }, t("pdf_audit.translate.pane_original") || "Remediated original"), /* @__PURE__ */ React.createElement("iframe", { title: t("pdf_audit.translate.iframe_original") || "Remediated original document", sandbox: "allow-same-origin", srcDoc: pdfFixResult.accessibleHtml, className: "flex-1 w-full border-0" })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-1.5 text-[11px] font-bold text-sky-700 bg-sky-50 border-b border-slate-200" }, "\u{1F310} ", pdfFixResult._translation.lang, pdfFixResult._translation.rtl ? " (RTL)" : "", " \u2014 ", t("pdf_audit.translate.pane_note") || "AI-translated, review before official use"), /* @__PURE__ */ React.createElement("iframe", { title: (t("pdf_audit.translate.iframe_translated") || "Translated document \u2014 ") + pdfFixResult._translation.lang, sandbox: "allow-same-origin", srcDoc: pdfFixResult._translation.html, className: "flex-1 w-full border-0" })))
       )), smartTableOpen && /* @__PURE__ */ React.createElement("div", { className: "border-b border-violet-300 bg-violet-50 p-3 space-y-2", role: "region", "aria-label": t("pdf_audit.smart_table.region") || "Smart table builder" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-black text-violet-800" }, "\u{1F4CA}\u2728 ", t("pdf_audit.smart_table.heading") || "Smart table \u2014 paste data, get an accessible table"), /* @__PURE__ */ React.createElement("button", { onClick: () => setSmartTableOpen(false), className: "text-violet-600 hover:text-violet-900 font-bold px-1", "aria-label": t("pdf_audit.smart_table.close") || "Close smart table builder" }, "\u2715")), /* @__PURE__ */ React.createElement(
         "textarea",

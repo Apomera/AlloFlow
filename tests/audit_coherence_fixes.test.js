@@ -272,7 +272,7 @@ describe('assessment mode + answer-key toggle + auto-recovery (Aaron decisions 2
     // resets" — clearing the Tier-4 persisted batch (pre-fix behavior: only user-abort was
     // spared) destroyed the very resume it advertised, and the completion toast misreported
     // a paused run as finished.
-    expect(dpNow).toMatch(/if \(!_batchAbortCtrl\.signal\.aborted && !_quotaStopped\) \{\s*\n\s*_clearActiveBatch\(\)/);
+    expect(dpNow).toMatch(/if \(!_batchAbortCtrl\.signal\.aborted && !_quotaStopped\) \{\s*\n\s*_clearActiveBatch\(_batchId\)/);
     expect(dpNow).toMatch(/Batch paused at the AI quota/);
     // the paused toast must be the quota branch, and the "complete" toast must be its else
     expect(dpNow).toMatch(/if \(_quotaStopped\) \{[\s\S]{0,200}?Batch paused at the AI quota[\s\S]{0,400}?\} else \{/);

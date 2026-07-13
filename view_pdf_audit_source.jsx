@@ -4513,7 +4513,7 @@ function PdfAuditView(props) {
                                   // resuming under the CURRENT sliders mixed configurations in one summary and
                                   // broke the Tier-4 done-skip (cache keys no longer matched).
                                   if (resumableBatch.settings) { addToast(t('pdf_audit.batch.resume.settings_toast') || 'Resuming with the batch’s original settings — current slider values apply to new batches.', 'info'); }
-                                  try { runPdfBatchRemediation({ resumeQueue, resumeSettings: resumableBatch.settings || null }); } catch (e) { warnLog('[Batch Resume] start failed:', e); }
+                                  try { runPdfBatchRemediation({ resumeQueue, resumeSettings: resumableBatch.settings || null, resumeBatchId: resumableBatch.batchId || null }); } catch (e) { warnLog('[Batch Resume] start failed:', e); }
                                 }}
                                 data-help-key="pdf_audit_view_batch_resume_btn"
                                 className="px-4 py-1.5 bg-gradient-to-r from-amber-800 to-orange-800 text-white rounded-lg text-xs font-bold hover:from-amber-900 hover:to-orange-900 transition-all shadow"
@@ -4522,7 +4522,7 @@ function PdfAuditView(props) {
                               </button>
                               <button
                                 onClick={async () => {
-                                  try { if (_docPipeline && _docPipeline.discardResumableBatch) await _docPipeline.discardResumableBatch(); } catch (_) {}
+                                  try { if (_docPipeline && _docPipeline.discardResumableBatch) await _docPipeline.discardResumableBatch(resumableBatch.batchId || null); } catch (_) {}
                                   setResumableBatch(null);
                                 }}
                                 data-help-key="pdf_audit_view_batch_discard_btn"
@@ -12398,6 +12398,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 const _plainToken = _captureAsyncHtmlToken();
                                 const _plainSource = String((_plainToken && _plainToken.html) || '');
                                 const _plainSourceDigest = await _sourceDigestForToken(_plainToken);
+                                const r = await simplifyAccessibleHtml(_plainSource, {
+                                  gradeBand: plainLangLevel,
+                                  onProgress: (i, total) => setPlainLangProgress(i + '/' + total),
+                                });
                                 const _plainCommitted = _commitAsyncHtmlIfCurrent(_plainToken, (prev) => prev ? { ...prev, _plainLanguage: { html: r.html, at: Date.now(), sourceDigest: _plainSourceDigest, srcLen: _plainSource.length, chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
                                 if (!_plainCommitted) {
                                   throw new Error('The document changed while simplification was running, so the stale result was discarded. Run it again.');
