@@ -2663,6 +2663,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
 });
 const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
   const { t } = useContext(LanguageContext);
+  const reducedMotion = useReducedMotion();
   const scoreTrackerRef = useRef(null);
   if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
@@ -2687,6 +2688,10 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     if (isWon && playAgainRef.current) playAgainRef.current.focus();
   }, [isWon]);
   const confirmResetTimerRef = useRef(null);
+  useEffect(() => () => {
+      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+      if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
+  }, []);
   const showZoneHint = (correctZone) => {
       if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
       setLastHint(correctZone);
@@ -2729,23 +2734,35 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     setIsWon(false);
     setAttempts(0);
   }, [dataFingerprint]);
-  const handleItemKeyDown = (e, item) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          e.stopPropagation();
-          if (keyboardSelectedItemId === item.id) {
-              setKeyboardSelectedItemId(null);
-              setAnnouncement('Selection cancelled.');
-          } else {
-              setKeyboardSelectedItemId(item.id);
-              setAnnouncement(`Selected: ${item.text}. Choose Causes or Effects to sort.`);
-              if (playSound) playSound('click');
-          }
+  const focusCauseEffectItem = (itemId) => {
+      window.setTimeout(() => {
+          const candidates = Array.from(gameContainerRef.current?.querySelectorAll('[data-cause-effect-item-id]') || []);
+          const itemControl = candidates.find(node => node.dataset.causeEffectItemId === itemId);
+          itemControl?.focus();
+      }, 0);
+  };
+  const cancelCauseEffectSelection = () => {
+      const selectedId = keyboardSelectedItemId;
+      setKeyboardSelectedItemId(null);
+      setAnnouncement(t('concept_map.venn.selection_cancelled') || 'Selection cancelled.');
+      if (selectedId) focusCauseEffectItem(selectedId);
+  };
+  const toggleCauseEffectSelection = (event, item) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (keyboardSelectedItemId === item.id) {
+          cancelCauseEffectSelection();
+      } else {
+          setKeyboardSelectedItemId(item.id);
+          setAnnouncement(`Selected: ${item.text}. Choose Causes or Effects to sort.`);
+          if (playSound) playSound('click');
       }
   };
+
   const handleKeyboardMove = (targetZone) => {
       if (!keyboardSelectedItemId) return;
-      const item = items.find(i => i.id === keyboardSelectedItemId);
+      const selectedId = keyboardSelectedItemId;
+      const item = items.find(i => i.id === selectedId);
       if (!item) return;
       if (targetZone === 'bank') {
            setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: 'bank' } : i));
@@ -2763,10 +2780,11 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
                if(playSound) playSound('incorrect');
                showZoneHint(item.correctZone);
-               setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === 'causes' ? 'Causes' : 'Effects'}.`);
+               setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === 'causes' ? 'Causes' : 'Effects'}. ${t('games.ce_sort.hint_try') || 'Try'}: ${item.correctZone === 'causes' ? (t('games.ce_sort.causes_label') || 'Causes') : (t('games.ce_sort.effects_label') || 'Effects')}.`);
            }
       }
       setKeyboardSelectedItemId(null);
+      focusCauseEffectItem(selectedId);
   };
   const handleDragStart = (e, item) => {
     setDraggedItem(item);
@@ -2789,18 +2807,21 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
           if (playSound) playSound('correct');
           setItems(prev => prev.map(i => i.id === draggedItem.id ? { ...i, currentZone: targetZone } : i));
           const delta = scoreTrackerRef.current.correct(draggedItem.id);
-       if (delta > 0) setScore(s => s + delta);
+          if (delta > 0) setScore(s => s + delta);
+          setAnnouncement(`Correct! "${draggedItem.text}" is a ${targetZone === 'causes' ? 'Cause' : 'Effect'}.`);
       } else {
           if (playSound) playSound('incorrect');
           setAttempts(a => a + 1);
           setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(draggedItem.id)));
           showZoneHint(draggedItem.correctZone);
+          setAnnouncement(`Incorrect. "${draggedItem.text}" does not belong in ${targetZone === 'causes' ? 'Causes' : 'Effects'}. ${t('games.ce_sort.hint_try') || 'Try'}: ${draggedItem.correctZone === 'causes' ? (t('games.ce_sort.causes_label') || 'Causes') : (t('games.ce_sort.effects_label') || 'Effects')}.`);
       }
       setDraggedItem(null);
   };
   useEffect(() => {
       if (!isWon && items.length > 0 && items.every(i => i.currentZone !== 'bank')) {
           setIsWon(true);
+          setAnnouncement(`${t('concept_map.venn.victory_title') || 'Perfect!'}. ${t('common.score') || 'Score'}: ${score}.`);
           if(onScoreUpdate) onScoreUpdate(score, "Cause & Effect Sort");
           if (playSound) playSound('correct');
           if (onGameComplete) {
@@ -2815,6 +2836,14 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, isWon]);
   const reset = () => {
+      if (hintTimerRef.current) {
+          clearTimeout(hintTimerRef.current);
+          hintTimerRef.current = null;
+      }
+      if (confirmResetTimerRef.current) {
+          clearTimeout(confirmResetTimerRef.current);
+          confirmResetTimerRef.current = null;
+      }
       const shuffled = [...items].map(i => ({ ...i, currentZone: 'bank' }));
       for (let i = shuffled.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -2825,6 +2854,9 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       setIsWon(false);
       setAttempts(0);
       setLastHint(null);
+      setKeyboardSelectedItemId(null);
+      setConfirmingReset(false);
+      setAnnouncement(t('games.bucket_sort.reset_announcement') || 'Board reset. All items returned to the bank.');
       window.setTimeout(() => gameContainerRef.current?.focus(), 0);
   };
   const handleResetClick = () => {
@@ -2837,23 +2869,52 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       setConfirmingReset(true);
       setAnnouncement(t('games.ce_sort.reset_confirm_aria') || 'Press Reset again to confirm clearing the board, or wait to cancel.');
       if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
-      confirmResetTimerRef.current = setTimeout(() => setConfirmingReset(false), 3000);
+      confirmResetTimerRef.current = setTimeout(() => {
+          setConfirmingReset(false);
+          setAnnouncement(t('games.bucket_sort.reset_cancelled') || 'Reset cancelled.');
+      }, 3000);
   };
   const causesItems = useMemo(() => items.filter(i => i.currentZone === 'causes'), [items]);
   const effectsItems = useMemo(() => items.filter(i => i.currentZone === 'effects'), [items]);
   const bankItems = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
+  const renderCauseEffectItem = (item, zone) => {
+      const isBank = zone === 'bank';
+      const toneClass = zone === 'causes' ? 'text-orange-800 border-orange-400' : zone === 'effects' ? 'text-teal-800 border-teal-400' : 'text-slate-700 border-slate-300';
+      const zoneLabel = zone === 'causes' ? (t('games.ce_sort.causes_label') || 'Causes') : zone === 'effects' ? (t('games.ce_sort.effects_label') || 'Effects') : (t('concept_sort.unsorted_aria') || 'Unsorted');
+      return (
+          <div
+              key={item.id}
+              className={`min-h-11 bg-white rounded-xl shadow-sm border-2 ${toneClass} flex items-center justify-center gap-1.5 text-center ${reducedMotion ? '' : 'animate-in zoom-in duration-300'} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 z-50 ${reducedMotion ? '' : 'scale-110'}` : ''} ${draggedItem && draggedItem.id === item.id ? `opacity-30 ${reducedMotion ? '' : 'scale-95'}` : ''}`}
+          >
+              <button
+                  type="button"
+                  draggable={isBank}
+                  onDragStart={isBank ? (event) => handleDragStart(event, item) : undefined}
+                  onDragEnd={isBank ? () => setDraggedItem(null) : undefined}
+                  data-cause-effect-item-id={item.id}
+                  aria-label={`${item.text}, ${zoneLabel}. ${t('concept_map.venn.item_selected_instruction') || 'Activate to choose a destination.'}`}
+                  aria-pressed={keyboardSelectedItemId === item.id}
+                  onClick={(event) => toggleCauseEffectSelection(event, item)}
+                  className={`min-h-11 flex-1 px-3 py-2 rounded-lg font-bold text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${isBank ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'} ${reducedMotion ? '' : 'transition-transform active:translate-y-0.5'}`}
+              >
+                  {item.text}
+              </button>
+              <SpeakButton text={item.text} size={11} />
+          </div>
+      );
+  };
   return (
-      <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="cause-effect-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? '' : ' animate-in zoom-in-95'}`}>
+      <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="cause-effect-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col focus:outline-none${reducedMotion ? '' : ' animate-in zoom-in-95'}`}>
           <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-          <div className="bg-gradient-to-r from-orange-600 to-teal-600 p-4 text-white flex justify-between items-center shadow-md z-30">
+          <div className="bg-gradient-to-r from-orange-600 to-teal-600 p-3 sm:p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30">
               <div>
                   <h3 id="cause-effect-game-title" className="font-bold text-xl flex items-center gap-2">
-                      <ArrowRight size={24}/> {t('games.ce_sort.title') || 'Cause & Effect Sort'}
+                      <ArrowRight size={24} aria-hidden="true"/> {t('games.ce_sort.title') || 'Cause & Effect Sort'}
                   </h3>
                   {topicTitle && <p className="text-xs text-white/70 mt-0.5">{topicTitle}</p>}
               </div>
-              <div className="flex items-center gap-4">
-                  <div className="bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40">
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                  <div className="min-h-11 flex items-center bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40">
                       {t('common.score') || 'Score'}: {score}
                   </div>
                   <GameThemeToggle />
@@ -2864,16 +2925,17 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                       onClick={onClose}
                       className="min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:outline-none focus:ring-2 focus:ring-white"
                   >
-                      <ArrowDown className="rotate-90" size={14}/> {t('concept_map.venn.back_to_editor') || 'Back'}
+                      <ArrowDown className="rotate-90" size={14} aria-hidden="true"/> {t('concept_map.venn.back_to_editor') || 'Back'}
                   </button>
               </div>
           </div>
-          <div className="flex-grow relative overflow-hidden flex flex-col lg:flex-row items-stretch">
+          <div className="flex-grow relative overflow-auto flex flex-col lg:flex-row items-stretch">
               <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
               {isWon && (
                 <div role="presentation" className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div ref={causeEffectWinRef} role="dialog" aria-modal="true" aria-labelledby="cause-effect-win-title" aria-describedby="cause-effect-win-description"
                       onKeyDown={event => {
+                        event.stopPropagation();
                         if (event.key === 'Escape') { event.preventDefault(); onClose(); return; }
                         if (event.key !== 'Tab') return;
                         const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
@@ -2881,7 +2943,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                         const first = focusable[0], last = focusable[focusable.length - 1];
                         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
                         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-                      }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? 'animate-bounce' : ''}`}>
+                      }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!reducedMotion ? 'animate-in zoom-in-95 duration-300' : ''}`}>
                         <h2 id="cause-effect-win-title" className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title') || 'Perfect!'}</h2>
                         <p id="cause-effect-win-description" className="text-slate-600">{t('games.ce_sort.victory_desc') || 'You sorted all causes and effects correctly!'}</p>
                         <p className="text-2xl font-black text-yellow-500 mt-2">{score} pts</p>
@@ -2890,36 +2952,47 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                             <button type="button" onClick={onClose} className="min-h-11 px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
                         </div>
                     </div>
-                    {!useReducedMotion() && <ConfettiExplosion />}
+                    {!reducedMotion && <ConfettiExplosion />}
                 </div>
               )}
               {lastHint && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2">
-                    <HelpCircle size={16} /> {t('games.ce_sort.hint_try') || 'Try'}: {lastHint === 'causes' ? (t('games.ce_sort.causes_label') || '🔶 Causes') : (t('games.ce_sort.effects_label') || '🟦 Effects')}
+                <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm flex items-center gap-2${reducedMotion ? '' : ' animate-in fade-in slide-in-from-top-2 duration-300'}`}>
+                    <HelpCircle size={16} aria-hidden="true" /> {t('games.ce_sort.hint_try') || 'Try'}: {lastHint === 'causes' ? (t('games.ce_sort.causes_label') || '🔶 Causes') : (t('games.ce_sort.effects_label') || '🟦 Effects')}
                 </div>
               )}
               {keyboardSelectedItemId && (
-                <div className="fixed inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4">
+                <div role="presentation" className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-[2px] p-4" onClick={cancelCauseEffectSelection}>
                     <div
                         ref={moveMenuRef}
-                        className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 max-w-md w-full pointer-events-auto"
+                        className={`bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 max-w-md w-full${reducedMotion ? '' : ' animate-in zoom-in duration-200'}`}
                         role="dialog"
                         aria-modal="true"
-                        aria-label={t('games.choose_zone_aria') || 'Choose a zone'}
+                        aria-labelledby="cause-effect-move-menu-title"
+                        onClick={event => event.stopPropagation()}
+                        onKeyDown={event => {
+                            event.stopPropagation();
+                            if (event.key === 'Escape') { event.preventDefault(); cancelCauseEffectSelection(); return; }
+                            if (event.key !== 'Tab') return;
+                            const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                            if (!focusable.length) { event.preventDefault(); return; }
+                            const first = focusable[0], last = focusable[focusable.length - 1];
+                            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+                        }}
                     >
-                        <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a zone above, or pick one here:'}</h4>
+                        <h4 id="cause-effect-move-menu-title" className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Choose a destination:'}</h4>
                         <div className="grid grid-cols-2 gap-2">
-                            <button onClick={() => handleKeyboardMove('causes')} className="px-4 py-3 bg-orange-100 hover:bg-orange-200 text-orange-800 rounded-xl font-bold text-xs transition-colors border border-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                            <button type="button" onClick={() => handleKeyboardMove('causes')} className="min-h-11 px-4 py-3 bg-orange-100 hover:bg-orange-200 text-orange-800 rounded-xl font-bold text-xs transition-colors border border-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
                                 🔶 {t('games.ce_sort.causes_label') || 'Causes'}
                             </button>
-                            <button onClick={() => handleKeyboardMove('effects')} className="px-4 py-3 bg-teal-100 hover:bg-teal-200 text-teal-800 rounded-xl font-bold text-xs transition-colors border border-teal-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <button type="button" onClick={() => handleKeyboardMove('effects')} className="min-h-11 px-4 py-3 bg-teal-100 hover:bg-teal-200 text-teal-800 rounded-xl font-bold text-xs transition-colors border border-teal-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
                                 🟦 {t('games.ce_sort.effects_label') || 'Effects'}
                             </button>
-                            <button onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500">
+                            <button type="button" onClick={() => handleKeyboardMove('bank')} className="col-span-2 min-h-11 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2">
                                 {t('concept_map.venn.return_bank') || 'Return to bank'}
                             </button>
                         </div>
-                        <button onClick={() => setKeyboardSelectedItemId(null)} className="mt-1 text-xs text-slate-600 hover:text-slate-800 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('concept_map.venn.cancel_selection') || 'Cancel'}</button>
+                        <button type="button" onClick={cancelCauseEffectSelection} className="min-h-11 mt-1 text-xs text-slate-600 hover:text-slate-800 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 rounded">{t('concept_map.venn.cancel_selection') || 'Cancel'}</button>
                     </div>
                 </div>
               )}
@@ -2933,30 +3006,16 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   tabIndex={keyboardSelectedItemId ? 0 : undefined}
                   aria-label={keyboardSelectedItemId ? 'Place selected item into Causes' : undefined}
                   onKeyDown={keyboardSelectedItemId ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleKeyboardMove('causes'); } } : undefined}
-                  className={`flex-1 flex flex-col items-center justify-start p-6 transition-all duration-300 relative z-10
-                    ${activeDropZone === 'causes' ? 'bg-orange-200/60 scale-[1.01] shadow-[inset_0_0_40px_rgba(251,146,60,0.3)]' : 'bg-gradient-to-b from-orange-50/80 to-orange-100/40'}
-                    ${keyboardSelectedItemId ? 'cursor-pointer ring-2 ring-yellow-300/60' : ''}
+                  className={`flex-1 flex flex-col items-center justify-start p-6 relative z-10 ${reducedMotion ? '' : 'transition-all duration-300'}
+                    ${activeDropZone === 'causes' ? `bg-orange-200/60 ${reducedMotion ? '' : 'scale-[1.01]'} shadow-[inset_0_0_40px_rgba(251,146,60,0.3)]` : 'bg-gradient-to-b from-orange-50/80 to-orange-100/40'}
+                    ${keyboardSelectedItemId ? 'cursor-pointer ring-2 ring-yellow-300/60 focus:outline-none focus:ring-4 focus:ring-yellow-500' : ''}
                   `}
               >
                   <div className={`bg-orange-200/80 backdrop-blur-sm border-2 border-orange-300 text-orange-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform -rotate-1 ${keyboardSelectedItemId ? 'ring-4 ring-yellow-300' : ''}`}>
                       🔶 {t('games.ce_sort.causes_label') || 'Causes'}
                   </div>
                   <div className="flex flex-wrap gap-2 justify-center content-start flex-grow w-full max-w-sm overflow-y-auto custom-scrollbar p-2">
-                      {causesItems.map(item => (
-                          <div
-                            key={item.id}
-                            tabIndex={0}
-                            role="button"
-                            aria-label={`${item.text}, sorted into Causes`}
-                            aria-pressed={keyboardSelectedItemId === item.id}
-                            onKeyDown={(e) => handleItemKeyDown(e, item)}
-                            onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                            className={`bg-white text-orange-800 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-s-4 border-orange-400 animate-in zoom-in cursor-pointer hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500 flex items-center gap-1.5 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
-                          >
-                            {item.text}
-                            <SpeakButton text={item.text} size={11} />
-                          </div>
-                      ))}
+                      {causesItems.map(item => renderCauseEffectItem(item, 'causes'))}
                       {causesItems.length === 0 && (
                           <div className="text-orange-700 italic text-xs mt-8 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop causes here'}</div>
                       )}
@@ -2966,7 +3025,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
               <div className="hidden lg:flex flex-col items-center justify-center w-16 z-20 relative">
                   <div className="w-0.5 h-full bg-slate-200"></div>
                   <div className="absolute top-1/2 -translate-y-1/2 bg-white p-2 rounded-full border-2 border-slate-200 shadow-sm">
-                      <ArrowRight size={20} className="text-slate-600" />
+                      <ArrowRight size={20} className="text-slate-600" aria-hidden="true" />
                   </div>
               </div>
               {/* Effects drop zone */}
@@ -2979,30 +3038,16 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   tabIndex={keyboardSelectedItemId ? 0 : undefined}
                   aria-label={keyboardSelectedItemId ? 'Place selected item into Effects' : undefined}
                   onKeyDown={keyboardSelectedItemId ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleKeyboardMove('effects'); } } : undefined}
-                  className={`flex-1 flex flex-col items-center justify-start p-6 transition-all duration-300 relative z-10
-                    ${activeDropZone === 'effects' ? 'bg-teal-200/60 scale-[1.01] shadow-[inset_0_0_40px_rgba(45,212,191,0.3)]' : 'bg-gradient-to-b from-teal-50/80 to-teal-100/40'}
-                    ${keyboardSelectedItemId ? 'cursor-pointer ring-2 ring-yellow-300/60' : ''}
+                  className={`flex-1 flex flex-col items-center justify-start p-6 relative z-10 ${reducedMotion ? '' : 'transition-all duration-300'}
+                    ${activeDropZone === 'effects' ? `bg-teal-200/60 ${reducedMotion ? '' : 'scale-[1.01]'} shadow-[inset_0_0_40px_rgba(45,212,191,0.3)]` : 'bg-gradient-to-b from-teal-50/80 to-teal-100/40'}
+                    ${keyboardSelectedItemId ? 'cursor-pointer ring-2 ring-yellow-300/60 focus:outline-none focus:ring-4 focus:ring-yellow-500' : ''}
                   `}
               >
                   <div className={`bg-teal-200/80 backdrop-blur-sm border-2 border-teal-300 text-teal-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform rotate-1 ${keyboardSelectedItemId ? 'ring-4 ring-yellow-300' : ''}`}>
                       🟦 {t('games.ce_sort.effects_label') || 'Effects'}
                   </div>
                   <div className="flex flex-wrap gap-2 justify-center content-start flex-grow w-full max-w-sm overflow-y-auto custom-scrollbar p-2">
-                      {effectsItems.map(item => (
-                          <div
-                            key={item.id}
-                            tabIndex={0}
-                            role="button"
-                            aria-label={`${item.text}, sorted into Effects`}
-                            aria-pressed={keyboardSelectedItemId === item.id}
-                            onKeyDown={(e) => handleItemKeyDown(e, item)}
-                            onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                            className={`bg-white text-teal-800 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-e-4 border-teal-400 animate-in zoom-in cursor-pointer hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-500 flex items-center gap-1.5 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
-                          >
-                            {item.text}
-                            <SpeakButton text={item.text} size={11} />
-                          </div>
-                      ))}
+                      {effectsItems.map(item => renderCauseEffectItem(item, 'effects'))}
                       {effectsItems.length === 0 && (
                           <div className="text-teal-700 italic text-xs mt-8 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop effects here'}</div>
                       )}
@@ -3023,8 +3068,9 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                       </div>
                       <div className="flex gap-2 items-center">
                           <button
+                               type="button"
                                onClick={handleResetClick}
-                               className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${confirmingReset ? `bg-rose-600 text-white border-rose-700 hover:bg-rose-700 ${!useReducedMotion() ? 'animate-pulse' : ''}` : 'text-slate-600 hover:bg-slate-100 border-slate-400'}`}
+                               className={`min-h-11 px-4 py-1.5 rounded-full text-xs font-bold border transition-colors focus:outline-none focus:ring-2 focus:ring-rose-600 focus:ring-offset-2 ${confirmingReset ? `bg-rose-600 text-white border-rose-700 hover:bg-rose-700 ${!reducedMotion ? 'animate-pulse' : ''}` : 'text-slate-600 hover:bg-slate-100 border-slate-400'}`}
                                aria-label={confirmingReset ? (t('games.ce_sort.reset_confirm') || 'Confirm reset — clears the whole board') : 'Reset board'}
                           >
                               {confirmingReset ? (t('games.ce_sort.reset_confirm_label') || 'Click again to confirm') : (t('concept_sort.reset_board') || 'Reset')}
@@ -3032,23 +3078,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                       </div>
                   </div>
                   <div className="flex flex-wrap gap-3 justify-center overflow-y-auto h-full pb-8 pt-2">
-                      {bankItems.map(item => (
-                          <div
-                              key={item.id}
-                              draggable
-                              onDragStart={(e) => handleDragStart(e, item)}
-                              tabIndex={0}
-                              role="button"
-                              aria-label={`${item.text}, unsorted. Press Enter to select.`}
-                              aria-pressed={keyboardSelectedItemId === item.id}
-                              onKeyDown={(e) => handleItemKeyDown(e, item)}
-                              onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                              className={`bg-white px-4 py-2 rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-900 cursor-grab active:cursor-grabbing active:border-b-0 active:translate-y-1 transition-all text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center animate-in zoom-in duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 border-yellow-500 z-50 scale-110' : ''}`}
-                          >
-                              {item.text}
-                              <SpeakButton text={item.text} size={11} />
-                          </div>
-                      ))}
+                      {bankItems.map(item => renderCauseEffectItem(item, 'bank'))}
                       {bankItems.length === 0 && !isWon && (
                           <div className="text-slate-600 italic font-bold text-sm mt-4 text-center w-full">
                               {t('concept_map.venn.bank_empty') || 'All items sorted!'}
