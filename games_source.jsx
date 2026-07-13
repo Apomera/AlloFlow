@@ -4446,6 +4446,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
 });
 const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
   const { t } = useContext(LanguageContext);
+  const reducedMotion = useReducedMotion();
   const [grid, setGrid] = useState([]);
   const [clues, setClues] = useState({ across: [], down: [] });
   const [userState, setUserState] = useState({});
@@ -4687,6 +4688,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
   const checkPuzzle = () => {
     setShowErrors(true);
     let correct = true;
+    let incorrectCount = 0;
     let currentScore = 0;
     for(let r=0; r<grid.length; r++) {
       for(let c=0; c<grid[r].length; c++) {
@@ -4695,6 +4697,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                currentScore += 2;
             } else {
                correct = false;
+               incorrectCount += 1;
             }
          }
       }
@@ -4713,6 +4716,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
             });
         }
     } else {
+        setAnnouncement(t('games.crossword.announce_incorrect_count', { count: incorrectCount }) || `${incorrectCount} square${incorrectCount === 1 ? '' : 's'} need attention.`);
         if (playSound) playSound('incorrect');
     }
     setScore(currentScore);
@@ -4729,6 +4733,13 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
     setUserState(autoFill);
     setIsWon(true);
     setScore(0);
+    setAnnouncement(t('games.crossword.announce_revealed') || 'Puzzle revealed. Score set to zero.');
+  };
+  const selectCrosswordClue = (clue, clueDirection) => {
+    setSelectedCell({ r: clue.row, c: clue.col });
+    setDirection(clueDirection);
+    setAnnouncement(`${clueDirection === 'across' ? t('games.crossword.across') : t('games.crossword.down')} ${clue.number}: ${clue.clue}`);
+    crosswordGridRef.current?.focus();
   };
   const revealHint = () => {
     const emptyCells = [];
@@ -4751,9 +4762,9 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
   return (
     <div ref={crosswordDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="crossword-game-title" className="fixed inset-0 z-[100] bg-white flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300" data-help-key="crossword_game_container">
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-      <div className="bg-indigo-600 p-4 text-white flex justify-between items-center shadow-md shrink-0">
+      <div className="bg-indigo-600 p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md shrink-0">
          <h2 id="crossword-game-title" className="text-xl font-bold flex items-center gap-2"><Gamepad2 aria-hidden="true" /> {t('games.crossword_title')}</h2>
-         <div className="flex items-center gap-4">
+         <div className="flex flex-wrap items-center gap-3">
              {isWon && (
                  <div className="bg-indigo-800 px-4 py-1 rounded-full text-yellow-300 text-sm font-bold border border-indigo-500 animate-in zoom-in">
                      {t('common.score')}: {score}
@@ -4768,7 +4779,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                 <select aria-label={t('common.selection')}
                     value={crosswordLang}
                     onChange={(e) => setCrosswordLang(e.target.value)}
-                    className="text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-200 cursor-pointer shadow-sm"
+                    className="min-h-11 text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-700 cursor-pointer shadow-sm"
                 >
                     <option value="English">{t('languages.english')}</option>
                     {availableLangs.map(lang => (
@@ -4777,12 +4788,12 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                 </select>
              )}
              <GameThemeToggle />
-             <button ref={crosswordCloseRef} type="button" data-help-key="crossword_close_btn" onClick={onClose} className="min-w-11 min-h-11 hover:bg-indigo-500 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('games.crossword.close_puzzle_aria')}><X size={24} aria-hidden="true" /></button>
+             <button ref={crosswordCloseRef} type="button" data-help-key="crossword_close_btn" onClick={onClose} className="min-w-11 min-h-11 hover:bg-indigo-500 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-indigo-700 transition-colors" aria-label={t('games.crossword.close_puzzle_aria')}><X size={24} aria-hidden="true" /></button>
          </div>
       </div>
       <div className="flex-grow overflow-hidden flex flex-col md:flex-row">
          <div className="flex-grow p-4 overflow-auto bg-slate-100 flex justify-center items-start relative">
-            {isWon && <ConfettiExplosion />}
+            {isWon && !reducedMotion && <ConfettiExplosion />}
             <div
               ref={crosswordGridRef}
               tabIndex={0}
@@ -4835,9 +4846,9 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                     {clues.across.length + clues.down.length} {t('games.crossword.clues')}
                  </div>
                  <div className="flex gap-2" data-help-key="crossword_controls">
-                     {!isWon && <button onClick={revealHint} className="px-3 py-1 bg-amber-100 text-amber-700 rounded text-xs font-bold hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500 flex items-center gap-1" aria-label={t('games.crossword.reveal_letter_hint_aria') || 'Reveal one letter hint'}><HelpCircle size={12}/> {t('games.crossword.hint_button') || 'Hint'}{hintsUsed > 0 ? ` (${hintsUsed})` : ''}</button>}
-                     <button onClick={checkPuzzle} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded text-xs font-bold hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('games.crossword.check')}</button>
-                     <button onClick={revealPuzzle} className="px-3 py-1 bg-red-100 text-red-700 rounded text-xs font-bold hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500">{t('games.crossword.reveal')}</button>
+                     {!isWon && <button type="button" onClick={revealHint} className="min-h-11 px-3 py-2 bg-amber-100 text-amber-800 rounded text-xs font-bold hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-2 flex items-center gap-1" aria-label={t('games.crossword.reveal_letter_hint_aria') || 'Reveal one letter hint'}><HelpCircle size={12} aria-hidden="true"/> {t('games.crossword.hint_button') || 'Hint'}{hintsUsed > 0 ? ` (${hintsUsed})` : ''}</button>}
+                     <button type="button" onClick={checkPuzzle} className="min-h-11 px-3 py-2 bg-indigo-100 text-indigo-800 rounded text-xs font-bold hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{t('games.crossword.check')}</button>
+                     <button type="button" onClick={revealPuzzle} className="min-h-11 px-3 py-2 bg-red-100 text-red-800 rounded text-xs font-bold hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">{t('games.crossword.reveal')}</button>
                  </div>
              </div>
              <div className="flex-grow overflow-y-auto p-4 space-y-6">
@@ -4845,29 +4856,15 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                      <h4 className="font-bold text-indigo-900 uppercase tracking-wider text-xs mb-2 border-b pb-1">{t('games.crossword.across')}</h4>
                      <ul className="space-y-2 text-sm">
                          {clues.across.map(c => (
-                             <li
-                               key={`a-${c.number}`}
-                               role="button"
-                               tabIndex={0}
-                               className={`cursor-pointer hover:text-indigo-600 p-1 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${selectedCell && direction === 'across' && selectedCell.r === c.row && selectedCell.c >= c.col && selectedCell.c < c.col + c.word.length ? 'bg-yellow-100 font-bold' : ''}`}
-                               onClick={() => {
-                                   setSelectedCell({ r: c.row, c: c.col });
-                                   setDirection('across');
-                                   crosswordGridRef.current?.focus();
-                               }}
-                               onKeyDown={(event) => {
-                                   if (event.key === 'Enter' || event.key === ' ') {
-                                       event.preventDefault();
-                                       setSelectedCell({ r: c.row, c: c.col });
-                                       setDirection('across');
-                                       crosswordGridRef.current?.focus();
-                                   }
-                               }}
-                             >
-                                 <div className="flex items-center gap-1">
-                                     <span className="flex-1"><span className="font-bold me-1">{c.number}.</span> {c.clue}</span>
-                                     <SpeakButton text={c.clue} size={11} />
-                                 </div>
+                             <li key={'a-' + c.number} className="flex items-center gap-1">
+                               <button
+                                 type="button"
+                                 className={'min-h-11 flex-1 text-start cursor-pointer hover:text-indigo-700 p-2 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ' + (selectedCell && direction === 'across' && selectedCell.r === c.row && selectedCell.c >= c.col && selectedCell.c < c.col + c.word.length ? 'bg-yellow-100 font-bold' : '')}
+                                 onClick={() => selectCrosswordClue(c, 'across')}
+                               >
+                                 <span className="font-bold me-1">{c.number}.</span> {c.clue}
+                               </button>
+                               <SpeakButton text={c.clue} size={11} />
                              </li>
                          ))}
                      </ul>
@@ -4876,29 +4873,15 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                      <h4 className="font-bold text-indigo-900 uppercase tracking-wider text-xs mb-2 border-b pb-1">{t('games.crossword.down')}</h4>
                      <ul className="space-y-2 text-sm">
                          {clues.down.map(c => (
-                             <li
-                               key={`d-${c.number}`}
-                               role="button"
-                               tabIndex={0}
-                               className={`cursor-pointer hover:text-indigo-600 p-1 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${selectedCell && direction === 'down' && selectedCell.c === c.col && selectedCell.r >= c.row && selectedCell.r < c.row + c.word.length ? 'bg-yellow-100 font-bold' : ''}`}
-                               onClick={() => {
-                                   setSelectedCell({ r: c.row, c: c.col });
-                                   setDirection('down');
-                                   crosswordGridRef.current?.focus();
-                               }}
-                               onKeyDown={(event) => {
-                                   if (event.key === 'Enter' || event.key === ' ') {
-                                       event.preventDefault();
-                                       setSelectedCell({ r: c.row, c: c.col });
-                                       setDirection('down');
-                                       crosswordGridRef.current?.focus();
-                                   }
-                               }}
-                             >
-                                 <div className="flex items-center gap-1">
-                                     <span className="flex-1"><span className="font-bold me-1">{c.number}.</span> {c.clue}</span>
-                                     <SpeakButton text={c.clue} size={11} />
-                                 </div>
+                             <li key={'d-' + c.number} className="flex items-center gap-1">
+                               <button
+                                 type="button"
+                                 className={'min-h-11 flex-1 text-start cursor-pointer hover:text-indigo-700 p-2 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ' + (selectedCell && direction === 'down' && selectedCell.c === c.col && selectedCell.r >= c.row && selectedCell.r < c.row + c.word.length ? 'bg-yellow-100 font-bold' : '')}
+                                 onClick={() => selectCrosswordClue(c, 'down')}
+                               >
+                                 <span className="font-bold me-1">{c.number}.</span> {c.clue}
+                               </button>
+                               <SpeakButton text={c.clue} size={11} />
                              </li>
                          ))}
                      </ul>

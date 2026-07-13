@@ -3878,6 +3878,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
 });
 const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
   const { t } = useContext(LanguageContext);
+  const reducedMotion = useReducedMotion();
   const [grid, setGrid] = useState([]);
   const [clues, setClues] = useState({ across: [], down: [] });
   const [userState, setUserState] = useState({});
@@ -4116,6 +4117,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
   const checkPuzzle = () => {
     setShowErrors(true);
     let correct = true;
+    let incorrectCount = 0;
     let currentScore = 0;
     for (let r = 0; r < grid.length; r++) {
       for (let c = 0; c < grid[r].length; c++) {
@@ -4124,6 +4126,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
             currentScore += 2;
           } else {
             correct = false;
+            incorrectCount += 1;
           }
         }
       }
@@ -4142,6 +4145,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
         });
       }
     } else {
+      setAnnouncement(t("games.crossword.announce_incorrect_count", { count: incorrectCount }) || `${incorrectCount} square${incorrectCount === 1 ? "" : "s"} need attention.`);
       if (playSound) playSound("incorrect");
     }
     setScore(currentScore);
@@ -4158,6 +4162,13 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
     setUserState(autoFill);
     setIsWon(true);
     setScore(0);
+    setAnnouncement(t("games.crossword.announce_revealed") || "Puzzle revealed. Score set to zero.");
+  };
+  const selectCrosswordClue = (clue, clueDirection) => {
+    setSelectedCell({ r: clue.row, c: clue.col });
+    setDirection(clueDirection);
+    setAnnouncement(`${clueDirection === "across" ? t("games.crossword.across") : t("games.crossword.down")} ${clue.number}: ${clue.clue}`);
+    crosswordGridRef.current?.focus();
   };
   const revealHint = () => {
     const emptyCells = [];
@@ -4177,17 +4188,17 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
     setAnnouncement(`Hint: revealed letter ${pick.char}`);
     if (playSound) playSound("click");
   };
-  return /* @__PURE__ */ React.createElement("div", { ref: crosswordDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "crossword-game-title", className: "fixed inset-0 z-[100] bg-white flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300", "data-help-key": "crossword_game_container" }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-600 p-4 text-white flex justify-between items-center shadow-md shrink-0" }, /* @__PURE__ */ React.createElement("h2", { id: "crossword-game-title", className: "text-xl font-bold flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Gamepad2, { "aria-hidden": "true" }), " ", t("games.crossword_title")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, isWon && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-800 px-4 py-1 rounded-full text-yellow-300 text-sm font-bold border border-indigo-500 animate-in zoom-in" }, t("common.score"), ": ", score), !isWon && score > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-indigo-200 text-xs font-medium" }, t("games.crossword.current_score", { score })), availableLangs.length > 0 && /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: crosswordDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "crossword-game-title", className: "fixed inset-0 z-[100] bg-white flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300", "data-help-key": "crossword_game_container" }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-600 p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md shrink-0" }, /* @__PURE__ */ React.createElement("h2", { id: "crossword-game-title", className: "text-xl font-bold flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Gamepad2, { "aria-hidden": "true" }), " ", t("games.crossword_title")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-3" }, isWon && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-800 px-4 py-1 rounded-full text-yellow-300 text-sm font-bold border border-indigo-500 animate-in zoom-in" }, t("common.score"), ": ", score), !isWon && score > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-indigo-200 text-xs font-medium" }, t("games.crossword.current_score", { score })), availableLangs.length > 0 && /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
       value: crosswordLang,
       onChange: (e) => setCrosswordLang(e.target.value),
-      className: "text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-200 cursor-pointer shadow-sm"
+      className: "min-h-11 text-xs font-bold text-indigo-700 bg-white border border-indigo-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-700 cursor-pointer shadow-sm"
     },
     /* @__PURE__ */ React.createElement("option", { value: "English" }, t("languages.english")),
     availableLangs.map((lang) => /* @__PURE__ */ React.createElement("option", { key: lang, value: lang }, lang))
-  ), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement("button", { ref: crosswordCloseRef, type: "button", "data-help-key": "crossword_close_btn", onClick: onClose, className: "min-w-11 min-h-11 hover:bg-indigo-500 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors", "aria-label": t("games.crossword.close_puzzle_aria") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" })))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-hidden flex flex-col md:flex-row" }, /* @__PURE__ */ React.createElement("div", { className: "flex-grow p-4 overflow-auto bg-slate-100 flex justify-center items-start relative" }, isWon && /* @__PURE__ */ React.createElement(ConfettiExplosion, null), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement("button", { ref: crosswordCloseRef, type: "button", "data-help-key": "crossword_close_btn", onClick: onClose, className: "min-w-11 min-h-11 hover:bg-indigo-500 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-indigo-700 transition-colors", "aria-label": t("games.crossword.close_puzzle_aria") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" })))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-hidden flex flex-col md:flex-row" }, /* @__PURE__ */ React.createElement("div", { className: "flex-grow p-4 overflow-auto bg-slate-100 flex justify-center items-start relative" }, isWon && !reducedMotion && /* @__PURE__ */ React.createElement(ConfettiExplosion, null), /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: crosswordGridRef,
@@ -4228,51 +4239,27 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
         userChar && /* @__PURE__ */ React.createElement("span", { key: userChar, className: "inline-block animate-in zoom-in duration-200" }, userChar)
       );
     }))
-  )), /* @__PURE__ */ React.createElement("div", { className: "w-full md:w-1/3 bg-white border-s border-slate-200 flex flex-col h-1/2 md:h-full", "data-help-key": "crossword_clues_list" }, /* @__PURE__ */ React.createElement("div", { className: "p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-600" }, clues.across.length + clues.down.length, " ", t("games.crossword.clues")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2", "data-help-key": "crossword_controls" }, !isWon && /* @__PURE__ */ React.createElement("button", { onClick: revealHint, className: "px-3 py-1 bg-amber-100 text-amber-700 rounded text-xs font-bold hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500 flex items-center gap-1", "aria-label": t("games.crossword.reveal_letter_hint_aria") || "Reveal one letter hint" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 12 }), " ", t("games.crossword.hint_button") || "Hint", hintsUsed > 0 ? ` (${hintsUsed})` : ""), /* @__PURE__ */ React.createElement("button", { onClick: checkPuzzle, className: "px-3 py-1 bg-indigo-100 text-indigo-700 rounded text-xs font-bold hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, t("games.crossword.check")), /* @__PURE__ */ React.createElement("button", { onClick: revealPuzzle, className: "px-3 py-1 bg-red-100 text-red-700 rounded text-xs font-bold hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500" }, t("games.crossword.reveal")))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-y-auto p-4 space-y-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 uppercase tracking-wider text-xs mb-2 border-b pb-1" }, t("games.crossword.across")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2 text-sm" }, clues.across.map((c) => /* @__PURE__ */ React.createElement(
-    "li",
+  )), /* @__PURE__ */ React.createElement("div", { className: "w-full md:w-1/3 bg-white border-s border-slate-200 flex flex-col h-1/2 md:h-full", "data-help-key": "crossword_clues_list" }, /* @__PURE__ */ React.createElement("div", { className: "p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-600" }, clues.across.length + clues.down.length, " ", t("games.crossword.clues")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2", "data-help-key": "crossword_controls" }, !isWon && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: revealHint, className: "min-h-11 px-3 py-2 bg-amber-100 text-amber-800 rounded text-xs font-bold hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-2 flex items-center gap-1", "aria-label": t("games.crossword.reveal_letter_hint_aria") || "Reveal one letter hint" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 12, "aria-hidden": "true" }), " ", t("games.crossword.hint_button") || "Hint", hintsUsed > 0 ? ` (${hintsUsed})` : ""), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: checkPuzzle, className: "min-h-11 px-3 py-2 bg-indigo-100 text-indigo-800 rounded text-xs font-bold hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" }, t("games.crossword.check")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: revealPuzzle, className: "min-h-11 px-3 py-2 bg-red-100 text-red-800 rounded text-xs font-bold hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" }, t("games.crossword.reveal")))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-y-auto p-4 space-y-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 uppercase tracking-wider text-xs mb-2 border-b pb-1" }, t("games.crossword.across")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2 text-sm" }, clues.across.map((c) => /* @__PURE__ */ React.createElement("li", { key: "a-" + c.number, className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
+    "button",
     {
-      key: `a-${c.number}`,
-      role: "button",
-      tabIndex: 0,
-      className: `cursor-pointer hover:text-indigo-600 p-1 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${selectedCell && direction === "across" && selectedCell.r === c.row && selectedCell.c >= c.col && selectedCell.c < c.col + c.word.length ? "bg-yellow-100 font-bold" : ""}`,
-      onClick: () => {
-        setSelectedCell({ r: c.row, c: c.col });
-        setDirection("across");
-        crosswordGridRef.current?.focus();
-      },
-      onKeyDown: (event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          setSelectedCell({ r: c.row, c: c.col });
-          setDirection("across");
-          crosswordGridRef.current?.focus();
-        }
-      }
+      type: "button",
+      className: "min-h-11 flex-1 text-start cursor-pointer hover:text-indigo-700 p-2 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 " + (selectedCell && direction === "across" && selectedCell.r === c.row && selectedCell.c >= c.col && selectedCell.c < c.col + c.word.length ? "bg-yellow-100 font-bold" : ""),
+      onClick: () => selectCrosswordClue(c, "across")
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold me-1" }, c.number, "."), " ", c.clue), /* @__PURE__ */ React.createElement(SpeakButton, { text: c.clue, size: 11 }))
-  )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 uppercase tracking-wider text-xs mb-2 border-b pb-1" }, t("games.crossword.down")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2 text-sm" }, clues.down.map((c) => /* @__PURE__ */ React.createElement(
-    "li",
+    /* @__PURE__ */ React.createElement("span", { className: "font-bold me-1" }, c.number, "."),
+    " ",
+    c.clue
+  ), /* @__PURE__ */ React.createElement(SpeakButton, { text: c.clue, size: 11 }))))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 uppercase tracking-wider text-xs mb-2 border-b pb-1" }, t("games.crossword.down")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2 text-sm" }, clues.down.map((c) => /* @__PURE__ */ React.createElement("li", { key: "d-" + c.number, className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
+    "button",
     {
-      key: `d-${c.number}`,
-      role: "button",
-      tabIndex: 0,
-      className: `cursor-pointer hover:text-indigo-600 p-1 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${selectedCell && direction === "down" && selectedCell.c === c.col && selectedCell.r >= c.row && selectedCell.r < c.row + c.word.length ? "bg-yellow-100 font-bold" : ""}`,
-      onClick: () => {
-        setSelectedCell({ r: c.row, c: c.col });
-        setDirection("down");
-        crosswordGridRef.current?.focus();
-      },
-      onKeyDown: (event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          setSelectedCell({ r: c.row, c: c.col });
-          setDirection("down");
-          crosswordGridRef.current?.focus();
-        }
-      }
+      type: "button",
+      className: "min-h-11 flex-1 text-start cursor-pointer hover:text-indigo-700 p-2 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 " + (selectedCell && direction === "down" && selectedCell.c === c.col && selectedCell.r >= c.row && selectedCell.r < c.row + c.word.length ? "bg-yellow-100 font-bold" : ""),
+      onClick: () => selectCrosswordClue(c, "down")
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold me-1" }, c.number, "."), " ", c.clue), /* @__PURE__ */ React.createElement(SpeakButton, { text: c.clue, size: 11 }))
-  ))))), /* @__PURE__ */ React.createElement("div", { className: "p-2 bg-slate-50 text-[11px] text-center text-slate-600 border-t" }, t("games.crossword.footer_tip")), isWon && /* @__PURE__ */ React.createElement("div", { className: "p-3" }, /* @__PURE__ */ React.createElement(GameReviewScreen, { score, title: t("games.crossword_title"), items: [...clues.across, ...clues.down].map((c) => ({ label: c.word, detail: c.clue, status: "correct" })), onPlayAgain: () => {
+    /* @__PURE__ */ React.createElement("span", { className: "font-bold me-1" }, c.number, "."),
+    " ",
+    c.clue
+  ), /* @__PURE__ */ React.createElement(SpeakButton, { text: c.clue, size: 11 })))))), /* @__PURE__ */ React.createElement("div", { className: "p-2 bg-slate-50 text-[11px] text-center text-slate-600 border-t" }, t("games.crossword.footer_tip")), isWon && /* @__PURE__ */ React.createElement("div", { className: "p-3" }, /* @__PURE__ */ React.createElement(GameReviewScreen, { score, title: t("games.crossword_title"), items: [...clues.across, ...clues.down].map((c) => ({ label: c.word, detail: c.clue, status: "correct" })), onPlayAgain: () => {
     setIsWon(false);
     setScore(0);
     setUserState({});
