@@ -17177,7 +17177,7 @@
       "ai_assist_learner_effort_sums_to_100_w": "Enyemaka AI + mgbalị onye mmụta mkpokọta > 100 — enyemaka karịrị akarị na-eme gịnị na uru mmụta?",
       "why_does_novelty_matter_for_both_learn": "Gịnị mere ọhụrụ ji dị mkpa maka mmụta na ihe egwu abụọ?",
       "when_is_ai_doing_90_of_the_work_actual": "Kedu mgbe AI ịrụ 90% nke ọrụ bụ mkpebi ziri ezi n’ezie? (Ntụaka: ọnụ ahịa njehie dị ala, ọhụrụ dị ala, mmepụta nwere nrụgide oge.)",
-      "how_would_you_design_a_class_where_ai_": "Kedu ka ị ga-esi haziе klaasị ebe a na-anabata AI mana mmụta anaghị akwụsị?",
+      "how_would_you_design_a_class_where_ai_": "Kedu ka ị ga-esi hazie klaasị ebe a na-anabata AI mana mmụta anaghị akwụsị?",
       "i_can_explain_why_this_ai_effort_novel": "Enwere m ike ịkọwa ihe mere njikọ AI/mgbalị/ọhụrụ/ọnụ ahịa a ji enye ọnọdụ a.",
       "inquiry_widget_no_score_no_reveal_no_a": "Widget nyocha — enweghị akara, enweghị ngosipụta, enweghị azịza a na-agwa. «Uru mmụta» bụ atụmatụ; ọtụtụ ezi okwu chọrọ nyocha tupu/mgbe, ọrụ mbufe na ule njide. Mmetụta enyemaka AI na-adịgasị iche dịka mpaghara si dị (okike vs teknụzụ vs ntụgharị uche).",
       "loadout": "Ngwaọrụ",
