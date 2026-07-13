@@ -22,6 +22,7 @@ describe('Fisher Lab core mission profiles', () => {
     const complete = {
       passedRedNun: true,
       trafficDecisionMade: true,
+      trafficManeuverComplete: true,
       reachedHalfwayRock: true,
       targetFishDecision: true,
       trapDecisionMade: true
@@ -67,9 +68,10 @@ describe('Fisher Lab voyage progression', () => {
     const encounter = window.__FisherLabCore.getCoreEncounter('maine');
     expect(getCoreObjective({}, profile, encounter).id).toBe('buoy');
     expect(getCoreObjective({ passedRedNun: true }, profile, encounter).id).toBe('traffic');
-    expect(getCoreObjective({ ...state, trafficDecisionMade: true }, profile, encounter)).toMatchObject({ id: 'fish', label: 'Classify Atlantic cod' });
-    expect(getCoreObjective({ ...state, trafficDecisionMade: true, targetFishDecision: true }, profile, encounter).id).toBe('trap');
-    expect(getCoreObjective({ ...state, trafficDecisionMade: true, targetFishDecision: true, trapDecisionMade: true }, profile, encounter).id).toBe('dock');
+    expect(getCoreObjective({ passedRedNun: true, trafficDecisionMade: true }, profile, encounter).id).toBe('maneuver');
+    expect(getCoreObjective({ ...state, trafficDecisionMade: true, trafficManeuverComplete: true }, profile, encounter)).toMatchObject({ id: 'fish', label: 'Classify Atlantic cod' });
+    expect(getCoreObjective({ ...state, trafficDecisionMade: true, trafficManeuverComplete: true, targetFishDecision: true }, profile, encounter).id).toBe('trap');
+    expect(getCoreObjective({ ...state, trafficDecisionMade: true, trafficManeuverComplete: true, targetFishDecision: true, trapDecisionMade: true }, profile, encounter).id).toBe('dock');
     expect(relativeCoreBearing(0, 0, 0, 0, -10)).toBeCloseTo(0);
     expect(relativeCoreBearing(0, 0, 0, 10, 0)).toBeCloseTo(Math.PI / 2);
   });
@@ -83,6 +85,15 @@ describe('Fisher Lab voyage progression', () => {
     expect(getCoreEncounter('greatlakes').vessel).toBe('lake freighter');
     expect(evaluateCoreEncounter('maine', 'give-way').correct).toBe(true);
     expect(evaluateCoreEncounter('maine', 'stand-on').correct).toBe(false);
+  });
+
+  it('requires both safe speed and a clear starboard alteration', () => {
+    const { evaluateCoreManeuver } = window.__FisherLabCore;
+
+    expect(evaluateCoreManeuver(Math.PI, Math.PI, 2)).toMatchObject({ slowEnough: true, turnedEnough: false, complete: false });
+    expect(evaluateCoreManeuver(Math.PI, Math.PI - Math.PI / 9, 5)).toMatchObject({ slowEnough: false, turnedEnough: true, complete: false });
+    expect(evaluateCoreManeuver(Math.PI, Math.PI - Math.PI / 9, 2)).toMatchObject({ slowEnough: true, turnedEnough: true, complete: true });
+    expect(evaluateCoreManeuver(Math.PI, Math.PI + Math.PI / 6, 1).turnDegrees).toBe(0);
   });
 
   it('awards ranks from combined score, accuracy, and fuel stewardship', () => {
@@ -114,6 +125,13 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('trafficVessel.visible = true');
     expect(source).toContain("activeRegion === 'chesapeake'");
     expect(source).toContain('Traffic: vessel clearing');
+    expect(source).toContain('trafficManeuverSeconds >= 20');
+    expect(source).toContain('Give-way maneuver complete');
+    expect(source).toContain('Safe speed ≤ 2.5 kt');
+    expect(source).toContain("label: 'Reduce speed or reverse'");
+    expect(source).toContain('trafficManeuverComplete ? 1 : 0');
+    expect(source).toContain("if (objective.id === 'maneuver') objectiveBearing = 25;");
+    expect(source).toContain('Alter starboard · open closest approach');
     expect(source).toContain("type: 'fish-haul'");
     expect(source).toContain("role: 'dialog', 'aria-modal': 'true'");
     expect(source).not.toContain('resumeSim');

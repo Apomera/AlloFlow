@@ -460,6 +460,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var encounter = getCoreEncounter(region);
     return { correct: action === encounter.correctAction, encounter: encounter };
   }
+  function evaluateCoreManeuver(startHeading, currentHeading, speed) {
+    var starboardTurn = startHeading - currentHeading;
+    while (starboardTurn > Math.PI) starboardTurn -= Math.PI * 2;
+    while (starboardTurn < -Math.PI) starboardTurn += Math.PI * 2;
+    var turnDegrees = Math.max(0, starboardTurn * 180 / Math.PI);
+    var slowEnough = Math.abs(speed) <= 2.5;
+    var turnedEnough = turnDegrees >= 15;
+    return { slowEnough: slowEnough, turnedEnough: turnedEnough, turnDegrees: turnDegrees, complete: slowEnough && turnedEnough };
+  }
   function scoreCoreDecision(score, streak, correct, multiplier) {
     var nextStreak = correct ? streak + 1 : 0;
     var baseReward = 25 + Math.min(20, Math.max(0, nextStreak - 1) * 5);
@@ -467,11 +476,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return { score: Math.max(0, score + delta), streak: nextStreak, delta: delta };
   }
   function isCoreMissionReady(state) {
-    return !!(state && state.passedRedNun && state.trafficDecisionMade && state.reachedHalfwayRock && state.targetFishDecision && state.trapDecisionMade);
+    return !!(state && state.passedRedNun && state.trafficDecisionMade && state.trafficManeuverComplete && state.reachedHalfwayRock && state.targetFishDecision && state.trapDecisionMade);
   }
   function getCoreObjective(state, profile, encounter) {
     if (!state || !state.passedRedNun) return { id: 'buoy', label: 'Pass red nun on starboard' };
     if (!state.trafficDecisionMade) return { id: 'traffic', label: 'Resolve crossing with ' + encounter.vessel };
+    if (!state.trafficManeuverComplete) return { id: 'maneuver', label: 'Execute give-way maneuver' };
     if (!state.reachedHalfwayRock) return { id: 'grounds', label: 'Reach ' + profile.destination };
     if (!state.targetFishDecision) return { id: 'fish', label: 'Classify ' + profile.targetFish };
     if (!state.trapDecisionMade) return { id: 'trap', label: 'Classify ' + profile.trapCatch };
@@ -494,6 +504,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreVoyageMode: getCoreVoyageMode,
     getCoreEncounter: getCoreEncounter,
     evaluateCoreEncounter: evaluateCoreEncounter,
+    evaluateCoreManeuver: evaluateCoreManeuver,
     scoreCoreDecision: scoreCoreDecision,
     isCoreMissionReady: isCoreMissionReady,
     getCoreObjective: getCoreObjective,
@@ -8833,6 +8844,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       trafficEncounterTriggered: false,
       trafficDecisionMade: false,
       trafficDecisionCorrect: false,
+      trafficManeuverComplete: false,
+      trafficManeuverReviewed: false,
+      trafficManeuverSeconds: 0,
+      trafficStartHeading: Math.PI,
+      trafficClosestRange: Infinity,
       missionComplete: false,
       fuelDepletedWarned: false,
       earlyDockWarned: false,
@@ -8992,9 +9008,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       if (result.correct) boatState.correctDecisions += 1;
       boatState.trafficDecisionMade = true;
       boatState.trafficDecisionCorrect = result.correct;
+      boatState.trafficStartHeading = boatState.heading;
+      boatState.trafficManeuverSeconds = 0;
+      boatState.trafficClosestRange = boat.position.distanceTo(trafficVessel.position);
       setPaused(false, false);
       statusCb({ type: result.correct ? 'score' : 'violation', text: (result.correct ? '+' : '') + scored.delta + ' points · ' + result.encounter.explanation });
-      flAnnounce((result.correct ? 'Correct. ' : 'Review needed. ') + result.encounter.explanation);
+      statusCb({ type: 'guidance', text: 'Helm drill: reduce below 2.5 kt and alter at least 15° to starboard.' });
+      flAnnounce((result.correct ? 'Correct. ' : 'Review needed. ') + 'Now reduce below two point five knots and turn at least fifteen degrees starboard.');
     }
 
     function resolveCatch(kind, action, correct, speciesId) {
@@ -9313,6 +9333,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         statusCb({ type: 'traffic-encounter', encounter: encounterProfile, text: encounterProfile.vessel + ' crossing · ' + encounterProfile.rule + ' decision required' });
         flAnnounce('Traffic encounter. ' + encounterProfile.situation + ' Choose the correct action.');
       }
+      var trafficManeuver = evaluateCoreManeuver(boatState.trafficStartHeading, boatState.heading, boatState.speed);
+      var trafficRange = boat.position.distanceTo(trafficVessel.position);
+      if (boatState.trafficDecisionMade && !boatState.trafficManeuverComplete) {
+        boatState.trafficManeuverSeconds += dt;
+        boatState.trafficClosestRange = Math.min(boatState.trafficClosestRange, trafficRange);
+        if (trafficManeuver.complete) {
+          boatState.trafficManeuverComplete = true;
+          var maneuverBonus = Math.round(20 * voyageMode.scoreMultiplier);
+          boatState.stewardshipScore += maneuverBonus;
+          statusCb({ type: 'milestone', text: 'Give-way maneuver complete: safe speed + clear starboard alteration · +' + maneuverBonus + ' points' });
+          flAnnounce('Give-way maneuver complete. Safe speed and clear starboard alteration achieved.');
+        } else if (boatState.trafficManeuverSeconds >= 20) {
+          boatState.trafficManeuverComplete = true;
+          boatState.trafficManeuverReviewed = true;
+          statusCb({ type: 'guidance', text: 'Maneuver window ended. Review: slow early, alter clearly to starboard, and pass astern.' });
+          flAnnounce('Maneuver reviewed. Continue the voyage.');
+        }
+      }
       if (boatState.trafficDecisionMade && trafficVessel.visible) {
         trafficVessel.position.x -= dt * 4.2;
         if (trafficVessel.position.x < -34) trafficVessel.visible = false;
@@ -9454,7 +9492,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         for (var ob = 0; ob < buoys.length; ob++) {
           if (buoys[ob].userData.type === 'red-nun') { objectiveTarget = buoys[ob]; break; }
         }
-      } else if (objective.id === 'traffic') {
+      } else if (objective.id === 'traffic' || objective.id === 'maneuver') {
         objectiveTarget = trafficVessel;
       } else if (objective.id === 'trap') {
         var nearestTrap = null;
@@ -9470,6 +9508,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       }
       var objectiveDistance = boat.position.distanceTo(objectiveTarget.position);
       var objectiveBearing = relativeCoreBearing(boatState.heading, boat.position.x, boat.position.z, objectiveTarget.position.x, objectiveTarget.position.z) * 180 / Math.PI;
+      if (objective.id === 'maneuver') objectiveBearing = 25;
 
       var hudPayload = {
         speed: boatState.speed,
@@ -9499,6 +9538,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         trapDecisionMade: boatState.trapDecisionMade,
         trafficDecisionMade: boatState.trafficDecisionMade,
         trafficDecisionCorrect: boatState.trafficDecisionCorrect,
+        trafficManeuverComplete: boatState.trafficManeuverComplete,
+        trafficManeuverReviewed: boatState.trafficManeuverReviewed,
+        trafficManeuverSlow: trafficManeuver.slowEnough,
+        trafficManeuverTurn: trafficManeuver.turnedEnough,
+        trafficTurnDegrees: trafficManeuver.turnDegrees,
+        trafficRange: trafficRange,
+        trafficClosestRange: boatState.trafficClosestRange,
+        trafficManeuverSeconds: boatState.trafficManeuverSeconds,
         trafficVesselVisible: trafficVessel.visible,
         missionComplete: boatState.missionComplete,
         mode: voyageMode.id,
@@ -9600,6 +9647,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatState.trafficEncounterTriggered = false;
         boatState.trafficDecisionMade = false;
         boatState.trafficDecisionCorrect = false;
+        boatState.trafficManeuverComplete = false;
+        boatState.trafficManeuverReviewed = false;
+        boatState.trafficManeuverSeconds = 0;
+        boatState.trafficStartHeading = Math.PI;
+        boatState.trafficClosestRange = Infinity;
         boatState.missionComplete = false;
         boatState.stewardshipScore = 0;
         boatState.decisionStreak = 0;
@@ -10547,7 +10599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // ─── SIM tab
     function simTab() {
       var mission = getCoreSimProfile(region);
-      var completedObjectives = (hud.passedRedNun ? 1 : 0) + (hud.trafficDecisionMade ? 1 : 0) + (hud.reachedHalfwayRock ? 1 : 0) + (hud.targetFishDecision ? 1 : 0) + (hud.trapDecisionMade ? 1 : 0) + (hud.returnedHome ? 1 : 0);
+      var completedObjectives = (hud.passedRedNun ? 1 : 0) + (hud.trafficManeuverComplete ? 1 : 0) + (hud.reachedHalfwayRock ? 1 : 0) + (hud.targetFishDecision ? 1 : 0) + (hud.trapDecisionMade ? 1 : 0) + (hud.returnedHome ? 1 : 0);
       var missionProgressPct = Math.round(completedObjectives / 6 * 100);
       var fuelValue = hud.fuel == null ? 100 : Math.max(0, hud.fuel);
       var decisionAccuracy = hud.totalDecisions ? Math.round((hud.correctDecisions || 0) / hud.totalDecisions * 100) : 0;
@@ -10683,9 +10735,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', color: '#fbbf24', fontSize: 22, lineHeight: 1, transform: 'rotate(' + (hud.objectiveBearing || 0) + 'deg)', transition: 'transform 0.2s ease' } }, '↑'),
                 h('div', { style: { minWidth: 0, textAlign: 'left' } },
                   h('strong', { style: { display: 'block', color: '#f8fafc', fontSize: 11, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, hud.objectiveLabel || 'Preparing route'),
-                  h('span', { style: { display: 'block', color: '#bae6fd', fontSize: 9 } }, hud.objectiveDistance == null ? 'Acquiring waypoint' : hud.objectiveDistance.toFixed(1) + ' sim range · ' + (Math.abs(hud.objectiveBearing || 0) < 12 ? 'on course' : (hud.objectiveBearing || 0) < 0 ? 'turn port' : 'turn starboard'))
+                  h('span', { style: { display: 'block', color: '#bae6fd', fontSize: 9 } }, hud.objectiveDistance == null ? 'Acquiring waypoint' : hud.objectiveId === 'maneuver' ? 'Alter starboard · open closest approach' : hud.objectiveDistance.toFixed(1) + ' sim range · ' + (Math.abs(hud.objectiveBearing || 0) < 12 ? 'on course' : (hud.objectiveBearing || 0) < 0 ? 'turn port' : 'turn starboard'))
                 )
-              )
+              ),
+              hud.trafficDecisionMade && !hud.trafficManeuverComplete ? h('div', { style: { marginTop: 7, paddingTop: 7, borderTop: '1px solid rgba(125,211,252,0.25)', display: 'grid', gap: 4, textAlign: 'left' } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: hud.trafficManeuverSlow ? '#86efac' : '#fef3c7', fontSize: 9 } },
+                  h('span', null, (hud.trafficManeuverSlow ? '✓ ' : '○ ') + 'Safe speed ≤ 2.5 kt'),
+                  h('strong', null, Math.abs(hud.speed || 0).toFixed(1) + ' kt')),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: hud.trafficManeuverTurn ? '#86efac' : '#fef3c7', fontSize: 9 } },
+                  h('span', null, (hud.trafficManeuverTurn ? '✓ ' : '○ ') + 'Alter 15° starboard'),
+                  h('strong', null, Math.min(99, hud.trafficTurnDegrees || 0).toFixed(0) + '°')),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: '#bae6fd', fontSize: 9 } },
+                  h('span', null, 'Closest range'),
+                  h('strong', null, isFinite(hud.trafficClosestRange) ? hud.trafficClosestRange.toFixed(1) + ' sim' : 'tracking'))
+              ) : null
             ),
             
             // HUD Instruments and Compass Dial overlay
@@ -10730,7 +10793,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, fontWeight: 800, color: '#bae6fd', marginBottom: 5 } }, h('span', null, mission.title), h('span', { style: { color: '#fde68a' } }, (hud.stewardshipScore || 0) + ' pts')),
               h('div', { style: { height: 5, borderRadius: 4, overflow: 'hidden', background: 'rgba(148,163,184,0.22)', marginBottom: 6 } }, h('div', { style: { width: missionProgressPct + '%', height: '100%', background: 'linear-gradient(90deg,#22c55e,#38bdf8)', transition: 'width 0.25s ease' } })),
               h('div', { style: { fontSize: 10 } }, hud.passedRedNun ? '✓ Navigate red nun correctly' : '○ Pass red nun on starboard'),
-              h('div', { style: { fontSize: 10, color: hud.trafficDecisionMade && !hud.trafficDecisionCorrect ? '#fdba74' : 'inherit' } }, hud.trafficDecisionMade ? (hud.trafficDecisionCorrect ? '✓ Apply COLREGS correctly' : '△ COLREGS decision reviewed') : '○ Resolve crossing traffic'),
+              h('div', { style: { fontSize: 10, color: hud.trafficManeuverReviewed || (hud.trafficDecisionMade && !hud.trafficDecisionCorrect) ? '#fdba74' : 'inherit' } }, hud.trafficManeuverComplete ? (hud.trafficManeuverReviewed ? '△ Give-way maneuver reviewed' : '✓ Execute give-way maneuver') : hud.trafficDecisionMade ? '○ Slow + alter 15° starboard' : '○ Resolve crossing traffic'),
               h('div', { style: { fontSize: 10 } }, hud.reachedHalfwayRock ? '✓ Reach ' + mission.destination : '○ Reach ' + mission.destination),
               h('div', { style: { fontSize: 10 } }, hud.targetFishDecision ? '✓ Classify ' + mission.targetFish : '○ Classify ' + mission.targetFish),
               h('div', { style: { fontSize: 10 } }, hud.trapDecisionMade ? '✓ Classify ' + mission.trapCatch : '○ Classify ' + mission.trapCatch),
@@ -10748,6 +10811,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               [
                 { key: 'arrowleft', label: 'Turn port', icon: '←' },
                 { key: 'arrowup', label: 'Throttle forward', icon: '↑' },
+                { key: 'arrowdown', label: 'Reduce speed or reverse', icon: '↓' },
                 { key: 'arrowright', label: 'Turn starboard', icon: '→' }
               ].map(function(control) {
                 return h('button', { key: control.key, type: 'button', className: 'fl-btn', 'aria-label': control.label,
