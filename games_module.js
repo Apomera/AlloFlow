@@ -2275,19 +2275,9 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   const hintTimerRef = useRef(null);
   const gameContainerRef = useRef(null);
   const playAgainRef = useRef(null);
-  const triggerElRef = useRef(null);
-  useEffect(() => {
-    triggerElRef.current = typeof document !== "undefined" ? document.activeElement : null;
-    if (gameContainerRef.current) gameContainerRef.current.focus();
-    return () => {
-      if (triggerElRef.current && typeof triggerElRef.current.focus === "function") {
-        try {
-          triggerElRef.current.focus();
-        } catch (_) {
-        }
-      }
-    };
-  }, []);
+  const causeEffectCloseRef = useRef(null);
+  const causeEffectWinRef = useRef(null);
+  useGameDialogFocus(gameContainerRef, causeEffectCloseRef, onClose);
   useEffect(() => {
     if (isWon && playAgainRef.current) playAgainRef.current.focus();
   }, [isWon]);
@@ -2425,6 +2415,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     setIsWon(false);
     setAttempts(0);
     setLastHint(null);
+    window.setTimeout(() => gameContainerRef.current?.focus(), 0);
   };
   const handleResetClick = () => {
     if (confirmingReset) {
@@ -2441,17 +2432,54 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   const causesItems = useMemo(() => items.filter((i) => i.currentZone === "causes"), [items]);
   const effectsItems = useMemo(() => items.filter((i) => i.currentZone === "effects"), [items]);
   const bankItems = useMemo(() => items.filter((i) => i.currentZone === "bank"), [items]);
-  return /* @__PURE__ */ React.createElement("div", { ref: gameContainerRef, tabIndex: -1, className: "fixed inset-0 z-[200] bg-slate-50 flex flex-col animate-in zoom-in-95 focus:outline-none" }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-orange-600 to-teal-600 p-4 text-white flex justify-between items-center shadow-md z-30" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-xl flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 24 }), " ", t("games.ce_sort.title") || "Cause & Effect Sort"), topicTitle && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-white/70 mt-0.5" }, topicTitle)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40" }, t("common.score") || "Score", ": ", score), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: gameContainerRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "cause-effect-game-title", className: `fixed inset-0 z-[200] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? "" : " animate-in zoom-in-95"}` }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-orange-600 to-teal-600 p-4 text-white flex justify-between items-center shadow-md z-30" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "cause-effect-game-title", className: "font-bold text-xl flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 24 }), " ", t("games.ce_sort.title") || "Cause & Effect Sort"), topicTitle && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-white/70 mt-0.5" }, topicTitle)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40" }, t("common.score") || "Score", ": ", score), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement(
     "button",
     {
+      ref: causeEffectCloseRef,
+      type: "button",
       "aria-label": t("common.close") || "Close",
       onClick: onClose,
-      className: "flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30"
+      className: "min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:outline-none focus:ring-2 focus:ring-white"
     },
     /* @__PURE__ */ React.createElement(ArrowDown, { className: "rotate-90", size: 14 }),
     " ",
     t("concept_map.venn.back_to_editor") || "Back"
-  ))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow relative overflow-hidden flex flex-col lg:flex-row items-stretch" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none" }), isWon && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" }, /* @__PURE__ */ React.createElement("div", { className: `bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? "animate-bounce" : ""}` }, /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black text-indigo-600 mb-2" }, t("concept_map.venn.victory_title") || "\u{1F389} Perfect!"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600" }, t("games.ce_sort.victory_desc") || "You sorted all causes and effects correctly!"), /* @__PURE__ */ React.createElement("p", { className: "text-2xl font-black text-yellow-500 mt-2" }, score, " pts"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 mt-4 justify-center" }, /* @__PURE__ */ React.createElement("button", { ref: playAgainRef, onClick: reset, className: "px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14 }), " Play Again"), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors" }, "Close"))), !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null)), lastHint && /* @__PURE__ */ React.createElement("div", { className: "absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16 }), " ", t("games.ce_sort.hint_try") || "Try", ": ", lastHint === "causes" ? t("games.ce_sort.causes_label") || "\u{1F536} Causes" : t("games.ce_sort.effects_label") || "\u{1F7E6} Effects"), keyboardSelectedItemId && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4" }, /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow relative overflow-hidden flex flex-col lg:flex-row items-stretch" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none" }), isWon && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" }, /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      ref: causeEffectWinRef,
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": "cause-effect-win-title",
+      "aria-describedby": "cause-effect-win-description",
+      onKeyDown: (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          onClose();
+          return;
+        }
+        if (event.key !== "Tab") return;
+        const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+        if (!focusable.length) {
+          event.preventDefault();
+          return;
+        }
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      },
+      className: `relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? "animate-bounce" : ""}`
+    },
+    /* @__PURE__ */ React.createElement("h2", { id: "cause-effect-win-title", className: "text-4xl font-black text-indigo-600 mb-2" }, t("concept_map.venn.victory_title") || "Perfect!"),
+    /* @__PURE__ */ React.createElement("p", { id: "cause-effect-win-description", className: "text-slate-600" }, t("games.ce_sort.victory_desc") || "You sorted all causes and effects correctly!"),
+    /* @__PURE__ */ React.createElement("p", { className: "text-2xl font-black text-yellow-500 mt-2" }, score, " pts"),
+    /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 mt-4 justify-center" }, /* @__PURE__ */ React.createElement("button", { ref: playAgainRef, type: "button", onClick: reset, className: "min-h-11 px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, "aria-hidden": "true" }), " ", t("games.bucket_sort.play_again") || "Play Again"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-h-11 px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" }, t("common.close") || "Close"))
+  ), !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null)), lastHint && /* @__PURE__ */ React.createElement("div", { className: "absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16 }), " ", t("games.ce_sort.hint_try") || "Try", ": ", lastHint === "causes" ? t("games.ce_sort.causes_label") || "\u{1F536} Causes" : t("games.ce_sort.effects_label") || "\u{1F7E6} Effects"), keyboardSelectedItemId && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4" }, /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: moveMenuRef,
