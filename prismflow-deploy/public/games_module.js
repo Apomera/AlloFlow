@@ -2927,19 +2927,9 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
   const confirmResetTimerRef = useRef(null);
   const gameContainerRef = useRef(null);
   const playAgainRef = useRef(null);
-  const triggerElRef = useRef(null);
-  useEffect(() => {
-    triggerElRef.current = typeof document !== "undefined" ? document.activeElement : null;
-    if (gameContainerRef.current) gameContainerRef.current.focus();
-    return () => {
-      if (triggerElRef.current && typeof triggerElRef.current.focus === "function") {
-        try {
-          triggerElRef.current.focus();
-        } catch (_) {
-        }
-      }
-    };
-  }, []);
+  const multiBucketCloseRef = useRef(null);
+  const multiBucketWinRef = useRef(null);
+  useGameDialogFocus(gameContainerRef, multiBucketCloseRef, onClose);
   useEffect(() => {
     if (isWon && playAgainRef.current) playAgainRef.current.focus();
   }, [isWon]);
@@ -3059,6 +3049,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
     setIsWon(false);
     setAttempts(0);
     setLastHint(null);
+    window.setTimeout(() => gameContainerRef.current?.focus(), 0);
   };
   const handleResetClick = () => {
     if (confirmingReset) {
@@ -3087,7 +3078,42 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
   const headerGradient = theme?.headerGradient || `from-${accent}-600 to-purple-600`;
   const titleText = theme?.title || (t("games.bucket_sort.title") || "Sort");
   const lastHintLabel = lastHint ? buckets.find((b) => b.id === lastHint)?.title || "" : "";
-  return /* @__PURE__ */ React.createElement("div", { ref: gameContainerRef, tabIndex: -1, className: "fixed inset-0 z-[200] bg-slate-50 flex flex-col animate-in zoom-in-95 focus:outline-none" }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: `bg-gradient-to-r ${headerGradient} p-4 text-white flex justify-between items-center shadow-md z-30` }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-xl flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 24 }), " ", titleText), topicTitle && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-white/70 mt-0.5" }, topicTitle)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40" }, t("common.score") || "Score", ": ", score), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement("button", { "aria-label": t("common.close") || "Close", onClick: onClose, className: "flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30" }, /* @__PURE__ */ React.createElement(ArrowDown, { className: "rotate-90", size: 14 }), " ", t("concept_map.venn.back_to_editor") || "Back"))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow relative overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none" }), isWon && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm", role: "dialog", "aria-modal": "true", "aria-labelledby": "mb-victory-title" }, /* @__PURE__ */ React.createElement("div", { className: `bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? "animate-bounce" : ""}` }, /* @__PURE__ */ React.createElement("h2", { id: "mb-victory-title", className: "text-4xl font-black text-indigo-600 mb-2" }, t("concept_map.venn.victory_title") || "\u{1F389} Perfect!"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600" }, t("games.bucket_sort.victory_desc") || "You sorted every item correctly!"), /* @__PURE__ */ React.createElement("p", { className: "text-2xl font-black text-yellow-500 mt-2" }, score, " pts"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 mt-4 justify-center" }, /* @__PURE__ */ React.createElement("button", { ref: playAgainRef, onClick: reset, className: "px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14 }), " ", t("games.memory.play_again") || "Play Again"), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors" }, "Close"))), !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null)), lastHint && lastHintLabel && /* @__PURE__ */ React.createElement("div", { className: "absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16 }), " ", t("games.ce_sort.hint_try") || "Try", ": ", lastHintLabel), keyboardSelectedItemId && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4" }, /* @__PURE__ */ React.createElement("div", { ref: moveMenuRef, className: "bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 max-w-md w-full pointer-events-auto", role: "dialog", "aria-modal": "true", "aria-label": t("games.choose_destination_aria") || "Choose a destination" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-700 text-center mb-1" }, t("concept_sort.tap_target") || "Tap a bucket above, or pick one here:"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, buckets.map((b) => /* @__PURE__ */ React.createElement("button", { key: b.id, onClick: () => handleKeyboardMove(b.id), className: `px-4 py-3 bg-${accent}-100 hover:bg-${accent}-200 text-${accent}-800 rounded-xl font-bold text-xs transition-colors border border-${accent}-300 focus:outline-none focus:ring-2 focus:ring-${accent}-500` }, b.title)), /* @__PURE__ */ React.createElement("button", { onClick: () => handleKeyboardMove("bank"), className: "col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400" }, t("concept_map.venn.return_bank") || "Return to bank")), /* @__PURE__ */ React.createElement("button", { onClick: () => setKeyboardSelectedItemId(null), className: "mt-1 text-xs text-slate-600 hover:text-slate-800 underline text-center" }, t("concept_map.venn.cancel_selection") || "Cancel"))), /* @__PURE__ */ React.createElement("div", { className: `p-4 grid gap-4 ${buckets.length <= 2 ? "grid-cols-1 md:grid-cols-2" : buckets.length <= 3 ? "grid-cols-1 md:grid-cols-3" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"}` }, buckets.map((b) => {
+  return /* @__PURE__ */ React.createElement("div", { ref: gameContainerRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "multi-bucket-game-title", className: `fixed inset-0 z-[200] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? "" : " animate-in zoom-in-95"}` }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: `bg-gradient-to-r ${headerGradient} p-4 text-white flex justify-between items-center shadow-md z-30` }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "multi-bucket-game-title", className: "font-bold text-xl flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 24, "aria-hidden": "true" }), " ", titleText), topicTitle && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-white/70 mt-0.5" }, topicTitle)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40" }, t("common.score") || "Score", ": ", score), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement("button", { ref: multiBucketCloseRef, type: "button", "aria-label": t("common.close") || "Close", onClick: onClose, className: "min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:outline-none focus:ring-2 focus:ring-white" }, /* @__PURE__ */ React.createElement(ArrowDown, { className: "rotate-90", size: 14 }), " ", t("concept_map.venn.back_to_editor") || "Back"))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow relative overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none" }), isWon && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" }, /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      ref: multiBucketWinRef,
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": "mb-victory-title",
+      "aria-describedby": "mb-victory-description",
+      onKeyDown: (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          onClose();
+          return;
+        }
+        if (event.key !== "Tab") return;
+        const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+        if (!focusable.length) {
+          event.preventDefault();
+          return;
+        }
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      },
+      className: `relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? "animate-bounce" : ""}`
+    },
+    /* @__PURE__ */ React.createElement("h2", { id: "mb-victory-title", className: "text-4xl font-black text-indigo-600 mb-2" }, t("concept_map.venn.victory_title") || "Perfect!"),
+    /* @__PURE__ */ React.createElement("p", { id: "mb-victory-description", className: "text-slate-600" }, t("games.bucket_sort.victory_desc") || "You sorted every item correctly!"),
+    /* @__PURE__ */ React.createElement("p", { className: "text-2xl font-black text-yellow-500 mt-2" }, score, " pts"),
+    /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 mt-4 justify-center" }, /* @__PURE__ */ React.createElement("button", { ref: playAgainRef, type: "button", onClick: reset, className: "min-h-11 px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, "aria-hidden": "true" }), " ", t("games.memory.play_again") || "Play Again"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-h-11 px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" }, t("common.close") || "Close"))
+  ), !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null)), lastHint && lastHintLabel && /* @__PURE__ */ React.createElement("div", { className: "absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16 }), " ", t("games.ce_sort.hint_try") || "Try", ": ", lastHintLabel), keyboardSelectedItemId && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4" }, /* @__PURE__ */ React.createElement("div", { ref: moveMenuRef, className: "bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 max-w-md w-full pointer-events-auto", role: "dialog", "aria-modal": "true", "aria-label": t("games.choose_destination_aria") || "Choose a destination" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-700 text-center mb-1" }, t("concept_sort.tap_target") || "Tap a bucket above, or pick one here:"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, buckets.map((b) => /* @__PURE__ */ React.createElement("button", { key: b.id, onClick: () => handleKeyboardMove(b.id), className: `px-4 py-3 bg-${accent}-100 hover:bg-${accent}-200 text-${accent}-800 rounded-xl font-bold text-xs transition-colors border border-${accent}-300 focus:outline-none focus:ring-2 focus:ring-${accent}-500` }, b.title)), /* @__PURE__ */ React.createElement("button", { onClick: () => handleKeyboardMove("bank"), className: "col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400" }, t("concept_map.venn.return_bank") || "Return to bank")), /* @__PURE__ */ React.createElement("button", { onClick: () => setKeyboardSelectedItemId(null), className: "mt-1 text-xs text-slate-600 hover:text-slate-800 underline text-center" }, t("concept_map.venn.cancel_selection") || "Cancel"))), /* @__PURE__ */ React.createElement("div", { className: `p-4 grid gap-4 ${buckets.length <= 2 ? "grid-cols-1 md:grid-cols-2" : buckets.length <= 3 ? "grid-cols-1 md:grid-cols-3" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"}` }, buckets.map((b) => {
     const placed = itemsByBucket[b.id] || [];
     const isActive = activeDropZone === b.id;
     const hasSelection = !!keyboardSelectedItemId;
