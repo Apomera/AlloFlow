@@ -99,6 +99,45 @@ var scrambleWord = function(word) {
   return result === word ? scrambleWord(word) : result;
 };
 const useReducedMotion = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+const useGameDialogFocus = (dialogRef, initialFocusRef, onClose) => {
+  const closeHandlerRef = useRef(onClose);
+  closeHandlerRef.current = onClose;
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return void 0;
+    const previousFocus = typeof document !== "undefined" ? document.activeElement : null;
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    (initialFocusRef?.current || getFocusable()[0] || dialog).focus();
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeHandlerRef.current?.();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    dialog.addEventListener("keydown", onKeyDown);
+    return () => {
+      dialog.removeEventListener("keydown", onKeyDown);
+      if (previousFocus?.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
+    };
+  }, []);
+};
 const speakText = (text) => {
   if (!text) return;
   const player = typeof window !== "undefined" ? window.AlloSpeechPlayer : null;
@@ -559,6 +598,9 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   const canvasRef = useRef(null);
   const termRefs = useRef({});
   const defRefs = useRef({});
+  const matchingDialogRef = useRef(null);
+  const matchingCloseRef = useRef(null);
+  useGameDialogFocus(matchingDialogRef, matchingCloseRef, onClose);
   const shuffleDefinitions = (validItems) => {
     const defs = validItems.map((item) => ({ id: item.term, text: item.def }));
     if (defs.length <= 1) return defs;
@@ -726,7 +768,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
     setRightCol(shuffleDefinitions(items));
     setAnnouncement("");
   };
-  return /* @__PURE__ */ React.createElement("div", { className: `fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden${useReducedMotion() ? "" : " animate-in fade-in duration-300"}` }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "bg-white border-b border-slate-200 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm no-print z-20 relative" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-lg flex items-center gap-2 text-indigo-900" }, /* @__PURE__ */ React.createElement(GitMerge, { size: 20, className: "text-orange-500" }), " ", t("matching.title")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, t("matching.instructions")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 mt-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-400 px-2 py-0.5 rounded-full" }, /* @__PURE__ */ React.createElement(GitMerge, { size: 10, className: "text-slate-600" }), " ", t("matching.pairs") || "Pairs", ": ", connections.length, "/", items.length), isChecked && /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${score === items.length * 25 ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-indigo-100 text-indigo-700 border-indigo-200"} ${!useReducedMotion() ? "animate-in zoom-in duration-300" : ""}` }, /* @__PURE__ */ React.createElement(Trophy, { size: 10, className: "text-yellow-500" }), " ", t("matching.score_display"), ": ", score, " pts"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 p-1 rounded-full bg-slate-50 border border-slate-400 shadow-sm self-end sm:self-auto" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: matchingDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "matching-game-title", className: `fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden focus:outline-none${useReducedMotion() ? "" : " animate-in fade-in duration-300"}` }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "bg-white border-b border-slate-200 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm no-print z-20 relative" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "matching-game-title", className: "font-bold text-lg flex items-center gap-2 text-indigo-900" }, /* @__PURE__ */ React.createElement(GitMerge, { size: 20, className: "text-orange-500" }), " ", t("matching.title")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, t("matching.instructions")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 mt-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-400 px-2 py-0.5 rounded-full" }, /* @__PURE__ */ React.createElement(GitMerge, { size: 10, className: "text-slate-600" }), " ", t("matching.pairs") || "Pairs", ": ", connections.length, "/", items.length), isChecked && /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${score === items.length * 25 ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-indigo-100 text-indigo-700 border-indigo-200"} ${!useReducedMotion() ? "animate-in zoom-in duration-300" : ""}` }, /* @__PURE__ */ React.createElement(Trophy, { size: 10, className: "text-yellow-500" }), " ", t("matching.score_display"), ": ", score, " pts"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 p-1 rounded-full bg-slate-50 border border-slate-400 shadow-sm self-end sm:self-auto" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: reset,
@@ -741,8 +783,10 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      ref: matchingCloseRef,
+      type: "button",
       onClick: onClose,
-      className: "p-1.5 hover:bg-red-50 rounded-full text-slate-600 hover:text-red-500 transition-colors",
+      className: "min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-red-50 rounded-full text-slate-600 hover:text-red-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500",
       title: t("common.close"),
       "aria-label": t("matching.close_aria")
     },

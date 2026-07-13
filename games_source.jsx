@@ -12,6 +12,34 @@ var scrambleWord = function(word) {
 
 const useReducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
 
+// Shared focus management for full-screen game workspaces.
+const useGameDialogFocus = (dialogRef, initialFocusRef, onClose) => {
+  const closeHandlerRef = useRef(onClose);
+  closeHandlerRef.current = onClose;
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    const previousFocus = typeof document !== 'undefined' ? document.activeElement : null;
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    (initialFocusRef?.current || getFocusable()[0] || dialog).focus();
+    const onKeyDown = event => {
+      if (event.key === 'Escape') { event.preventDefault(); closeHandlerRef.current?.(); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return () => {
+      dialog.removeEventListener('keydown', onKeyDown);
+      if (previousFocus?.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
+    };
+  }, []);
+};
+
 // ── TTS utility for read-aloud accessibility ──
 // Thin delegator to window.AlloSpeechPlayer (defined in AlloFlowANTI.txt).
 // The player handles: Gemini → Kokoro → browser cascade, mute respect,
@@ -585,6 +613,9 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   const canvasRef = useRef(null);
   const termRefs = useRef({});
   const defRefs = useRef({});
+  const matchingDialogRef = useRef(null);
+  const matchingCloseRef = useRef(null);
+  useGameDialogFocus(matchingDialogRef, matchingCloseRef, onClose);
   const shuffleDefinitions = (validItems) => {
       const defs = validItems.map(item => ({ id: item.term, text: item.def }));
       if (defs.length <= 1) return defs;
@@ -753,11 +784,11 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
       setAnnouncement('');
   };
   return (
-    <div className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
+    <div ref={matchingDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="matching-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden focus:outline-none${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
         <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
         <div className="bg-white border-b border-slate-200 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm no-print z-20 relative">
             <div>
-                 <h3 className="font-bold text-lg flex items-center gap-2 text-indigo-900">
+                 <h3 id="matching-game-title" className="font-bold text-lg flex items-center gap-2 text-indigo-900">
                      <GitMerge size={20} className="text-orange-500"/> {t('matching.title')}
                  </h3>
                  <p className="text-xs text-slate-600">{t('matching.instructions')}</p>
@@ -783,8 +814,10 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                     <RefreshCw size={14}/> {t('memory.reset') || 'Reset'}
                 </button>
                 <button
+                    ref={matchingCloseRef}
+                    type="button"
                     onClick={onClose}
-                    className="p-1.5 hover:bg-red-50 rounded-full text-slate-600 hover:text-red-500 transition-colors"
+                    className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-red-50 rounded-full text-slate-600 hover:text-red-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     title={t('common.close')}
                     aria-label={t('matching.close_aria')}
                 >

@@ -99,6 +99,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Made the shared Multi-Zone Sort completion layer a named/described focus-managed dialog; retained initial Play again focus, contained Tab, supported Escape closing, returned focus to the game after replay, hid the decorative celebration emoji, provided 44 CSS-pixel actions, and suppressed dialog entry animation when reduced motion is requested (WCAG 1.1.1, 2.1.1, 2.3.3, 2.4.3, 2.4.7, 2.5.8, 4.1.2).
 
+- Made Matching Game a named focus-managed full-screen dialog using a reusable game-workspace focus hook; focused its named 44 CSS-pixel Close control, contained Tab, supported Escape closing, restored focus to the launcher, and retained reduced-motion-aware entry (WCAG 2.1.1, 2.3.3, 2.4.3, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
