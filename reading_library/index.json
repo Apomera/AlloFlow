@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-13T15:13:44.574Z",
+ "generatedAt": "2026-07-13T16:28:57.499Z",
  "attribution": {
   "text": "Open reading materials from StoryWeaver and curated public/open education sources. Item-level licenses are shown on each text.",
   "url": "https://storyweaver.org.in",
@@ -23,6 +23,11 @@
    "count": 67
   },
   {
+   "name": "Burmese",
+   "code": "my",
+   "count": 47
+  },
+  {
    "name": "Nepali",
    "code": "ne",
    "count": 45
@@ -40,6 +45,11 @@
   {
    "name": "Vietnamese",
    "code": "vi",
+   "count": 37
+  },
+  {
+   "name": "Lao",
+   "code": "lo",
    "count": 37
   },
   {
@@ -78,18 +88,8 @@
    "count": 30
   },
   {
-   "name": "Burmese",
-   "code": "my",
-   "count": 29
-  },
-  {
    "name": "Farsi",
    "code": "fa",
-   "count": 28
-  },
-  {
-   "name": "Lao",
-   "code": "lo",
    "count": 28
   },
   {
@@ -91894,7 +91894,7 @@
   {
    "slug": "bloom-card-32965667-04-bisad-iyo-eyga-iyo-koofiyadihii",
    "title": "04 - Bisad iyo eyga iyo koofiyadihii",
-   "description": "The wind blows Cat's and Dog's hats into the water but Elephant is there to help them again. Bloom Reader layout",
+   "description": "The wind blows Cat's and Dog's hats into the water but Elephant is there to help them again.",
    "language": "Somali",
    "langCode": "so",
    "isRtl": false,
@@ -91919,7 +91919,7 @@
    "publisher": "SIL Education for Life",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 83,
+   "wordCount": 80,
    "file": "books/bloom-card-32965667-04-bisad-iyo-eyga-iyo-koofiyadihii.json"
   },
   {
@@ -93459,7 +93459,7 @@
   {
    "slug": "bloom-card-fc1178bc-17",
    "title": "17 - ድሙን ከልቢን ውዑይ ድስቲ",
-   "description": "Device Portrait Layout.",
+   "description": "A Tigrinya picture book from Bloom Library.",
    "language": "Tigrinya",
    "langCode": "ti",
    "isRtl": false,
@@ -93484,7 +93484,7 @@
    "publisher": "SIL-PNG Education for Life",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 64,
+   "wordCount": 68,
    "file": "books/bloom-card-fc1178bc-17.json"
   },
   {
@@ -95787,35 +95787,6 @@
    "file": "books/bloom-6549abd7-untitled.json"
   },
   {
-   "slug": "bloom-374447b7-picture-based-participatory-linguistics-cards",
-   "title": "Picture-Based Participatory Linguistics Cards",
-   "description": "This is a template to build your own picture-based cards for participatory phonological analysis through word-sorting activities in orthography development workshops. The cards build on Kutsch Lojenga’s (2024) word-based participatory approach, aiming to empower language communities in their orthography development and literacy efforts.\n\nReference:\nKutsch Lojenga, C. (2024). 9: Participatory research in linguistics for language and orthography development: A practical guide. In T. Stirtz, M. Cahill, & P. Davison (Eds.), Participatory linguistics: Methods and case studies from around the world. Language Documentation & Conservation Special Publication no. 29 (pp. 136–158). University of Hawai’i Press; https://nflrc.hawaii.edu/ldc/. https://hdl.handle.net/10125/74780",
-   "language": "Burmese",
-   "langCode": "my",
-   "isRtl": false,
-   "level": "2",
-   "sourceId": "bloom",
-   "contentType": "story",
-   "subjects": [],
-   "license": "CC0",
-   "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-   "source": {
-    "id": "bloom",
-    "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/fEJNk6PWwp"
-   },
-   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fEJNk6PWwp%2f1742648363342%2fParticipatory+Linguistics+Card+Template%2fimage.png",
-   "authors": [
-    "-"
-   ],
-   "illustrators": [],
-   "publisher": "-",
-   "hasAudio": false,
-   "pageCount": 2,
-   "wordCount": 25,
-   "file": "books/bloom-374447b7-picture-based-participatory-linguistics-cards.json"
-  },
-  {
    "slug": "bloom-334fbae7-untitled",
    "title": "ဦးစိတ်တို",
    "description": "A story about a bird called Mr. Angry, translated into Tangshang Naga",
@@ -96702,159 +96673,6 @@
    "file": "books/bloom-67eca7c7-untitled.json"
   },
   {
-   "slug": "bloom-239b1a74-23",
-   "title": "ພຣະເຈົ້າເປັນຜູ້ລ້ຽງຂອງຂ້ອຍ ສະຫລຸບຫຍໍ້ ເພງສັນລະເສີນ 23",
-   "description": "South African artist, Marleen Visser, beautifully illustrates Psalm 23 with images from life in rural Mozambique, giving us a fresh look at this classic psalm.",
-   "language": "Lao",
-   "langCode": "lo",
-   "isRtl": false,
-   "level": "1",
-   "sourceId": "bloom",
-   "contentType": "story",
-   "subjects": [],
-   "license": "CC BY",
-   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-   "source": {
-    "id": "bloom",
-    "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/FsickSXGSj"
-   },
-   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/FsickSXGSj%2f1752134585101%2f%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%bb%80%e0%ba%9b%e0%ba%b1%e0%ba%99%e0%ba%9c%e0%ba%b9%e0%bb%89%e0%ba%a5%e0%bb%89%e0%ba%bd%e0%ba%87%e0%ba%82%e0%ba%ad%e0%ba%87%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d+%e0%ba%aa%e0%ba%b0%e0%ba%ab%e0%ba%a5%e0%ba%b8%e0%ba%9a%e0%ba%ab%e0%ba%8d%e0%bb%8d%e0%bb%89+%e0%bb%80%e0%ba%9e%e0%ba%87%e0%ba%aa%e0%ba%b1%e0%ba%99%e0%ba%a5%e0%ba%b0%e0%bb%80%e0%ba%aa%e0%ba%b5%e0%ba%99%2fPsalm+23+Pg1-9.jpg",
-   "authors": [
-    "Little Zebra Books"
-   ],
-   "illustrators": [],
-   "publisher": "Little Zebra Books",
-   "hasAudio": false,
-   "pageCount": 11,
-   "wordCount": 15,
-   "file": "books/bloom-239b1a74-23.json"
-  },
-  {
-   "slug": "bloom-46e2b6e2-11",
-   "title": "11. ປັດສະຄາ",
-   "description": "Passover",
-   "language": "Lao",
-   "langCode": "lo",
-   "isRtl": false,
-   "level": "2",
-   "sourceId": "bloom",
-   "contentType": "story",
-   "subjects": [
-    "Spiritual"
-   ],
-   "license": "CC BY",
-   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-   "source": {
-    "id": "bloom",
-    "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/DrWbVbHwWY"
-   },
-   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2f46e2b6e2-86f1-4a10-9607-3fa234a18776%2f11.+%e0%ba%9b%e0%ba%b1%e0%ba%94%e0%ba%aa%e0%ba%b0%e0%ba%84%e0%ba%b2%2fimage.jpg",
-   "authors": [
-    "“Original work available at http://door43.org.”"
-   ],
-   "illustrators": [],
-   "publisher": "“Original work available at http://door43.org.”",
-   "hasAudio": false,
-   "pageCount": 8,
-   "wordCount": 51,
-   "file": "books/bloom-46e2b6e2-11.json"
-  },
-  {
-   "slug": "bloom-feefa4d3-12",
-   "title": "12. ການອົບພະຍົບ",
-   "description": "The Exodus in Lao",
-   "language": "Lao",
-   "langCode": "lo",
-   "isRtl": false,
-   "level": "2",
-   "sourceId": "bloom",
-   "contentType": "story",
-   "subjects": [
-    "Spiritual"
-   ],
-   "license": "CC BY",
-   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-   "source": {
-    "id": "bloom",
-    "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/ts4FHi1uIN"
-   },
-   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2ffeefa4d3-a8a7-43f6-b355-3e5492db9b27%2f12.+%e0%ba%81%e0%ba%b2%e0%ba%99%e0%ba%ad%e0%ba%bb%e0%ba%9a%e0%ba%9e%e0%ba%b0%e0%ba%8d%e0%ba%bb%e0%ba%9a%2fimage.jpg",
-   "authors": [
-    "door43.org"
-   ],
-   "illustrators": [],
-   "publisher": "door43.org",
-   "hasAudio": false,
-   "pageCount": 14,
-   "wordCount": 111,
-   "file": "books/bloom-feefa4d3-12.json"
-  },
-  {
-   "slug": "bloom-ed4fff9c-8",
-   "title": "8. ພຣະເຈົ້າຊ່ວຍຊີວິດຂອງໂຢເຊບແລະຄອບຄົວ",
-   "description": "Story of Joseph in Lao",
-   "language": "Lao",
-   "langCode": "lo",
-   "isRtl": false,
-   "level": "2",
-   "sourceId": "bloom",
-   "contentType": "story",
-   "subjects": [
-    "Spiritual"
-   ],
-   "license": "CC BY",
-   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-   "source": {
-    "id": "bloom",
-    "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/r2sT6GnRio"
-   },
-   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2fed4fff9c-b1c5-4ab9-8c3e-9072a4e33c49%2f8.+%e0%ba%9e%e0%ba%a3%e0%ba%b0%e0%bb%80%e0%ba%88%e0%ba%bb%e0%bb%89%e0%ba%b2%e0%ba%8a%e0%bb%88%e0%ba%a7%e0%ba%8d%e0%ba%8a%e0%ba%b5%e0%ba%a7%e0%ba%b4%e0%ba%94+%e0%ba%82%e0%ba%ad%e0%ba%87%e0%bb%82%e0%ba%a2%e0%bb%80%e0%ba%8a%e0%ba%9a%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%84%e0%ba%ad%e0%ba%9a%e0%ba%84%e0%ba%bb%e0%ba%a7%2fimage.jpg",
-   "authors": [
-    "Unfoldingword.org"
-   ],
-   "illustrators": [],
-   "publisher": "Unfoldingword.org",
-   "hasAudio": false,
-   "pageCount": 14,
-   "wordCount": 92,
-   "file": "books/bloom-ed4fff9c-8.json"
-  },
-  {
-   "slug": "bloom-1718f352-1",
-   "title": "1.ເລື່ອງການຊົງສ້າງ",
-   "description": "The Creation in Lao",
-   "language": "Lao",
-   "langCode": "lo",
-   "isRtl": false,
-   "level": "2",
-   "sourceId": "bloom",
-   "contentType": "story",
-   "subjects": [
-    "Spiritual"
-   ],
-   "license": "CC BY",
-   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-   "source": {
-    "id": "bloom",
-    "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/wIVPtZFfRD"
-   },
-   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/tom_tebow%40sil.org%2f1718f352-9864-45f9-a75a-f4ae7e3e4911%2f1.+%e0%bb%80%e0%ba%a5%e0%ba%b7%e0%bb%88%e0%ba%ad%e0%ba%87%e0%ba%81%e0%ba%b2%e0%ba%99%e0%ba%8a%e0%ba%bb%e0%ba%87%e0%ba%aa%e0%bb%89%e0%ba%b2%e0%ba%87%2fimage.jpg",
-   "authors": [
-    "unfoldingWord.org"
-   ],
-   "illustrators": [],
-   "publisher": "unfoldingWord.org",
-   "hasAudio": false,
-   "pageCount": 16,
-   "wordCount": 108,
-   "file": "books/bloom-1718f352-1.json"
-  },
-  {
    "slug": "bloom-card-8b738498-untitled",
    "title": "ອາຄື ຄີ່ ອ້າມີ້ ອູສຼໍຍຼ່ະ.",
    "description": "A5 Portrait. The wind blows Cat's and Dog's hats into the water but Elephant is there again to help them.",
@@ -97095,7 +96913,7 @@
   {
    "slug": "bloom-card-619c6bf0-21-miv-thiab-dev-thiab-cov-hnub-qub",
    "title": "21 - miv thiab dev thiab cov hnub qub",
-   "description": "Device Portrait Layout",
+   "description": "A Hmong picture book from Bloom Library.",
    "language": "Hmong",
    "langCode": "mww",
    "isRtl": false,
@@ -97120,7 +96938,7 @@
    "publisher": "SIL-PNG Education for Life",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 67,
+   "wordCount": 71,
    "file": "books/bloom-card-619c6bf0-21-miv-thiab-dev-thiab-cov-hnub-qub.json"
   },
   {
@@ -98050,37 +97868,6 @@
    "file": "books/bloom-1eceef51-plaas-daw-iya-na-mga-arey.json"
   },
   {
-   "slug": "bloom-3b2b9115-salamat-panginoon",
-   "title": "Salamat, Panginoon",
-   "description": "A Filipino picture book from Bloom Library.",
-   "language": "Filipino",
-   "langCode": "fil",
-   "isRtl": false,
-   "level": "4",
-   "sourceId": "bloom",
-   "contentType": "story",
-   "subjects": [
-    "Primer"
-   ],
-   "license": "CC BY",
-   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-   "source": {
-    "id": "bloom",
-    "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/L2EsKwe3vJ"
-   },
-   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f3b2b9115-8ced-4020-abe1-5b2258d91227%2fSalamat%2c+Panginoon%2fAOR_9-1d.png",
-   "authors": [
-    "Resources for the Blind, Inc."
-   ],
-   "illustrators": [],
-   "publisher": "Resources for the Blind, Inc.",
-   "hasAudio": false,
-   "pageCount": 10,
-   "wordCount": 185,
-   "file": "books/bloom-3b2b9115-salamat-panginoon.json"
-  },
-  {
    "slug": "bloom-4a2049ca-untitled",
    "title": "گربه های وحشی! گربه های وحشی",
    "description": "Example book in persian with widget",
@@ -98232,6 +98019,1022 @@
    "pageCount": 22,
    "wordCount": 733,
    "file": "books/bloom-5a8f7349-untitled-ar.json"
+  },
+  {
+   "slug": "bloom-9b66843b-untitled-my",
+   "title": "လှပတဲ့နေ့လေးတစ်နေ့",
+   "description": "A Burmese picture book from Bloom Library.",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/sMEpwxPHkw"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_01_Image_0001.png",
+   "authors": [
+    "Book Dash"
+   ],
+   "illustrators": [],
+   "publisher": "Book Dash",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 71,
+   "file": "books/bloom-9b66843b-untitled-my.json"
+  },
+  {
+   "slug": "bloom-36781529-untitled-my",
+   "title": "ဖိုးလုံးလည်း တော်တယ်",
+   "description": "Tongzbu is clever too in Tangshang Naga",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/KpCdpzpwqC"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f36781529-84a0-47a2-bebb-2bbd0d1fde83%2fTongzbu+m%c3%a4nz+%c3%a0dfinx+viq%2f18.jpg",
+   "authors": [
+    "NTC Literacy team"
+   ],
+   "illustrators": [],
+   "publisher": "NTC Literacy team",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 303,
+   "file": "books/bloom-36781529-untitled-my.json"
+  },
+  {
+   "slug": "bloom-ea5979b2-untitled-my",
+   "title": "သွေးစည်းသွားတဲ့ သိုးအုပ်",
+   "description": "A story 'Unity of Sheep' translated into Tangshang Naga",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/hI7ty521uR"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fea5979b2-e37f-4849-ae9c-1e14df1d4752%2fR%c3%a0t%c3%a4mtuz+hiax+S%c3%a0ku+kaongz%2f15.jpg",
+   "authors": [
+    "NTC Literacy team"
+   ],
+   "illustrators": [],
+   "publisher": "NTC Literacy team",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 164,
+   "file": "books/bloom-ea5979b2-untitled-my.json"
+  },
+  {
+   "slug": "bloom-ec328b7c-untitled-my",
+   "title": "ကျွန်တော်ဟာ တစ်ယောက်တည်းလာ",
+   "description": "\"Am I alone?\" translated in Tangshang Naga",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/dl8E9E7pLv"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fec328b7c-aa5c-4fce-ba02-53d8567d3b6d%2fNgiz+laqlaq+li+sh%c3%a4x%2fSWPB_277-am-i-alone_Page_1_Image_0001.png",
+   "authors": [
+    "Sarita Shetty"
+   ],
+   "illustrators": [],
+   "publisher": "Sarita Shetty",
+   "hasAudio": false,
+   "pageCount": 5,
+   "wordCount": 83,
+   "file": "books/bloom-ec328b7c-untitled-my.json"
+  },
+  {
+   "slug": "bloom-a0e6be38-untitled-my",
+   "title": "ကြောင်မလေးစီးစီ",
+   "description": "A translated Tangshang Naga story about the two cats",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/tg9kVGJTM8"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fa0e6be38-e805-4962-a41b-c2af8e770dee%2fMixmix+sez+Mixbu%2f1.jpg",
+   "authors": [
+    "NTC Literacy team"
+   ],
+   "illustrators": [],
+   "publisher": "NTC Literacy team",
+   "hasAudio": false,
+   "pageCount": 18,
+   "wordCount": 327,
+   "file": "books/bloom-a0e6be38-untitled-my.json"
+  },
+  {
+   "slug": "bloom-88dfdcc0-untitled-my",
+   "title": "ဝက်ဝံလေးရဲ့ မိသားစု",
+   "description": "A story about orphanage fox and bear family translated into Tangshang Naga",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/r1UuyNY8EF"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f201.jpg",
+   "authors": [
+    "NTC Literacy team"
+   ],
+   "illustrators": [],
+   "publisher": "NTC Literacy team",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 264,
+   "file": "books/bloom-88dfdcc0-untitled-my.json"
+  },
+  {
+   "slug": "bloom-3cfc0883-untitled-my",
+   "title": "အံ့ဖွယ် ပုရွက်ဆိတ်ကလေးများ",
+   "description": "A story about amazing ants translated in Tangshang Naga",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/tHyllWPEAm"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f3cfc0883-d927-4f5c-96cc-081a81ede5c7%2f%c3%80vangx+cy%c3%a4ngz+saizsii+sez+tiim%2fSWPB_222-amazing-ants_Page_1_Image_0001.png",
+   "authors": [
+    "NTC Literacy team"
+   ],
+   "illustrators": [],
+   "publisher": "NTC Literacy team",
+   "hasAudio": false,
+   "pageCount": 4,
+   "wordCount": 36,
+   "file": "books/bloom-3cfc0883-untitled-my.json"
+  },
+  {
+   "slug": "bloom-513b5795-untitled-my",
+   "title": "အီစွတ်ပုံပြင်များ (၁)",
+   "description": "This is a Tangshang Naga translated version of some Aesop's fables.",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/0ksmPa9oSC"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f513b5795-383b-4847-b633-2dbc5453bbcd%2fEsop+Manzphanx+Thunx++1%2f131.jpg",
+   "authors": [
+    "NTC Literacy team"
+   ],
+   "illustrators": [],
+   "publisher": "NTC Literacy team",
+   "hasAudio": false,
+   "pageCount": 40,
+   "wordCount": 1966,
+   "file": "books/bloom-513b5795-untitled-my.json"
+  },
+  {
+   "slug": "bloom-7790ba95-untitled-my",
+   "title": "ဖိုးကောင်းနှင့် ညီညီ",
+   "description": "This is a story about two friends who are good-minded",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/XtHSwoUTqu"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f7790ba95-4f27-41ef-998e-c188d1705302%2fDfiixlem+naix+Kiimxbu%2f12.jpg",
+   "authors": [
+    "NTC Literacy team"
+   ],
+   "illustrators": [],
+   "publisher": "NTC Literacy team",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 368,
+   "file": "books/bloom-7790ba95-untitled-my.json"
+  },
+  {
+   "slug": "bloom-334fbae7-untitled-my",
+   "title": "တားဆီင်ဇေဝ်",
+   "description": "လော်င်ဆီင်ဇာဝ်းအဲ စာ်မ်းတဟော်ည်ႇအန်း ကံပ်ဘူမေဲႈဘိုး ချှေႈအီးဆီင်ဘံဝ်ဖီုင်း။",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/9PkDJX8RoK"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f334fbae7-49be-4116-9bdf-835355287a56%2f%e1%80%90%e1%80%ac%e1%80%b8%e1%80%86%e1%80%ae%e1%80%84%e1%80%ba%e1%80%87%e1%80%b1%e1%80%9d%e1%80%ba%2f231.jpg",
+   "authors": [
+    "2021, RBTT & NTC"
+   ],
+   "illustrators": [],
+   "publisher": "2021, RBTT & NTC",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 404,
+   "file": "books/bloom-334fbae7-untitled-my.json"
+  },
+  {
+   "slug": "bloom-4c7bed50-untitled-my",
+   "title": "လမင်းကြီးနှင့် ဦးထုပ်",
+   "description": "Aˬkhaˬ zaˬ deuˬ gui dzaw-eu sahˬ boꞈ",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/MNH7p1w9xZ"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/ghoemeh.akha%40gmail.com%2f4c7bed50-e909-4f6c-90d6-cb9bbf1b1214%2fBa+la+haw%cb%87-eu+u%cb%ac+qo%cb%86%2fThe+Moon+and+The+Cap_Cover.jpg",
+   "authors": [
+    "Akha literature and cultural committee, and NTC"
+   ],
+   "illustrators": [],
+   "publisher": "Akha literature and cultural committee, and NTC",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 59,
+   "file": "books/bloom-4c7bed50-untitled-my.json"
+  },
+  {
+   "slug": "bloom-09f39e83-untitled-my",
+   "title": "လမင်းနဲ့ ဦးထုပ်",
+   "description": "A Burmese picture book from Bloom Library.",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/HFSQb7iOv6"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/moonlightlay176%40gmail.com%2f09f39e83-a1eb-4120-b964-2ca2aaf60a20%2f%e1%80%9c%e1%80%99%e1%80%84%e1%80%ba%e1%80%b8%e1%80%94%e1%80%b2%e1%80%b7+%e1%80%a6%e1%80%b8%e1%80%91%e1%80%af%e1%80%95%e1%80%ba%2fThe+Moon+and+The+Cap_Cover.jpg",
+   "authors": [
+    "Thein Min Aung"
+   ],
+   "illustrators": [],
+   "publisher": "Thein Min Aung",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 68,
+   "file": "books/bloom-09f39e83-untitled-my.json"
+  },
+  {
+   "slug": "bloom-5d0cd6bf-untitled-my",
+   "title": "ဗိုင်းရပ်စ်ကို တိုက်ခိုက်ကြစို့",
+   "description": "Virus information for children",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "3",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Health"
+   ],
+   "license": "CC BY-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/iVO8bbfnCQ"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/samollaykyaheh%40gmail.com%2f5d0cd6bf-2c91-45ac-9b03-6d19a406513d%2f%e1%80%97%e1%80%ad%e1%80%af%e1%80%84%e1%80%ba%e1%80%b8%e1%80%9b%e1%80%95%e1%80%ba%e1%80%85%e1%80%ba%e1%80%80%e1%80%ad%e1%80%af+%e1%80%90%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%81%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%80%e1%80%bc%e1%80%85%e1%80%ad%e1%80%af%e1%80%b7%2fFTV_Cover_WBCfighting01.png",
+   "authors": [
+    "SH, TF"
+   ],
+   "illustrators": [],
+   "publisher": "SH, TF",
+   "hasAudio": false,
+   "pageCount": 23,
+   "wordCount": 466,
+   "file": "books/bloom-5d0cd6bf-untitled-my.json"
+  },
+  {
+   "slug": "bloom-card-12b6457b-untitled",
+   "title": "အဲဒီႈတိူဝ်ႈဟံင်း ဇာ်န်းကဲ",
+   "description": "လော်င် ဒီႈတိူဝ်ႈ ထာန်ဂေါ်ည်းဇာ်န်းတိုဆံတ်ကဲ။",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY-NC",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/8bvFzAJHPG"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f12b6457b-4745-4310-ae8c-25cdd6010f3a%2f%e1%80%a1%e1%80%b2%e1%80%92%e1%80%ae%e1%82%88%e1%80%90%e1%80%ad%e1%80%b0%e1%80%9d%e1%80%ba%e1%82%88%e1%80%9f%e1%80%b6%e1%80%84%e1%80%ba%e1%80%b8+%e1%80%87%e1%80%ac%e1%80%ba%e1%80%94%e1%80%ba%e1%80%b8%e1%80%80%e1%80%b2%2ffront+cover1.jpg",
+   "authors": [
+    "RBTT & NTC"
+   ],
+   "illustrators": [],
+   "publisher": "RBTT & NTC",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 60,
+   "file": "books/bloom-card-12b6457b-untitled.json"
+  },
+  {
+   "slug": "bloom-card-773cc6eb-untitled",
+   "title": "အပ္လိုည်း",
+   "description": "လော်င် ဆီမ်းအပ္လိုည်း။",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY-NC",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/FdqVF5Mjef"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f773cc6eb-4fbc-468d-b138-bdf25aba5ca3%2f%e1%80%a1%e1%80%95%e1%80%b9%e1%80%9c%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%80%b8%2f01Turtle+Dove.png",
+   "authors": [
+    "RBTT & NTC"
+   ],
+   "illustrators": [],
+   "publisher": "RBTT & NTC",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 58,
+   "file": "books/bloom-card-773cc6eb-untitled.json"
+  },
+  {
+   "slug": "bloom-card-9b0f774a-untitled",
+   "title": "တဘု တဘု တဘု",
+   "description": "လော်င်ဘည်ဘာည်းတဘုတိုဆံတ်ကဲ။",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY-NC",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ogZLm9S3u9"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b0f774a-efa8-40f7-9905-3acee6b0a8f6%2f%e1%80%90%e1%80%98%e1%80%af+%e1%80%90%e1%80%98%e1%80%af+%e1%80%90%e1%80%98%e1%80%af%2f01+-+Run+Run+Run.jpg",
+   "authors": [
+    "2021,RBTT & NTC"
+   ],
+   "illustrators": [],
+   "publisher": "2021,RBTT & NTC",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 59,
+   "file": "books/bloom-card-9b0f774a-untitled.json"
+  },
+  {
+   "slug": "bloom-card-079b08bf-untitled",
+   "title": "ချှေႈမှေဲ နံင်ဘယ်ကဇော်ည် ဒဲႈအံဝ်း",
+   "description": "လော်င်ကော်န်းဒဲ့ ဟြာ်ည်ႇကဲအီးနံင်ကဇော်ည်အန်း ရေဲန်းနံင်လေႈ ပံပ်ဘေဲႇ။",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Story Book"
+   ],
+   "license": "CC BY-NC",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/lu32Rgkakm"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f079b08bf-2e2b-40cf-990c-362bf1e92a14%2f%e1%80%81%e1%80%bb%e1%80%be%e1%80%b1%e1%82%88%e1%80%99%e1%80%be%e1%80%b1%e1%80%b2+%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%98%e1%80%9a%e1%80%ba%e1%80%80%e1%80%87%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%8a%e1%80%ba+%e1%80%92%e1%80%b2%e1%82%88%e1%80%a1%e1%80%b6%e1%80%9d%e1%80%ba%e1%80%b8%2f01+-+Who+Can+Help+Me.jpg",
+   "authors": [
+    "RBTT & NTC"
+   ],
+   "illustrators": [],
+   "publisher": "RBTT & NTC",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 62,
+   "file": "books/bloom-card-079b08bf-untitled.json"
+  },
+  {
+   "slug": "bloom-card-cf4f00dc-untitled",
+   "title": "ကဲဟာဝ်းဒို့ပါ့်နား",
+   "description": "ကော်န်းဒဲ့ ကာည်း တိုဆံတ်ကဲ ဂီဟာဝ်းလှယ် ညျာနား",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY-NC",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Zf04MPdY7t"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2fcf4f00dc-1cdc-4c5a-8845-128a8021c67f%2f%e1%80%80%e1%80%b2%e1%80%9f%e1%80%ac%e1%80%9d%e1%80%ba%e1%80%b8%e1%80%92%e1%80%ad%e1%80%af%e1%80%b7%e1%80%95%e1%80%ab%e1%80%b7%e1%80%ba%e1%80%94%e1%80%ac%e1%80%b8%2f01They+Go+to+The+Field2.jpg",
+   "authors": [
+    "RBTT & NTC"
+   ],
+   "illustrators": [],
+   "publisher": "RBTT & NTC",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 61,
+   "file": "books/bloom-card-cf4f00dc-untitled.json"
+  },
+  {
+   "slug": "bloom-card-ffc82523-untitled",
+   "title": "သမိုင်းဝင်လမ်း",
+   "description": "A Burmese picture book, readable free at Bloom Library.",
+   "language": "Burmese",
+   "langCode": "my",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/CEKRse6pTh"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/CEKRse6pTh%2f1720540755558%2f%e1%80%9e%e1%80%99%e1%80%ad%e1%80%af%e1%80%84%e1%80%ba%e1%80%b8%e1%80%9d%e1%80%84%e1%80%ba%e1%80%9c%e1%80%99%e1%80%ba%e1%80%b8%2fCoverBloom3.jpg",
+   "authors": [
+    "The Ancient Path Project"
+   ],
+   "illustrators": [],
+   "publisher": "The Ancient Path Project",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 56,
+   "file": "books/bloom-card-ffc82523-untitled.json"
+  },
+  {
+   "slug": "bloom-card-691cbfe0-untitled",
+   "title": "ໃຫຍ່",
+   "description": "Learn the names of things in our world that are BIG",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/vGzGQBpOgo"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/vGzGQBpOgo%2f1753066020751%2f%e0%bb%83%e0%ba%ab%e0%ba%8d%e0%bb%88%2fBigC1.jpg",
+   "authors": [
+    "Bloom Lao"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Lao",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 67,
+   "file": "books/bloom-card-691cbfe0-untitled.json"
+  },
+  {
+   "slug": "bloom-card-9164883b-untitled",
+   "title": "ປສຶມ ສາລີ",
+   "description": "Learn about corn, from planting the seed to harvesting the corn to eat.",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Health"
+   ],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/rQk7fKH3FV"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/rQk7fKH3FV%2f1752733054842%2f%e0%ba%9b%e0%ba%aa%e0%ba%b6%e0%ba%a1+%e2%80%8b%e0%ba%aa%e0%ba%b2%e0%ba%a5%e0%ba%b5%2fCorn+cover.jpg",
+   "authors": [
+    "bloom khmu"
+   ],
+   "illustrators": [],
+   "publisher": "bloom khmu",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 70,
+   "file": "books/bloom-card-9164883b-untitled.json"
+  },
+  {
+   "slug": "bloom-card-f450cc29-untitled",
+   "title": "ການປູກສາລີ",
+   "description": "Learn about corn, from planting the seed to harvesting the corn to eat.",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Health"
+   ],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Vpj9djPJMx"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/Vpj9djPJMx%2f1752726186498%2f%e0%ba%81%e0%ba%b2%e0%ba%99%e0%ba%9b%e0%ba%b9%e0%ba%81%e0%ba%aa%e0%ba%b2%e0%ba%a5%e0%ba%b5%2fCorn+cover.jpg",
+   "authors": [
+    "Bloom Lao"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Lao",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 69,
+   "file": "books/bloom-card-f450cc29-untitled.json"
+  },
+  {
+   "slug": "bloom-card-8d696fac-untitled",
+   "title": "ແມງມຸມ ແມງມຸມ",
+   "description": "Spider man short story and picture",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/SKQ5dAp8r6"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/SKQ5dAp8r6%2f1752648388680%2f%e0%bb%81%e0%ba%a1%e0%ba%87%e0%ba%a1%e0%ba%b8%e0%ba%a1+%e0%bb%81%e0%ba%a1%e0%ba%87%e0%ba%a1%e0%ba%b8%e0%ba%a1%2fSC001602CV.jpg",
+   "authors": [
+    "Bloom Lao"
+   ],
+   "illustrators": [],
+   "publisher": "Bloom Lao",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 63,
+   "file": "books/bloom-card-8d696fac-untitled.json"
+  },
+  {
+   "slug": "bloom-card-2c60e14e-untitled",
+   "title": "ງົວຂ້ອຍຊື່ ຕາດຳ",
+   "description": "A Lao picture book, readable free at Bloom Library.",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [],
+   "license": "CC BY-NC",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/rMDDMmHiqM"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/rMDDMmHiqM%2f1752232674799%2f%e0%ba%87%e0%ba%bb%e0%ba%a7%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d%e0%ba%8a%e0%ba%b7%e0%bb%88+%e0%ba%95%e0%ba%b2%e0%ba%94%e0%ba%b3%2fimage.png",
+   "authors": [
+    "SIL"
+   ],
+   "illustrators": [],
+   "publisher": "SIL",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 57,
+   "file": "books/bloom-card-2c60e14e-untitled.json"
+  },
+  {
+   "slug": "bloom-card-6377b671-untitled",
+   "title": "ໄຂ່ກົບ",
+   "description": "A Lao picture book, readable free at Bloom Library.",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [],
+   "license": "CC BY-NC",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/JBvhTxYJLY"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/JBvhTxYJLY%2f1752232091154%2f%e0%bb%84%e0%ba%82%e0%bb%88%e0%ba%81%e0%ba%bb%e0%ba%9a%2fexport202304151600301160-7.png",
+   "authors": [
+    "USAID"
+   ],
+   "illustrators": [],
+   "publisher": "USAID",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 56,
+   "file": "books/bloom-card-6377b671-untitled.json"
+  },
+  {
+   "slug": "bloom-card-3ac6828d-untitled",
+   "title": "ກົບຢູ່ແຄມນໍ້າ",
+   "description": "A Lao picture book, readable free at Bloom Library.",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [],
+   "license": "CC BY-NC",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/PYCR6cf2zw"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/PYCR6cf2zw%2f1752228437078%2f%e0%ba%81%e0%ba%bb%e0%ba%9a%e0%ba%a2%e0%ba%b9%e0%bb%88%e0%bb%81%e0%ba%84%e0%ba%a1%e0%ba%99%e0%bb%8d%e0%bb%89%e0%ba%b2%2fIMG_20210719_214707.jpg",
+   "authors": [
+    "USAID"
+   ],
+   "illustrators": [],
+   "publisher": "USAID",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 56,
+   "file": "books/bloom-card-3ac6828d-untitled.json"
+  },
+  {
+   "slug": "bloom-card-89d6246d-untitled",
+   "title": "ຂ້ອຍເຫັນຫຼາຍໆສີ",
+   "description": "Identify the colours of different creatures",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/YP0TavKWxp"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/YP0TavKWxp%2f1752135944768%2f%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d%e0%bb%80%e0%ba%ab%e0%ba%b1%e0%ba%99%e0%ba%ab%e0%ba%bc%e0%ba%b2%e0%ba%8d%e0%bb%86%e0%ba%aa%e0%ba%b5%2fI+See+Colors+Title.png",
+   "authors": [
+    "SIL"
+   ],
+   "illustrators": [],
+   "publisher": "SIL",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 62,
+   "file": "books/bloom-card-89d6246d-untitled.json"
+  },
+  {
+   "slug": "bloom-card-e60d1346-untitled",
+   "title": "ໝາກັບແມວ ແລະໄຂ່",
+   "description": "A5 Portrait. Cat and Dog find an egg and start looking for its owner.",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/PJ2aFdkxtX"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/PJ2aFdkxtX%2f1752133947558%2f%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%bb%81%e0%ba%a1%e0%ba%a7+%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%bb%84%e0%ba%82%e0%bb%88%2fCover1.jpg",
+   "authors": [
+    "SIL"
+   ],
+   "illustrators": [],
+   "publisher": "SIL",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 71,
+   "file": "books/bloom-card-e60d1346-untitled.json"
+  },
+  {
+   "slug": "bloom-card-e91e9a24-untitled",
+   "title": "ໝາກັບແມວແລະປະຕູ",
+   "description": "A5 Portrait Layout",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [],
+   "license": "CC BY-NC",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/ftr2VF8CkL"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/ftr2VF8CkL%2f1752132901980%2f%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%bb%81%e0%ba%a1%e0%ba%a7%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%9b%e0%ba%b0%e0%ba%95%e0%ba%b9%2fcover-curved.jpg",
+   "authors": [
+    "SIL"
+   ],
+   "illustrators": [],
+   "publisher": "SIL",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 59,
+   "file": "books/bloom-card-e91e9a24-untitled.json"
+  },
+  {
+   "slug": "bloom-card-6573f9e1-untitled",
+   "title": "ໝາກັບແມວ ແລະທ້ອງຟ້າ",
+   "description": "A Lao picture book, readable free at Bloom Library.",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [],
+   "license": "CC BY-NC",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/LbTpfarJ5K"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/LbTpfarJ5K%2f1752132129107%2f%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%bb%81%e0%ba%a1%e0%ba%a7+%e0%bb%81%e0%ba%a5%e0%ba%b0%e0%ba%97%e0%bb%89%e0%ba%ad%e0%ba%87%e0%ba%9f%e0%bb%89%e0%ba%b2%2fCover-curved.jpg",
+   "authors": [
+    "SIL"
+   ],
+   "illustrators": [],
+   "publisher": "SIL",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 57,
+   "file": "books/bloom-card-6573f9e1-untitled.json"
+  },
+  {
+   "slug": "bloom-card-29da4ac8-untitled",
+   "title": "ໝາກັບແມວ ມີຫມວກ",
+   "description": "A5 Portrait. The wind blows Cat's and Dog's hats into the water but Elephant is there again to help them.",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/aDuTNKDCF6"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/aDuTNKDCF6%2f1752131600884%2f%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%bb%81%e0%ba%a1%e0%ba%a7+%e0%ba%a1%e0%ba%b5%e0%ba%ab%e0%ba%a1%e0%ba%a7%e0%ba%81%2fCover.jpg",
+   "authors": [
+    "SIL"
+   ],
+   "illustrators": [],
+   "publisher": "SIL",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 77,
+   "file": "books/bloom-card-29da4ac8-untitled.json"
+  },
+  {
+   "slug": "bloom-card-c4a4193d-untitled",
+   "title": "ໝາກັບແມວ ຕາກຝົນ",
+   "description": "A5 Portrait. Cat and Dog are in the rain and getting wet. Their friend Elephant helps them out.",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [],
+   "license": "CC BY-NC-SA",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/dtgZNulU59"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/dtgZNulU59%2f1752131111816%2f%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%bb%81%e0%ba%a1%e0%ba%a7+%e0%ba%95%e0%ba%b2%e0%ba%81%e0%ba%9d%e0%ba%bb%e0%ba%99%2fCover2.jpg",
+   "authors": [
+    "SIL"
+   ],
+   "illustrators": [],
+   "publisher": "SIL",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 75,
+   "file": "books/bloom-card-c4a4193d-untitled.json"
+  },
+  {
+   "slug": "bloom-card-729938ee-untitled",
+   "title": "ນັບໂຕແມວ",
+   "description": "Readers may practice their counting skills by counting cats",
+   "language": "Lao",
+   "langCode": "lo",
+   "isRtl": false,
+   "level": "1",
+   "sourceId": "bloom",
+   "contentType": "open-access-source-card",
+   "subjects": [],
+   "license": "CC BY-NC",
+   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/EfWD2zAohE"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/EfWD2zAohE%2f1752138076027%2f%e0%ba%99%e0%ba%b1%e0%ba%9a%e0%bb%82%e0%ba%95%e0%bb%81%e0%ba%a1%e0%ba%a7%2fPicCover.jpg",
+   "authors": [
+    "SIL"
+   ],
+   "illustrators": [],
+   "publisher": "SIL",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 65,
+   "file": "books/bloom-card-729938ee-untitled.json"
+  },
+  {
+   "slug": "bloom-51d67549-si-chisay",
+   "title": "Si Chisay",
+   "description": "Chisay, a cute dog is Ashley's favorite playmate.",
+   "language": "Filipino",
+   "langCode": "fil",
+   "isRtl": false,
+   "level": "2",
+   "sourceId": "bloom",
+   "contentType": "story",
+   "subjects": [
+    "Animal Stories"
+   ],
+   "license": "CC BY",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/G7v5VqmsLr"
+   },
+   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faor_adb047m.png",
+   "authors": [
+    "Resources for the Blind, Inc."
+   ],
+   "illustrators": [],
+   "publisher": "Resources for the Blind, Inc.",
+   "hasAudio": false,
+   "pageCount": 5,
+   "wordCount": 42,
+   "file": "books/bloom-51d67549-si-chisay.json"
   }
  ]
 }

@@ -1,38 +1,36 @@
 {
   "schema": "allo-reading-book@1",
-  "slug": "bloom-card-619c6bf0-21-miv-thiab-dev-thiab-cov-hnub-qub",
-  "title": "21 - miv thiab dev thiab cov hnub qub",
-  "description": "A Hmong picture book from Bloom Library.",
-  "language": "Hmong",
-  "langCode": "mww",
+  "slug": "bloom-card-6377b671-untitled",
+  "title": "ໄຂ່ກົບ",
+  "description": "A Lao picture book, readable free at Bloom Library.",
+  "language": "Lao",
+  "langCode": "lo",
   "isRtl": false,
   "level": "1",
   "orientation": "portrait",
   "sourceId": "bloom",
   "contentType": "open-access-source-card",
-  "subjects": [
-    "Animal Stories"
-  ],
+  "subjects": [],
   "authors": [
-    "SIL-PNG Education for Life"
+    "USAID"
   ],
   "illustrators": [],
   "originalAuthors": [],
-  "publisher": "SIL-PNG Education for Life",
+  "publisher": "USAID",
   "license": "CC BY-NC",
   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
   "source": {
     "id": "bloom",
     "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/9GBLoxBk95"
+    "url": "https://bloomlibrary.org/book/JBvhTxYJLY"
   },
-  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2f619c6bf0-c93a-4ab1-b0d4-0beb6351d8a1%2f21+-+Cat+and+Dog+and+the+Stars%2fcoverImagecurved.jpg",
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/JBvhTxYJLY%2f1752232091154%2f%e0%bb%84%e0%ba%82%e0%bb%88%e0%ba%81%e0%ba%bb%e0%ba%9a%2fexport202304151600301160-7.png",
   "audio": null,
   "pages": [
     {
       "n": 1,
       "img": null,
-      "text": "Bloom Library catalog card for \"21 - miv thiab dev thiab cov hnub qub\" (Hmong). A Hmong picture book from Bloom Library."
+      "text": "Bloom Library catalog card for \"ໄຂ່ກົບ\" (Lao)."
     },
     {
       "n": 2,
@@ -47,6 +45,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 71
+    "words": 56
   }
 }

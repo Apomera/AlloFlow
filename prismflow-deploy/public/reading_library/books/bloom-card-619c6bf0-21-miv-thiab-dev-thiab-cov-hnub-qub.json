@@ -2,7 +2,7 @@
   "schema": "allo-reading-book@1",
   "slug": "bloom-card-619c6bf0-21-miv-thiab-dev-thiab-cov-hnub-qub",
   "title": "21 - miv thiab dev thiab cov hnub qub",
-  "description": "Device Portrait Layout",
+  "description": "A Hmong picture book from Bloom Library.",
   "language": "Hmong",
   "langCode": "mww",
   "isRtl": false,
@@ -32,7 +32,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Bloom Library catalog card for \"21 - miv thiab dev thiab cov hnub qub\" (Hmong). Device Portrait Layout"
+      "text": "Bloom Library catalog card for \"21 - miv thiab dev thiab cov hnub qub\" (Hmong). A Hmong picture book from Bloom Library."
     },
     {
       "n": 2,
@@ -47,6 +47,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 67
+    "words": 71
   }
 }

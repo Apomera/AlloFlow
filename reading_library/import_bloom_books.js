@@ -180,7 +180,19 @@ function isReligiousInstructional(record) {
   // generic words like "god" appear in folk tales and names. "Yesu" is Jesus
   // in the Bantu languages; Golyat/Goliath names the Bible story.
   const text = JSON.stringify(record.titles || []) + ' ' + String(record.summary || '');
-  return /jesus|\byesu\b|bible|biblia|scripture|gospel|golyat|goliath|ісус|біблі|христ/i.test(text);
+  // psalm/passover/exodus and Tagalog "Panginoon" (the Lord) / Lao ພຣະເຈົ້າ
+  // (God) caught a numbered Lao Bible-story series and a Filipino worship
+  // book in wave 2. NOT included: bare names like Moses/Joseph — "Mussa na
+  // Shamba Bora" is a secular farming story whose farmer is named Moses.
+  return /jesus|\byesu\b|bible|biblia|scripture|gospel|golyat|goliath|psalm|passover|exodus|panginoon|ພຣະເຈົ້າ|ісус|біблі|христ|the creation in/i.test(text);
+}
+
+// Last line of defense: metadata can be silent while the story text itself
+// is scripture (the Lao Creation book's summary is just "The Creation in
+// Lao"). Checks the first pages of PARSED text for the unambiguous tokens.
+function looksReligiousInText(pages) {
+  const head = pages.slice(0, 3).map((p) => p.text || '').join(' ');
+  return /\byesu\b|jesus|panginoon|ພຣະເຈົ້າ|እግዚአብሔር|біблі|ісус/i.test(head);
 }
 
 function computedLevel(record) {
@@ -196,6 +208,12 @@ function topicSubjects(record) {
     .map((t) => t.slice(6).trim())
     .filter(Boolean)
     .slice(0, 6);
+}
+
+// Bloom summaries often end with layout notes ("Bloom Reader layout",
+// "Device Portrait Layout.") that are meaningless on a library card.
+function cleanSummary(s) {
+  return String(s || '').replace(/\s*(Bloom Reader layout|Device \w+( \w+)? Layout)\.?\s*$/i, '').trim();
 }
 
 function copyrightHolder(meta) {
@@ -259,7 +277,7 @@ function makeBook(record, meta, lang, parsed) {
     slug: 'bloom-' + String(record.instanceId || record.id).slice(0, 8).toLowerCase() + '-' +
       (titleSlug === 'untitled' ? 'untitled-' + (lang.langCode || lang.code) : titleSlug),
     title,
-    description: String(meta.summary || record.summary || '').trim() ||
+    description: cleanSummary(meta.summary || record.summary) ||
       ('A ' + lang.name + ' picture book from Bloom Library.'),
     language: lang.name,
     langCode: lang.langCode || lang.code,
@@ -295,7 +313,7 @@ function makeCard(record, meta, lang, cover) {
   const lic = CARD_LICENSES[String(meta.license || '').toLowerCase()];
   const holder = copyrightHolder(meta);
   const author = String(meta.author || '').trim();
-  const summary = String(meta.summary || record.summary || '').trim();
+  const summary = cleanSummary(meta.summary || record.summary);
   const pages = [
     {
       n: 1,
@@ -358,6 +376,9 @@ async function census(lang) {
     }
     records = records.filter((r) => !isReligiousInstructional(r));
   }
+  // Templates and shell-making kits (IPA elicitation decks etc.) are Bloom
+  // authoring tools, not readable books.
+  records = records.filter((r) => !/template/i.test(String(r.summary || '')));
   const rows = [];
   for (const record of records) {
     try {
@@ -418,6 +439,10 @@ async function main() {
         const textPages = parsed.pages.filter((p) => p.text).length;
         if (!parsed.pages.length || textPages < 2) {
           console.log('   SKIP (no ' + lang.code + ' text): ' + titleFor(row.record, row.meta, lang.code));
+          continue;
+        }
+        if (!includeReligious && looksReligiousInText(parsed.pages)) {
+          console.log('   SKIP (religious story text): ' + titleFor(row.record, row.meta, lang.code));
           continue;
         }
         const book = makeBook(row.record, row.meta, lang, parsed);

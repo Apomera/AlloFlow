@@ -2,7 +2,7 @@
   "schema": "allo-reading-book@1",
   "slug": "bloom-card-32965667-04-bisad-iyo-eyga-iyo-koofiyadihii",
   "title": "04 - Bisad iyo eyga iyo koofiyadihii",
-  "description": "The wind blows Cat's and Dog's hats into the water but Elephant is there to help them again. Bloom Reader layout",
+  "description": "The wind blows Cat's and Dog's hats into the water but Elephant is there to help them again.",
   "language": "Somali",
   "langCode": "so",
   "isRtl": false,
@@ -32,7 +32,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Bloom Library catalog card for \"04 - Bisad iyo eyga iyo koofiyadihii\" (Somali). The wind blows Cat's and Dog's hats into the water but Elephant is there to help them again. Bloom Reader layout"
+      "text": "Bloom Library catalog card for \"04 - Bisad iyo eyga iyo koofiyadihii\" (Somali). The wind blows Cat's and Dog's hats into the water but Elephant is there to help them again."
     },
     {
       "n": 2,
@@ -47,6 +47,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 83
+    "words": 80
   }
 }

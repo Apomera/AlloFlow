@@ -1,38 +1,36 @@
 {
   "schema": "allo-reading-book@1",
-  "slug": "bloom-card-32965667-04-bisad-iyo-eyga-iyo-koofiyadihii",
-  "title": "04 - Bisad iyo eyga iyo koofiyadihii",
-  "description": "The wind blows Cat's and Dog's hats into the water but Elephant is there to help them again.",
-  "language": "Somali",
-  "langCode": "so",
+  "slug": "bloom-card-c4a4193d-untitled",
+  "title": "ໝາກັບແມວ ຕາກຝົນ",
+  "description": "A5 Portrait. Cat and Dog are in the rain and getting wet. Their friend Elephant helps them out.",
+  "language": "Lao",
+  "langCode": "lo",
   "isRtl": false,
-  "level": "3",
+  "level": "1",
   "orientation": "portrait",
   "sourceId": "bloom",
   "contentType": "open-access-source-card",
-  "subjects": [
-    "Animal Stories"
-  ],
+  "subjects": [],
   "authors": [
-    "SIL Education for Life"
+    "SIL"
   ],
   "illustrators": [],
   "originalAuthors": [],
-  "publisher": "SIL Education for Life",
+  "publisher": "SIL",
   "license": "CC BY-NC-SA",
   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
   "source": {
     "id": "bloom",
     "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/SD1m3FG2lz"
+    "url": "https://bloomlibrary.org/book/dtgZNulU59"
   },
-  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/SD1m3FG2lz%2f1734890728814%2f04+-+Bisad+iyo+eyga+iyo+koofiyadihii%2fCover22.jpg",
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/dtgZNulU59%2f1752131111816%2f%e0%bb%9d%e0%ba%b2%e0%ba%81%e0%ba%b1%e0%ba%9a%e0%bb%81%e0%ba%a1%e0%ba%a7+%e0%ba%95%e0%ba%b2%e0%ba%81%e0%ba%9d%e0%ba%bb%e0%ba%99%2fCover2.jpg",
   "audio": null,
   "pages": [
     {
       "n": 1,
       "img": null,
-      "text": "Bloom Library catalog card for \"04 - Bisad iyo eyga iyo koofiyadihii\" (Somali). The wind blows Cat's and Dog's hats into the water but Elephant is there to help them again."
+      "text": "Bloom Library catalog card for \"ໝາກັບແມວ ຕາກຝົນ\" (Lao). A5 Portrait. Cat and Dog are in the rain and getting wet. Their friend Elephant helps them out."
     },
     {
       "n": 2,
@@ -47,6 +45,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 80
+    "words": 75
   }
 }

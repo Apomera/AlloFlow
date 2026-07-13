@@ -1,38 +1,36 @@
 {
   "schema": "allo-reading-book@1",
-  "slug": "bloom-card-619c6bf0-21-miv-thiab-dev-thiab-cov-hnub-qub",
-  "title": "21 - miv thiab dev thiab cov hnub qub",
-  "description": "A Hmong picture book from Bloom Library.",
-  "language": "Hmong",
-  "langCode": "mww",
+  "slug": "bloom-card-729938ee-untitled",
+  "title": "ນັບໂຕແມວ",
+  "description": "Readers may practice their counting skills by counting cats",
+  "language": "Lao",
+  "langCode": "lo",
   "isRtl": false,
   "level": "1",
   "orientation": "portrait",
   "sourceId": "bloom",
   "contentType": "open-access-source-card",
-  "subjects": [
-    "Animal Stories"
-  ],
+  "subjects": [],
   "authors": [
-    "SIL-PNG Education for Life"
+    "SIL"
   ],
   "illustrators": [],
   "originalAuthors": [],
-  "publisher": "SIL-PNG Education for Life",
+  "publisher": "SIL",
   "license": "CC BY-NC",
   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
   "source": {
     "id": "bloom",
     "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/9GBLoxBk95"
+    "url": "https://bloomlibrary.org/book/EfWD2zAohE"
   },
-  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2f619c6bf0-c93a-4ab1-b0d4-0beb6351d8a1%2f21+-+Cat+and+Dog+and+the+Stars%2fcoverImagecurved.jpg",
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/EfWD2zAohE%2f1752138076027%2f%e0%ba%99%e0%ba%b1%e0%ba%9a%e0%bb%82%e0%ba%95%e0%bb%81%e0%ba%a1%e0%ba%a7%2fPicCover.jpg",
   "audio": null,
   "pages": [
     {
       "n": 1,
       "img": null,
-      "text": "Bloom Library catalog card for \"21 - miv thiab dev thiab cov hnub qub\" (Hmong). A Hmong picture book from Bloom Library."
+      "text": "Bloom Library catalog card for \"ນັບໂຕແມວ\" (Lao). Readers may practice their counting skills by counting cats"
     },
     {
       "n": 2,
@@ -47,6 +45,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 71
+    "words": 65
   }
 }

@@ -1,38 +1,36 @@
 {
   "schema": "allo-reading-book@1",
-  "slug": "bloom-card-32965667-04-bisad-iyo-eyga-iyo-koofiyadihii",
-  "title": "04 - Bisad iyo eyga iyo koofiyadihii",
-  "description": "The wind blows Cat's and Dog's hats into the water but Elephant is there to help them again.",
-  "language": "Somali",
-  "langCode": "so",
+  "slug": "bloom-card-89d6246d-untitled",
+  "title": "ຂ້ອຍເຫັນຫຼາຍໆສີ",
+  "description": "Identify the colours of different creatures",
+  "language": "Lao",
+  "langCode": "lo",
   "isRtl": false,
-  "level": "3",
+  "level": "1",
   "orientation": "portrait",
   "sourceId": "bloom",
   "contentType": "open-access-source-card",
-  "subjects": [
-    "Animal Stories"
-  ],
+  "subjects": [],
   "authors": [
-    "SIL Education for Life"
+    "SIL"
   ],
   "illustrators": [],
   "originalAuthors": [],
-  "publisher": "SIL Education for Life",
+  "publisher": "SIL",
   "license": "CC BY-NC-SA",
   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
   "source": {
     "id": "bloom",
     "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/SD1m3FG2lz"
+    "url": "https://bloomlibrary.org/book/YP0TavKWxp"
   },
-  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/SD1m3FG2lz%2f1734890728814%2f04+-+Bisad+iyo+eyga+iyo+koofiyadihii%2fCover22.jpg",
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/YP0TavKWxp%2f1752135944768%2f%e0%ba%82%e0%bb%89%e0%ba%ad%e0%ba%8d%e0%bb%80%e0%ba%ab%e0%ba%b1%e0%ba%99%e0%ba%ab%e0%ba%bc%e0%ba%b2%e0%ba%8d%e0%bb%86%e0%ba%aa%e0%ba%b5%2fI+See+Colors+Title.png",
   "audio": null,
   "pages": [
     {
       "n": 1,
       "img": null,
-      "text": "Bloom Library catalog card for \"04 - Bisad iyo eyga iyo koofiyadihii\" (Somali). The wind blows Cat's and Dog's hats into the water but Elephant is there to help them again."
+      "text": "Bloom Library catalog card for \"ຂ້ອຍເຫັນຫຼາຍໆສີ\" (Lao). Identify the colours of different creatures"
     },
     {
       "n": 2,
@@ -47,6 +45,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 80
+    "words": 62
   }
 }

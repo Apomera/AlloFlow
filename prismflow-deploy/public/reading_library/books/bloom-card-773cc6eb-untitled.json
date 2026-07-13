@@ -1,10 +1,10 @@
 {
   "schema": "allo-reading-book@1",
-  "slug": "bloom-card-619c6bf0-21-miv-thiab-dev-thiab-cov-hnub-qub",
-  "title": "21 - miv thiab dev thiab cov hnub qub",
-  "description": "A Hmong picture book from Bloom Library.",
-  "language": "Hmong",
-  "langCode": "mww",
+  "slug": "bloom-card-773cc6eb-untitled",
+  "title": "အပ္လိုည်း",
+  "description": "လော်င် ဆီမ်းအပ္လိုည်း။",
+  "language": "Burmese",
+  "langCode": "my",
   "isRtl": false,
   "level": "1",
   "orientation": "portrait",
@@ -14,25 +14,25 @@
     "Animal Stories"
   ],
   "authors": [
-    "SIL-PNG Education for Life"
+    "RBTT & NTC"
   ],
   "illustrators": [],
   "originalAuthors": [],
-  "publisher": "SIL-PNG Education for Life",
+  "publisher": "RBTT & NTC",
   "license": "CC BY-NC",
   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
   "source": {
     "id": "bloom",
     "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/9GBLoxBk95"
+    "url": "https://bloomlibrary.org/book/FdqVF5Mjef"
   },
-  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2f619c6bf0-c93a-4ab1-b0d4-0beb6351d8a1%2f21+-+Cat+and+Dog+and+the+Stars%2fcoverImagecurved.jpg",
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f773cc6eb-4fbc-468d-b138-bdf25aba5ca3%2f%e1%80%a1%e1%80%95%e1%80%b9%e1%80%9c%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%80%b8%2f01Turtle+Dove.png",
   "audio": null,
   "pages": [
     {
       "n": 1,
       "img": null,
-      "text": "Bloom Library catalog card for \"21 - miv thiab dev thiab cov hnub qub\" (Hmong). A Hmong picture book from Bloom Library."
+      "text": "Bloom Library catalog card for \"အပ္လိုည်း\" (Burmese). လော်င် ဆီမ်းအပ္လိုည်း။"
     },
     {
       "n": 2,
@@ -47,6 +47,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 71
+    "words": 58
   }
 }

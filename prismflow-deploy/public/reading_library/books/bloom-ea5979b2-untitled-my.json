@@ -1,0 +1,105 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-ea5979b2-untitled-my",
+  "title": "သွေးစည်းသွားတဲ့ သိုးအုပ်",
+  "description": "A story 'Unity of Sheep' translated into Tangshang Naga",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "NTC Literacy team"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NTC Literacy team",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/hI7ty521uR"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fea5979b2-e37f-4849-ae9c-1e14df1d4752%2fR%c3%a0t%c3%a4mtuz+hiax+S%c3%a0ku+kaongz%2f15.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fea5979b2-e37f-4849-ae9c-1e14df1d4752%2fR%c3%a0t%c3%a4mtuz+hiax+S%c3%a0ku+kaongz%2f1.jpg",
+      "text": "တစ်ခါတုန်းက သိုးအုပ်တစ်အုပ်ရှိတယ်။ အဲဒီသိုးအုပ် ဟာအစာရေစာ၀​ပြောတဲ့ မြက်ခင်းစိမ်းတွေပေါတဲ့ အရပ်မှာနေရတဲ့အတွက် ၀၀ဖြီးဖြီးနဲ့ အင်မတန် ကြည့်ကောင်းကြတဲ့ သိုးတွေဖြစ်တယ်။"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fea5979b2-e37f-4849-ae9c-1e14df1d4752%2fR%c3%a0t%c3%a4mtuz+hiax+S%c3%a0ku+kaongz%2f2.jpg",
+      "text": "အဲဒီသိုးအုပ်ကို စောင့်ကြည့်ဖို့ဆိုပြီး သိုးပိုင်ရှင်က ခွေးနှစ်ကောင်ကို မွေးထားတယ်။ ဒါပေမယ့် အဲဒီခွေးတွေဟာ သိုးတွေကို ကောင်းကောင်းမကြည့်ပဲ သူတို့အချင်းချင်းပဲ ဆော့နေတတ်ကြတယ်။"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fea5979b2-e37f-4849-ae9c-1e14df1d4752%2fR%c3%a0t%c3%a4mtuz+hiax+S%c3%a0ku+kaongz%2f3.jpg",
+      "text": "သိုးအုပ်တွေ အစာစားလေ့ရှိတဲ့ မြက်ခင်းနားက တောအုပ်လေးမှာတော့ ၀၀ဖြိုးဖြိုးနဲ့ လှပတဲ့သိုးအုပ် ကြီးကိုစားဖို့စောင့်နေတဲ့ မြေခွေးတွေရှိသတဲ့။ အဲဒီ မြေခွေးတွေဟာ ပိုင်ရှင်မရှိတဲ့အချိန်၊ အစောင့်ခွေးတွေ ကောင်းကောင်းမကြည့်တဲ့အချိန်ဆို သိုးတွေကိုဆွဲဖို့ အမြဲချောင်းနေတတ်တယ်။"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fea5979b2-e37f-4849-ae9c-1e14df1d4752%2fR%c3%a0t%c3%a4mtuz+hiax+S%c3%a0ku+kaongz%2f4.jpg",
+      "text": "တဖြည်းဖြည်းနဲ့ သိုးတွေဟာ တစ်ကောင်စ နှစ် ကောင်စ မြေခွေးဆွဲခြင်းကို ခံလာရတယ်။ အဲဒီအခါ သိုးကြီးတွေက သိုးလေးတွေကိုပြောတယ် “ငါတို့သွေး စည်းဖို့လိုပြီ။ ငါတို့ကိုကြည့်တဲ့ခွေးတွေဟာ ငါတို့ကို ကောင်းကောင်း မစောင့်ရှောက်တဲ့အတွက် ငါတို့ ညီအစ်ကိုတွေ ​​မြေခွေးဆွဲတာခံနေရပြီ။”"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fea5979b2-e37f-4849-ae9c-1e14df1d4752%2fR%c3%a0t%c3%a4mtuz+hiax+S%c3%a0ku+kaongz%2f5.jpg",
+      "text": "ဒါပေမယ့် သိုးလေးတွေကတော့ အစာစားရဖို့နဲ့ အချင်းချင်းပျော်ပျော်ပါးပါးနေရဖို့ပဲ စိတ်ထဲမှာရှိကြ တယ်။ သိုးကြီးတွေပြောတာကိုလည်း အလေးမထားပဲ “ငါတို့ပူစရာမလိုပါဘူးကွာ။ အစောင့်ခွေးတွေက သူတို့ အလုပ် သူတို့လုပ်ပါလိမ့်မယ်” ဆိုပြီး ပေါ့ပေါ့ဆဆနဲ့ပဲ ဆက်နေခဲ့တယ်။"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fea5979b2-e37f-4849-ae9c-1e14df1d4752%2fR%c3%a0t%c3%a4mtuz+hiax+S%c3%a0ku+kaongz%2f6.jpg",
+      "text": "တစ်ရက်မှာတော့ သိုးတွေအစာစားနေတဲ့အချိန်မှာ ခွေးနှစ်ကောင်ဟာ သိုးတွေကို ကောင်းကောင်း မကြည့်ပဲ အချင်းချင်းဆော့နေကြတယ်။ သိုးကြီးတွေ သတိနဲ့နေပေမယ့် သိုးလေးတွေကတော့ ပျော်ပျော် ရွှင်ရွှင်ပဲပေါ့ကွယ်။"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fea5979b2-e37f-4849-ae9c-1e14df1d4752%2fR%c3%a0t%c3%a4mtuz+hiax+S%c3%a0ku+kaongz%2f7.jpg",
+      "text": "အဲဒီအခြေအနေကို မြေခွေးတွေဟာ တောအုပ်ထဲက နေပြီး ချောင်းကြည့်နေကြတယ်။ သူတို့ဟာ အခွင့် ရတာနဲ့ သိုးအုပ်ကို စဆွဲဖို့ အသင့်ပြင်ထားကြတယ်။"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fea5979b2-e37f-4849-ae9c-1e14df1d4752%2fR%c3%a0t%c3%a4mtuz+hiax+S%c3%a0ku+kaongz%2f8.jpg",
+      "text": "အစောင့်ခွေးတွေဟာလည်း အနားမှာမရှိ၊ သိုးတွေ လည်း အစာတွေအေးအေးဆေးဆေးစားနေတာကို တွေ့တဲ့အခါ မြေခွေးတွေဟာ အုပ်စုလိုက် တောအုပ် ထဲက ထွက်လာပြီး သိုးတွေကို စဆွဲဖို့လုပ်တော့တယ်။ အဲဒီအချိန်မှာ သိုးအုပ်ကြီးဟာလည်း ရုပ်ရုပ်သဲသဲ ဖြစ်သွားတယ်။"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fea5979b2-e37f-4849-ae9c-1e14df1d4752%2fR%c3%a0t%c3%a4mtuz+hiax+S%c3%a0ku+kaongz%2f9.jpg",
+      "text": "သိုးကြီးတွေကတော့ အားလုံးစည်းစည်းလုံးလုံးနေကြ။ မကြောက်ကြနဲ့။ တစ်ကောင်နဲ့တစ်ကောင်ကပ်ထား ကြဆိုပြီး သိုးအုပ်ကြီးကိုသတိပေးတယ်။"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fea5979b2-e37f-4849-ae9c-1e14df1d4752%2fR%c3%a0t%c3%a4mtuz+hiax+S%c3%a0ku+kaongz%2f10.jpg",
+      "text": "အဲဒီအချိန်မှာ သိုးလေးတွေကတော့ သူတို့ကိုစောင့် ကြည့်တဲ့ခွေးတွေ သူတို့ကို လာကယ်ဖို့ မျှော်လင့် ကြတာပေါ့ကွယ်။ ဒါပေမယ့် ခွေးတွေဟာ ရောက်မလာခဲ့ဘူး။"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fea5979b2-e37f-4849-ae9c-1e14df1d4752%2fR%c3%a0t%c3%a4mtuz+hiax+S%c3%a0ku+kaongz%2f11.jpg",
+      "text": "သိုးလေးတစ်ကောင်ကို စဆွဲဖို့လုပ်နေတဲ့အချိန်မှာ သိုးကြီးတွေက “ဆွဲလို့မရအောင် ကပ်ထားကြ။ ​မြေခွေးတွေကို တွန်းထုတ်ကြ။” ဆိုပြီးပြောကြတယ်။"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fea5979b2-e37f-4849-ae9c-1e14df1d4752%2fR%c3%a0t%c3%a4mtuz+hiax+S%c3%a0ku+kaongz%2f12.jpg",
+      "text": "အဲဒီအချိန်မှာ သိုးလေးတွေလည်း ကြောက်အား လန့်အားနဲ့ မြေခွေးတွေကို အနားအကပ်မခံပဲ ပြန်တွန်းထုတ်ကြတယ်။"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fea5979b2-e37f-4849-ae9c-1e14df1d4752%2fR%c3%a0t%c3%a4mtuz+hiax+S%c3%a0ku+kaongz%2f13.jpg",
+      "text": "ခနကြာတော့ ခွေးတွေရောက်လာပြီး မြေခွေးတွေကို မောင်းထုတ်ဖို့လုပ်ကြတယ်။ သိုးတွေဟာလည်း ခွေးတွေနဲ့အတူ မြေခွေးတွေကို အလျှော့မပေးပဲ ဝိုင်းမောင်းကြတယ်။"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fea5979b2-e37f-4849-ae9c-1e14df1d4752%2fR%c3%a0t%c3%a4mtuz+hiax+S%c3%a0ku+kaongz%2f14.jpg",
+      "text": "အဲဒီလိုနဲ့ သူတို့ဟာ မြေခွေးတွေလက်ထဲကလွတ်သွား ကြတယ်။ အဲဒီအချိန်မှာ သိုးလေးတွေဟာ သိုးကြီး တွေရဲ့စကားကို သဘောပေါက်သွားပြီး စည်းလုံးခြင်း ရဲ့အင်အားကိုလည်း သိရှိသွားကြတယ်။"
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 164
+  }
+}

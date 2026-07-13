@@ -1,0 +1,92 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-4c7bed50-untitled-my",
+  "title": "လမင်းကြီးနှင့် ဦးထုပ်",
+  "description": "Aˬkhaˬ zaˬ deuˬ gui dzaw-eu sahˬ boꞈ",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Akha literature and cultural committee, and NTC"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Akha literature and cultural committee, and NTC",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/MNH7p1w9xZ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/ghoemeh.akha%40gmail.com%2f4c7bed50-e909-4f6c-90d6-cb9bbf1b1214%2fBa+la+haw%cb%87-eu+u%cb%ac+qo%cb%86%2fThe+Moon+and+The+Cap_Cover.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ghoemeh.akha%40gmail.com%2f4c7bed50-e909-4f6c-90d6-cb9bbf1b1214%2fBa+la+haw%cb%87-eu+u%cb%ac+qo%cb%86%2fThe+Moon+and+The+Cap_Page+021.jpg",
+      "text": "ဈေးရောင်းပွဲကို အားလုံးအတူတွသွားကြတယ်"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ghoemeh.akha%40gmail.com%2f4c7bed50-e909-4f6c-90d6-cb9bbf1b1214%2fBa+la+haw%cb%87-eu+u%cb%ac+qo%cb%86%2fThe+Moon+and+The+Cap_Page+031.jpg",
+      "text": "ဖေဖေဟာ ကိုကို့အတွက် မျက်မှန်မိုက်မိုက်လေး ဝယ်ပေးတယ်။ မေမေက ကျွန်တော့အတွက် ဦးထုပ်ဝယ်ပေးတယ်။ ညီမလေးကတော့ သကြားလုံးတွေရတယ်။"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ghoemeh.akha%40gmail.com%2f4c7bed50-e909-4f6c-90d6-cb9bbf1b1214%2fBa+la+haw%cb%87-eu+u%cb%ac+qo%cb%86%2fThe+Moon+and+The+Cap_Page+041.jpg",
+      "text": "အိမ်အပြန်လမ်းမှာ လေပြင်းတိုက်ခဲ့တယ်။ ကျွန်တော့ရဲ့ဦးထုပ်ဟာ လေထဲပါသွားတယ်။"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ghoemeh.akha%40gmail.com%2f4c7bed50-e909-4f6c-90d6-cb9bbf1b1214%2fBa+la+haw%cb%87-eu+u%cb%ac+qo%cb%86%2fThe+Moon+and+The+Cap_Page+051.jpg",
+      "text": "ကျွန်တော့ဦးထုပ်ဟာ သစ်ပင်အိုတစ်ပင်ရဲ့ အကိုင်းမှာ သွားချိတ်နေတယ်။"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ghoemeh.akha%40gmail.com%2f4c7bed50-e909-4f6c-90d6-cb9bbf1b1214%2fBa+la+haw%cb%87-eu+u%cb%ac+qo%cb%86%2fThe+Moon+and+The+Cap_Page+061.jpg",
+      "text": "ကျွန်တော်ဟာ အကြီးအကျယ်ငိုခဲ့တယ်။ ညနေစာလည်း မစားနိုင်ခဲ့ဘူး။"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ghoemeh.akha%40gmail.com%2f4c7bed50-e909-4f6c-90d6-cb9bbf1b1214%2fBa+la+haw%cb%87-eu+u%cb%ac+qo%cb%86%2fThe+Moon+and+The+Cap_Page+071.jpg",
+      "text": "အဲဒီညမှာတော့ လမင်းကြီးဟာထွက်လာတယ်။ ပြီးတော့ သစ်ပင်အိုပေါ်မှာချိတ်နေတဲ့ ကျွန်တော့ဦးထုပ်ကို သူကြည့်နေခဲ့တယ်။"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ghoemeh.akha%40gmail.com%2f4c7bed50-e909-4f6c-90d6-cb9bbf1b1214%2fBa+la+haw%cb%87-eu+u%cb%ac+qo%cb%86%2fThe+Moon+and+The+Cap_Page+081.jpg",
+      "text": "လမင်းကြီးဟာ ကျွန်တော့ဦးထုပ်ကို ဆောင်းကြည့် လိုက်တယ်။ ပြီးတော့ မိန့်မိန့်ကြီး ပြုံးလိုက်တယ်။ ကျွန်လည်းလိုက်ပြုံးခဲ့ရတယ်။"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ghoemeh.akha%40gmail.com%2f4c7bed50-e909-4f6c-90d6-cb9bbf1b1214%2fBa+la+haw%cb%87-eu+u%cb%ac+qo%cb%86%2fThe+Moon+and+The+Cap_Page+091.jpg",
+      "text": "နောက်တစ်နေ့ ကျောင်းဆင်းတဲ့အခါ မေမေဟာ ကျွန်တော့အတွက် ဦးထုပ်တစ်လုံး ထပ်ပေးခဲ့တယ်။ “လမင်းကြီးကပို့လိုက်တာ”လို့ မေမေကပြောတယ်။"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ghoemeh.akha%40gmail.com%2f4c7bed50-e909-4f6c-90d6-cb9bbf1b1214%2fBa+la+haw%cb%87-eu+u%cb%ac+qo%cb%86%2fThe+Moon+and+The+Cap_Page+101.jpg",
+      "text": "အဲဒီညမှာတော့ ကျွန်တော်ရော လမင်းကြီးရော ကိုယ်စီဦးထုပ်တွေဆောင်းပြီး ပြုံးနေခဲ့ကြတယ်။ ကျွန်တော်တို့ ပျော်ခဲ့ကြတယ်။"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ghoemeh.akha%40gmail.com%2f4c7bed50-e909-4f6c-90d6-cb9bbf1b1214%2fBa+la+haw%cb%87-eu+u%cb%ac+qo%cb%86%2fThe+Moon+and+The+Cap_Page+111.jpg",
+      "text": "နေမင်းကြီးလည်း ဦးထုပ်လိုမယ်လို့ ခင်ဗျား ထင်သလား။"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/ghoemeh.akha%40gmail.com%2f4c7bed50-e909-4f6c-90d6-cb9bbf1b1214%2fBa+la+haw%cb%87-eu+u%cb%ac+qo%cb%86%2fThe+Moon+and+The+Cap_Page+121.jpg",
+      "text": "ဒီနေ့ ကျွန်တော်ဘယ်ဦးထုပ်ဆောင်းမယ်လို့ ထင်ပါသလဲ။"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 59
+  }
+}

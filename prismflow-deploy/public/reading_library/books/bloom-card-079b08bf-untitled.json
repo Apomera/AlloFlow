@@ -1,0 +1,52 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-card-079b08bf-untitled",
+  "title": "ချှေႈမှေဲ နံင်ဘယ်ကဇော်ည် ဒဲႈအံဝ်း",
+  "description": "လော်င်ကော်န်းဒဲ့ ဟြာ်ည်ႇကဲအီးနံင်ကဇော်ည်အန်း ရေဲန်းနံင်လေႈ ပံပ်ဘေဲႇ။",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "open-access-source-card",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "RBTT & NTC"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "RBTT & NTC",
+  "license": "CC BY-NC",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/lu32Rgkakm"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f079b08bf-2e2b-40cf-990c-362bf1e92a14%2f%e1%80%81%e1%80%bb%e1%80%be%e1%80%b1%e1%82%88%e1%80%99%e1%80%be%e1%80%b1%e1%80%b2+%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%98%e1%80%9a%e1%80%ba%e1%80%80%e1%80%87%e1%80%b1%e1%80%ac%e1%80%ba%e1%80%8a%e1%80%ba+%e1%80%92%e1%80%b2%e1%82%88%e1%80%a1%e1%80%b6%e1%80%9d%e1%80%ba%e1%80%b8%2f01+-+Who+Can+Help+Me.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Bloom Library catalog card for \"ချှေႈမှေဲ နံင်ဘယ်ကဇော်ည် ဒဲႈအံဝ်း\" (Burmese). လော်င်ကော်န်းဒဲ့ ဟြာ်ည်ႇကဲအီးနံင်ကဇော်ည်အန်း ရေဲန်းနံင်လေႈ ပံပ်ဘေဲႇ။"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a mirrored book — its license (CC BY-NC) allows reading at the source but not redistribution here. Use Open original to read it free at Bloom Library."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: preview the full book at Bloom Library before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 62
+  }
+}

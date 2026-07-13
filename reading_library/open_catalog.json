@@ -5342,10 +5342,6 @@
       "file": "books/bloom-6549abd7-untitled.json"
     },
     {
-      "slug": "bloom-374447b7-picture-based-participatory-linguistics-cards",
-      "file": "books/bloom-374447b7-picture-based-participatory-linguistics-cards.json"
-    },
-    {
       "slug": "bloom-334fbae7-untitled",
       "file": "books/bloom-334fbae7-untitled.json"
     },
@@ -5464,26 +5460,6 @@
     {
       "slug": "bloom-67eca7c7-untitled",
       "file": "books/bloom-67eca7c7-untitled.json"
-    },
-    {
-      "slug": "bloom-239b1a74-23",
-      "file": "books/bloom-239b1a74-23.json"
-    },
-    {
-      "slug": "bloom-46e2b6e2-11",
-      "file": "books/bloom-46e2b6e2-11.json"
-    },
-    {
-      "slug": "bloom-feefa4d3-12",
-      "file": "books/bloom-feefa4d3-12.json"
-    },
-    {
-      "slug": "bloom-ed4fff9c-8",
-      "file": "books/bloom-ed4fff9c-8.json"
-    },
-    {
-      "slug": "bloom-1718f352-1",
-      "file": "books/bloom-1718f352-1.json"
     },
     {
       "slug": "bloom-card-8b738498-untitled",
@@ -5642,10 +5618,6 @@
       "file": "books/bloom-1eceef51-plaas-daw-iya-na-mga-arey.json"
     },
     {
-      "slug": "bloom-3b2b9115-salamat-panginoon",
-      "file": "books/bloom-3b2b9115-salamat-panginoon.json"
-    },
-    {
       "slug": "bloom-4a2049ca-untitled",
       "file": "books/bloom-4a2049ca-untitled.json"
     },
@@ -5664,6 +5636,142 @@
     {
       "slug": "bloom-5a8f7349-untitled-ar",
       "file": "books/bloom-5a8f7349-untitled-ar.json"
+    },
+    {
+      "slug": "bloom-9b66843b-untitled-my",
+      "file": "books/bloom-9b66843b-untitled-my.json"
+    },
+    {
+      "slug": "bloom-36781529-untitled-my",
+      "file": "books/bloom-36781529-untitled-my.json"
+    },
+    {
+      "slug": "bloom-ea5979b2-untitled-my",
+      "file": "books/bloom-ea5979b2-untitled-my.json"
+    },
+    {
+      "slug": "bloom-ec328b7c-untitled-my",
+      "file": "books/bloom-ec328b7c-untitled-my.json"
+    },
+    {
+      "slug": "bloom-a0e6be38-untitled-my",
+      "file": "books/bloom-a0e6be38-untitled-my.json"
+    },
+    {
+      "slug": "bloom-88dfdcc0-untitled-my",
+      "file": "books/bloom-88dfdcc0-untitled-my.json"
+    },
+    {
+      "slug": "bloom-3cfc0883-untitled-my",
+      "file": "books/bloom-3cfc0883-untitled-my.json"
+    },
+    {
+      "slug": "bloom-513b5795-untitled-my",
+      "file": "books/bloom-513b5795-untitled-my.json"
+    },
+    {
+      "slug": "bloom-7790ba95-untitled-my",
+      "file": "books/bloom-7790ba95-untitled-my.json"
+    },
+    {
+      "slug": "bloom-334fbae7-untitled-my",
+      "file": "books/bloom-334fbae7-untitled-my.json"
+    },
+    {
+      "slug": "bloom-4c7bed50-untitled-my",
+      "file": "books/bloom-4c7bed50-untitled-my.json"
+    },
+    {
+      "slug": "bloom-09f39e83-untitled-my",
+      "file": "books/bloom-09f39e83-untitled-my.json"
+    },
+    {
+      "slug": "bloom-5d0cd6bf-untitled-my",
+      "file": "books/bloom-5d0cd6bf-untitled-my.json"
+    },
+    {
+      "slug": "bloom-card-12b6457b-untitled",
+      "file": "books/bloom-card-12b6457b-untitled.json"
+    },
+    {
+      "slug": "bloom-card-773cc6eb-untitled",
+      "file": "books/bloom-card-773cc6eb-untitled.json"
+    },
+    {
+      "slug": "bloom-card-9b0f774a-untitled",
+      "file": "books/bloom-card-9b0f774a-untitled.json"
+    },
+    {
+      "slug": "bloom-card-079b08bf-untitled",
+      "file": "books/bloom-card-079b08bf-untitled.json"
+    },
+    {
+      "slug": "bloom-card-cf4f00dc-untitled",
+      "file": "books/bloom-card-cf4f00dc-untitled.json"
+    },
+    {
+      "slug": "bloom-card-ffc82523-untitled",
+      "file": "books/bloom-card-ffc82523-untitled.json"
+    },
+    {
+      "slug": "bloom-card-691cbfe0-untitled",
+      "file": "books/bloom-card-691cbfe0-untitled.json"
+    },
+    {
+      "slug": "bloom-card-9164883b-untitled",
+      "file": "books/bloom-card-9164883b-untitled.json"
+    },
+    {
+      "slug": "bloom-card-f450cc29-untitled",
+      "file": "books/bloom-card-f450cc29-untitled.json"
+    },
+    {
+      "slug": "bloom-card-8d696fac-untitled",
+      "file": "books/bloom-card-8d696fac-untitled.json"
+    },
+    {
+      "slug": "bloom-card-2c60e14e-untitled",
+      "file": "books/bloom-card-2c60e14e-untitled.json"
+    },
+    {
+      "slug": "bloom-card-6377b671-untitled",
+      "file": "books/bloom-card-6377b671-untitled.json"
+    },
+    {
+      "slug": "bloom-card-3ac6828d-untitled",
+      "file": "books/bloom-card-3ac6828d-untitled.json"
+    },
+    {
+      "slug": "bloom-card-89d6246d-untitled",
+      "file": "books/bloom-card-89d6246d-untitled.json"
+    },
+    {
+      "slug": "bloom-card-e60d1346-untitled",
+      "file": "books/bloom-card-e60d1346-untitled.json"
+    },
+    {
+      "slug": "bloom-card-e91e9a24-untitled",
+      "file": "books/bloom-card-e91e9a24-untitled.json"
+    },
+    {
+      "slug": "bloom-card-6573f9e1-untitled",
+      "file": "books/bloom-card-6573f9e1-untitled.json"
+    },
+    {
+      "slug": "bloom-card-29da4ac8-untitled",
+      "file": "books/bloom-card-29da4ac8-untitled.json"
+    },
+    {
+      "slug": "bloom-card-c4a4193d-untitled",
+      "file": "books/bloom-card-c4a4193d-untitled.json"
+    },
+    {
+      "slug": "bloom-card-729938ee-untitled",
+      "file": "books/bloom-card-729938ee-untitled.json"
+    },
+    {
+      "slug": "bloom-51d67549-si-chisay",
+      "file": "books/bloom-51d67549-si-chisay.json"
     }
   ]
 }

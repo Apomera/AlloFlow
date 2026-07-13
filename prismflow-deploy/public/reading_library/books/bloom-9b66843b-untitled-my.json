@@ -1,0 +1,97 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-9b66843b-untitled-my",
+  "title": "လှပတဲ့နေ့လေးတစ်နေ့",
+  "description": "A Burmese picture book from Bloom Library.",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Book Dash"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Book Dash",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/sMEpwxPHkw"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_01_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_05_Image_0001.jpg",
+      "text": "“လှပလိုက်တဲ့ နေ့လေးတစ်နေ့ပါလာ” လို့မေမေကပြောလိုက်တယ်။\n“နီကိုးလတ်(စ်) သားရေ ထတော့ကွယ်။”"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_06_Image_0001.jpg",
+      "text": "“ဒီနေ့ဟာ အတော်လေးသာယာတဲ့နေ့လေးတစ်နေ့ပါလာ” လို့ဖေဖေကပြောလိုက်တယ်။ “ချောင်းနံဘေးမှာ ပျော်ပွဲစားထွက်ကြရအောင်။”\n“သားရဲ့သူငယ်ချင်း ဂျေးကော့ကိုလည်း ခေါ်သွားလို့ရမလာ” လို့ နီကိုးလတ်(စ်)ကမေးလိုက်တယ်။"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_07_Image_0001.jpg",
+      "text": "“ကျွန်တော် ပျော်ပွဲစားထွက်ရတာကြိုက်တယ်ဆိုတာကို မေ့မသွားကြနဲ့နော်” ဆိုပြီး လားလေးကပြောတယ်။\n“ကျွန်တော်လည်းအတူတူပဲ…ကျွန်တော်လည်း ပျော်ပွဲစားထွက်ရတာကြိုက်တယ်” လို့ခွေးလေးကထပ်ပြောလိုက်တယ်။\n“ငါတို့နောက်လိုက်ခဲ့ပါ” ဆိုပြီး ငှက်လေးတွေပြောလိုက်တယ်။"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_08_Image_0001.jpg",
+      "text": ""
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_09_Image_0001.jpg",
+      "text": "“ဟော.... ဟိုးက သစ်ပင်အထိ အပြေးပြိုင်ကြရအောင်” ဆိုပြီး နီကိုးလပ်(စ်) ကပြောလိုက်တယ်။"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_10_Image_0001.jpg",
+      "text": "“ငါနိုင်တယ်….. ငါနိုင်တယ်” ဆိုပြီး လားကပြောတယ်။\n“ဒါမတရားဘူး မင်းမှာက ခြေထောက်လေးချောင်းတောင် ရှိတာကိုး” လို့ နီကိုးလပ်(စ်)က ပြောလိုက်တယ်။"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_11_Image_0001.jpg",
+      "text": "“ငါဘာလုပ်တတ်လဲဆိုတာကြည့်လိုက်ပါ” လို့ နီကိုးလပ်စ်ကပြောလိုက်တယ်။\n“မင်း ဒါလုပ်တတ်မှာမဟုတ်ပါဘူး” လို့ ဂျေးကော့က ပြောလိုက်တယ်။"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_12_Image_0001.jpg",
+      "text": "“ဒီနေရာလေးမှာ ပျော်ပွဲစားထွက်ကြရအောင်ဟေး” လို့ ဖေဖေကပြောတယ်။"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_13_Image_0001.jpg",
+      "text": "“ရေထဲမှာ အပြေးပြိုင်ရအောင်” လို့ ဂျေးကော့က ပြောလိုက်တယ်။"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_14_Image_0001.jpg",
+      "text": "“လာ…ဒီမှာလာစားကြအုန်း သားတို့ သမီးတို့။” လို့ မေမေကပြောလိုက်တယ်။"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_15_Image_0001.jpg",
+      "text": "“အိမ်ပြန်ဖို့အချိန်ရောက်ပြီ” လို့မေမေကပြောတယ်။ “ဂျေးကော့ကို နူတ်ဆက်လိုက်ကြအုန်း။”"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_16_Image_0001.jpg",
+      "text": ""
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 71
+  }
+}

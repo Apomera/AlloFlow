@@ -1,10 +1,10 @@
 {
   "schema": "allo-reading-book@1",
-  "slug": "bloom-card-619c6bf0-21-miv-thiab-dev-thiab-cov-hnub-qub",
-  "title": "21 - miv thiab dev thiab cov hnub qub",
-  "description": "A Hmong picture book from Bloom Library.",
-  "language": "Hmong",
-  "langCode": "mww",
+  "slug": "bloom-card-9b0f774a-untitled",
+  "title": "တဘု တဘု တဘု",
+  "description": "လော်င်ဘည်ဘာည်းတဘုတိုဆံတ်ကဲ။",
+  "language": "Burmese",
+  "langCode": "my",
   "isRtl": false,
   "level": "1",
   "orientation": "portrait",
@@ -14,25 +14,25 @@
     "Animal Stories"
   ],
   "authors": [
-    "SIL-PNG Education for Life"
+    "2021,RBTT & NTC"
   ],
   "illustrators": [],
   "originalAuthors": [],
-  "publisher": "SIL-PNG Education for Life",
+  "publisher": "2021,RBTT & NTC",
   "license": "CC BY-NC",
   "licenseUrl": "https://creativecommons.org/licenses/by-nc/4.0/",
   "source": {
     "id": "bloom",
     "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/9GBLoxBk95"
+    "url": "https://bloomlibrary.org/book/ogZLm9S3u9"
   },
-  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/educationforlife%40sil.org%2f619c6bf0-c93a-4ab1-b0d4-0beb6351d8a1%2f21+-+Cat+and+Dog+and+the+Stars%2fcoverImagecurved.jpg",
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b0f774a-efa8-40f7-9905-3acee6b0a8f6%2f%e1%80%90%e1%80%98%e1%80%af+%e1%80%90%e1%80%98%e1%80%af+%e1%80%90%e1%80%98%e1%80%af%2f01+-+Run+Run+Run.jpg",
   "audio": null,
   "pages": [
     {
       "n": 1,
       "img": null,
-      "text": "Bloom Library catalog card for \"21 - miv thiab dev thiab cov hnub qub\" (Hmong). A Hmong picture book from Bloom Library."
+      "text": "Bloom Library catalog card for \"တဘု တဘု တဘု\" (Burmese). လော်င်ဘည်ဘာည်းတဘုတိုဆံတ်ကဲ။"
     },
     {
       "n": 2,
@@ -47,6 +47,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 71
+    "words": 59
   }
 }

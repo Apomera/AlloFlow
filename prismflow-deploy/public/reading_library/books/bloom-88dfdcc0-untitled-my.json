@@ -1,0 +1,130 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-88dfdcc0-untitled-my",
+  "title": "ဝက်ဝံလေးရဲ့ မိသားစု",
+  "description": "A story about orphanage fox and bear family translated into Tangshang Naga",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "NTC Literacy team"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NTC Literacy team",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/r1UuyNY8EF"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f201.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f2.jpg",
+      "text": "တခါတုန်းက မြေခွေးမေမေဟာ တောထဲမှာ မွေးကင်းစကတည်းက မိခင်နဲ့ ကင်းကွာသွားတဲ့ ဝက်ဝံလေးကို တွေ့ရှိခဲ့တယ်။ မိခင်စိတ်ရှိတဲ့ မြေခွေးမေမေဟာ ဝက်ဝံလေးကိုသနားပြီး သားအရင်းလို ခေါ်ယူမွေးစားထားခဲ့တယ်။"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f3.jpg",
+      "text": "မြေခွေးမိသားစုမှာ မြေခွေးမေမေရယ် မြေခွေးလေး သုံးကောင်ရယ် ဝက်ဝံကလေးတစ်ကောင်ရယ်ပေါ့။ သူတို့မိသားစုဟာ အချင်းချင်းအရမ်းချစ်ကြပြီး ပျော်စရာကောင်းတဲ့ မိသားစုလေးပေါ့ကွယ်။ မြေခွေးမေမေဟာ သူ့သားသမီးတွေအားလုံးကို တန်းတူညီမျှချစ်ပြီး ဂရုစိုက်တယ်။"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f4.jpg",
+      "text": "မောင်နှမ လေးယောက်ဟာလည်း အချင်းချင်း ချစ်ကြတယ်။ အတူအိပ်၊ အတူစား အတူကစားကြပြီး အရမ်းကို ပျော်စရာကောင်း တာပေါ့ကွယ်။ မြေခွေးလေးတွေဟာလည်း ဝက်ဝံလေးကို သူတို့ရဲ ညီအစ်ကိုအရင်းလိုပဲ အရမ်းချစ် ကြတယ်။"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f5.jpg",
+      "text": "ဝက်ဝံလေးက မြေခွေးတို့ မိသားစုထဲမှာ မိသားစုဝင်ဖြစ်နေပြီး တစ်ယောက်ကို တစ်ယောက် ချစ်ချစ်ခင်ခင်နဲ့ ပျော်ပျော်ရွှင်ရွှင် နေထိုင်နေတာကို ဘေးကနေပြီး မလိုမုန်းထားတဲ့ သူတွေရှိသတဲ့။"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f6.jpg",
+      "text": "ဝက်ဝံလေးကို အတွေးအမျိုးအမျိုး ဝင်အောင် ပြောကြတယ်။ ဝက်ဝံလေးနဲ့ အတူကစားတဲ့အခါ သူငယ်ချင်းတွေက “နင်ကမွေးစားသားပါ။ နင့်ကိုမြေခွေးမကြီးက ကောက်ရထားတာ” ဆိုပြီး နှိမ်ပြီးပြောကြသတဲ့။"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f7.jpg",
+      "text": "တချို့အိမ်နီးချင်း​တွေကလည်း “နင်က သားအရင်း မဟုတ်တော့ နင့်ကိုတော့ သားသမီးအရင်းတွေလောက် ဘယ်ချစ်ပါ့မလဲ။ သူတို့က နင့်ရဲ့မိသားစု အစစ်တွေမှ မဟုတ်တာ” ဆိုပြီး သွေးထိုးစကား ဆိုကြတယ်။ အဲဒီလိုအပြောခံရရင် ဝက်ဝံလေးဟာ အရမ်းဝမ်းနည်းသတဲ့။"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f8.jpg",
+      "text": "အဲဒီအကြောင်းတွေကို ဝက်ဝံလေးက သူ့မြေခွေး မေမေကို ပြန်ပြောပြလိုက်တယ်။ မြေခွေးမေမေ ကလည်း “မေမေတို့မိသားစုထဲမှာရှိတဲ့သူတိုင်းဟာ မိသားစုဝင်တွေပါပဲ။ သားတို့ သမီးတို့အားလုံးကို မေမေကတန်းတူချစ်ပါတယ်။” လို့ဝက်ဝံလေးကို ပြန်ပြောလိုက်တယ်။"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f9.jpg",
+      "text": "အဲဒီအချိန်မှာ သူ့ရဲ့မြေခွေးမေမေဟာ သူ့ကိုလည်း တခြားမောင်နှမတွေနဲ့ တန်းတူချစ်တယ် ဆိုတာကို သိသွားတဲ့အတွက် ဝက်ဝံလေးဟာ စိတ်သက်သာရာ ရပြီး ပျော်သွားတာပေါ့ကွယ်။"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f10.jpg",
+      "text": "ဒါပေမယ့်လည်း ပတ်ဝန်းကျင်ကတိရစ္ဆာန်တွေက မွေးစားသားဖြစ်တဲ့အကြောင်း၊ မိသားစုဝင်အစစ် မဟုတ်တဲ့အကြောင်း ပြောမြဲပြောနေဆဲပဲတဲ့။ သူတို့ဟာ ဝက်ဝံလေးပျော်ရွှင်တာကို မနာလိုဝန်တို ဖြစ်နေကြတာပေါ့ကွယ်။"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f11.jpg",
+      "text": "ကြာလာတော့ ဝက်ဝံလေးဟာ ဝမ်းနည်းအားငယ် လာပြီး မိဘအရင်းကိုသွားရှာဖို့ ဆုံးဖြတ် လိုက်တယ်။ အားလုံး အိပ်မောကျနေတဲ့ တစ်ညမှာတော့ ဝက်ဝံလေးဟာ တိတ်တိတ်လေး ခိုးထွက်သွားပြီး သူ့မိဘအရင်းကိုရှာဖို့ ခရီးနှင်ခဲ့တယ်။"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f12.jpg",
+      "text": "ညကလည်း တဖြည်းဖြည်းနက်လာတော့ ရာသီဥတုက တဖြည်းဖြည်း ပိုပိုအေးလာတယ်။ တောကြီးမျက်မဲ ထဲမှာ တစ်ယောက်တည်းဆိုတော့ တဖြည်းဖြည်းနဲ့ ကြောက်လာတယ်။ ဒါပေမယ့် ဝက်ဝံလေးဟာ အားတင်းပြီး ခရီးဆက်နှင်ခဲ့တယ်။"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f13.jpg",
+      "text": "မိုးဖွဲလေးတွေကျလာပြီး မိုးတွေရွာလာတယ်။ တကိုယ်လုံးလဲ စိုစွတ်ပြီး အကွယ်အကာမရှိတဲ့ ဝက်ဝံလေးခမျာ မိုးရွာတောထဲမှာ ချမ်းတုန်လာပြီး မြေခွေးမေမေနဲ့ သူ့မြေခွေးမောင်နှမ တွေကိုသတိရလာတယ်။"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f14.jpg",
+      "text": "ညကို တဖြည်းဖြည်း ဖြတ်ကျော်ရင်း မနက်လင်းလို့ လာခဲ့တယ်။ လျှောက်ရင်းလျှောက်ရင်းနဲ့ ဗိုက်လည်း ဆာလာတယ်။ စားစရာလည်းမတွေ့တော့ အားအင် ချိနဲ့သလို ခံစားလာရတယ်။ ဝက်ဝံလေးဟာ ဝမ်းနည်း အားငယ်လာပြီး ဘယ်ကိုသွားရမလဲဆိုတာ ဝေခွဲမရ ဖြစ်နေရှာတယ်။"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f15.jpg",
+      "text": "အဲဒီအချိန်မှာ ကျားတစ်ကောင်ဟာ ချုံထဲက ထွက်လာပြီး သူ့ဆီကိုချဉ်းကပ်လာတယ်။ ဝက်ဝံလေး အားပျော့နေတာကို သိတဲ့ကျားဟာ ဝက်ဝံလေးကို ခုန်အုပ်လိုက်တယ်။ ဝက်ဝံလေးဟာ ကြောက်အား လန့်အားနဲ့ အော်ရင်းပြန်ခုခံတယ်။ အားမရှိတော့တဲ့ အတွက် ဝက်ဝံလေးဟာအရှုံးပေးရမလိုဖြစ်လာတယ်။"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f16.jpg",
+      "text": "အဲဒီအချိန်မှာ ဝက်ဝံလေးပျောက်လို့ လိုက်ရှာနေတဲ့ မြေခွေးမိသားစုဟာ ဝက်ဝံလေးရဲ့အော်သံကိုကြားလို့ ဝက်ဝံလေးရှိရာကိုပြေးလာပြီး ရန်ပြုနေတဲ့ကျားကို ဝိုင်းပြီးတိုက်ခိုက်ကြတယ်။ မြေခွေးတွေရဲ့ ဝိုင်းတိုက်ခိုက်တာကို ခံရတဲ့ကျားက တောထဲကို ထွက်ပြေးသွားခဲ့တယ်။"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f17.jpg",
+      "text": "ဝက်ဝံလေးဟာ သူ့ကို ချစ်တဲ့မိသားစုကို စွန့်ခွာပြီး ခိုးထွက်လာခဲ့မိတာကို အရမ်း နောင်တရသွားတယ်။ ပြီးတော့ သူ့ရဲ့မြေခွေးမေမေကို ပြောလိုက်တယ်။ “သားကိုကယ်တဲ့အတွက် ကျေးဇူး တင်ပါတယ် မေမေ။ ထွက်ပြေးလာမိတဲ့အတွက် သားကို ခွင့်လွတ်ပါ။”"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f18.jpg",
+      "text": "“ခွင့်လွတ် ပါတယ် သားရယ်။ သွေးသား မတော်စပ် ပေမယ့် တစ်ယောက်ကိုတစ်ယောက် ချစ်တယ် ဂရုစိုက်တယ်ဆိုရင် မိသားစုတွေပါပဲကွယ်။ နောက်ဆိုရင် ဒီလိုထွက်မပြေးနဲ့တော့နော်။ သားလေး အတွက် အန္တရာယ်များလွန်းလှပါတယ်ကွယ်။” လို့မြေခွေးမေမေက ပြန်ပြောလိုက်တယ်။"
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f19.jpg",
+      "text": "“သားနားလည်ပါပြီမေမေ။ သားနောက်ဘယ်တော့မှ ဒီမိသားစုနဲ့ ဝေးရာကို ထွက်မပြေးတော့ပါဘူး။ ဘယ်သူတွေ ဘာတွေ ပြောပြော ဒီမိသားစုဟာ သားရဲ့မိသားစုအရင်းပါပဲ။\" လို့ဝက်ဝံလေးက ပြန်ပြောလိုက်တယ်။"
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f88dfdcc0-a983-4aec-9e0e-ad614d8eac29%2fCyapbi+sez+Y%c3%a4mkun%2f20.jpg",
+      "text": "အဲဒီအချိန်ကစပြီး ​ခြေခွေးမေမေတို့မိသားစုဟာ ဘယ်သူတွေ ဘာတွေပြောပြော ဂရုမစိုက်ပဲ တစ်ယောက်ကိုတစ်ယောက် ချစ်ချစ်ခင်ခင် ကြင်ကြင် နာနာနဲ့ ပျော်စရာကောင်းတဲ့မိသားစုအဖြစ် တစ်သက်လုံး နေသွားကြသတဲ့ကွယ်။"
+    }
+  ],
+  "stats": {
+    "pages": 19,
+    "words": 264
+  }
+}

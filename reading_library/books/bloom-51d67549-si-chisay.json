@@ -1,0 +1,62 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-51d67549-si-chisay",
+  "title": "Si Chisay",
+  "description": "Chisay, a cute dog is Ashley's favorite playmate.",
+  "language": "Filipino",
+  "langCode": "fil",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Resources for the Blind, Inc."
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Resources for the Blind, Inc.",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/G7v5VqmsLr"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faor_adb047m.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faor_adb047m1.png",
+      "text": "Ito si Chisay. Siya ay isang aso."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faor_Pc015.png",
+      "text": "Ito naman si Ashley. Magkaibigan sila Ashley at Chisay."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faor_Pa024.png",
+      "text": "Paborito ni Ashley na maglaro kasama si Chisay."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faor_Pa032.png",
+      "text": "Araw-araw silang masayang naglalaro."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/lorrie%40blind.org.ph%2f51d67549-a34f-42eb-938e-ce71b567aa1b%2fSi+Chisay%2faor_Pa0271.png",
+      "text": "Maging ang kanyang pinsan na may alagang aso ay masayang nakikipaglaro sa kanila.\nWAKAS"
+    }
+  ],
+  "stats": {
+    "pages": 5,
+    "words": 42
+  }
+}

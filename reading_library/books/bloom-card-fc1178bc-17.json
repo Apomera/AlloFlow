@@ -2,7 +2,7 @@
   "schema": "allo-reading-book@1",
   "slug": "bloom-card-fc1178bc-17",
   "title": "17 - ድሙን ከልቢን ውዑይ ድስቲ",
-  "description": "Device Portrait Layout.",
+  "description": "A Tigrinya picture book from Bloom Library.",
   "language": "Tigrinya",
   "langCode": "ti",
   "isRtl": false,
@@ -32,7 +32,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Bloom Library catalog card for \"17 - ድሙን ከልቢን ውዑይ ድስቲ\" (Tigrinya). Device Portrait Layout."
+      "text": "Bloom Library catalog card for \"17 - ድሙን ከልቢን ውዑይ ድስቲ\" (Tigrinya). A Tigrinya picture book from Bloom Library."
     },
     {
       "n": 2,
@@ -47,6 +47,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 64
+    "words": 68
   }
 }

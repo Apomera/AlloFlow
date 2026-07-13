@@ -1,0 +1,62 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-ec328b7c-untitled-my",
+  "title": "ကျွန်တော်ဟာ တစ်ယောက်တည်းလာ",
+  "description": "\"Am I alone?\" translated in Tangshang Naga",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "Sarita Shetty"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Sarita Shetty",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/dl8E9E7pLv"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fec328b7c-aa5c-4fce-ba02-53d8567d3b6d%2fNgiz+laqlaq+li+sh%c3%a4x%2fSWPB_277-am-i-alone_Page_1_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fec328b7c-aa5c-4fce-ba02-53d8567d3b6d%2fNgiz+laqlaq+li+sh%c3%a4x%2fSWPB_277-am-i-alone_Page_2_Image_0001.png",
+      "text": "ကျွန်တော့နာမည် ဘိုလာလို့ ခေါ်ပါတယ်။ ဒီနေ့ ကျွန်တော့သူငယ်ချင်းတွေ မလာတဲ့အတွက် ကျွန်တော် ကစားလို့ မရပါဘူး။ ကျွန်တော်ဘာလုပ်ရင် ကောင်းမလဲ။ တစ်ယောက်တည်းပဲ ဖြစ်နေတယ်။"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fec328b7c-aa5c-4fce-ba02-53d8567d3b6d%2fNgiz+laqlaq+li+sh%c3%a4x%2fSWPB_277-am-i-alone_Page_3_Image_0001.png",
+      "text": "လမ်းလျှောက်ထွက်လိုက်အုန်းမယ်။ အိုး… သဘာ၀တရားကြီးဟာ အရောင်တွေ စုံလင်လိုက်တာ။ လေယူရာ ယိမ်းနေတဲ့ ပန်းရောင်ပန်းပွင့်လေးတွေ..... အစိမ်းရောင် သစ်ပင်တွေနဲ့ ချုံပုတ်တွေ......အနီရောင်နုတ်သီးနဲ့ အစိမ်းရောင် ကြက်တူရွေးလေးတွေ..... အဝါရောင်ပျားပုတုန်းလေးတွေရယ်..... ပြီးတော့ အပြာရောင်ကောင်းကင်ပြင်ရယ်...... အညိုရောင်မြေပြင်ကြီးရယ်။ အရမ်းကို စိတ်ကြည်နူးစရာ ကောင်းပါတယ်။"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fec328b7c-aa5c-4fce-ba02-53d8567d3b6d%2fNgiz+laqlaq+li+sh%c3%a4x%2fSWPB_277-am-i-alone_Page_4_Image_0001.png",
+      "text": "အရိပ်ရတဲ့သစ်ပင်ကြီးအောက်မှာ စာနည်းနည်းလောက်ဖတ်လိုက်ပါအုန်းမယ်။ ဝိုး…. စာအုပ်ပါးပါးလေးကနေ စာအုပ်အထူကြီးတွေအထိ ရှိတယ်။ ပုံပြင်တိုတိုလေးကနေ ပုံပြင်အရှည်ကြီးတွေအထိ ရှိတယ်။ စာအုပ်တွေဖတ်ရတာဟာ ကျွန်တော်ဖြစ်ချင်တဲ့ ဇာတ်ကောင်ဖြစ်လို့ရတယ်။ ကျွန်တော့ကို နေရာအမျိုးမျိုးကို ခေါ်ဆောင်သွားကြတယ်။"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fec328b7c-aa5c-4fce-ba02-53d8567d3b6d%2fNgiz+laqlaq+li+sh%c3%a4x%2fSWPB_277-am-i-alone_Page_5_Image_0001.png",
+      "text": "အခုကတော့ ကျွန်တော့ရဲ့ချစ်လှစွာသော ခြေလေးချောင်းသတ္တဝါသူငယ်ချင်းလေးတွေနဲ့ အတူတူဆော့ဖို့ အချိန် ဖြစ်ပါတယ်။ ကျွန်တော်တို့တွေဟာ သီချင်းတွေဆိုကြတယ်။ အရမ်းကိုပျော်စရာကောင်းပါတယ်။ ခွေးလေးဟာ ဝုတ်... ဝုတ်... လို့ ဟောင်ပါတယ်။ ကြောင်လေးကတော့ ညောင်..... ညောင်..... လို့အော်တယ်။ ဆိတ်ကလေးက ပဲ... အဲ.... အဲ..... လို့အော်ပါတယ်။"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2fec328b7c-aa5c-4fce-ba02-53d8567d3b6d%2fNgiz+laqlaq+li+sh%c3%a4x%2fSWPB_277-am-i-alone_Page_6_Image_0001.png",
+      "text": "ဟား…ဟား….ဟား တစ်ယောက်တည်းလည်း ပျော်စရာကောင်းတဲ့အရာတွေအများကြီးလုပ်လို့ရတယ်။ ကျွန်တော့ပတ်ဝန်းကျင်မှာ ကျွန်တော်နဲ့ အတူဆော့ချင်တဲ့ အရာလေးတွေ အများကြီးရှိတယ်။ ကျွန်တော်ရှာဖွေတတ်ဖို့ပဲလိုတာ။ ကျွန်တော်ဟာ တစ်ယောက်တည်းမဟုတ်ပါဘူး။ ကျွန်တော်အရမ်းပျော်တယ်။"
+    }
+  ],
+  "stats": {
+    "pages": 5,
+    "words": 83
+  }
+}

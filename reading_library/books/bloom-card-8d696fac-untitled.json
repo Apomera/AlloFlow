@@ -1,12 +1,12 @@
 {
   "schema": "allo-reading-book@1",
-  "slug": "bloom-card-32965667-04-bisad-iyo-eyga-iyo-koofiyadihii",
-  "title": "04 - Bisad iyo eyga iyo koofiyadihii",
-  "description": "The wind blows Cat's and Dog's hats into the water but Elephant is there to help them again.",
-  "language": "Somali",
-  "langCode": "so",
+  "slug": "bloom-card-8d696fac-untitled",
+  "title": "ແມງມຸມ ແມງມຸມ",
+  "description": "Spider man short story and picture",
+  "language": "Lao",
+  "langCode": "lo",
   "isRtl": false,
-  "level": "3",
+  "level": "1",
   "orientation": "portrait",
   "sourceId": "bloom",
   "contentType": "open-access-source-card",
@@ -14,25 +14,25 @@
     "Animal Stories"
   ],
   "authors": [
-    "SIL Education for Life"
+    "Bloom Lao"
   ],
   "illustrators": [],
   "originalAuthors": [],
-  "publisher": "SIL Education for Life",
+  "publisher": "Bloom Lao",
   "license": "CC BY-NC-SA",
   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
   "source": {
     "id": "bloom",
     "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/SD1m3FG2lz"
+    "url": "https://bloomlibrary.org/book/SKQ5dAp8r6"
   },
-  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/SD1m3FG2lz%2f1734890728814%2f04+-+Bisad+iyo+eyga+iyo+koofiyadihii%2fCover22.jpg",
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/SKQ5dAp8r6%2f1752648388680%2f%e0%bb%81%e0%ba%a1%e0%ba%87%e0%ba%a1%e0%ba%b8%e0%ba%a1+%e0%bb%81%e0%ba%a1%e0%ba%87%e0%ba%a1%e0%ba%b8%e0%ba%a1%2fSC001602CV.jpg",
   "audio": null,
   "pages": [
     {
       "n": 1,
       "img": null,
-      "text": "Bloom Library catalog card for \"04 - Bisad iyo eyga iyo koofiyadihii\" (Somali). The wind blows Cat's and Dog's hats into the water but Elephant is there to help them again."
+      "text": "Bloom Library catalog card for \"ແມງມຸມ ແມງມຸມ\" (Lao). Spider man short story and picture"
     },
     {
       "n": 2,
@@ -47,6 +47,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 80
+    "words": 63
   }
 }

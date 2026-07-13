@@ -1,0 +1,57 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-3cfc0883-untitled-my",
+  "title": "အံ့ဖွယ် ပုရွက်ဆိတ်ကလေးများ",
+  "description": "A story about amazing ants translated in Tangshang Naga",
+  "language": "Burmese",
+  "langCode": "my",
+  "isRtl": false,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "NTC Literacy team"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NTC Literacy team",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/tHyllWPEAm"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f3cfc0883-d927-4f5c-96cc-081a81ede5c7%2f%c3%80vangx+cy%c3%a4ngz+saizsii+sez+tiim%2fSWPB_222-amazing-ants_Page_1_Image_0001.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f3cfc0883-d927-4f5c-96cc-081a81ede5c7%2f%c3%80vangx+cy%c3%a4ngz+saizsii+sez+tiim%2fSWPB_222-amazing-ants_Page_2_Image_0001.png",
+      "text": "သူကတော့ ရာမူဖြစ်ပါတယ်။ သူအချိုတွေစားနေတုန်း မုန့်အပိုင်းအစတချို့ ကြမ်းပြင်ပေါ်ကျသွားတယ်။ တအောင့်နေတော့ မည်းမည်းအတန်းကြီး တစ်တန်းကို သူတွေ့လိုက်တယ်။ အနားကပ်ပြီး ဘာကြီးပါလိမ့်ဆိုပြီးသွားကြည့်လိုက်တယ်။ မုန့်အပိုင်းအစတွေ လာစားဖို့လာနေတဲ့ ပုရွက်ဆိတ်တန်းကြီးဖြစ်နေတယ်။"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f3cfc0883-d927-4f5c-96cc-081a81ede5c7%2f%c3%80vangx+cy%c3%a4ngz+saizsii+sez+tiim%2fSWPB_222-amazing-ants_Page_3_Image_0001.png",
+      "text": "ပုရွက်ဆိတ်တိုင်းဟာ အမုန့်အပိုင်းအစတွေကို သူတို့ကျောကုန်းပေါ်မှာ သယ်ထားကြတယ်။ သယ်ဖို့လုပ်ရင်း တစ်ကောင်နဲ့တစ်ကောင် တိုက်မိကုန်ကြတယ်။"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f3cfc0883-d927-4f5c-96cc-081a81ede5c7%2f%c3%80vangx+cy%c3%a4ngz+saizsii+sez+tiim%2fSWPB_222-amazing-ants_Page_4_Image_0001.png",
+      "text": "ပုရွက်ဆိတ်တွေဟာ စားစရာတွေသယ်ပြီးတော့ တန်းစီပြီးပြန်သွားကြတာကို ရာမူတွေ့လိုက်တယ်။ အဲဒီညမှာတော့ ပုရွက်ဆိတ်တွေဟာ စားပွဲအကြီးကြီးတည်ကြမှာဖြစ်တယ်။"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f3cfc0883-d927-4f5c-96cc-081a81ede5c7%2f%c3%80vangx+cy%c3%a4ngz+saizsii+sez+tiim%2fSWPB_222-amazing-ants_Page_5_Image_0001.png",
+      "text": "ပုရွက်ဆိတ်တွေဟာ အချင်းချင်းအစာတွေ ဝေမျှကြတာကို တွေ့တယ်မဟုတ်လာ။\nသင်ကော သင့်ရဲ့အစာတွေကို တပါးသူနဲ့ ဝေမျှပါရဲ့လာ။"
+    }
+  ],
+  "stats": {
+    "pages": 4,
+    "words": 36
+  }
+}
