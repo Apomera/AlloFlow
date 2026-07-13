@@ -143,6 +143,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Completed the shared Multi-Zone Sort interaction remediation used by Frayer, See-Think-Wonder, and Story Map: replaced simulated item controls with native 44 CSS-pixel buttons; changed zone and bank containers to labeled noninteractive groups; added a named dynamic destination dialog with initial focus, Escape and Tab containment, backdrop cancellation, and origin-item focus restoration; announced initialization, accurate corrective hints, completion, and reset; wrapped header controls and made the Frayer grid reflow to one column at narrow widths; retained a pointer-independent alternative to dragging; and preserved reduced-motion handling (WCAG 1.3.1, 1.4.10, 2.1.1, 2.3.3, 2.4.3, 2.4.7, 2.5.7, 2.5.8, 4.1.2, 4.1.3).
 
+- Completed a second shared Multi-Bucket Sort interaction pass for Concept Map, Problem/Solution, Fishbone, and Outline: replaced simulated item controls and nested speech buttons with native 44 CSS-pixel move buttons plus separate speech actions; changed bucket destinations to labeled noninteractive groups; contained and named the dynamic destination dialog with initial focus, Escape and Tab handling, backdrop cancellation, and origin-item focus restoration; announced initialization and the correct destination after errors; reset selection and confirmation state; wrapped header controls and changed four-or-more bucket layouts to one column at narrow widths; retained a keyboard alternative to dragging; and preserved reduced-motion handling and timer cleanup (WCAG 1.3.1, 1.4.10, 2.1.1, 2.3.3, 2.4.3, 2.4.7, 2.5.7, 2.5.8, 3.3.1, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

@@ -30,23 +30,26 @@ describe('Shared MultiBucket sorter accessibility', () => {
   it('provides larger item, reset, destination, and dialog controls with visible focus', () => {
     expect(sourceComponent.match(/min-h-11/g)?.length).toBeGreaterThanOrEqual(9);
     expect(sourceComponent).toContain('focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2');
-    expect(sourceComponent).toContain('focus:ring-4');
+    expect(sourceComponent).toContain('grid-cols-1 sm:grid-cols-2');
   });
 
-  it('prevents child item activation from bubbling into actionable buckets', () => {
-    expect(sourceComponent.match(/event\.stopPropagation\(\)/g)?.length).toBeGreaterThanOrEqual(4);
-    expect(sourceComponent).toContain("e.preventDefault(); e.stopPropagation()");
+  it('uses native item buttons, separate speech actions, and named bucket groups', () => {
+    expect(sourceComponent).toContain('data-multi-bucket-item-id');
+    expect(sourceComponent).toContain('aria-pressed={selected}');
+    expect(sourceComponent).toContain('</button>\n        <SpeakButton');
+    expect(sourceComponent).toContain('role="group"');
+    expect(sourceComponent).not.toContain('role="button"');
+    expect(sourceComponent).not.toContain('handleItemKeyDown');
   });
 
-  it('exposes the destination chooser as nonmodal and lets Escape cancel selection', () => {
-    const chooserStart = sourceComponent.indexOf('ref={moveMenuRef}');
-    const chooser = sourceComponent.slice(chooserStart, sourceComponent.indexOf('</div>', chooserStart));
-    expect(chooser).toContain('role="dialog"');
-    expect(chooser).not.toContain('aria-modal="true"');
-    expect(chooser).toContain("event.key === 'Escape'");
-    expect(chooser).toContain('setKeyboardSelectedItemId(null)');
+  it('contains the named destination modal and restores origin-item focus', () => {
+    expect(sourceComponent).toContain('multi-bucket-move-title');
+    expect(sourceComponent).toContain('aria-modal="true"');
+    expect(sourceComponent).toContain("event.key === 'Escape'");
+    expect(sourceComponent).toContain("event.key !== 'Tab'");
+    expect(sourceComponent).toContain('cancelMultiBucketSelection');
+    expect(sourceComponent).toContain('focusMultiBucketItem');
   });
-
   it('cleans up timers and honors reduced motion for all shared animations and transforms', () => {
     expect(sourceComponent).toContain('if (hintTimerRef.current) clearTimeout');
     expect(sourceComponent).toContain('if (confirmResetTimerRef.current) clearTimeout');

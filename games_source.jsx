@@ -3514,7 +3514,9 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
       [all[i], all[j]] = [all[j], all[i]];
     }
     setItems(all);
-    setScore(0); setIsWon(false); setAttempts(0);
+    setScore(0); setIsWon(false); setAttempts(0); setKeyboardSelectedItemId(null);
+    setLastHint(null); setConfirmingReset(false);
+    setAnnouncement(`${titleText} ready. ${all.length} items are in the bank.`);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataFingerprint]);
   useEffect(() => {
@@ -3543,28 +3545,34 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
       setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
       if (playSound) playSound('incorrect');
       showZoneHint(item.correctBucketId);
-      setAnnouncement(`Incorrect. "${item.text}" does not belong in ${bucketLabel}.`);
+      const correctLabel = buckets.find(b => b.id === item.correctBucketId)?.title || item.correctBucketId;
+      setAnnouncement(`Incorrect. "${item.text}" does not belong in ${bucketLabel}. Try ${correctLabel}.`);
     }
   };
-  const handleItemKeyDown = (e, item) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault(); e.stopPropagation();
-      if (keyboardSelectedItemId === item.id) {
-        setKeyboardSelectedItemId(null);
-        setAnnouncement('Selection cancelled.');
-      } else {
-        setKeyboardSelectedItemId(item.id);
-        setAnnouncement(`Selected: ${item.text}. Choose a destination.`);
-        if (playSound) playSound('click');
-      }
-    }
+  const focusMultiBucketItem = (itemId) => {
+    window.setTimeout(() => gameContainerRef.current?.querySelector(`[data-multi-bucket-item-id="${itemId}"]`)?.focus(), 0);
+  };
+  const cancelMultiBucketSelection = () => {
+    const itemId = keyboardSelectedItemId;
+    setKeyboardSelectedItemId(null);
+    setAnnouncement('Selection cancelled.');
+    if (itemId) focusMultiBucketItem(itemId);
+  };
+  const toggleMultiBucketSelection = (event, item) => {
+    event.stopPropagation();
+    if (keyboardSelectedItemId === item.id) { cancelMultiBucketSelection(); return; }
+    setKeyboardSelectedItemId(item.id);
+    setAnnouncement(`Selected: ${item.text}. Choose a destination.`);
+    if (playSound) playSound('click');
   };
   const handleKeyboardMove = (bucketId) => {
     if (!keyboardSelectedItemId) return;
     const item = items.find(i => i.id === keyboardSelectedItemId);
     if (!item) return;
+    const itemId = item.id;
     placeItem(item, bucketId);
     setKeyboardSelectedItemId(null);
+    focusMultiBucketItem(itemId);
   };
   const handleDragStart = (e, item) => { setDraggedItem(item); e.dataTransfer.effectAllowed = 'move'; };
   const handleDragOver = (e, bucketId) => { e.preventDefault(); setActiveDropZone(bucketId); };
@@ -3598,6 +3606,7 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     setItems(shuffled); setScore(0); setIsWon(false); setAttempts(0); setLastHint(null);
+    setKeyboardSelectedItemId(null); setConfirmingReset(false);
     setAnnouncement(t('games.bucket_sort.reset_announcement') || 'Board reset. All items returned to the bank.');
     window.setTimeout(() => gameContainerRef.current?.focus(), 0);
   };
@@ -3627,16 +3636,39 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
   const headerGradient = theme?.headerGradient || `from-${accent}-600 to-purple-600`;
   const titleText = theme?.title || (t('games.bucket_sort.title') || 'Sort');
   const lastHintLabel = lastHint ? (buckets.find(b => b.id === lastHint)?.title || '') : '';
+  const renderMultiBucketItem = (item, locationLabel, isBank = false) => {
+    const selected = keyboardSelectedItemId === item.id;
+    return (
+      <div
+        key={item.id}
+        draggable={isBank}
+        onDragStart={isBank ? (event) => handleDragStart(event, item) : undefined}
+        className={`flex items-center gap-1 rounded-lg bg-white shadow-sm ${selected ? 'ring-4 ring-yellow-400 border-yellow-500 z-30' : ''} ${reducedMotion ? '' : 'animate-in zoom-in duration-300'}`}
+      >
+        <button
+          type="button"
+          data-multi-bucket-item-id={item.id}
+          aria-pressed={selected}
+          aria-label={`${item.text}, ${locationLabel}. Press to ${selected ? 'cancel selection' : 'select and move'}.`}
+          onClick={(event) => toggleMultiBucketSelection(event, item)}
+          className={`min-h-11 flex-1 px-3 py-2 rounded-lg text-center font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 ${isBank ? 'text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-900 focus:ring-indigo-500' : `text-xs text-${accent}-800 border-s-4 border-${accent}-400 hover:bg-${accent}-50 focus:ring-${accent}-500`} ${selected && !reducedMotion ? 'scale-105' : ''}`}
+        >
+          {item.text}
+        </button>
+        <SpeakButton text={item.text} size={11} />
+      </div>
+    );
+  };
   return (
     <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="multi-bucket-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col focus:outline-none${reducedMotion ? '' : ' animate-in zoom-in-95'}` }>
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-      <div className={`bg-gradient-to-r ${headerGradient} p-4 text-white flex justify-between items-center shadow-md z-30`}>
+      <div className={`bg-gradient-to-r ${headerGradient} p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30`}>
         <div>
           <h3 id="multi-bucket-game-title" className="font-bold text-xl flex items-center gap-2"><ArrowRight size={24} aria-hidden="true"/> {titleText}</h3>
           {topicTitle && <p className="text-xs text-white/70 mt-0.5">{topicTitle}</p>}
         </div>
-        <div className="flex items-center gap-4">
-          <div className="bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40">{t('common.score') || 'Score'}: {score}</div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="min-h-11 flex items-center bg-white/30 px-4 py-1 rounded-full font-bold text-yellow-200 border border-white/40">{t('common.score') || 'Score'}: {score}</div>
           <GameThemeToggle />
           <button ref={multiBucketCloseRef} type="button" aria-label={t('common.close') || 'Close'} onClick={onClose} className="min-h-11 flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30 focus:outline-none focus:ring-2 focus:ring-white">
             <ArrowDown className="rotate-90" size={14} aria-hidden="true"/> {t('concept_map.venn.back_to_editor') || 'Back'}
@@ -3675,54 +3707,52 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
           </div>
         )}
         {keyboardSelectedItemId && (
-          <div className="fixed inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4">
-            <div ref={moveMenuRef} className={`bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 max-w-md w-full pointer-events-auto${reducedMotion ? '' : ' animate-in zoom-in duration-200'}`} role="dialog" aria-label={t('games.choose_destination_aria') || 'Choose a destination'} onKeyDown={(event) => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setKeyboardSelectedItemId(null); window.setTimeout(() => gameContainerRef.current?.focus(), 0); } }}>
-              <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a bucket above, or pick one here:'}</h4>
-              <div className="grid grid-cols-2 gap-2">
+          <div role="presentation" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={cancelMultiBucketSelection}>
+            <div
+              ref={moveMenuRef}
+              className={`bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 max-w-md w-full${reducedMotion ? '' : ' animate-in zoom-in duration-200'}`}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="multi-bucket-move-title"
+              onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => {
+                event.stopPropagation();
+                if (event.key === 'Escape') { event.preventDefault(); cancelMultiBucketSelection(); return; }
+                if (event.key !== 'Tab') return;
+                const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled])'));
+                if (!focusable.length) { event.preventDefault(); return; }
+                const first = focusable[0], last = focusable[focusable.length - 1];
+                if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+              }}
+            >
+              <h4 id="multi-bucket-move-title" className="text-sm font-bold text-slate-700 text-center mb-1">{t('games.choose_destination_aria') || 'Choose a destination'}</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {buckets.map(b => (
-                  <button key={b.id} type="button" onClick={() => handleKeyboardMove(b.id)} className={`min-h-11 px-4 py-3 bg-${accent}-100 hover:bg-${accent}-200 text-${accent}-800 rounded-xl font-bold text-xs transition-colors border border-${accent}-300 focus:outline-none focus:ring-2 focus:ring-${accent}-500`}>{b.title}</button>
+                  <button key={b.id} type="button" onClick={() => handleKeyboardMove(b.id)} className={`min-h-11 px-4 py-3 bg-${accent}-100 hover:bg-${accent}-200 text-${accent}-800 rounded-xl font-bold text-xs transition-colors border border-${accent}-300 focus:outline-none focus:ring-2 focus:ring-${accent}-500 focus:ring-offset-2`}>{b.title}</button>
                 ))}
-                <button type="button" onClick={() => handleKeyboardMove('bank')} className="col-span-2 min-h-11 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{t('concept_map.venn.return_bank') || 'Return to bank'}</button>
+                <button type="button" onClick={() => handleKeyboardMove('bank')} className="min-h-11 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold text-xs transition-colors border border-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{t('concept_map.venn.return_bank') || 'Return to bank'}</button>
+                <button type="button" onClick={cancelMultiBucketSelection} className="min-h-11 px-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-md text-slate-700 hover:text-slate-900 underline text-center">{t('concept_map.venn.cancel_selection') || 'Cancel'}</button>
               </div>
-              <button type="button" onClick={() => setKeyboardSelectedItemId(null)} className="min-h-11 mt-1 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md text-slate-600 hover:text-slate-800 underline text-center">{t('concept_map.venn.cancel_selection') || 'Cancel'}</button>
             </div>
           </div>
-        )}
-        <div className={`p-4 grid gap-4 ${buckets.length <= 2 ? 'grid-cols-1 md:grid-cols-2' : buckets.length <= 3 ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'}`}>
+        )}        <div className={`p-4 grid gap-4 ${buckets.length <= 2 ? 'grid-cols-1 md:grid-cols-2' : buckets.length <= 3 ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'}`}>
           {buckets.map(b => {
             const placed = itemsByBucket[b.id] || [];
             const isActive = activeDropZone === b.id;
-            const hasSelection = !!keyboardSelectedItemId;
             return (
               <div
                 key={b.id}
+                role="group"
+                aria-label={`Bucket: ${b.title}`}
                 onDrop={(e) => handleDrop(e, b.id)}
                 onDragOver={(e) => handleDragOver(e, b.id)}
                 onDragLeave={handleDragLeave}
-                onClick={hasSelection ? () => handleKeyboardMove(b.id) : undefined}
-                role={hasSelection ? 'button' : undefined}
-                tabIndex={hasSelection ? 0 : undefined}
-                aria-label={hasSelection ? `Place selected item into ${b.title}` : undefined}
-                onKeyDown={hasSelection ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleKeyboardMove(b.id); } } : undefined}
-                className={`flex flex-col items-stretch p-4 rounded-2xl border-2 min-h-[140px] relative z-10 bg-white shadow-sm ${!reducedMotion ? 'transition-all' : ''} ${isActive ? `border-${accent}-500 ring-4 ring-${accent}-200 ${!reducedMotion ? 'scale-[1.02]' : ''} shadow-md` : `border-${accent}-200`} ${hasSelection ? 'cursor-pointer ring-2 ring-yellow-300/60 focus:outline-none focus:ring-4' : ''}`}
+                className={`flex flex-col items-stretch p-4 rounded-2xl border-2 min-h-[140px] relative z-10 bg-white shadow-sm ${!reducedMotion ? 'transition-all' : ''} ${isActive ? `border-${accent}-500 ring-4 ring-${accent}-200 ${!reducedMotion ? 'scale-[1.02]' : ''} shadow-md` : `border-${accent}-200`}`}
               >
-                <div className={`text-center font-black uppercase tracking-wider text-sm py-1 mb-2 rounded-md bg-${accent}-100 text-${accent}-800 border border-${accent}-200 ${hasSelection ? 'ring-2 ring-yellow-300' : ''}`}>{b.title}</div>
+                <div className={`text-center font-black uppercase tracking-wider text-sm py-1 mb-2 rounded-md bg-${accent}-100 text-${accent}-800 border border-${accent}-200`}>{b.title}</div>
                 <div className="flex flex-wrap gap-1.5 justify-center content-start flex-grow p-1">
-                  {placed.map(item => (
-                    <div
-                      key={item.id}
-                      tabIndex={0}
-                      role="button"
-                      aria-label={`${item.text}, sorted into ${b.title}`}
-                      aria-pressed={keyboardSelectedItemId === item.id}
-                      onKeyDown={(e) => handleItemKeyDown(e, item)}
-                      onClick={(event) => { event.stopPropagation(); if (keyboardSelectedItemId === item.id) setKeyboardSelectedItemId(null); else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                      className={`min-h-11 bg-white px-2.5 py-1 rounded-md shadow-sm text-xs font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center gap-1 text-${accent}-800 border-s-4 border-${accent}-400 hover:bg-${accent}-50 focus:ring-${accent}-500 ${!reducedMotion ? 'animate-in zoom-in' : ''} ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 z-50 ${!reducedMotion ? 'scale-110' : ''}` : ''}`}
-                    >
-                      {item.text}
-                      <SpeakButton text={item.text} size={11} />
-                    </div>
-                  ))}
+                  {placed.map(item => renderMultiBucketItem(item, `sorted into ${b.title}`))}
                   {placed.length === 0 && <div className="text-slate-600 italic text-[11px] mt-3 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop here'}</div>}
                 </div>
               </div>
@@ -3740,31 +3770,16 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
               )}
             </div>
             <button
+              type="button"
               onClick={handleResetClick}
               className={`min-h-11 px-4 py-1.5 rounded-full text-xs font-bold border transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${confirmingReset ? `bg-rose-600 text-white border-rose-700 hover:bg-rose-700 ${!reducedMotion ? 'animate-pulse' : ''}` : 'text-slate-600 hover:bg-slate-100 border-slate-400'}`}
               aria-label={confirmingReset ? 'Confirm reset — clears the whole board' : 'Reset board'}
             >
-              {confirmingReset ? 'Click again to confirm' : (t('concept_sort.reset_board') || 'Reset')}
+              {confirmingReset ? 'Press again to confirm' : (t('concept_sort.reset_board') || 'Reset')}
             </button>
           </div>
           <div className="flex flex-wrap gap-3 justify-center overflow-y-auto h-full pb-4 pt-2">
-            {bankItems.map(item => (
-              <div
-                key={item.id}
-                draggable
-                onDragStart={(e) => handleDragStart(e, item)}
-                tabIndex={0}
-                role="button"
-                aria-label={`${item.text}, unsorted. Press Enter to select.`}
-                aria-pressed={keyboardSelectedItemId === item.id}
-                onKeyDown={(e) => handleItemKeyDown(e, item)}
-                onClick={(event) => { event.stopPropagation(); if (keyboardSelectedItemId === item.id) setKeyboardSelectedItemId(null); else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
-                className={`min-h-11 bg-white px-4 py-2 rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-900 cursor-grab active:cursor-grabbing ${!reducedMotion ? 'active:border-b-0 active:translate-y-1 transition-all animate-in zoom-in duration-300' : ''} text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${keyboardSelectedItemId === item.id ? `ring-4 ring-yellow-400 border-yellow-500 z-50 ${!reducedMotion ? 'scale-110' : ''}` : ''}`}
-              >
-                {item.text}
-                <SpeakButton text={item.text} size={11} />
-              </div>
-            ))}
+            {bankItems.map(item => renderMultiBucketItem(item, 'unsorted in the bank', true))}
             {bankItems.length === 0 && !isWon && (
               <div className="text-slate-600 italic font-bold text-sm mt-4 text-center w-full">{t('concept_map.venn.bank_empty') || 'All items sorted!'}</div>
             )}
