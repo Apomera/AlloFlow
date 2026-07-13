@@ -631,6 +631,9 @@ var InventoryGrid = React.memo(({ inventory, onSelect }) => {
 });
 var DiceOverlay = React.memo(({ result, onComplete }) => {
   const { t } = useContext(LanguageContext);
+  const diceRef = useRef(null);
+  const reduceMotion = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  useFocusTrap(diceRef, true, onComplete);
   const [currentRotation, setCurrentRotation] = useState(() => {
     const rX = Math.floor(Math.random() * 360);
     const rY = Math.floor(Math.random() * 360);
@@ -642,19 +645,24 @@ var DiceOverlay = React.memo(({ result, onComplete }) => {
     const targetRotation = getD20Rotation(result, spinCount);
     const rollTimer = setTimeout(() => {
       setCurrentRotation(targetRotation);
-    }, 50);
-    const endTimer = setTimeout(() => onComplete(), 3500);
+    }, reduceMotion ? 0 : 50);
+    const endTimer = setTimeout(() => onComplete(), reduceMotion ? 1e3 : 3500);
     return () => {
       clearTimeout(rollTimer);
       clearTimeout(endTimer);
     };
-  }, [onComplete, result]);
+  }, [onComplete, reduceMotion, result]);
   return /* @__PURE__ */ React.createElement(
     "div",
     {
+      ref: diceRef,
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": "adventure-dice-result",
       className: "fixed inset-0 bg-black/60 z-[200] backdrop-blur-sm flex items-center justify-center",
       onClick: onComplete
     },
+    /* @__PURE__ */ React.createElement("p", { id: "adventure-dice-result", className: "sr-only", role: "status", "aria-live": "assertive" }, t("adventure.dice_roll_result", { result })),
     /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -662,13 +670,14 @@ var DiceOverlay = React.memo(({ result, onComplete }) => {
           e.stopPropagation();
           onComplete();
         },
-        className: "absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors z-[202]",
+        className: "absolute top-6 right-6 min-w-11 min-h-11 text-white hover:text-white bg-black/50 hover:bg-black/70 p-2 rounded-full transition-colors z-[202] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black",
         title: t("common.skip_animation"),
-        "aria-label": t("common.skip_animation")
+        "aria-label": t("common.skip_animation"),
+        "data-alloflow-close-on-escape": "true"
       },
-      /* @__PURE__ */ React.createElement(X, { size: 32 })
+      /* @__PURE__ */ React.createElement(X, { size: 32, "aria-hidden": "true" })
     ),
-    /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, className: "dice-container", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "dice-container", "aria-hidden": "true", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement(
       "div",
       {
         className: "dice",

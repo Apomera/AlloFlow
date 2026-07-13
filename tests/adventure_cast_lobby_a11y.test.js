@@ -48,3 +48,31 @@ describe('adventure shop accessibility', () => {
     expect(rootModule).not.toContain('role: "button", tabIndex: 0, className: "bg-slate-900 border-4 border-indigo-500');
   });
 });
+describe('adventure dice overlay accessibility', () => {
+  it('uses a named modal and announces only the actual roll result', () => {
+    expect(source).toContain('ref={diceRef}');
+    expect(source).toContain('aria-labelledby="adventure-dice-result"');
+    expect(source).toContain('role="status" aria-live="assertive"');
+    expect(source).toContain("t('adventure.dice_roll_result', { result })");
+    expect(source).toContain('className="dice-container" aria-hidden="true"');
+    expect(source).not.toContain('<div role="button" tabIndex={0} className="dice-container"');
+  });
+
+  it('contains focus, supports Escape and skip, and shortens motion for reduced-motion users', () => {
+    expect(source).toContain('useFocusTrap(diceRef, true, onComplete)');
+    expect(source).toContain('data-alloflow-close-on-escape="true"');
+    expect(source).toContain('min-w-11 min-h-11');
+    expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
+    expect(source).toContain('reduceMotion ? 1000 : 3500');
+  });
+
+  it('ships the result label and synchronized source/module copies', () => {
+    const strings = fs.readFileSync('ui_strings.js', 'utf8');
+    const rootModule = fs.readFileSync('adventure_module.js', 'utf8');
+    expect(strings).toContain('"dice_roll_result": "Dice roll result: {result}"');
+    expect(fs.readFileSync('prismflow-deploy/public/ui_strings.js', 'utf8')).toBe(strings);
+    expect(fs.readFileSync('prismflow-deploy/src/adventure_source.jsx', 'utf8')).toBe(source);
+    expect(fs.readFileSync('prismflow-deploy/public/adventure_module.js', 'utf8')).toBe(rootModule);
+    expect(rootModule).toContain('useFocusTrap(diceRef, true, onComplete)');
+  });
+});
