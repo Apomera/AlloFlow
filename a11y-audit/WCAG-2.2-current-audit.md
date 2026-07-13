@@ -129,6 +129,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Updated the shared MultiZone sorter used by Frayer, See-Think-Wonder, and Story Map with a named focus-managed outer dialog, initial Close focus, Tab containment, Escape closing, and launcher focus restoration. Reset, Close, and draggable/selectable items meet larger target sizes and expose visible focus; keyboard-selected items can now move to any zone or back to the bank without dragging; completion is announced; the nested win dialog isolates its keyboard handler while retaining Play again focus; the heading icon is hidden; and item entry, drop-zone scaling, confetti, and win entry honor reduced-motion preferences (WCAG 1.1.1, 2.1.1, 2.1.2, 2.3.3, 2.4.3, 2.4.7, 2.5.7, 2.5.8, 4.1.2, 4.1.3).
 
+- Extended the shared MultiBucket sorter used by Concept Map, Problem/Solution, Fishbone, and Outline: completion, reset, and reset-cancellation changes are announced; item clicks no longer bubble into actionable parent buckets; placed/bank items, Reset, destination, return, cancel, and dialog actions meet larger target sizes with visible focus; the destination chooser is accurately nonmodal and Escape cancels selection without closing the game; timers are cleaned up; decorative hint/back icons are hidden; and dialog, win, hint, chooser, item-entry, active-drop, selection-scale, and press motion honors reduced-motion preferences (WCAG 1.1.1, 2.1.1, 2.1.2, 2.3.3, 2.4.3, 2.4.7, 2.5.7, 2.5.8, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
