@@ -5707,6 +5707,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
 });
 const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete }) => {
   const { t } = useContext(LanguageContext);
+  const reducedMotion = useReducedMotion();
   const [grid, setGrid] = useState([]);
   const [marks, setMarks] = useState(new Set());
   const [isWon, setIsWon] = useState(false);
@@ -5753,6 +5754,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
       setGrid(newGrid);
       setMarks(new Set(['2-2']));
       setIsWon(false);
+      setAnnouncement(t('bingo.card_ready_announcement') || 'Bingo card ready. Select a square to mark or unmark it.');
   }, [data]);
   const toggleCell = (r, c) => {
       const key = `${r}-${c}`;
@@ -5811,21 +5813,23 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
       }
   };
   return (
-    <div ref={studentBingoDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="student-bingo-title" className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:duration-300">
+    <div ref={studentBingoDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="student-bingo-title" className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-2 sm:p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:duration-300">
         <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-        {isWon && <ConfettiExplosion />}
+        {isWon && !reducedMotion && <ConfettiExplosion />}
         <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-indigo-500 flex flex-col max-h-[90vh]">
-            <div className="bg-indigo-600 p-4 text-white flex justify-between items-center shrink-0">
-                 <div className="flex items-center gap-3">
+            <div className="bg-indigo-600 p-4 text-white flex flex-wrap justify-between items-center gap-3 shrink-0">
+                 <div className="flex items-center gap-3 min-w-0">
                      <div className="bg-white/20 p-2 rounded-full"><Gamepad2 size={24} aria-hidden="true" /></div>
                      <div>
-                         <h2 id="student-bingo-title" className="font-black text-2xl uppercase tracking-widest">{t('bingo.student_title')}</h2>
+                         <h2 id="student-bingo-title" className="font-black text-xl sm:text-2xl uppercase tracking-wider sm:tracking-widest break-words">{t('bingo.student_title')}</h2>
                          <p className="text-indigo-200 text-xs font-bold">{t('bingo.click_hint')}</p>
                      </div>
                  </div>
+                 <div className="flex items-center gap-2">
                  <button
+                    type="button"
                     onClick={() => setShowImages(v => !v)}
-                    className={`min-w-11 min-h-11 p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${showImages ? 'bg-white/20 hover:bg-white/30' : 'hover:bg-indigo-500'}`}
+                    className={`min-w-11 min-h-11 p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-indigo-700 ${showImages ? 'bg-white/20 hover:bg-white/30' : 'hover:bg-indigo-500'}`}
                     aria-pressed={showImages}
                     aria-label={t('bingo.toggle_images_aria') || 'Toggle picture cards'}
                     title={showImages ? (t('bingo.hide_images_title') || 'Hide pictures') : (t('bingo.show_images_title') || 'Show pictures')}
@@ -5833,55 +5837,51 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
                     <ImageIcon size={20} aria-hidden="true" className={showImages ? 'text-white' : 'text-indigo-200'} />
                  </button>
                  <GameThemeToggle />
-                 <button ref={studentBingoCloseRef} type="button" onClick={onClose} className="min-w-11 min-h-11 p-2 hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-label={t('bingo.close_game_aria')}>
+                 <button ref={studentBingoCloseRef} type="button" onClick={onClose} className="min-w-11 min-h-11 p-2 hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-indigo-700" aria-label={t('bingo.close_game_aria')}>
                      <X size={24} aria-hidden="true" />
                  </button>
+                 </div>
             </div>
-            <div className="p-6 overflow-y-auto custom-scrollbar bg-indigo-50 flex-grow flex items-center justify-center">
+            <div className="p-2 sm:p-6 overflow-auto custom-scrollbar bg-indigo-50 flex-grow flex items-center justify-center">
                 <div role="group" aria-label={t('bingo.student_title')} className="grid grid-cols-5 gap-2 w-full aspect-square max-w-[600px]">
                     {grid.map((row, r) => (
                         row.map((cell, c) => {
-                            const isMarked = marks.has(`${r}-${c}`);
-                            return (
-                                <div
-                                    key={`${r}-${c}`}
-                                    onClick={cell.type === 'free' ? undefined : () => toggleCell(r, c)}
-                                    role={cell.type === 'free' ? undefined : 'button'}
-                                    tabIndex={cell.type === 'free' ? -1 : 0}
-                                    aria-label={`${cell.text}${isMarked ? ' (marked)' : ''}`}
-                                    aria-pressed={cell.type === 'free' ? undefined : isMarked}
-                                    onKeyDown={(e) => {
-                                        if (cell.type !== 'free' && (e.key === 'Enter' || e.key === ' ')) {
-                                            e.preventDefault();
-                                            toggleCell(r, c);
-                                        }
-                                    }}
-                                    className={`
-                                        relative min-w-11 min-h-11 border-2 rounded-lg flex items-center justify-center text-center p-1 cursor-pointer transition-all duration-200 select-none shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-600 focus:ring-offset-2
-                                        ${cell.type === 'free'
-                                            ? 'bg-indigo-200 border-indigo-400 text-indigo-800 font-black'
-                                            : isMarked
-                                                ? 'bg-white border-indigo-500'
-                                                : 'bg-white border-slate-200 hover:border-indigo-300 hover:shadow-md'
-                                        }
-                                    `}
-                                >
+                            const key = `${r}-${c}`;
+                            const isMarked = marks.has(key);
+                            const cellContent = (
+                                <>
                                     {showImages && cell.imageUrl && (
-                                        <img src={cell.imageUrl} alt={cell.text} className={`w-8 h-8 sm:w-10 sm:h-10 object-contain rounded mb-0.5 ${isMarked && cell.type !== 'free' ? 'opacity-40' : ''}`} />
+                                        <img src={cell.imageUrl} alt="" aria-hidden="true" className={`w-8 h-8 sm:w-10 sm:h-10 object-contain rounded mb-0.5 ${isMarked && cell.type !== 'free' ? 'opacity-40' : ''}`} />
                                     )}
                                     <span className={`text-[11px] sm:text-xs font-bold leading-tight break-words ${isMarked && cell.type !== 'free' ? 'opacity-40' : ''}`}>
                                         {cell.text}
                                     </span>
                                     {isMarked && (
-                                        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                                        <span className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none" aria-hidden="true">
                                             {cell.type === 'free' ? (
-                                                <Star size={32} className="text-yellow-500 fill-yellow-400 drop-shadow-sm motion-safe:animate-in motion-safe:zoom-in motion-safe:duration-300" aria-hidden="true" />
+                                                <Star size={32} className="text-yellow-500 fill-yellow-400 drop-shadow-sm motion-safe:animate-in motion-safe:zoom-in motion-safe:duration-300" />
                                             ) : (
-                                                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-red-500/80 border-4 border-red-600/50 shadow-lg backdrop-blur-[1px] motion-safe:animate-[stamp_0.3s_ease-out_forwards]"></div>
+                                                <span className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-red-500/80 border-4 border-red-600/50 shadow-lg backdrop-blur-[1px] motion-safe:animate-[stamp_0.3s_ease-out_forwards]"></span>
                                             )}
-                                        </div>
+                                        </span>
                                     )}
-                                </div>
+                                </>
+                            );
+                            const cellClasses = `relative min-w-11 min-h-11 border-2 rounded-lg flex flex-col items-center justify-center text-center p-1 select-none shadow-sm ${cell.type === 'free' ? 'cursor-default bg-indigo-200 border-indigo-400 text-indigo-800 font-black' : `cursor-pointer focus:outline-none focus:ring-4 focus:ring-indigo-600 focus:ring-offset-2 ${isMarked ? 'bg-white border-indigo-500' : 'bg-white border-slate-200 hover:border-indigo-300 hover:shadow-md'}`}`;
+                            if (cell.type === 'free') {
+                                return <div key={key} className={cellClasses}>{cellContent}</div>;
+                            }
+                            return (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    onClick={() => toggleCell(r, c)}
+                                    aria-label={`${cell.text}${isMarked ? ' (marked)' : ' (unmarked)'}`}
+                                    aria-pressed={isMarked}
+                                    className={cellClasses}
+                                >
+                                    {cellContent}
+                                </button>
                             );
                         })
                     ))}

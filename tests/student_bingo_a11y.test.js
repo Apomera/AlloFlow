@@ -24,14 +24,17 @@ describe('Student Bingo accessibility', () => {
     expect(source).toContain('ref={studentBingoCloseRef}');
     expect(source.match(/min-w-11 min-h-11/g)?.length).toBeGreaterThanOrEqual(3);
     expect(source).toContain('focus:ring-4 focus:ring-indigo-600 focus:ring-offset-2');
-    expect(source).toContain("e.key === 'Enter' || e.key === ' '");
+    expect(source).toContain('type="button"');
+    expect(source).toContain('aria-pressed={isMarked}');
   });
 
-  it('does not expose the noninteractive free space as a button', () => {
+  it('uses native buttons while keeping the free space noninteractive', () => {
     const source = files[0][1];
-    expect(source).toContain("role={cell.type === 'free' ? undefined : 'button'}");
-    expect(source).toContain("tabIndex={cell.type === 'free' ? -1 : 0}");
-    expect(source).toContain("aria-pressed={cell.type === 'free' ? undefined : isMarked}");
+    expect(source).toContain("if (cell.type === 'free')");
+    expect(source).toContain('return <div key={key}');
+    expect(source).toContain('<button');
+    expect(source).not.toContain("role={cell.type === 'free' ? undefined : 'button'}");
+    expect(source).not.toContain("tabIndex={cell.type === 'free' ? -1 : 0}");
   });
 
   it('hides decorative icons and respects reduced motion', () => {
@@ -41,5 +44,9 @@ describe('Student Bingo accessibility', () => {
     expect(source).toContain('motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95');
     expect(source).toContain('motion-safe:animate-bounce');
     expect(source).toContain('motion-safe:animate-[stamp_0.3s_ease-out_forwards]');
+    expect(source).toContain('isWon && !reducedMotion && <ConfettiExplosion />');
+    expect(source).toContain('alt="" aria-hidden="true"');
+    expect(source).toContain('flex flex-wrap justify-between');
+    expect(source).toContain('overflow-auto');
   });
 });

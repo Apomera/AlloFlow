@@ -147,6 +147,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Closed the residual Cause/Effect Sort destination-semantics gap: the Causes and Effects drop areas are now labeled noninteractive groups rather than simulated buttons that wrap native item and speech controls. Keyboard placement remains fully available through the contained destination dialog, while pointer dragging continues as an optional input method (WCAG 1.3.1, 2.1.1, 2.5.7, 4.1.2).
 
+- Completed a second Student Bingo interaction pass: replaced simulated cell buttons and hand-authored Enter/Space handling with native 44 CSS-pixel buttons and programmatic pressed state; retained the free space as noninteractive content; announced card readiness, mark changes, and wins; hid duplicated card images and stamp/star decoration from assistive technology; suppressed confetti for reduced motion; strengthened focus contrast on header actions; and added narrow-width header wrapping, responsive title tracking, compact padding, and overflow-safe board presentation (WCAG 1.1.1, 1.3.1, 1.4.10, 2.1.1, 2.3.3, 2.4.7, 2.5.8, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

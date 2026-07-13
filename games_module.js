@@ -4960,6 +4960,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
 });
 const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete }) => {
   const { t } = useContext(LanguageContext);
+  const reducedMotion = useReducedMotion();
   const [grid, setGrid] = useState([]);
   const [marks, setMarks] = useState(/* @__PURE__ */ new Set());
   const [isWon, setIsWon] = useState(false);
@@ -4999,6 +5000,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
     setGrid(newGrid);
     setMarks(/* @__PURE__ */ new Set(["2-2"]));
     setIsWon(false);
+    setAnnouncement(t("bingo.card_ready_announcement") || "Bingo card ready. Select a square to mark or unmark it.");
   }, [data]);
   const toggleCell = (r, c) => {
     const key = `${r}-${c}`;
@@ -5056,41 +5058,36 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
       }
     }
   };
-  return /* @__PURE__ */ React.createElement("div", { ref: studentBingoDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "student-bingo-title", className: "fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), isWon && /* @__PURE__ */ React.createElement(ConfettiExplosion, null), /* @__PURE__ */ React.createElement("div", { className: "w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-indigo-500 flex flex-col max-h-[90vh]" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-600 p-4 text-white flex justify-between items-center shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Gamepad2, { size: 24, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "student-bingo-title", className: "font-black text-2xl uppercase tracking-widest" }, t("bingo.student_title")), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-200 text-xs font-bold" }, t("bingo.click_hint")))), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: studentBingoDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "student-bingo-title", className: "fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-2 sm:p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), isWon && !reducedMotion && /* @__PURE__ */ React.createElement(ConfettiExplosion, null), /* @__PURE__ */ React.createElement("div", { className: "w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-indigo-500 flex flex-col max-h-[90vh]" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-600 p-4 text-white flex flex-wrap justify-between items-center gap-3 shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Gamepad2, { size: 24, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "student-bingo-title", className: "font-black text-xl sm:text-2xl uppercase tracking-wider sm:tracking-widest break-words" }, t("bingo.student_title")), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-200 text-xs font-bold" }, t("bingo.click_hint")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => setShowImages((v) => !v),
-      className: `min-w-11 min-h-11 p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${showImages ? "bg-white/20 hover:bg-white/30" : "hover:bg-indigo-500"}`,
+      className: `min-w-11 min-h-11 p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-indigo-700 ${showImages ? "bg-white/20 hover:bg-white/30" : "hover:bg-indigo-500"}`,
       "aria-pressed": showImages,
       "aria-label": t("bingo.toggle_images_aria") || "Toggle picture cards",
       title: showImages ? t("bingo.hide_images_title") || "Hide pictures" : t("bingo.show_images_title") || "Show pictures"
     },
     /* @__PURE__ */ React.createElement(ImageIcon, { size: 20, "aria-hidden": "true", className: showImages ? "text-white" : "text-indigo-200" })
-  ), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement("button", { ref: studentBingoCloseRef, type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500", "aria-label": t("bingo.close_game_aria") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { className: "p-6 overflow-y-auto custom-scrollbar bg-indigo-50 flex-grow flex items-center justify-center" }, /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("bingo.student_title"), className: "grid grid-cols-5 gap-2 w-full aspect-square max-w-[600px]" }, grid.map((row, r) => row.map((cell, c) => {
-    const isMarked = marks.has(`${r}-${c}`);
+  ), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement("button", { ref: studentBingoCloseRef, type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-indigo-700", "aria-label": t("bingo.close_game_aria") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" })))), /* @__PURE__ */ React.createElement("div", { className: "p-2 sm:p-6 overflow-auto custom-scrollbar bg-indigo-50 flex-grow flex items-center justify-center" }, /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("bingo.student_title"), className: "grid grid-cols-5 gap-2 w-full aspect-square max-w-[600px]" }, grid.map((row, r) => row.map((cell, c) => {
+    const key = `${r}-${c}`;
+    const isMarked = marks.has(key);
+    const cellContent = /* @__PURE__ */ React.createElement(React.Fragment, null, showImages && cell.imageUrl && /* @__PURE__ */ React.createElement("img", { src: cell.imageUrl, alt: "", "aria-hidden": "true", className: `w-8 h-8 sm:w-10 sm:h-10 object-contain rounded mb-0.5 ${isMarked && cell.type !== "free" ? "opacity-40" : ""}` }), /* @__PURE__ */ React.createElement("span", { className: `text-[11px] sm:text-xs font-bold leading-tight break-words ${isMarked && cell.type !== "free" ? "opacity-40" : ""}` }, cell.text), isMarked && /* @__PURE__ */ React.createElement("span", { className: "absolute inset-0 flex items-center justify-center z-10 pointer-events-none", "aria-hidden": "true" }, cell.type === "free" ? /* @__PURE__ */ React.createElement(Star, { size: 32, className: "text-yellow-500 fill-yellow-400 drop-shadow-sm motion-safe:animate-in motion-safe:zoom-in motion-safe:duration-300" }) : /* @__PURE__ */ React.createElement("span", { className: "w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-red-500/80 border-4 border-red-600/50 shadow-lg backdrop-blur-[1px] motion-safe:animate-[stamp_0.3s_ease-out_forwards]" })));
+    const cellClasses = `relative min-w-11 min-h-11 border-2 rounded-lg flex flex-col items-center justify-center text-center p-1 select-none shadow-sm ${cell.type === "free" ? "cursor-default bg-indigo-200 border-indigo-400 text-indigo-800 font-black" : `cursor-pointer focus:outline-none focus:ring-4 focus:ring-indigo-600 focus:ring-offset-2 ${isMarked ? "bg-white border-indigo-500" : "bg-white border-slate-200 hover:border-indigo-300 hover:shadow-md"}`}`;
+    if (cell.type === "free") {
+      return /* @__PURE__ */ React.createElement("div", { key, className: cellClasses }, cellContent);
+    }
     return /* @__PURE__ */ React.createElement(
-      "div",
+      "button",
       {
-        key: `${r}-${c}`,
-        onClick: cell.type === "free" ? void 0 : () => toggleCell(r, c),
-        role: cell.type === "free" ? void 0 : "button",
-        tabIndex: cell.type === "free" ? -1 : 0,
-        "aria-label": `${cell.text}${isMarked ? " (marked)" : ""}`,
-        "aria-pressed": cell.type === "free" ? void 0 : isMarked,
-        onKeyDown: (e) => {
-          if (cell.type !== "free" && (e.key === "Enter" || e.key === " ")) {
-            e.preventDefault();
-            toggleCell(r, c);
-          }
-        },
-        className: `
-                                        relative min-w-11 min-h-11 border-2 rounded-lg flex items-center justify-center text-center p-1 cursor-pointer transition-all duration-200 select-none shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-600 focus:ring-offset-2
-                                        ${cell.type === "free" ? "bg-indigo-200 border-indigo-400 text-indigo-800 font-black" : isMarked ? "bg-white border-indigo-500" : "bg-white border-slate-200 hover:border-indigo-300 hover:shadow-md"}
-                                    `
+        key,
+        type: "button",
+        onClick: () => toggleCell(r, c),
+        "aria-label": `${cell.text}${isMarked ? " (marked)" : " (unmarked)"}`,
+        "aria-pressed": isMarked,
+        className: cellClasses
       },
-      showImages && cell.imageUrl && /* @__PURE__ */ React.createElement("img", { src: cell.imageUrl, alt: cell.text, className: `w-8 h-8 sm:w-10 sm:h-10 object-contain rounded mb-0.5 ${isMarked && cell.type !== "free" ? "opacity-40" : ""}` }),
-      /* @__PURE__ */ React.createElement("span", { className: `text-[11px] sm:text-xs font-bold leading-tight break-words ${isMarked && cell.type !== "free" ? "opacity-40" : ""}` }, cell.text),
-      isMarked && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 flex items-center justify-center z-10 pointer-events-none" }, cell.type === "free" ? /* @__PURE__ */ React.createElement(Star, { size: 32, className: "text-yellow-500 fill-yellow-400 drop-shadow-sm motion-safe:animate-in motion-safe:zoom-in motion-safe:duration-300", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement("div", { className: "w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-red-500/80 border-4 border-red-600/50 shadow-lg backdrop-blur-[1px] motion-safe:animate-[stamp_0.3s_ease-out_forwards]" }))
+      cellContent
     );
   })))), isWon && /* @__PURE__ */ React.createElement("div", { role: "status", className: "p-4 bg-green-100 border-t border-green-200 text-center motion-safe:animate-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-300" }, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-green-700 motion-safe:animate-bounce" }, t("bingo.win_header")), /* @__PURE__ */ React.createElement("p", { className: "text-green-800 text-sm" }, t("bingo.win_message")))));
 });
