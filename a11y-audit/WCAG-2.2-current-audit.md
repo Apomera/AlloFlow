@@ -119,6 +119,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Reworked Crossword as a named focus-managed dialog and removed its focus-stealing, aria-hidden input and invisible full-screen keyboard overlay. The visible grid now exposes keyboard focus, permits Tab navigation, and receives focus after pointer or keyboard clue selection; Across and Down clues support Enter/Space activation, the Close target is 44 CSS pixels, decorative icons are hidden, completion is announced, and dialog entry respects reduced motion (WCAG 1.1.1, 1.3.1, 2.1.1, 2.1.2, 2.3.3, 2.4.3, 2.4.7, 2.5.8, 4.1.2, 4.1.3).
 
+- Made Student Bingo a named focus-managed dialog with initial Close focus, Tab containment, Escape closing, and launcher focus restoration. Mark/unmark and win changes are announced; the board is named, playable cells retain Enter/Space operation and visible focus, the noninteractive free space is no longer exposed as a button, interactive targets meet 44 CSS pixels, decorative icons are hidden, and entry/stamp/win motion honors reduced-motion preferences (WCAG 1.1.1, 1.3.1, 2.1.1, 2.3.3, 2.4.3, 2.4.7, 2.5.8, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

@@ -5557,6 +5557,10 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
   // Play Bingo (matches the teacher batch-generator's default). Local state so
   // students can flip pictures off mid-game without affecting the parent.
   const [showImages, setShowImages] = useState(true);
+  const [announcement, setAnnouncement] = useState('');
+  const studentBingoDialogRef = useRef(null);
+  const studentBingoCloseRef = useRef(null);
+  useGameDialogFocus(studentBingoDialogRef, studentBingoCloseRef, onClose);
   useEffect(() => {
       if (grid.length > 0) return; // Lock: don't regenerate if card already exists this session
       if (!data || !Array.isArray(data) || data.length === 0) return;
@@ -5622,6 +5626,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
           }
       }
       setMarks(newMarks);
+      setAnnouncement(`${grid[r][c].text} ${newMarks.has(key) ? 'marked' : 'unmarked'}`);
       checkWin(newMarks);
   };
   const checkWin = (currentMarks) => {
@@ -5637,6 +5642,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
       if ([0,1,2,3,4].every(i => isMarked(i, 4-i))) win = true;
       if (win && !isWon) {
           setIsWon(true);
+          setAnnouncement(t('bingo.win_message'));
           if(playSound) playSound('correct');
           if (onGameComplete) {
             onGameComplete('bingo', {
@@ -5648,52 +5654,53 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
       }
   };
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in-95 duration-300">
+    <div ref={studentBingoDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="student-bingo-title" className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:duration-300">
+        <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
         {isWon && <ConfettiExplosion />}
         <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-indigo-500 flex flex-col max-h-[90vh]">
             <div className="bg-indigo-600 p-4 text-white flex justify-between items-center shrink-0">
                  <div className="flex items-center gap-3">
-                     <div className="bg-white/20 p-2 rounded-full"><Gamepad2 size={24} /></div>
+                     <div className="bg-white/20 p-2 rounded-full"><Gamepad2 size={24} aria-hidden="true" /></div>
                      <div>
-                         <h2 className="font-black text-2xl uppercase tracking-widest">{t('bingo.student_title')}</h2>
+                         <h2 id="student-bingo-title" className="font-black text-2xl uppercase tracking-widest">{t('bingo.student_title')}</h2>
                          <p className="text-indigo-200 text-xs font-bold">{t('bingo.click_hint')}</p>
                      </div>
                  </div>
                  <button
                     onClick={() => setShowImages(v => !v)}
-                    className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${showImages ? 'bg-white/20 hover:bg-white/30' : 'hover:bg-indigo-500'}`}
+                    className={`min-w-11 min-h-11 p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${showImages ? 'bg-white/20 hover:bg-white/30' : 'hover:bg-indigo-500'}`}
                     aria-pressed={showImages}
                     aria-label={t('bingo.toggle_images_aria') || 'Toggle picture cards'}
                     title={showImages ? (t('bingo.hide_images_title') || 'Hide pictures') : (t('bingo.show_images_title') || 'Show pictures')}
                  >
-                    <ImageIcon size={20} className={showImages ? 'text-white' : 'text-indigo-200'} />
+                    <ImageIcon size={20} aria-hidden="true" className={showImages ? 'text-white' : 'text-indigo-200'} />
                  </button>
                  <GameThemeToggle />
-                 <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-label={t('bingo.close_game_aria')}>
-                     <X size={24} />
+                 <button ref={studentBingoCloseRef} type="button" onClick={onClose} className="min-w-11 min-h-11 p-2 hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-label={t('bingo.close_game_aria')}>
+                     <X size={24} aria-hidden="true" />
                  </button>
             </div>
             <div className="p-6 overflow-y-auto custom-scrollbar bg-indigo-50 flex-grow flex items-center justify-center">
-                <div className="grid grid-cols-5 gap-2 w-full aspect-square max-w-[600px]">
+                <div role="group" aria-label={t('bingo.student_title')} className="grid grid-cols-5 gap-2 w-full aspect-square max-w-[600px]">
                     {grid.map((row, r) => (
                         row.map((cell, c) => {
                             const isMarked = marks.has(`${r}-${c}`);
                             return (
                                 <div
                                     key={`${r}-${c}`}
-                                    onClick={() => toggleCell(r, c)}
-                                    role="button"
-                                    tabIndex={0}
+                                    onClick={cell.type === 'free' ? undefined : () => toggleCell(r, c)}
+                                    role={cell.type === 'free' ? undefined : 'button'}
+                                    tabIndex={cell.type === 'free' ? -1 : 0}
                                     aria-label={`${cell.text}${isMarked ? ' (marked)' : ''}`}
-                                    aria-pressed={isMarked}
+                                    aria-pressed={cell.type === 'free' ? undefined : isMarked}
                                     onKeyDown={(e) => {
-                                        if (e.key === 'Enter' || e.key === ' ') {
+                                        if (cell.type !== 'free' && (e.key === 'Enter' || e.key === ' ')) {
                                             e.preventDefault();
                                             toggleCell(r, c);
                                         }
                                     }}
                                     className={`
-                                        relative border-2 rounded-lg flex items-center justify-center text-center p-1 cursor-pointer transition-all duration-200 select-none shadow-sm
+                                        relative min-w-11 min-h-11 border-2 rounded-lg flex items-center justify-center text-center p-1 cursor-pointer transition-all duration-200 select-none shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-600 focus:ring-offset-2
                                         ${cell.type === 'free'
                                             ? 'bg-indigo-200 border-indigo-400 text-indigo-800 font-black'
                                             : isMarked
@@ -5711,9 +5718,9 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
                                     {isMarked && (
                                         <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
                                             {cell.type === 'free' ? (
-                                                <Star size={32} className="text-yellow-500 fill-yellow-400 drop-shadow-sm animate-in zoom-in duration-300" />
+                                                <Star size={32} className="text-yellow-500 fill-yellow-400 drop-shadow-sm motion-safe:animate-in motion-safe:zoom-in motion-safe:duration-300" aria-hidden="true" />
                                             ) : (
-                                                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-red-500/80 border-4 border-red-600/50 shadow-lg backdrop-blur-[1px] animate-[stamp_0.3s_ease-out_forwards]"></div>
+                                                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-red-500/80 border-4 border-red-600/50 shadow-lg backdrop-blur-[1px] motion-safe:animate-[stamp_0.3s_ease-out_forwards]"></div>
                                             )}
                                         </div>
                                     )}
@@ -5724,8 +5731,8 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
                 </div>
             </div>
             {isWon && (
-                <div className="p-4 bg-green-100 border-t border-green-200 text-center animate-in slide-in-from-bottom-4 duration-300">
-                    <h3 className="text-2xl font-black text-green-700 animate-bounce">{t('bingo.win_header')}</h3>
+                <div role="status" className="p-4 bg-green-100 border-t border-green-200 text-center motion-safe:animate-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-300">
+                    <h3 className="text-2xl font-black text-green-700 motion-safe:animate-bounce">{t('bingo.win_header')}</h3>
                     <p className="text-green-800 text-sm">{t('bingo.win_message')}</p>
                 </div>
             )}
