@@ -1181,9 +1181,10 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     setIsAiGenerating(true);
     try {
       const syllableConstraint = ` All words must have between ${syllableRange.min} and ${syllableRange.max} syllables.`;
-      const prompt = `Generate a list of 15 phonics-rich words related to the topic: "${aiTopic}". Target Grade Level: ${gradeLevel}.${syllableConstraint} Return ONLY a comma-separated list of words.`;
+      const _genIsEnglish = !wordSoundsLanguage || String(wordSoundsLanguage).toLowerCase().startsWith("en");
+      const prompt = _genIsEnglish ? `Generate a list of 15 phonics-rich words related to the topic: "${aiTopic}". Target Grade Level: ${gradeLevel}.${syllableConstraint} Return ONLY a comma-separated list of words.` : `Generate a list of 15 common, early-reader-friendly words in the language with code "${wordSoundsLanguage}" related to the topic: "${aiTopic}". Target Grade Level: ${gradeLevel}.${syllableConstraint} Use that language's normal spelling/script. Return ONLY a comma-separated list of words, nothing else.`;
       const result = await callGemini(prompt, false);
-      const words = result.replace(/[^a-zA-Z,\s-]/g, "").split(",").map((w) => w.trim()).filter((w) => w);
+      const words = (_genIsEnglish ? result.replace(/[^a-zA-Z,\s-]/g, "") : result.replace(/[^\p{L}\p{M}'’,\s-]/gu, "")).split(",").map((w) => w.trim()).filter((w) => w);
       setAiTerms(words);
       setIncludeAI(true);
     } catch (e) {
@@ -1239,6 +1240,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     }
     return result;
   };
+  const packIsEnglish = !wordSoundsLanguage || String(wordSoundsLanguage).toLowerCase().startsWith("en");
   const makePackManipulationFallback = (word, phonemes) => {
     const source = normalizePackKey(word);
     const answer = source.length > 1 ? source.slice(1) : source;
@@ -1247,7 +1249,9 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       instruction: `Say '${source}'. Now say it again, but leave out the first sound.`,
       targetPhoneme: flatPackPhoneme((phonemes || [])[0]) || estimatePackPhonemes(source)[0] || "",
       answer,
-      distractors: ["at", "on", "in", "up", "it", "an", "sit", "map"].filter((w) => w !== answer).slice(0, 5)
+      // English fillers only on English packs; non-English boards pad
+      // from the pack's own words at compile time.
+      distractors: (packIsEnglish ? ["at", "on", "in", "up", "it", "an", "sit", "map"] : []).filter((w) => w !== answer).slice(0, 5)
     };
   };
   const packTtsSource = async (src) => {
@@ -1267,9 +1271,16 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     return { mime: blob.type || "audio/mpeg", base64: btoa(binary) };
   };
   const compileActivityItems = (items) => {
-    const commonWords = ["cat", "dog", "sun", "map", "bed", "pig", "cup", "hat", "fish", "star", "tree", "frog", "duck", "book", "run", "red", "sit", "fan", "hop", "moon", "pen", "top", "ring", "rock", "look", "mug"];
+    const commonWords = packIsEnglish ? ["cat", "dog", "sun", "map", "bed", "pig", "cup", "hat", "fish", "star", "tree", "frog", "duck", "book", "run", "red", "sit", "fan", "hop", "moon", "pen", "top", "ring", "rock", "look", "mug"] : [];
     const itemWords = items.map((item) => normalizePackKey(item.targetWord || item.word || item.term)).filter(Boolean);
     const wordPool = [.../* @__PURE__ */ new Set([...itemWords, ...commonWords])];
+    const allPackPhonemes = [...new Set(items.flatMap((it) => (it.phonemes || []).map(flatPackPhoneme)).filter(Boolean))];
+    const allPackLetters = [...new Set(itemWords.join("").split(""))];
+    const packRimeOf = (w) => {
+      const v = normalizePackKey(w);
+      if (packIsEnglish) return (v.match(/[aeiou][a-z]*$/) || [""])[0];
+      return v.slice(-2);
+    };
     const SILENT_ONSETS = { kn: "n", gn: "n", wr: "r" };
     const firstSound = (raw) => {
       const first = estimatePackPhonemes(raw)[0] || "";
@@ -1286,9 +1297,10 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       const seed = word.split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
       const position = phonemes.length ? seed % phonemes.length : 0;
       const correctSound = phonemes[position] || item.firstSound || estimatePackPhonemes(word)[0] || "a";
-      const isolationPool = [...phonemes, "b", "d", "f", "g", "k", "l", "m", "n", "p", "r", "s", "t", "a", "e", "i", "o", "u", "sh", "ch", "th"];
+      const isolationPool = packIsEnglish ? [...phonemes, "b", "d", "f", "g", "k", "l", "m", "n", "p", "r", "s", "t", "a", "e", "i", "o", "u", "sh", "ch", "th"] : [...phonemes, ...allPackPhonemes];
       const isolationOptions = shuffleForPack([.../* @__PURE__ */ new Set([correctSound, ...isolationPool.filter((value) => value && value !== correctSound)])].slice(0, 6));
-      const chipDistractors = shuffleForPack(["s", "t", "m", "p", "k", "n", "r", "l", "b", "g", "f", "h", "d", "sh", "ch", "th", "a", "e", "i", "o", "u"].filter((value) => !phonemes.includes(value))).slice(0, 5);
+      const chipDistractorPool = packIsEnglish ? ["s", "t", "m", "p", "k", "n", "r", "l", "b", "g", "f", "h", "d", "sh", "ch", "th", "a", "e", "i", "o", "u"] : allPackPhonemes;
+      const chipDistractors = shuffleForPack(chipDistractorPool.filter((value) => !phonemes.includes(value))).slice(0, 5);
       const chips = shuffleForPack([
         ...phonemes.map((value, index) => ({ id: `correct-${index}`, phoneme: value, type: "correct", isDistractor: false })),
         ...chipDistractors.map((value, index) => ({ id: `distractor-${index}`, phoneme: value, type: "distractor", isDistractor: true }))
@@ -1307,18 +1319,19 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       ]);
       const blending = boardWithAnswer(word, [...item.blendingDistractors || [], ...otherWords], 5);
       const rhymeAnswer = item.rhymeWord || (item.rhymes || [])[0] || "";
-      const answerRime = (normalizePackKey(rhymeAnswer).match(/[aeiou][a-z]*$/) || [""])[0];
+      const answerRime = rhymeAnswer ? packRimeOf(rhymeAnswer) : "";
       const rhyming = rhymeAnswer ? boardWithAnswer(
         rhymeAnswer,
         [...item.rhymeDistractors || [], ...otherWords].filter((value) => {
           const v = normalizePackKey(value);
-          return v && v !== word && (!answerRime || (v.match(/[aeiou][a-z]*$/) || [""])[0] !== answerRime);
+          return v && v !== word && (!answerRime || packRimeOf(v) !== answerRime);
         }),
         4
       ) : [];
       const task = item.manipulationTask || makePackManipulationFallback(word, phonemes);
       item.manipulationTask = task;
-      const manipulation = boardWithAnswer(task.answer, [...task.distractors || [], "sit", "map", "bed", "pin", "mud", "fan"], 5);
+      const manipulationFill = packIsEnglish ? ["sit", "map", "bed", "pin", "mud", "fan"] : otherWords;
+      const manipulation = boardWithAnswer(task.answer, [...task.distractors || [], ...manipulationFill], 5);
       const syllables = Array.isArray(item.syllables) && item.syllables.length ? item.syllables : estimatePackSyllables(word);
       item.syllables = syllables;
       const syllableOptions = boardWithAnswer(word, [...item.syllableBlendingOptions || [], ...otherWords], 3);
@@ -1332,13 +1345,14 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       if (letters.length > 1 && letters.join("") === word) [letters[0], letters[1]] = [letters[1], letters[0]];
       const hiddenIndex = word.length > 1 ? seed % word.length : 0;
       const correctLetter = word[hiddenIndex] || "";
-      const letterOptions = shuffleForPack([.../* @__PURE__ */ new Set([correctLetter, ..."abcdefghijklmnopqrstuvwxyz".split("").filter((value) => value !== correctLetter)])].slice(0, 4));
+      const letterDistractorPool = packIsEnglish ? "abcdefghijklmnopqrstuvwxyz".split("") : shuffleForPack(allPackLetters);
+      const letterOptions = shuffleForPack([.../* @__PURE__ */ new Set([correctLetter, ...letterDistractorPool.filter((value) => value !== correctLetter)])].slice(0, 4));
       const mode = seed % 2 === 0 ? "first" : "last";
       const targetChar = (mode === "first" ? phonemes[0] : phonemes[phonemes.length - 1]) || (mode === "first" ? firstSound(word) : lastSound(word));
       const soundFor = mode === "first" ? firstSound : lastSound;
       const sortMatches = shuffleForPack(wordPool.filter((value) => value !== word && soundFor(value) === targetChar)).slice(0, word.length <= 3 ? 3 : 5);
       const sortDistractors = shuffleForPack(wordPool.filter((value) => value !== word && soundFor(value) !== targetChar)).slice(0, word.length <= 3 ? 2 : 4);
-      const rime = String(item.familyEnding || "").replace(/^-/, "") || (word.match(/[aeiou][a-z]*$/) || ["at"])[0];
+      const rime = String(item.familyEnding || "").replace(/^-/, "") || (packIsEnglish ? (word.match(/[aeiou][a-z]*$/) || ["at"])[0] : packRimeOf(word));
       const familySource = [...new Set((item.familyMembers || []).map(normalizePackKey).filter((value) => value && value !== word))];
       const familyOptions = shuffleForPack(familySource.length ? familySource : wordPool.filter((value) => value !== word && value.endsWith(rime))).slice(0, word.length <= 3 ? 3 : 5);
       const familyDistractors = shuffleForPack(wordPool.filter((value) => value !== word && !value.endsWith(rime))).slice(0, word.length <= 3 ? 2 : 4);
@@ -1393,7 +1407,41 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           continue;
         }
         try {
-          const prompt = `
+          const _procPrompt_nonEnglish = `
+                         Analyze the word "${rawWord}" \u2014 a word in the language with BCP-47 code "${wordSoundsLanguage}" \u2014 for phonemic awareness activities. Target Audience: ${gradeLevel || "Early Readers (K-2)"}.
+                         PHONEME NOTATION: break the word into the individual SOUNDS a child of that language hears, in order. Write each sound as a short lowercase token in the word's own script or simple IPA. Multi-letter units that make ONE sound (digraphs, long vowels, etc.) must be ONE phoneme.
+                         GRAPHEMES: split the word's actual spelling into chunks aligned one-to-one with the phonemes.
+                         LANGUAGE RULE (critical): every word you return \u2014 rhymeWord, rhymeDistractors, blendingDistractors, syllableBlendingOptions, familyMembers, and every manipulationTask word \u2014 must be a real, common word IN THAT LANGUAGE, suitable for early readers. NEVER return English words. Orthography distractors are plausible misspellings in that language's own script.
+                         The manipulationTask instruction sentence stays in English (a teacher reads it aloud) but quotes the actual words.
+                         Return ONLY JSON:
+                         {
+                             "word": "${rawWord}",
+                             "phonemes": ["\u2026"],
+                             "graphemes": ["\u2026"],
+                             "phonemeCount": 3,
+                             "syllables": ["\u2026"],
+                             "syllableBlendingOptions": ["\u2026", "\u2026", "\u2026", "\u2026"],
+                             "rhymeWord": "\u2026",
+                             "rhymeDistractors": ["\u2026", "\u2026", "\u2026", "\u2026", "\u2026"],
+                             "blendingDistractors": ["\u2026", "\u2026", "\u2026", "\u2026", "\u2026"],
+                             "orthographyDistractors": ["\u2026", "\u2026", "\u2026"],
+                             "wordFamily": "\u2026",
+                             "familyEnding": "\u2026",
+                             "familyMembers": ["\u2026", "\u2026", "\u2026"],
+                             "firstSound": "\u2026",
+                             "lastSound": "\u2026",
+                             "definition": "Simple definition matching grade level, in English",
+                             "imagePrompt": "Icon of the thing '${rawWord}' names, white background",
+                             "manipulationTask": {
+                                 "type": "deletion",
+                                 "instruction": "Say '${rawWord}'. Now say it again, but leave out the first sound.",
+                                 "targetPhoneme": "\u2026",
+                                 "answer": "\u2026",
+                                 "distractors": ["\u2026", "\u2026", "\u2026"]
+                             }
+                         }
+                      `;
+          const _procPrompt_english = `
                          Analyze the word "${rawWord}" for phonemic awareness activities. Target Audience: ${gradeLevel || "Early Readers (K-2)"}.
                          PHONEME NOTATION (use EXACTLY these symbols):
                          \u2022 LONG VOWELS: Use macron symbols: \u0101 (long a), \u0113 (long e), \u012B (long i), \u014D (long o), \u016B (long u)
@@ -1445,6 +1493,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
                              }
                          }
                       `;
+          const prompt = packIsEnglish ? _procPrompt_english : _procPrompt_nonEnglish;
           const result = await callGemini(prompt, true);
           const data = JSON.parse(result.replace(/```json/g, "").replace(/```/g, ""));
           let imageUrl = null;
