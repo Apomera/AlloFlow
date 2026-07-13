@@ -205,4 +205,33 @@ describe('Skate Lab UX refinement', () => {
     expect(source).toContain('cancelReducedHalfpipe');
     expect(source).toContain('cancelReducedGap');
   });
+  it('describes the current canvas scene and latest outcome in text', () => {
+    const halfpipe = renderTool('skatelab', state({
+      lastResult: {
+        mode: 'halfpipe', landed: true, hFt: 3.24, completed: 358,
+        vMph: 14, airTime: 1.1, rotation: 360, score: 80,
+      },
+    }));
+    const gap = renderTool('skatelab', state({
+      mode: 'gap',
+      lastResult: {
+        mode: 'gap', landed: false, rangeFt: 12.34, gapFt: 15,
+        peakFt: 4, hangTime: 1, clearance: -2.66, score: 10,
+      },
+    }));
+
+    expect(halfpipe).toContain('aria-describedby="sk-canvas-summary"');
+    expect(halfpipe).toContain('id="sk-canvas-summary"');
+    expect(halfpipe).toContain('Latest attempt: landed, reaching 3.2 feet above the lip and rotating 358 degrees.');
+    expect(gap).toContain('Latest attempt: missed the landing, traveling 12.3 feet.');
+  });
+
+  it('supports forced colors and WCAG 2.5.8 minimum target sizing', () => {
+    const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
+
+    expect(source).toContain('@media(forced-colors:active)');
+    expect(source).toContain('outline:3px solid Highlight!important');
+    expect(source).toContain('min-block-size:24px;min-inline-size:24px');
+    expect(source).toContain('.sk-canvas-summary{border-color:CanvasText!important');
+  });
 });

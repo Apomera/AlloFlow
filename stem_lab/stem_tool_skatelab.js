@@ -57,6 +57,7 @@ window.StemLab = window.StemLab || {
     st.id = 'allo-skatelab-responsive-css';
     st.textContent = [
       '.skatelab-shell{container-type:inline-size}.skatelab-shell button,.skatelab-shell input,.skatelab-shell summary{touch-action:manipulation}.skatelab-shell button:disabled{cursor:not-allowed!important;opacity:.58}.skatelab-shell button[data-sk-focusable=true]{min-height:36px}.skatelab-shell button:focus-visible,.skatelab-shell input:focus-visible,.skatelab-shell summary:focus-visible{outline:3px solid #38bdf8;outline-offset:2px}',
+      '.skatelab-shell button,.skatelab-shell summary{min-block-size:24px;min-inline-size:24px}',
       '.sk-run-focus-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(240px,.75fr);gap:12px}',
       '.sk-run-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
       '.sk-park-map{position:relative;min-height:112px;margin:10px 0;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(14,165,233,.14),rgba(168,85,247,.12) 48%,rgba(22,163,74,.18));border:1px solid rgba(251,191,36,.24)}',
@@ -72,7 +73,8 @@ window.StemLab = window.StemLab || {
       '.sk-inquiry-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px 12px}',
       '@media(max-width:760px){.skatelab-shell{padding:10px!important}.sk-run-focus-grid,.sk-run-metric-grid{grid-template-columns:1fr!important}.sk-canvas-frame{padding:6px!important}.sk-toolbar-row{justify-content:flex-start!important}.sk-compact-label{white-space:normal!important}.skatelab-shell button[data-sk-focusable=true]{min-height:40px}}',
       '@media(max-width:480px){.sk-park-map{min-height:132px}.sk-park-point{font-size:10px;padding:4px 6px}.sk-park-start{left:4%;bottom:9px}.sk-park-apex{left:50%;transform:translateX(-50%);top:10px}.sk-park-land{right:4%;bottom:9px}.sk-run-focus-grid>div{padding:10px!important}}',
-      '@media(prefers-reduced-motion:reduce){.skatelab-shell *{scroll-behavior:auto!important;transition-duration:0.01ms!important;animation-duration:0.01ms!important;animation-iteration-count:1!important}}'
+      '@media(prefers-reduced-motion:reduce){.skatelab-shell *{scroll-behavior:auto!important;transition-duration:0.01ms!important;animation-duration:0.01ms!important;animation-iteration-count:1!important}}',
+      '@media(forced-colors:active){.skatelab-shell button,.skatelab-shell input,.skatelab-shell summary{border:1px solid ButtonText!important;background:Canvas!important;color:CanvasText!important;box-shadow:none!important}.skatelab-shell button:disabled{color:GrayText!important;border-color:GrayText!important}.skatelab-shell button:focus-visible,.skatelab-shell input:focus-visible,.skatelab-shell summary:focus-visible{outline:3px solid Highlight!important}.sk-canvas-frame{border:2px solid CanvasText!important;background:Canvas!important;box-shadow:none!important}.sk-canvas-summary{border-color:CanvasText!important;background:Canvas!important;color:CanvasText!important}}'
     ].join('');
     document.head.appendChild(st);
   })();
@@ -2020,6 +2022,26 @@ window.StemLab = window.StemLab || {
         skAnnounce('New gap: ' + ft + ' feet.');
       }
 
+      function getCanvasSummary() {
+        var veh = getVehicle(d.vehicle).label;
+        var setup;
+        if (d.mode === 'halfpipe') {
+          setup = veh + ' on the ' + getSurface(d.surfaceId).label + ' surface with ' + d.pumps +
+            ' pump' + (d.pumps === 1 ? '' : 's') + ', attempting ' + getTrick(d.trickId).label + '.';
+        } else {
+          setup = veh + ' approaching a ' + d.gapFt + ' foot gap at ' + d.speedMph +
+            ' miles per hour and ' + d.angleDeg + ' degrees. Wind: ' + getWind(d.windId).label + '.';
+        }
+        if (!d.lastResult || d.lastResult.mode !== d.mode) return 'Current setup: ' + setup;
+        if (d.mode === 'halfpipe') {
+          return 'Current setup: ' + setup + ' Latest attempt: ' + (d.lastResult.landed ? 'landed' : 'bailed') +
+            ', reaching ' + d.lastResult.hFt.toFixed(1) + ' feet above the lip and rotating ' +
+            Math.round(d.lastResult.completed) + ' degrees.';
+        }
+        return 'Current setup: ' + setup + ' Latest attempt: ' + (d.lastResult.landed ? 'cleared the gap' : 'missed the landing') +
+          ', traveling ' + d.lastResult.rangeFt.toFixed(1) + ' feet.';
+      }
+
       // ── Load a famous-trick scenario ─────────────────────────────
       // Sets every relevant key in toolData.skatelab from the
       // scenario's `presets` block, surfaces the scenario id so the
@@ -3798,6 +3820,7 @@ window.StemLab = window.StemLab || {
             ref: canvasRef,
             width: 640, height: 320,
             role: 'img',
+            'aria-describedby': 'sk-canvas-summary',
             // WCAG 1.1.1 — aria-label rolls up the canvas's current
             // environmental state so screen-reader users know what the
             // simulation is configured to show without watching it.
@@ -3815,7 +3838,16 @@ window.StemLab = window.StemLab || {
                 (d.gravity && d.gravity !== 9.81 ? ' Gravity ' + d.gravity.toFixed(2) + ' meters per second squared.' : '');
             })(),
             style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(254,243,199,0.12)' }
-          })
+          }),
+          h('div', {
+            id: 'sk-canvas-summary',
+            className: 'sk-canvas-summary',
+            style: {
+              marginTop: 8, padding: '7px 9px', borderRadius: 6,
+              border: '1px solid rgba(125,211,252,0.28)', background: 'rgba(14,165,233,0.08)',
+              color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, lineHeight: 1.5
+            }
+          }, h('strong', null, __alloT('stem.skatelab.scene_summary', 'Scene summary: ')), getCanvasSummary())
         ),
         // ── First-time tour overlay ──────────────────────────────
         // Auto-shows on first mount (when tour.seen is false), then
