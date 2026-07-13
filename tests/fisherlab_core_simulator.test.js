@@ -21,6 +21,7 @@ describe('Fisher Lab core mission profiles', () => {
     const { isCoreMissionReady } = window.__FisherLabCore;
     const complete = {
       passedRedNun: true,
+      trafficDecisionMade: true,
       reachedHalfwayRock: true,
       targetFishDecision: true,
       trapDecisionMade: true
@@ -63,12 +64,25 @@ describe('Fisher Lab voyage progression', () => {
     const profile = getCoreSimProfile('maine');
     const state = { passedRedNun: true, reachedHalfwayRock: true, targetFishDecision: false, trapDecisionMade: false };
 
-    expect(getCoreObjective({}, profile).id).toBe('buoy');
-    expect(getCoreObjective(state, profile)).toMatchObject({ id: 'fish', label: 'Classify Atlantic cod' });
-    expect(getCoreObjective({ ...state, targetFishDecision: true }, profile).id).toBe('trap');
-    expect(getCoreObjective({ ...state, targetFishDecision: true, trapDecisionMade: true }, profile).id).toBe('dock');
+    const encounter = window.__FisherLabCore.getCoreEncounter('maine');
+    expect(getCoreObjective({}, profile, encounter).id).toBe('buoy');
+    expect(getCoreObjective({ passedRedNun: true }, profile, encounter).id).toBe('traffic');
+    expect(getCoreObjective({ ...state, trafficDecisionMade: true }, profile, encounter)).toMatchObject({ id: 'fish', label: 'Classify Atlantic cod' });
+    expect(getCoreObjective({ ...state, trafficDecisionMade: true, targetFishDecision: true }, profile, encounter).id).toBe('trap');
+    expect(getCoreObjective({ ...state, trafficDecisionMade: true, targetFishDecision: true, trapDecisionMade: true }, profile, encounter).id).toBe('dock');
     expect(relativeCoreBearing(0, 0, 0, 0, -10)).toBeCloseTo(0);
     expect(relativeCoreBearing(0, 0, 0, 10, 0)).toBeCloseTo(Math.PI / 2);
+  });
+
+  it('defines region-specific COLREGS traffic and evaluates helm decisions', () => {
+    const { getCoreEncounter, evaluateCoreEncounter } = window.__FisherLabCore;
+
+    expect(getCoreEncounter('maine')).toMatchObject({ vessel: 'Casco Bay ferry', rule: 'COLREGS Rule 15' });
+    expect(getCoreEncounter('chesapeake')).toMatchObject({ vesselKind: 'sail', rule: 'COLREGS Rule 18' });
+    expect(getCoreEncounter('pnw').rule).toBe('COLREGS Rule 9');
+    expect(getCoreEncounter('greatlakes').vessel).toBe('lake freighter');
+    expect(evaluateCoreEncounter('maine', 'give-way').correct).toBe(true);
+    expect(evaluateCoreEncounter('maine', 'stand-on').correct).toBe(false);
   });
 
   it('awards ranks from combined score, accuracy, and fuel stewardship', () => {
@@ -88,9 +102,18 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain("role: 'application', tabIndex: 0");
     expect(source).toContain('boatState.fuel = Math.max(0');
     expect(source).toContain('boatState.speed *= Math.exp(-0.9 * dt);');
+    expect(source).toContain('boatState.pos.z += dz;');
+    expect(source).toContain('if (d < 7) {');
+    expect(source).toContain('boat.position.z - Math.cos(boatState.heading) * 9');
+    expect(source).not.toContain('boatState.pos.z -= dz;');
     expect(source).toContain('unsafeSpeedSeconds >= 3');
     expect(source).toContain('weatherFuelFactor');
     expect(source).toContain('objectiveBearing');
+    expect(source).toContain("type: 'traffic-encounter'");
+    expect(source).toContain('resolveTrafficEncounter');
+    expect(source).toContain('trafficVessel.visible = true');
+    expect(source).toContain("activeRegion === 'chesapeake'");
+    expect(source).toContain('Traffic: vessel clearing');
     expect(source).toContain("type: 'fish-haul'");
     expect(source).toContain("role: 'dialog', 'aria-modal': 'true'");
     expect(source).not.toContain('resumeSim');
