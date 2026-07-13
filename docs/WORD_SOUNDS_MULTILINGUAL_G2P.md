@@ -62,22 +62,45 @@ Karen, …) now map to real BCP-47 codes, so every consumer makes an honest
 per-language decision. The final `en-US` default remains for genuinely unknown
 names.
 
+## Stage 2 — per-activity capability gating (SHIPPED 2026-07-12)
+
+`wsLangCaps` + `wsActivityAvailableForLang(id)` in `word_sounds_module.js`.
+English returns `true` for everything before any other logic runs — English
+sessions are unchanged (golden suite passes with zero snapshot drift).
+For non-English content languages:
+
+| Activity | Availability | Why |
+|---|---|---|
+| counting, blending, segmentation, isolation, syllables, rhyming, manipulation, decoding | ✅ all covered languages | run off per-word data in the content language |
+| orthography, spelling_bee, word_scramble, missing_letter | ✅ alphabetic scripts only | `split("")` letter tiles are broken fragments on abjads/abugidas/CJK/Thai-family |
+| mapping | ✅ alphabetic + LTR only | grapheme-ordering chips assume left-to-right |
+| sound_sort, word_families, letter_tracing | ❌ English only | first/last-sound estimators + English word pools; English rime families; a–z letter-formation paths |
+
+Enforcement: the `ACTIVITIES` list (picker + auto-advance + recursion walks)
+is filtered; `startActivity` REDIRECTS a pushed/preset blocked activity to the
+first available one; the picker shows an honesty chip ("Some activities are
+English-only") when anything is hidden. English word-pool injections are also
+gated for non-English boards: rhyme fallback pools/RIME_FAMILIES (replaced by
+script-agnostic ending-match against the session's own words), decoding
+backfill, isolation SIMILAR_SOUNDS/expanded grapheme pools, manipulation
+fillers (all pad from the session's own same-language words instead), and the
+manipulation Gemini prompt now asks for words in the content language.
+Pinned by `tests/word_sounds_language_gating.test.js` (6).
+
 ## Not yet built (next stages, in order of value)
 
 1. **Per-language phoneme audio.** English uses the recorded grapheme-keyed
    bank; other languages fall to Gemini TTS per sound. Best answer: per-language
    Voice Packs (the recorder/multi-pack library already ships) — a bilingual
    teacher or aide records the language's sounds once, exports/imports the pack.
-2. **Per-activity capability gating.** Counting/blending/segmentation/isolation/
-   syllables run off the phoneme array and work in covered languages. English-
-   specific machinery (sound-sort estimators, rime families, alternate-spelling
-   equivalences, letter tracing on non-Latin scripts) should gate on language
-   rather than half-work.
-3. **Per-language mini-benchmarks** like the English 32/32 set, so each language
+2. **Per-language mini-benchmarks** like the English 32/32 set, so each language
    earns its way in with evidence.
-4. **Student-pack compile** (`word_sounds_setup`) currently packs TTS audio for
+3. **Student-pack compile** (`word_sounds_setup`) currently packs TTS audio for
    the words themselves in any language; per-language instruction speech is a
    separate feature (runtime instructions are English constants everywhere).
+   The setup's board compiler also still uses English letter pools for
+   isolation/chip distractors — non-English packs lean on the module's runtime
+   same-language rebuilds until the compiler is language-aware.
 
 ## Test/verification surface
 

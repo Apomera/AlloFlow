@@ -2167,7 +2167,15 @@
       const MANIP_FILL = ["sit", "map", "bed", "pin", "mud", "fan", "log", "cup"];
       const padManipOpts = (arr) => {
         const out = (arr || []).filter(Boolean);
-        for (const f of MANIP_FILL) { if (out.length >= 6) break; if (out.indexOf(f) === -1) out.push(f); }
+        // MANIP_FILL is English words — non-English boards pad from the
+        // session's own same-language words instead. (Called from effects/
+        // handlers only, so wsLangCaps/preloadedWords are initialized.)
+        const fill = wsLangCaps.isEnglish
+          ? MANIP_FILL
+          : (preloadedWords || [])
+              .map((p) => String(p.targetWord || p.word || p.term || "").toLowerCase())
+              .filter(Boolean);
+        for (const f of fill) { if (out.length >= 6) break; if (out.indexOf(f) === -1) out.push(f); }
         return out;
       };
       // Pure helper: generates a manipulation task without touching React state.
@@ -2182,16 +2190,24 @@
             return { ...MANIPULATION_FALLBACKS[fallbackKey] };
           }
           let result = null;
+          // Content language for word choice: answers/distractors must be
+          // real words of the SESSION language, never English fillers.
+          const _manipIsEnglish =
+            !wordSoundsLanguage ||
+            String(wordSoundsLanguage).toLowerCase().indexOf("en") === 0;
+          const _manipLangLabel = _manipIsEnglish
+            ? "English"
+            : `the language with code "${wordSoundsLanguage}"`;
           if (typeof callGemini === "function") {
             const phonemeStr = (phonemes || []).join(", ") || "unknown";
             const prompt =
               `You are a speech-language pathology educator creating a phoneme manipulation exercise.\n` +
               `Word: "${word}"\nPhonemes: ${phonemeStr}\n\n` +
-              `Choose DELETION (remove one phoneme) OR SUBSTITUTION (swap one phoneme), whichever produces a common English word.\n` +
+              `Choose DELETION (remove one phoneme) OR SUBSTITUTION (swap one phoneme), whichever produces a common word in ${_manipLangLabel}.\n` +
               `IMPORTANT: Vary WHICH phoneme you manipulate - do NOT always pick the first sound. Prefer a MIDDLE (vowel) or FINAL sound when it yields a common word, so the exercise is not always about the beginning of the word.\n` +
               `Return ONLY valid JSON — no markdown, no explanation:\n` +
               `{"type":"substitution","instruction":"Say 'cap'. Now change the /a/ sound to /u/.","targetPhoneme":"a","answer":"cup","distractors":["cop","cab","can","cat","map"]}\n\n` +
-              `Rules: answer and all FIVE distractors must be real common English words, all different from the answer; instruction must be child-friendly; targetPhoneme in plain text without slashes. Provide exactly 5 distractors.`;
+              `Rules: answer and all FIVE distractors must be real common words in ${_manipLangLabel}, all different from the answer; the instruction sentence stays in English (it is read by the teacher) but quotes the ${_manipLangLabel} words; targetPhoneme in plain text without slashes. Provide exactly 5 distractors.`;
             try {
               const raw = await callGemini(prompt);
               const jsonMatch = (raw || "").match(/\{[\s\S]*?\}/);
@@ -2207,12 +2223,16 @@
               instruction: `Say '${word}'. Now say it again, but leave out the first sound.`,
               targetPhoneme: phonemes?.[0] || word[0],
               answer,
-              distractors: ["at", "on", "in", "up", "it", "an"].filter((d) => d !== answer).slice(0, 5),
+              // English fillers only on English boards; other languages pad
+              // from the caller's own words via padManipOpts.
+              distractors: (_manipIsEnglish ? ["at", "on", "in", "up", "it", "an"] : [])
+                .filter((d) => d !== answer)
+                .slice(0, 5),
             };
           }
           return result;
         },
-        [callGemini],
+        [callGemini, wordSoundsLanguage],
       );
       // Stateful wrapper: calls the pure helper and pushes the result into
       // React state so the activity view re-renders with the new task.
@@ -5305,12 +5325,70 @@
           tier: "orthographic",
         },
       ];
+      // ── Language capability model (multilingual stage 2, 2026-07-12) ──
+      // English sessions take the FIRST branch everywhere below and behave
+      // byte-identically to the pre-multilingual module. For other content
+      // languages, activities whose machinery is English-specific (first/last-
+      // sound estimators + English word pools, English rime families, a–z
+      // letter-formation paths) are unavailable rather than half-working, and
+      // letter-tile activities require an alphabetic script where one code
+      // point is one teachable letter (abjads/abugidas/CJK/Thai-family would
+      // render broken fragments from split("")).
+      const wsLangCaps = React.useMemo(() => {
+        const isEnglish =
+          !wordSoundsLanguage ||
+          String(wordSoundsLanguage).toLowerCase().indexOf("en") === 0;
+        const primary = String(wordSoundsLanguage || "en")
+          .toLowerCase()
+          .split(/[-_]/)[0];
+        const NON_ALPHABETIC = new Set([
+          "ar", "he", "fa", "prs", "ur", "ps", "sd", "ug", "dv", // abjads
+          "hi", "bn", "mr", "ne", "gu", "pa", "ta", "te", "kn", "ml", "si", "as", "or", // abugidas
+          "th", "lo", "km", "my", "bo", "dz", // SE-Asian abugidas
+          "zh", "cmn", "yue", "ja", "ko", // CJK
+          "am", "ti", // Ge'ez
+        ]);
+        const RTL = new Set(["ar", "he", "fa", "prs", "ur", "ps", "sd", "ug", "dv", "ku"]);
+        return {
+          isEnglish,
+          primary,
+          letterTiles: isEnglish || !NON_ALPHABETIC.has(primary),
+          rtl: RTL.has(primary),
+        };
+      }, [wordSoundsLanguage]);
+      const wsActivityAvailableForLang = React.useCallback(
+        (activityId) => {
+          if (wsLangCaps.isEnglish) return true; // English: everything, unchanged
+          switch (activityId) {
+            // English-specific machinery — never half-run in another language:
+            case "sound_sort": // estimateFirst/LastPhoneme + SOUND_MATCH_POOL are English
+            case "word_families": // RIME_FAMILIES / '-at' derivation are English
+            case "letter_tracing": // LETTER_SVG_PATHS covers a–z only
+              return false;
+            // Letter-tile / scramble activities need an alphabetic script:
+            case "orthography":
+            case "spelling_bee":
+            case "word_scramble":
+            case "missing_letter":
+              return wsLangCaps.letterTiles;
+            // Grapheme-ordering chips assume left-to-right:
+            case "mapping":
+              return wsLangCaps.letterTiles && !wsLangCaps.rtl;
+            // Phoneme/syllable/picture activities run off per-word data in the
+            // content language (eSpeak/Gemini phonemes, packed boards):
+            default:
+              return true;
+          }
+        },
+        [wsLangCaps],
+      );
       const ACTIVITIES = React.useMemo(() => {
-        if (includeOrthographic) {
-          return ALL_ACTIVITIES;
-        }
-        return ALL_ACTIVITIES.filter((a) => a.tier === "phonological");
-      }, [includeOrthographic]);
+        const tierFiltered = includeOrthographic
+          ? ALL_ACTIVITIES
+          : ALL_ACTIVITIES.filter((a) => a.tier === "phonological");
+        if (wsLangCaps.isEnglish) return tierFiltered;
+        return tierFiltered.filter((a) => wsActivityAvailableForLang(a.id));
+      }, [includeOrthographic, wsLangCaps, wsActivityAvailableForLang]);
       // Skill-cluster grouping for the activity picker (UX). Maps each activity
       // to a research-aligned cluster along the phonological-awareness continuum
       // -> phonics -> spelling -> handwriting. Purely presentational; the
@@ -6924,9 +7002,14 @@
         const picked = [];
         for (const w of ordered) { if (picked.length >= 3) break; if (picked.indexOf(w) === -1) picked.push(w); }
         if (picked.length < 3) {
-          for (const w of fisherYatesShuffle(DECODING_BACKFILL)) {
+          // DECODING_BACKFILL is English words — never inject them into a
+          // non-English board; pad from the session's own words instead.
+          const backfill = wsLangCaps.isEnglish
+            ? DECODING_BACKFILL
+            : (preloadedWords || []).map((p) => String(p.targetWord || p.word || p.term || "").toLowerCase());
+          for (const w of fisherYatesShuffle(backfill)) {
             if (picked.length >= 3) break;
-            if (w !== tgt && picked.indexOf(w) === -1 && !isHomophone(tgt, w)) picked.push(w);
+            if (w && w !== tgt && picked.indexOf(w) === -1 && !isHomophone(tgt, w)) picked.push(w);
           }
         }
         return picked.slice(0, 3);
@@ -8639,12 +8722,26 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }
               return fisherYatesShuffle(distractors).slice(0, 5);
             };
+            // Non-English: generateNearRhymes' pools are English words — pad
+            // from the session's own same-language words instead.
             const distractors =
               wordSoundsPhonemes?.rhymeDistractors?.length >= 3
                 ? wordSoundsPhonemes?.rhymeDistractors?.slice(0, 5)
-                : generateNearRhymes(currentWordSoundsWord || "cat");
+                : wsLangCaps.isEnglish
+                  ? generateNearRhymes(currentWordSoundsWord || "cat")
+                  : fisherYatesShuffle(
+                      (preloadedWords || [])
+                        .map((p) => String(p.targetWord || p.word || p.term || "").toLowerCase())
+                        .filter((w) => w && w !== (currentWordSoundsWord || "").toLowerCase() && w !== correctRhyme)
+                        .concat(wordSoundsPhonemes?.rhymeDistractors || []),
+                    ).slice(0, 5);
             const getRime = (word) => {
               const w = (word || "").toLowerCase();
+              // Non-English: aeiou vowel-scanning is meaningless on other
+              // scripts (it returns "" for every Arabic/Devanagari word, which
+              // made every distractor look like a rhyme and get filtered out).
+              // A trailing-characters match is the script-agnostic equivalent.
+              if (!wsLangCaps.isEnglish) return w.slice(-2);
               const vowels = "aeiou";
               let rimeStart = w.length;
               for (let i = w.length - 1; i >= 0; i--) {
@@ -8679,6 +8776,30 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           } else {
             if (rhymeOptions.length === 0) {
               const word = (currentWordSoundsWord || "").toLowerCase();
+              // Non-English content: the RIME_FAMILIES table and the
+              // similarSoundMap word pool below are ENGLISH words — injecting
+              // them would put English options on a Spanish/Arabic/… board.
+              // Derive a rhyme by script-agnostic ending match from the
+              // session's own (same-language) words instead; if none exists,
+              // leave the board unbuilt (the word simply isn't rhymable with
+              // the data we have) rather than fabricate English content.
+              if (!wsLangCaps.isEnglish) {
+                const _ownWords = (preloadedWords || [])
+                  .map((p) => String(p.targetWord || p.word || p.term || "").toLowerCase())
+                  .filter((w) => w && w !== word);
+                const _ending = word.slice(-2);
+                const _derivedRhyme = word.length >= 3
+                  ? _ownWords.find((w) => w.length >= 2 && w.slice(-2) === _ending)
+                  : null;
+                if (_derivedRhyme) {
+                  setWordSoundsPhonemes((prev) => ({
+                    ...(prev || {}),
+                    rhymeWord: _derivedRhyme,
+                    rhymeDistractors: _ownWords.filter((w) => w !== _derivedRhyme && w.slice(-2) !== _ending).slice(0, 4),
+                  }));
+                }
+                return;
+              }
               // No rhymeWord (e.g. generateFallbackData hard-codes ""): derive
               // one from RIME_FAMILIES so the board has a correct option —
               // distractor-only boards made the item unanswerable (grader
@@ -8739,6 +8860,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         // installed the prepared board in the same flush; watching the state
         // re-runs the install (the count-gate above prevents any loop).
         orthographyOptions,
+        wsLangCaps,
+        preloadedWords,
       ]);
       React.useEffect(() => {
         if (wordSoundsActivity !== "isolation" || !wordSoundsPhonemes) {
@@ -8865,10 +8988,30 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             au: ["aw", "o", "ou"],
             c: ["k", "s", "ck", "g"],
           };
-          const similarPool = SIMILAR_SOUNDS[correctSound?.toLowerCase()] || [];
           const wordSeed = (currentWordSoundsWord || "")
             .split("")
             .reduce((a, c) => a + c.charCodeAt(0), 0);
+          // Non-English: SIMILAR_SOUNDS and the expanded pool below are
+          // ENGLISH graphemes ("sh", "ar", "th") — mixing them into a
+          // Spanish/Arabic isolation board is incoherent. Pad from the other
+          // session words' own (same-language) phonemes instead.
+          if (!wsLangCaps.isEnglish) {
+            for (const pw of preloadedWords || []) {
+              if (isoDistractors.length >= 5) break;
+              for (const ph of pw.phonemes || []) {
+                if (isoDistractors.length >= 5) break;
+                const flat = typeof ph === "string" ? ph : (ph && (ph.grapheme || ph.ipa)) || "";
+                const k = phonemeKey(flat);
+                if (flat && !used.has(k)) {
+                  isoDistractors.push(flat);
+                  used.add(k);
+                }
+              }
+            }
+          }
+          const similarPool = wsLangCaps.isEnglish
+            ? SIMILAR_SOUNDS[correctSound?.toLowerCase()] || []
+            : [];
           const shuffledSimilar = [...similarPool].sort(
             (a, b) =>
               ((wordSeed * 31 + a.charCodeAt(0)) % 97) -
@@ -8916,11 +9059,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             "or",
             "er",
           ];
-          const shuffledPool = [...isoExpandedPool].sort(
-            (a, b) =>
-              ((wordSeed * 13 + a.charCodeAt(0)) % 89) -
-              ((wordSeed * 13 + b.charCodeAt(0)) % 89),
-          );
+          const shuffledPool = wsLangCaps.isEnglish
+            ? [...isoExpandedPool].sort(
+                (a, b) =>
+                  ((wordSeed * 13 + a.charCodeAt(0)) % 89) -
+                  ((wordSeed * 13 + b.charCodeAt(0)) % 89),
+              )
+            : []; // English grapheme pool — see the language gate above
           for (const p of shuffledPool) {
             if (isoDistractors.length >= 5) break;
             const k = phonemeKey(p);
@@ -9198,6 +9343,21 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           excludeWord = null,
           recursionDepth = 0,
         ) => {
+          // Language capability redirect: a pushed lesson-plan sequence or a
+          // preset can name an English-only activity while the content
+          // language is not English — never half-run it; swap to the first
+          // available activity instead. English sessions: no-op (always true).
+          if (activityId && !wsActivityAvailableForLang(activityId)) {
+            const fromSeq = (activitySequence || []).find((a) =>
+              wsActivityAvailableForLang(a),
+            );
+            const redirect =
+              fromSeq || (ACTIVITIES[0] && ACTIVITIES[0].id) || "counting";
+            debugLog(
+              `Activity "${activityId}" unavailable for ${wordSoundsLanguage}; starting "${redirect}" instead`,
+            );
+            activityId = redirect;
+          }
           // === Stop all ongoing audio immediately on activity switch ===
           audioCancelledRef.current = true;
           audioRunIdRef.current++;
@@ -9472,6 +9632,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setWordSoundsFeedback,
           wordPool,
           preloadedWords.length,
+          wsActivityAvailableForLang,
+          activitySequence,
+          ACTIVITIES,
         ],
       );
       React.useEffect(() => {
@@ -16237,6 +16400,23 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   title: "Home Practice Mode",
                 },
                 "\uD83C\uDFE0 Home Practice",
+              ),
+              // Honesty chip: in a non-English session some activities are
+              // hidden because their machinery is English-specific (letter
+              // paths, rime families, letter tiles on non-alphabetic scripts).
+              !wsLangCaps.isEnglish &&
+                ALL_ACTIVITIES.some((a) => !wsActivityAvailableForLang(a.id)) &&
+                /*#__PURE__*/ React.createElement(
+                "span",
+                {
+                  className:
+                    "flex items-center gap-1 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200 whitespace-nowrap mr-1",
+                  title:
+                    ts("word_sounds.lang_hidden_activities_hint") ||
+                    "Some letter- and spelling-pattern activities are designed for English and are hidden for this language.",
+                },
+                "\uD83C\uDF10 ",
+                ts("word_sounds.lang_hidden_activities") || "Some activities are English-only",
               ),
               ACTIVITY_GROUP_ORDER.flatMap((__g) => {
                 const __acts = ACTIVITIES.filter((a) => (ACTIVITY_GROUP_OF[a.id] || "pa_phoneme") === __g);
