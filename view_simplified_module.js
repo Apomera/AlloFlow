@@ -2433,11 +2433,16 @@ function SimplifiedView(props) {
           const isDimmed = isLineFocusMode && !shouldFocus;
           if (interactionMode === 'explain' || interactionMode === 'revise') {
             const cleanText = para.replace(/\*\*|\*/g, '');
+            // focusedParagraphIndex is compared against paragraphId
+            // (`${keyPrefix}-${pIdx}`) in this side-by-side branch, so
+            // hover must set the same string — setting bare pIdx left
+            // the hovered paragraph permanently dimmed/blurred in
+            // line-focus mode.
             return /*#__PURE__*/React.createElement("p", {
               key: pIdx,
               className: `mb-4 leading-relaxed cursor-text selection:text-teal-900 transition-all duration-500 ${interactionMode === 'revise' ? 'selection:bg-purple-200' : 'selection:bg-teal-200'} ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 rounded-xl shadow-lg text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`,
               onMouseUp: handleTextMouseUp,
-              onMouseEnter: () => setFocusedParagraphIndex(pIdx),
+              onMouseEnter: () => setFocusedParagraphIndex(paragraphId),
               onMouseLeave: () => setFocusedParagraphIndex(null)
             }, cleanText);
           }
@@ -2445,7 +2450,7 @@ function SimplifiedView(props) {
           return /*#__PURE__*/React.createElement("p", {
             key: pIdx,
             className: `mb-4 leading-relaxed transition-all duration-500 ease-in-out rounded-xl ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 shadow-2xl text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`,
-            onMouseEnter: () => setFocusedParagraphIndex(pIdx),
+            onMouseEnter: () => setFocusedParagraphIndex(paragraphId),
             onMouseLeave: () => setFocusedParagraphIndex(null)
           }, interactionMode === 'add-glossary' ? (() => {
             const cleanPara = para.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/https?:\/\/[^\s]+/g, '');
