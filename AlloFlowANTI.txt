@@ -22276,6 +22276,19 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           break;
         }
         const _auditOnlyRefresh = _vio === 0 && _aiIssues.length === 0 && _eaFails === 0 && !_isCanonicalComplete(cur);
+        // A3 (2026-07-13): when the ONLY thing between this doc and 'complete' is the
+        // Equal Access engine and that engine is environmentally unavailable (Canvas
+        // CSP blocks both CDN mirrors), the refresh's full AI audit is guaranteed
+        // futile — it can never yield 'complete'. Skip the spend; the state is
+        // already disclosed as partial with EA unavailable.
+        if (_auditOnlyRefresh) {
+          const _covA3 = cur.verificationCoverage || {};
+          const _eaDead = !!(_docPipeline && typeof _docPipeline.equalAccessUnavailable === 'function' && _docPipeline.equalAccessUnavailable());
+          if (_eaDead && _covA3.ai === 'complete' && _covA3.axe === 'complete' && _covA3.equalAccess !== 'complete') {
+            warnLog('[AutoContinue] verification refresh skipped: the Equal Access engine cannot load in this environment, so a refresh cannot reach complete.');
+            break;
+          }
+        }
         const _acDetail = _auditOnlyRefresh
           ? 'verification refresh (no content rewrite)'
           : (_vio > 0
@@ -22329,9 +22342,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         let _ea = null;
         try { _ea = runEqualAccessAudit ? await runEqualAccessAudit(result.html) : null; } catch (_) {}
         // Only scored fresh audits are retained. Empty/error objects replace, rather
-        // than inherit, a prior successful verifier object.
-        const _freshAxe = (result.axe && typeof result.axe.score === 'number' && Number.isFinite(result.axe.score)) ? result.axe : null;
-        const _freshEa = (_ea && typeof _ea.score === 'number' && Number.isFinite(_ea.score)) ? _ea : null;
+        // than inherit, a prior successful verifier object — EXCEPT on an audit-only
+        // refresh (C6, 2026-07-13): that round changed NOTHING, so the prior
+        // deterministic evidence still describes these exact bytes. Nulling it let a
+        // failed axe refresh RAISE an axe-governed 88 to an AI-only 97 on a no-change
+        // round. Rounds that rewrote the html keep the replace-not-inherit rule.
+        const _freshAxeRaw = (result.axe && typeof result.axe.score === 'number' && Number.isFinite(result.axe.score)) ? result.axe : null;
+        const _freshEaRaw = (_ea && typeof _ea.score === 'number' && Number.isFinite(_ea.score)) ? _ea : null;
+        const _freshAxe = _freshAxeRaw || ((result._auditOnly && cur.axeAudit && typeof cur.axeAudit.score === 'number' && Number.isFinite(cur.axeAudit.score)) ? cur.axeAudit : null);
+        const _freshEa = _freshEaRaw || ((result._auditOnly && cur.secondEngineAudit && typeof cur.secondEngineAudit.score === 'number' && Number.isFinite(cur.secondEngineAudit.score)) ? cur.secondEngineAudit : null);
         let _det = _freshAxe ? _freshAxe.score : null;
         if (_freshEa) _det = _det !== null ? Math.min(_det, _freshEa.score) : _freshEa.score;
         const newScore = (_det !== null) ? blendAiAxe(reVerify.score, _det) : reVerify.score; // shared weakest-layer (delegates to computeHeadline)

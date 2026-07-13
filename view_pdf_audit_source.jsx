@@ -2483,8 +2483,14 @@ function PdfAuditView(props) {
         veraPdfAt: null,
         veraPdfBytesHash: null,
       }, _typesetSourceHtml, _docPipeline);
-      if (!_taggedArtifactTicketIsCurrent(_typesetArtifact)
-          || String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '') !== _typesetSourceHtml) return;
+      if (!_taggedArtifactTicketIsCurrent(_typesetArtifact)) return;
+      if (String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '') !== _typesetSourceHtml) {
+        // C3 (2026-07-13): withholding is correct (the document changed mid-generation,
+        // e.g. an auto-continue round committed new HTML) — but a silent return reads
+        // as a broken button. Say why nothing downloaded.
+        addToast('The document changed while this download was being prepared (a fix round finished). Click download again for the current version.', 'info');
+        return;
+      }
       setLastTaggedValidation(_viewAttachTaggedArtifactProof(_typesetValidation, _typesetArtifact));
       const _rt = (_result && _result.roundTrip) || null;
       if (_rt && _rt.ok === false) {
@@ -3767,7 +3773,7 @@ function PdfAuditView(props) {
     const res = await _reauditAndScore(newHtml, null);
     _setIssueEdit(prev => { const n = { ...prev }; delete n[key]; return n; });   // close the editor
     _setIssueSourceOpen(prev => ({ ...prev, [key]: false }));                      // collapse the source panel
-    if (res && res.ok) addToast((t('pdf_audit.issue.edit_rechecked') || '📊 Re-checked: ') + res.score + '/100 · ' + res.issues + ' issue(s) remaining', 'success');
+    if (res && res.ok) addToast((t('pdf_audit.issue.edit_rechecked') || '📊 Re-checked: ') + res.score + '/100 · ' + (Number.isFinite(res.issues) ? (res.issues + ' issue(s) remaining') : 'issue recount unavailable (AI audit throttled)'), 'success'); // C4: deterministic-only re-audit has issues=null — never render "null issue(s)"
     else addToast(t('pdf_audit.issue.edit_applied_no_reaudit') || '✏ Edit applied. (Couldn’t re-score automatically — the preview is updated; re-run audit when ready.)', 'info');
   };
 
@@ -4622,7 +4628,7 @@ function PdfAuditView(props) {
                           <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-emerald-700">{pdfBatchSummary.above90Verified ?? 0}</div><div className="text-[11px] text-slate-600">Verified at 90+</div></div>
                         </div>
                         <div className="text-xs text-slate-600 space-y-0.5">
-                          <p>{'\ud83d\udcc8'} Numeric-score average: {pdfBatchSummary.avgBefore} {'\u2192'} {pdfBatchSummary.avgAfter} ({pdfBatchSummary.avgImprovement >= 0 ? '+' : ''}{pdfBatchSummary.avgImprovement} average change)</p>
+                          <p>{'\ud83d\udcc8'} Numeric-score average: {pdfBatchSummary.avgBefore} {'\u2192'} {pdfBatchSummary.avgAfter} ({Number.isFinite(pdfBatchSummary.avgImprovement) ? ((pdfBatchSummary.avgImprovement >= 0 ? '+' : '') + pdfBatchSummary.avgImprovement) : 'n/a'} average change)</p>
                           {pdfBatchSummary.failed > 0 && <p>{'\u274c'} {pdfBatchSummary.failed} failed</p>}
                           {pdfBatchSummary.needsExpert > 0 && <p>{'\ud83e\uddd1\u200d\ud83d\udd2c'} {pdfBatchSummary.needsExpert} need expert review</p>}
                           <p>{'\u23f1\ufe0f'} Total time: {Math.floor(pdfBatchSummary.totalElapsed / 60)}m {pdfBatchSummary.totalElapsed % 60}s</p>
@@ -4742,11 +4748,13 @@ tr:hover{background:#1e293b50}
 </div>
 
 <div class="grid">
-  <div class="card"><div class="card-title">Documents Processed</div><div class="card-value" style="color:#a5b4fc">${queue.length}</div><div class="card-sub">${done.length} succeeded · ${failed.length} failed</div></div>
-  <div class="card"><div class="card-title">Average Score</div><div class="card-value" style="color:${(summary?.avgAfter||0) >= 80 ? '#4ade80' : (summary?.avgAfter||0) >= 50 ? '#fbbf24' : '#f87171'}">${summary?.avgAfter || 0}</div><div class="card-sub">Before: ${summary?.avgBefore || 0} · Improvement: +${summary?.avgImprovement || 0}</div></div>
+  <div class="card"><div class="card-title">Documents Processed</div><div class="card-value" style="color:#a5b4fc">${queue.length}</div><div class="card-sub">${done.length} processed · ${summary?.fullyVerified ?? 0} fully verified · ${failed.length} failed</div></div>
+  <div class="card"><div class="card-title">Average Score</div><div class="card-value" style="color:${(summary?.avgAfter||0) >= 80 ? '#4ade80' : (summary?.avgAfter||0) >= 50 ? '#fbbf24' : '#f87171'}">${summary?.avgAfter || 0}</div><div class="card-sub">Before: ${summary?.avgBefore || 0} · Improvement: ${summary && Number.isFinite(summary.avgImprovement) ? ((summary.avgImprovement >= 0 ? '+' : '') + summary.avgImprovement) : 'n/a'}</div></div>
   <div class="card"><div class="card-title">Docs Scoring 90+ (content audit)</div><div class="card-value" style="color:${excellent.length === done.length ? '#4ade80' : '#fbbf24'}">${done.length > 0 ? Math.round(excellent.length / done.length * 100) : 0}%</div><div class="card-sub">${excellent.length} of ${done.length} scored 90+ on the content audit (not PDF/UA conformance)</div></div>
-  <div class="card"><div class="card-title">Need Expert Review</div><div class="card-value" style="color:${(summary?.needsExpert||0) > 0 ? '#f87171' : '#4ade80'}">${summary?.needsExpert || 0}</div><div class="card-sub">${needsWork.length} below 70 · ${good.length} between 70-89</div></div>
+  <div class="card"><div class="card-title">Need Expert Review</div><div class="card-value" style="color:${(summary?.needsExpert||0) > 0 ? '#f87171' : '#4ade80'}">${summary?.needsExpert || 0}</div><div class="card-sub">${summary?.reviewRequired ?? 0} verification review · ${needsWork.length} below 70 · ${good.length} between 70-89</div></div>
 </div>
+
+${summary && summary.verificationStates ? '<div class="section"><h2>WCAG Verification (AI + axe-core + Equal Access)</h2><div style="display:flex;gap:12px;flex-wrap:wrap;font-size:13px">' + ['complete', 'review-required', 'partial', 'unavailable'].map((k) => '<span style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:8px 14px"><strong style="color:' + (k === 'complete' ? '#4ade80' : k === 'review-required' ? '#fbbf24' : '#94a3b8') + '">' + (summary.verificationStates[k] || 0) + '</strong> ' + k.replace('-', ' ') + '</span>').join('') + '</div><p style="font-size:11px;color:#64748b;margin-top:8px">"Fully verified" needs every engine to complete with zero review findings — a review state is a checklist item, not a failure.</p></div>' : ''}
 
 <div class="section">
   <h2>Score Distribution</h2>
@@ -4778,12 +4786,13 @@ tr:hover{background:#1e293b50}
 
 <div class="section">
   <h2>Document Details</h2>
-  <table><thead><tr><th>#</th><th>Document</th><th>Before</th><th>After</th><th>Gain</th><th>Fix Passes</th><th>Status</th></tr></thead><tbody>
+  <table><thead><tr><th>#</th><th>Document</th><th>Before</th><th>After</th><th>Gain</th><th>Fix Passes</th><th>Verification</th><th>Status</th></tr></thead><tbody>
   ${queue.map((f, i) => {
     const r = f.result;
     const after = r?.afterScore || 0;
     const cls = after >= 90 ? 'excellent' : after >= 70 ? 'good' : 'needs-work';
-    return '<tr><td>' + (i+1) + '</td><td>' + esc(f.fileName) + '</td><td>' + (r?.beforeScore ?? '—') + '</td><td><span class="score-badge ' + cls + '">' + (r?.afterScore ?? '—') + '</span></td><td>+' + (r ? (r.afterScore - r.beforeScore) : '—') + '</td><td>' + (r?.autoFixPasses ?? '—') + '</td><td>' + (f.status === 'done' ? '✅' : '❌ ' + esc(f.error || '')) + '</td></tr>';
+    const gain = (r && r.afterScore != null && r.beforeScore != null) ? ((r.afterScore - r.beforeScore >= 0 ? '+' : '') + (r.afterScore - r.beforeScore)) : '—';
+    return '<tr><td>' + (i+1) + '</td><td>' + esc(f.fileName) + '</td><td>' + (r?.beforeScore ?? '—') + '</td><td><span class="score-badge ' + cls + '">' + (r?.afterScore ?? '—') + '</span></td><td>' + gain + '</td><td>' + (r?.autoFixPasses ?? '—') + '</td><td>' + esc((r && r.verificationState) || '—') + '</td><td>' + (f.status === 'done' ? '✅' : '❌ ' + esc(f.error || '')) + '</td></tr>';
   }).join('')}
   </tbody></table>
 </div>
@@ -5783,9 +5792,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </span>
                       )}
                       <button onClick={() => {
-                        const head = 'date,file,outcome,fail_stage,fail_reason,before,after,gain,passes,axe_violations,pages,retries,vision_calls,api_calls,api_ms,duration_s';
+                        const head = 'date,file,outcome,verification,fail_stage,fail_reason,before,after,gain,passes,axe_violations,pages,retries,vision_calls,api_calls,api_ms,duration_s';
                         const _csv = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
-                        const lines = _hist.map((r) => [String(r.at || '').slice(0, 10), _csv(r.fileName || ''), r.outcome || '', _csv(r.failStage || ''), _csv(r.failReason || ''), r.beforeScore != null ? r.beforeScore : '', r.afterScore != null ? r.afterScore : '', (r.beforeScore != null && r.afterScore != null) ? (r.afterScore - r.beforeScore) : '', r.passes != null ? r.passes : '', r.axeViolations != null ? r.axeViolations : '', r.pages != null ? r.pages : '', r.retries != null ? r.retries : '', r.visionCalls != null ? r.visionCalls : '', r.apiCalls != null ? r.apiCalls : '', r.apiMs != null ? r.apiMs : '', r.durationMs != null ? Math.round(r.durationMs / 1000) : ''].join(','));
+                        const lines = _hist.map((r) => [String(r.at || '').slice(0, 10), _csv(r.fileName || ''), r.outcome || '', _csv(r.verificationState || ''), _csv(r.failStage || ''), _csv(r.failReason || ''), r.beforeScore != null ? r.beforeScore : '', r.afterScore != null ? r.afterScore : '', (r.beforeScore != null && r.afterScore != null) ? (r.afterScore - r.beforeScore) : '', r.passes != null ? r.passes : '', r.axeViolations != null ? r.axeViolations : '', r.pages != null ? r.pages : '', r.retries != null ? r.retries : '', r.visionCalls != null ? r.visionCalls : '', r.apiCalls != null ? r.apiCalls : '', r.apiMs != null ? r.apiMs : '', r.durationMs != null ? Math.round(r.durationMs / 1000) : ''].join(','));
                         safeDownloadBlob(new Blob([head + '\n' + lines.join('\n')], { type: 'text/csv' }), 'alloflow-remediation-history.csv');
                       }} className="ml-auto px-2 py-0.5 bg-white border border-indigo-300 text-indigo-700 rounded-full font-bold hover:bg-indigo-100 shrink-0">⬇ CSV</button>
                     </div>
@@ -5920,7 +5929,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   </div>
                 </div>
               </div>
-            ) : pdfAuditResult && pdfAuditResult._isWebAudit && pdfAuditResult.score == null ? (
+            ) : pdfAuditResult && pdfAuditResult._isWebAudit && pdfAuditResult.score == null && !pdfFixResult ? ( /* C5: a successful Audit & Remediate sets only pdfFixResult — never let the failed-audit screen hide the remediation results */
               <div role="alert" className="rounded-2xl overflow-hidden border border-amber-300 shadow-lg">
                 <div className="p-6 text-center bg-gradient-to-r from-amber-800 to-orange-800 text-white">
                   <div className="text-4xl mb-2" aria-hidden="true">⚠️</div>
@@ -8458,6 +8467,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <li><strong>axe-core:</strong> {engineLabel(coverage.axe)}</li>
                               <li><strong>Equal Access:</strong> {engineLabel(coverage.equalAccess)}</li>
                             </ul>
+                            {pdfFixResult._finalAuditRetryAvailable && state !== 'complete' && (
+                              /* Reader for the previously write-only flag: the LAST verification audit
+                                 failed outright (throttle/transport), so a retry is genuinely likely to
+                                 improve the state — say so instead of leaving the button unexplained. */
+                              <p className="mt-1.5 text-[11px] font-semibold">The last verification audit could not finish (AI throttled or engine unavailable). "Re-run verification only" retries it without changing the document.</p>
+                            )}
                             {reasons.length > 0 && <details className="mt-2 text-[11px]"><summary className="font-bold cursor-pointer">Why this status?</summary><ul className="mt-1 ml-5 list-disc space-y-0.5">{reasons.map((reason, index) => <li key={index}>{String(reason).replace(/[-:]/g, ' ')}</li>)}</ul></details>}
                           </section>
                         );
@@ -10474,8 +10489,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 veraPdfBytesHash: _transferVeraVerdict ? _newTaggedHash : null,
                                 generatedAt: new Date().toISOString(),
                               }, _tagSourceHtml, _docPipeline);
-                              if (!_taggedArtifactTicketIsCurrent(_taggedArtifact)
-                                  || String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '') !== String(_tagSourceHtml || '')) return;
+                              if (!_taggedArtifactTicketIsCurrent(_taggedArtifact)) return;
+                              if (String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '') !== String(_tagSourceHtml || '')) {
+                                addToast('The document changed while this download was being prepared (a fix round finished). Click download again for the current version.', 'info'); // C3
+                                return;
+                              }
                               setLastTaggedValidation(_viewAttachTaggedArtifactProof(_boundTaggedValidation, _taggedArtifact));
                               if (_transferVeraVerdict) setVeraPdfResult(_viewAttachTaggedArtifactProof({ ..._priorValidation.veraPdf }, _taggedArtifact));
                               // ── #5 Content-fidelity gate ── A SEVERE shortfall (<80% of source text
@@ -11022,8 +11040,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           veraPdfBytesHash: null,
                                           generatedAt: new Date().toISOString(),
                                         }, html, _docPipeline);
-                                        if (!_taggedArtifactTicketIsCurrent(_restoredArtifact)
-                                            || String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '') !== String(html || '')) return;
+                                        if (!_taggedArtifactTicketIsCurrent(_restoredArtifact)) return;
+                                        if (String((pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml) || '') !== String(html || '')) {
+                                          addToast('The document changed while this download was being prepared (a fix round finished). Click download again for the current version.', 'info'); // C3
+                                          return;
+                                        }
                                         setLastTaggedValidation(_viewAttachTaggedArtifactProof(_restoredValidation, _restoredArtifact));
                                         const restoredCount = allRestored.length;
                                         const unresolvedCount = allUnplaceable.length;

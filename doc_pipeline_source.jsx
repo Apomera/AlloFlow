@@ -2715,7 +2715,17 @@ function _alloDistributionVerdict(r, opts) {
   var eaFails = (r.secondEngineAudit && typeof r.secondEngineAudit.failViolations === 'number') ? r.secondEngineAudit.failViolations : null;
   // review tier — content trust is in question
   if (r.verificationState && r.verificationState !== 'complete') review.push('WCAG verification is ' + r.verificationState + '; review the engine coverage and unresolved evidence before distribution');
-  if (r.needsExpertReview) review.push(String(r.expertReviewReason || 'this run was flagged for expert review'));
+  if (r.needsExpertReview) {
+    // A2 residual (2026-07-13): expertReviewReason is a machine token
+    // ('accessibility' | 'content-fidelity' | 'both') — render it as a sentence,
+    // not a raw token, in the teacher-facing verdict bullet.
+    var _reasonText = {
+      'accessibility': 'confirmed accessibility barriers need an expert pass',
+      'content-fidelity': 'content fidelity needs a human check (possible loss or changed values)',
+      'both': 'accessibility barriers and content fidelity both need human review'
+    }[r.expertReviewReason];
+    review.push(_reasonText || String(r.expertReviewReason || 'this run was flagged for expert review'));
+  }
   if (cov != null && cov < 90) review.push('only ' + cov + '% of the source text is preserved in reading order — check the Diff for missing content');
   if (kinds.numeric) review.push('numbers may have changed between source and output — verify scores, dates, and percentages before anyone reads this');
   if (kinds.refusal) review.push('AI meta/refusal text leaked into the output — it should not ship; re-run the remediation');
@@ -13973,16 +13983,22 @@ HTML section ${chunkNum}/${chunks.length}:
     'https://unpkg.com/accessibility-checker-engine@3.1.83/ace.js',
   ];
   var _acePromise = null;
+  // A3 (2026-07-13): consecutive full-mirror load failures. In Canvas the CSP
+  // blocks BOTH CDN mirrors every time — after two exhausted attempts the engine
+  // is environmentally unavailable, and callers (auto-continue verification
+  // refresh) can skip work that can never reach 'complete' without it.
+  var _eaEngineLoadFailStreak = 0;
+  const _equalAccessUnavailable = () => _eaEngineLoadFailStreak >= 2;
   const _ensureAce = () => {
     if (window.ace && window.ace.Checker) return Promise.resolve();
     if (_acePromise) return _acePromise;
     _acePromise = new Promise((resolve, reject) => {
       const tryAt = (i) => {
-        if (i >= _ACE_CDN_URLS.length) { _acePromise = null; reject(new Error('Failed to load IBM Equal Access from ' + _ACE_CDN_URLS.length + ' CDN mirrors')); return; }
+        if (i >= _ACE_CDN_URLS.length) { _acePromise = null; _eaEngineLoadFailStreak++; reject(new Error('Failed to load IBM Equal Access from ' + _ACE_CDN_URLS.length + ' CDN mirrors')); return; }
         const s = document.createElement('script');
         s.src = _ACE_CDN_URLS[i];
         s.setAttribute('data-ibm-ace', 'true');
-        s.onload = () => { if (window.ace && window.ace.Checker) resolve(); else { _acePromise = null; reject(new Error('ace.js loaded but window.ace.Checker missing')); } };
+        s.onload = () => { if (window.ace && window.ace.Checker) { _eaEngineLoadFailStreak = 0; resolve(); } else { _acePromise = null; _eaEngineLoadFailStreak++; reject(new Error('ace.js loaded but window.ace.Checker missing')); } };
         s.onerror = () => { try { s.remove(); } catch (_) {} tryAt(i + 1); };
         document.head.appendChild(s);
       };
@@ -33715,6 +33731,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),
     runAxeAudit: _wrapAsync(runAxeAudit),
     runEqualAccessAudit: _wrapAsync(runEqualAccessAudit),
+    equalAccessUnavailable: _equalAccessUnavailable,
     describeAndClassifyImages: _wrapAsync(describeAndClassifyImages),
     _applyImageIntel,
     createTypesetTaggedPdf: _wrapAsync(createTypesetTaggedPdf),
