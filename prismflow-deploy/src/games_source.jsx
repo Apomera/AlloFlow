@@ -12,6 +12,34 @@ var scrambleWord = function(word) {
 
 const useReducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
 
+// Shared focus management for full-screen game workspaces.
+const useGameDialogFocus = (dialogRef, initialFocusRef, onClose) => {
+  const closeHandlerRef = useRef(onClose);
+  closeHandlerRef.current = onClose;
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    const previousFocus = typeof document !== 'undefined' ? document.activeElement : null;
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    (initialFocusRef?.current || getFocusable()[0] || dialog).focus();
+    const onKeyDown = event => {
+      if (event.key === 'Escape') { event.preventDefault(); closeHandlerRef.current?.(); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    dialog.addEventListener('keydown', onKeyDown);
+    return () => {
+      dialog.removeEventListener('keydown', onKeyDown);
+      if (previousFocus?.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
+    };
+  }, []);
+};
+
 // ── TTS utility for read-aloud accessibility ──
 // Thin delegator to window.AlloSpeechPlayer (defined in AlloFlowANTI.txt).
 // The player handles: Gemini → Kokoro → browser cascade, mute respect,
@@ -585,6 +613,9 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   const canvasRef = useRef(null);
   const termRefs = useRef({});
   const defRefs = useRef({});
+  const matchingDialogRef = useRef(null);
+  const matchingCloseRef = useRef(null);
+  useGameDialogFocus(matchingDialogRef, matchingCloseRef, onClose);
   const shuffleDefinitions = (validItems) => {
       const defs = validItems.map(item => ({ id: item.term, text: item.def }));
       if (defs.length <= 1) return defs;
@@ -753,11 +784,11 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
       setAnnouncement('');
   };
   return (
-    <div className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
+    <div ref={matchingDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="matching-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-hidden focus:outline-none${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
         <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
         <div className="bg-white border-b border-slate-200 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm no-print z-20 relative">
             <div>
-                 <h3 className="font-bold text-lg flex items-center gap-2 text-indigo-900">
+                 <h3 id="matching-game-title" className="font-bold text-lg flex items-center gap-2 text-indigo-900">
                      <GitMerge size={20} className="text-orange-500"/> {t('matching.title')}
                  </h3>
                  <p className="text-xs text-slate-600">{t('matching.instructions')}</p>
@@ -783,8 +814,10 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                     <RefreshCw size={14}/> {t('memory.reset') || 'Reset'}
                 </button>
                 <button
+                    ref={matchingCloseRef}
+                    type="button"
                     onClick={onClose}
-                    className="p-1.5 hover:bg-red-50 rounded-full text-slate-600 hover:text-red-500 transition-colors"
+                    className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-red-50 rounded-full text-slate-600 hover:text-red-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     title={t('common.close')}
                     aria-label={t('matching.close_aria')}
                 >
@@ -1089,6 +1122,9 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   const [answerRevealed, setAnswerRevealed] = useState(false);
   const itemRefs = useRef([]);
   const normalizedItemsRef = useRef([]);
+  const timelineDialogRef = useRef(null);
+  const timelineCloseRef = useRef(null);
+  useGameDialogFocus(timelineDialogRef, timelineCloseRef, onClose);
   useEffect(() => {
     if (!data) return;
     const fallback = t('timeline.progression_label_default') || 'Sequential Order';
@@ -1313,11 +1349,11 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
      // bestScore intentionally preserved across resets within the same game session.
   };
   return (
-    <div className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
+    <div ref={timelineDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="timeline-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
        <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
        <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20">
            <div>
-               <h3 className="font-bold text-lg flex items-center gap-2">
+               <h3 id="timeline-game-title" className="font-bold text-lg flex items-center gap-2">
                    <ListOrdered size={20} className="text-yellow-300"/> {t('timeline.game.header')}
                </h3>
                <p className="text-xs text-indigo-200">{t('timeline.game.desc')}</p>
@@ -1339,7 +1375,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                    <span className="font-bold w-7 text-end tabular-nums">{imageSize}</span>
                </label>
                <GameThemeToggle />
-               <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors" aria-label={t('timeline.game.close_aria')}><X size={24}/></button>
+               <button ref={timelineCloseRef} type="button" onClick={onClose} className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white" aria-label={t('timeline.game.close_aria')}><X size={24} aria-hidden="true"/></button>
            </div>
        </div>
        <div className="flex-grow overflow-y-auto p-6 bg-slate-100 relative custom-scrollbar">
@@ -1591,6 +1627,9 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   const [deckCanScrollRight, setDeckCanScrollRight] = useState(false);
   const [deckCanScrollLeft, setDeckCanScrollLeft] = useState(false);
   const menuRef = useRef(null);
+  const conceptSortDialogRef = useRef(null);
+  const conceptSortCloseRef = useRef(null);
+  useGameDialogFocus(conceptSortDialogRef, conceptSortCloseRef, onClose);
   const isWon = isChecked && items.length > 0 && items.every(i => i.currentContainer === i.categoryId);
   const pastelColors = [
     'bg-blue-50 border-blue-200 hover:border-blue-300',
@@ -1946,11 +1985,11 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       return () => clearTimeout(id);
   }, [hasUsedKeyboardCard, hintAutoHidden]);
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-50 flex flex-col animate-in fade-in duration-300" data-help-key="concept_sort_game">
+    <div ref={conceptSortDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="concept-sort-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`} data-help-key="concept_sort_game">
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</div>
       <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20">
         <div>
-            <h3 className="font-bold text-lg flex items-center gap-2" data-help-key="concept_sort_header">
+            <h3 id="concept-sort-game-title" className="font-bold text-lg flex items-center gap-2" data-help-key="concept_sort_header">
                 <Filter size={20} className="text-yellow-300"/> {t('concept_sort.title')}
             </h3>
             <p className="text-xs text-indigo-200">{t('concept_sort.subtitle')}</p>
@@ -1961,7 +2000,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                 <span className="font-bold text-sm">{score} pts</span>
             </div>
             <GameThemeToggle />
-            <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white" aria-label={t('concept_sort.close_aria')}><X size={24}/></button>
+            <button ref={conceptSortCloseRef} type="button" onClick={onClose} className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white" aria-label={t('concept_sort.close_aria')}><X size={24} aria-hidden="true"/></button>
         </div>
       </div>
       <div className="flex-grow overflow-y-auto p-6 relative">
@@ -2168,6 +2207,12 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
   const [lastHint, setLastHint] = useState(null);
   const moveMenuRef = useRef(null);
   const hintTimerRef = useRef(null);
+  const vennDialogRef = useRef(null);
+  const vennCloseRef = useRef(null);
+  const vennVictoryRef = useRef(null);
+  const vennPlayAgainRef = useRef(null);
+  useGameDialogFocus(vennDialogRef, vennCloseRef, onClose);
+  useEffect(() => { if (isWon) vennPlayAgainRef.current?.focus(); }, [isWon]);
   const showZoneHint = (correctZone) => {
       if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
       setLastHint(correctZone);
@@ -2288,6 +2333,13 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
           }
       }
   }, [items, score, onScoreUpdate, playSound, isWon]);
+  const resetVennGame = () => {
+      const shuffled = items.map(item => ({ ...item, currentZone: 'bank' }));
+      for (let i = shuffled.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
+      setItems(shuffled); setScore(0); setAttempts(0); setIsWon(false); setKeyboardSelectedItemId(null);
+      setAnnouncement(t('concept_map.venn.restarted') || 'Venn sort restarted.');
+      window.setTimeout(() => vennDialogRef.current?.focus(), 0);
+  };
   const getText = (item) => {
       if (gameLang === 'english' && item.translation) return item.translation;
       return item.text;
@@ -2316,10 +2368,10 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
   const vennShared = useMemo(() => items.filter(i => i.currentZone === 'shared'), [items]);
   const vennBank = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
   return (
-      <div className="fixed inset-0 z-[200] bg-slate-50 flex flex-col animate-in zoom-in-95" data-help-key="venn_game_container">
+      <div ref={vennDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="venn-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? '' : ' animate-in zoom-in-95'}`} data-help-key="venn_game_container">
           <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
           <div className="bg-indigo-600 p-4 text-white flex justify-between items-center shadow-md z-30">
-              <h3 className="font-bold text-xl flex items-center gap-2" data-help-key="venn_header">
+              <h3 id="venn-game-title" className="font-bold text-xl flex items-center gap-2" data-help-key="venn_header">
                   <Layout size={24}/> {t('common.venn_sort_title')}
               </h3>
               <div className="flex items-center gap-4">
@@ -2340,8 +2392,10 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                   <button
                       aria-label={t('common.close')}
                       onClick={onClose}
-                      data-help-key="venn_back_btn"
-                      className="flex items-center gap-1 text-xs font-bold bg-indigo-700 hover:bg-indigo-500 px-3 py-1.5 rounded-full transition-colors border border-indigo-400"
+                      ref={vennCloseRef}
+                       type="button"
+                       data-help-key="venn_back_btn"
+                      className="min-h-11 flex items-center gap-1 text-xs font-bold bg-indigo-700 hover:bg-indigo-500 px-3 py-1.5 rounded-full transition-colors border border-indigo-400 focus:outline-none focus:ring-2 focus:ring-white"
                   >
                       <ArrowDown className="rotate-90" size={14}/> {t('concept_map.venn.back_to_editor')}
                   </button>
@@ -2350,10 +2404,23 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
           <div className="flex-grow relative bg-slate-100 overflow-hidden flex flex-col items-center justify-center">
               <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
               {isWon && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="venn-victory-title">
-                    <div className={`bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? 'animate-in zoom-in-95 duration-300' : ''}`}>
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" role="presentation">
+                    <div ref={vennVictoryRef} role="dialog" aria-modal="true" aria-labelledby="venn-victory-title" aria-describedby="venn-victory-description"
+                      onKeyDown={event => {
+                        if (event.key === 'Escape') { event.preventDefault(); onClose(); return; }
+                        if (event.key !== 'Tab') return;
+                        const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                        if (!focusable.length) { event.preventDefault(); return; }
+                        const first = focusable[0], last = focusable[focusable.length - 1];
+                        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+                      }} className={`relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? 'animate-in zoom-in-95 duration-300' : ''}`}>
                         <h2 id="venn-victory-title" className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title')}</h2>
-                        <p className="text-slate-600">{t('concept_map.venn.victory_desc')}</p>
+                        <p id="venn-victory-description" className="text-slate-600">{t('concept_map.venn.victory_desc')}</p>
+                        <div className="mt-6 flex flex-wrap justify-center gap-3">
+                          <button ref={vennPlayAgainRef} type="button" onClick={resetVennGame} className="min-h-11 rounded-lg bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{t('games.bucket_sort.play_again') || 'Play again'}</button>
+                          <button type="button" onClick={onClose} className="min-h-11 rounded-lg bg-slate-200 px-4 py-2 font-bold text-slate-800 hover:bg-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
+                        </div>
                     </div>
                     {!useReducedMotion() && <ConfettiExplosion />}
                 </div>
@@ -5820,6 +5887,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
   const gameContainerRef = useRef(null);
   const triggerElRef = useRef(null);
   const playAgainRef = useRef(null);
+  const winDialogRef = useRef(null);
   useEffect(() => {
     triggerElRef.current = (typeof document !== 'undefined') ? document.activeElement : null;
     if (gameContainerRef.current) gameContainerRef.current.focus();
@@ -5931,6 +5999,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
     }
     setItems(shuffled);
     setScore(0); setIsWon(false); setAttempts(0);
+    window.setTimeout(() => gameContainerRef.current?.focus(), 0);
   };
   const bankItems = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
   const zoneCountClass = layoutMode === 'grid-2x2' ? 'grid-cols-2' : (zoneConfig.length === 3 ? 'grid-cols-1 md:grid-cols-3' : zoneConfig.length === 5 ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-5' : 'grid-cols-1 md:grid-cols-3');
@@ -6039,15 +6108,32 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
         </div>
         {/* Win modal */}
         {isWon && (
-          <div className="fixed inset-0 z-[210] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div role="presentation" className="fixed inset-0 z-[210] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
             {!useReducedMotion() && <ConfettiExplosion />}
-            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full text-center animate-in zoom-in-95 duration-300">
-              <div className="text-5xl mb-3">🎉</div>
-              <h3 className="text-2xl font-black text-slate-800 mb-2">{t('games.bucket_sort.all_sorted') || 'All sorted!'}</h3>
-              <p className="text-sm text-slate-600 mb-4">{t('games.bucket_sort.final_score_label') || 'Final score:'} <strong className="text-indigo-600">{score}</strong>{attempts > 0 ? ` (with ${attempts} incorrect ${attempts === 1 ? 'attempt' : 'attempts'})` : ''}</p>
+            <div
+              ref={winDialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="multi-zone-win-title"
+              aria-describedby="multi-zone-win-description"
+              onKeyDown={event => {
+                if (event.key === 'Escape') { event.preventDefault(); onClose(); return; }
+                if (event.key !== 'Tab') return;
+                const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                if (!focusable.length) { event.preventDefault(); return; }
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+              }}
+              className={`bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full text-center${useReducedMotion() ? '' : ' animate-in zoom-in-95 duration-300'}`}
+            >
+              <div className="text-5xl mb-3" aria-hidden="true">🎉</div>
+              <h3 id="multi-zone-win-title" className="text-2xl font-black text-slate-800 mb-2">{t('games.bucket_sort.all_sorted') || 'All sorted!'}</h3>
+              <p id="multi-zone-win-description" className="text-sm text-slate-600 mb-4">{t('games.bucket_sort.final_score_label') || 'Final score:'} <strong className="text-indigo-600">{score}</strong>{attempts > 0 ? ` (with ${attempts} incorrect ${attempts === 1 ? 'attempt' : 'attempts'})` : ''}</p>
               <div className="flex gap-2 justify-center">
-                <button ref={playAgainRef} onClick={reset} className="px-4 py-2 bg-indigo-600 text-white rounded-md font-bold hover:bg-indigo-700">{t('games.bucket_sort.play_again') || 'Play again'}</button>
-                <button onClick={onClose} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md font-bold hover:bg-slate-300">Close</button>
+                <button ref={playAgainRef} type="button" onClick={reset} className="min-h-11 px-4 py-2 bg-indigo-600 text-white rounded-md font-bold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{t('games.bucket_sort.play_again') || 'Play again'}</button>
+                <button type="button" onClick={onClose} className="min-h-11 px-4 py-2 bg-slate-200 text-slate-800 rounded-md font-bold hover:bg-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
               </div>
             </div>
           </div>
