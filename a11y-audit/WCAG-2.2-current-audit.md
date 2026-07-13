@@ -97,6 +97,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Replaced Memory Match's in-progress mode-switch browser confirmation with a named/described alert dialog; retained the current controlled selection until consent, focused the safe Cancel action, contained Tab, supported Escape cancellation, returned focus to the mode selector, and provided 44 CSS-pixel actions before restarting and clearing round progress (WCAG 2.1.1, 2.4.3, 2.4.7, 2.5.8, 3.2.2, 3.3.4, 4.1.2).
 
+- Made the shared Multi-Zone Sort completion layer a named/described focus-managed dialog; retained initial Play again focus, contained Tab, supported Escape closing, returned focus to the game after replay, hid the decorative celebration emoji, provided 44 CSS-pixel actions, and suppressed dialog entry animation when reduced motion is requested (WCAG 1.1.1, 2.1.1, 2.3.3, 2.4.3, 2.4.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

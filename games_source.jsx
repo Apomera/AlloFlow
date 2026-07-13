@@ -5820,6 +5820,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
   const gameContainerRef = useRef(null);
   const triggerElRef = useRef(null);
   const playAgainRef = useRef(null);
+  const winDialogRef = useRef(null);
   useEffect(() => {
     triggerElRef.current = (typeof document !== 'undefined') ? document.activeElement : null;
     if (gameContainerRef.current) gameContainerRef.current.focus();
@@ -5931,6 +5932,7 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
     }
     setItems(shuffled);
     setScore(0); setIsWon(false); setAttempts(0);
+    window.setTimeout(() => gameContainerRef.current?.focus(), 0);
   };
   const bankItems = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
   const zoneCountClass = layoutMode === 'grid-2x2' ? 'grid-cols-2' : (zoneConfig.length === 3 ? 'grid-cols-1 md:grid-cols-3' : zoneConfig.length === 5 ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-5' : 'grid-cols-1 md:grid-cols-3');
@@ -6039,15 +6041,32 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
         </div>
         {/* Win modal */}
         {isWon && (
-          <div className="fixed inset-0 z-[210] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div role="presentation" className="fixed inset-0 z-[210] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
             {!useReducedMotion() && <ConfettiExplosion />}
-            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full text-center animate-in zoom-in-95 duration-300">
-              <div className="text-5xl mb-3">🎉</div>
-              <h3 className="text-2xl font-black text-slate-800 mb-2">{t('games.bucket_sort.all_sorted') || 'All sorted!'}</h3>
-              <p className="text-sm text-slate-600 mb-4">{t('games.bucket_sort.final_score_label') || 'Final score:'} <strong className="text-indigo-600">{score}</strong>{attempts > 0 ? ` (with ${attempts} incorrect ${attempts === 1 ? 'attempt' : 'attempts'})` : ''}</p>
+            <div
+              ref={winDialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="multi-zone-win-title"
+              aria-describedby="multi-zone-win-description"
+              onKeyDown={event => {
+                if (event.key === 'Escape') { event.preventDefault(); onClose(); return; }
+                if (event.key !== 'Tab') return;
+                const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+                if (!focusable.length) { event.preventDefault(); return; }
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+              }}
+              className={`bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full text-center${useReducedMotion() ? '' : ' animate-in zoom-in-95 duration-300'}`}
+            >
+              <div className="text-5xl mb-3" aria-hidden="true">🎉</div>
+              <h3 id="multi-zone-win-title" className="text-2xl font-black text-slate-800 mb-2">{t('games.bucket_sort.all_sorted') || 'All sorted!'}</h3>
+              <p id="multi-zone-win-description" className="text-sm text-slate-600 mb-4">{t('games.bucket_sort.final_score_label') || 'Final score:'} <strong className="text-indigo-600">{score}</strong>{attempts > 0 ? ` (with ${attempts} incorrect ${attempts === 1 ? 'attempt' : 'attempts'})` : ''}</p>
               <div className="flex gap-2 justify-center">
-                <button ref={playAgainRef} onClick={reset} className="px-4 py-2 bg-indigo-600 text-white rounded-md font-bold hover:bg-indigo-700">{t('games.bucket_sort.play_again') || 'Play again'}</button>
-                <button onClick={onClose} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-md font-bold hover:bg-slate-300">Close</button>
+                <button ref={playAgainRef} type="button" onClick={reset} className="min-h-11 px-4 py-2 bg-indigo-600 text-white rounded-md font-bold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{t('games.bucket_sort.play_again') || 'Play again'}</button>
+                <button type="button" onClick={onClose} className="min-h-11 px-4 py-2 bg-slate-200 text-slate-800 rounded-md font-bold hover:bg-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">{t('common.close') || 'Close'}</button>
               </div>
             </div>
           </div>
