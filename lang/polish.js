@@ -4300,7 +4300,7 @@
     "close_esc_title": "Zamknij (Esc)",
     "web": {
       "heading": "🌐 Dostępność strony i HTML",
-      "subheading": "Przeprowadź audyt adresu URL strony lub wklej HTML, aby uzyskać pełny audyt WCAG 2.1 AA i poprawki",
+      "subheading": "Przeprowadź audyt adresu URL strony lub wklej HTML, aby uzyskać pełny audyt WCAG 2.2 AA i poprawki",
       "url_label": "URL strony",
       "url_aria": "URL strony dla audytu",
       "fetch_aria": "Uzyskać HTML strony",
@@ -4383,7 +4383,7 @@
     },
     "loading": {
       "title": "Audyt dostępności PDF...",
-      "subtitle": "Uruchamianie 5 równoległych audytów WCAG 2.1 AA z triangulacją. To może zająć 15-30 sekund.",
+      "subtitle": "Uruchamianie 5 równoległych audytów WCAG 2.2 AA z triangulacją. To może zająć 15-30 sekund.",
       "progress_aria": "Audyt w toku"
     },
     "knowbility": {
@@ -4440,7 +4440,7 @@
       "ai_major_rule": "Poważne: −10 za każde (nagłówki, tabele, formularze)",
       "ai_minor_rule": "Drobne: −5 za każde (skip-nav, punkty orientacyjne, linki, listy)",
       "ai_passes_rule": "Zaliczenia proporcjonalnie zmniejszają sumę odejmowanych punktów",
-      "axe_desc": "Automatyczny tester WCAG 2.1 AA firmy Deque",
+      "axe_desc": "Automatyczny tester WCAG 2.2 AA firmy Deque",
       "how_axe_scores": "Jak axe-core ocenia",
       "no_violations": "Nie wykryto naruszeń",
       "average_both": "Średnia z obu silników (równa waga)"
@@ -7089,7 +7089,7 @@
     "pdf_audit_view_web_url_input": "Wklej adres strony internetowej, którą chcesz sprawdzić (na przykład https://twoj-okreg.org/podrecznik), a następnie kliknij Pobierz, aby pobrać jej kod HTML, by móc go zaudytować i poprawić.",
     "pdf_audit_view_web_fetch_btn": "Pobiera stronę z podanego wyżej URL i wkleja jej HTML do pola poniżej. Jeśli strona blokuje pobieranie, sam wklej źródło strony do pola HTML.",
     "pdf_audit_view_web_html_textarea": "HTML, który jest audytowany — albo pobrany przez Pobierz, albo wklejony przez Ciebie. Możesz go tutaj edytować przed audytem (na przykład usunąć pasek nawigacji, który do Ciebie nie należy).",
-    "pdf_audit_view_web_audit_btn": "Ocenia stronę według WCAG 2.1 AA, używając zarówno audytora AI, jak i silnika axe-core (tego samego, którego używają profesjonalni audytorzy). Nic nie jest zmieniane — użyj tej opcji, gdy chcesz tylko wiedzieć, w jakim stanie strona jest dziś.",
+    "pdf_audit_view_web_audit_btn": "Ocenia stronę według WCAG 2.2 AA, używając zarówno audytora AI, jak i silnika axe-core (tego samego, którego używają profesjonalni audytorzy). Nic nie jest zmieniane — użyj tej opcji, gdy chcesz tylko wiedzieć, w jakim stanie strona jest dziś.",
     "pdf_audit_view_web_remediate_btn": "Ocenia stronę, a następnie przepisuje HTML, naprawiając to, co może (kontrast, znacznik języka, link pomijający, punkty orientacyjne) i daje Ci dostępną kopię do pobrania. Zawsze sam sprawdź wynik przed publikacją.",
     "pdf_audit_view_batch_dropzone": "Przeciągnij pliki PDF z pulpitu lub folderu pobierania bezpośrednio na to pole, aby dodać je do kolejki wsadowej. Pliki inne niż PDF są ignorowane.",
     "pdf_audit_view_batch_browse_btn": "Otwiera selektor plików, abyś mógł wybrać jeden lub więcej plików PDF. Użyj tej opcji, jeśli przeciąganie plików nie jest łatwe (urządzenie dotykowe, czytnik ekranu, słaby wzrok lub Chromebook).",
@@ -7106,7 +7106,7 @@
     "pdf_audit_view_batch_dashboard_btn": "Otwiera drukowalny pulpit zgodności w nowej karcie — średni wynik, ile plików PDF osiągnęło 90+, najczęstsze problemy WCAG. Przydatne do udostępnienia administratorowi lub dołączenia do akt Title II / 504.",
     "pdf_audit_view_settings_panel": "Pokrętła regulacyjne dla potoku audytu i naprawy. Domyślne wartości są rozsądne — zmieniaj je tylko, gdy standardowe uruchomienie nie daje tego, czego potrzebujesz (większa dokładność, niższy koszt, inny punkt zatrzymania).",
     "pdf_audit_view_audit_passes_slider": "Ilu niezależnych audytorów AI ogląda PDF — zgadzają się co do prawdziwych problemów, a różnią się co do szumu, więc więcej audytorów oznacza mniej fałszywych alarmów. 5 to złoty środek; podnieś dla dokumentów o wysokim ryzyku zgodności, obniż dla szybkich kontroli.",
-    "pdf_audit_view_target_score_slider": "Wynik, który chcesz, aby naprawiony PDF osiągnął — 90 to solidne zaliczenie WCAG 2.1 AA, 95+ jest prawie idealne, 70 jest użyteczną dolną granicą dla skanowanych dokumentów. Połącz z Auto-kontynuacją, aby potok pracował, dopóki wynik nie zostanie osiągnięty.",
+    "pdf_audit_view_target_score_slider": "Wynik, który chcesz, aby naprawiony PDF osiągnął — 90 to solidne zaliczenie WCAG 2.2 AA, 95+ jest prawie idealne, 70 jest użyteczną dolną granicą dla skanowanych dokumentów. Połącz z Auto-kontynuacją, aby potok pracował, dopóki wynik nie zostanie osiągnięty.",
     "pdf_audit_view_max_fix_passes_slider": "Ile rund auto-naprawy potok może wykonać przed zatrzymaniem. 8 to domyślna wartość; obniż, aby ograniczyć koszt w planie samodzielnie hostowanym, lub ustaw na 0, aby całkowicie pominąć auto-naprawę (tylko audyt).",
     "pdf_audit_view_auto_continue_toggle": "Gdy włączone, potok wykonuje dodatkowe rundy poprawek (do 3 więcej), aż osiągnie Wynik Docelowy, a następnie sam się zatrzymuje. Wyłącz, jeśli chcesz dokładnie jednego przebiegu i jednego wyniku do inspekcji.",
     "pdf_audit_view_polish_passes_slider": "Dodatkowe rundy porządkowania po prawdziwych poprawkach dostępności — wygładza odstępy, nagłówki, wizualne wykończenie. 0 pomija, 2 to standard, 3 jest dla dokumentów idących do druku lub odbiorców zewnętrznych.",

@@ -13299,7 +13299,7 @@ HTML section ${chunkNum}/${chunks.length}:
       return {
         engine: 'axe-core',
         version: results.testEngine?.version || '4.12.1',
-        standard: 'WCAG 2.2 A/AA',
+        standard: 'WCAG 2.2 AA', // normalized across engines (C7): view sniffs and chips compare this string
         totalViolations: results.violations.length,
         totalPasses: results.passes.length,
         totalIncomplete: (results.incomplete || []).length,
@@ -14056,7 +14056,7 @@ HTML section ${chunkNum}/${chunks.length}:
       return {
         engine: 'IBM Equal Access',
         version: (window.ace && (window.ace.version || (window.ace.Checker && window.ace.Checker.version))) || '3.x',
-        standard: 'WCAG 2.2',
+        standard: 'WCAG 2.2 AA', // normalized across engines (C7)
         failViolations: fails.length,
         potentialViolations: potentials.length,
         manualViolations: manuals.length,
@@ -21670,7 +21670,7 @@ tr { page-break-inside: avoid; }
 <a href="#audit-content" class="sr-only" style="position:absolute;left:-9999px">Skip to audit results</a>
 <main id="audit-content" role="main">
 <h1>Accessibility Audit Report</h1>
-<p style="color:#475569;font-size:13px">Document: <strong>${esc(fileName)}</strong><br>Date: ${date}<br>Checked against: WCAG 2.2 Level AA criteria (the accessibility standard referenced by ADA Title II, Section 508, and EN 301 549)<br>Methodology: multi-pass AI self-consistency review + axe-core (Deque) + IBM Equal Access automated verification when available; per-engine coverage and unresolved review findings are disclosed below<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
+<p style="color:#475569;font-size:13px">Document: <strong>${esc(fileName)}</strong><br>Date: ${date}<br>Checked against: WCAG 2.2 Level AA criteria (the accessibility standard referenced by ADA Title II, Section 508, and EN 301 549)<br>Methodology: multi-pass AI self-consistency review + axe-core (Deque) + IBM Equal Access automated verification when available; per-engine coverage and unresolved review findings are disclosed below. Scope note: the automated engines evaluate WCAG 2.2 rules; the AI content review scores against a WCAG 2.1 AA-era item set (the WCAG 2.2 additions are largely interaction-focused and are covered by the engines where they apply to documents).<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
 
     // Score
     const score = isBeforeAfter ? (d.after?.score ?? d.afterScore ?? '?') : (d.score ?? '?');

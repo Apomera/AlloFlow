@@ -437,7 +437,9 @@ function _viewVerificationForExport(result, pipeline) {
     extraReasons: value.verificationExtraReasons || [],
   }, pipeline);
   const binding = _viewValidVerificationHtmlBinding(value.verificationHtmlBinding) ? value.verificationHtmlBinding : null;
-  const stored = !!(value.verificationCoverage && value.verificationCoverage.standard === 'WCAG 2.2 AA' && /^(complete|review-required|partial|unavailable)$/.test(value.verificationState || ''));
+  // C7 (2026-07-13): prefix-match the standard so the NEXT version bump doesn't
+  // silently demote every canonical save made under the previous label.
+  const stored = !!(value.verificationCoverage && /^WCAG 2\.\d+ AA$/.test(String(value.verificationCoverage.standard || '')) && /^(complete|review-required|partial|unavailable)$/.test(value.verificationState || ''));
   const liveBound = _viewIsLiveVerificationHtmlBound(value, value.accessibleHtml, pipeline);
   if (stored && liveBound) return { ...derived, verificationHtmlBinding: binding };
   const why = stored ? 'verification-html-binding-missing-or-stale' : 'This saved result predates canonical verification coverage and is unverified.';
@@ -4620,12 +4622,12 @@ function PdfAuditView(props) {
                     {/* Batch Summary */}
                     {pdfBatchSummary && (
                       <div className={`mb-4 p-4 rounded-xl border ${(pdfBatchSummary.reviewRequired > 0 || pdfBatchSummary.failed > 0) ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
-                        <h4 className={`text-sm font-black mb-2 ${(pdfBatchSummary.reviewRequired > 0 || pdfBatchSummary.failed > 0) ? 'text-amber-900' : 'text-green-800'}`}>{(pdfBatchSummary.reviewRequired > 0 || pdfBatchSummary.failed > 0) ? '\u26a0' : '\u2705'} Batch Processing Complete</h4>
+                        <h4 className={`text-sm font-black mb-2 ${(pdfBatchSummary.reviewRequired > 0 || pdfBatchSummary.failed > 0) ? 'text-amber-900' : 'text-green-800'}`}>{(pdfBatchSummary.reviewRequired > 0 || pdfBatchSummary.failed > 0) ? '\u26a0' : '\u2705'} {t('pdf_audit.batch.summary_title') || 'Batch Processing Complete'}</h4>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-slate-700">{pdfBatchSummary.processed ?? (pdfBatchSummary.succeeded + (pdfBatchSummary.reviewRequired || 0))}/{pdfBatchSummary.total}</div><div className="text-[11px] text-slate-600">Processed</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-green-700">{pdfBatchSummary.fullyVerified ?? pdfBatchSummary.succeeded}</div><div className="text-[11px] text-slate-600">Fully verified</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-amber-700">{pdfBatchSummary.reviewRequired || 0}</div><div className="text-[11px] text-slate-600">Need review</div></div>
-                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-emerald-700">{pdfBatchSummary.above90Verified ?? 0}</div><div className="text-[11px] text-slate-600">Verified at 90+</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-slate-700">{pdfBatchSummary.processed ?? (pdfBatchSummary.succeeded + (pdfBatchSummary.reviewRequired || 0))}/{pdfBatchSummary.total}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.tile_processed') || 'Processed'}</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-green-700">{pdfBatchSummary.fullyVerified ?? pdfBatchSummary.succeeded}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.tile_fully_verified') || 'Fully verified'}</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-amber-700">{pdfBatchSummary.reviewRequired || 0}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.tile_need_review') || 'Need review'}</div></div>
+                          <div className="bg-white rounded-lg p-2 text-center"><div className="text-lg font-black text-emerald-700">{pdfBatchSummary.above90Verified ?? 0}</div><div className="text-[11px] text-slate-600">{t('pdf_audit.batch.tile_verified_90') || 'Verified at 90+'}</div></div>
                         </div>
                         <div className="text-xs text-slate-600 space-y-0.5">
                           <p>{'\ud83d\udcc8'} Numeric-score average: {pdfBatchSummary.avgBefore} {'\u2192'} {pdfBatchSummary.avgAfter} ({Number.isFinite(pdfBatchSummary.avgImprovement) ? ((pdfBatchSummary.avgImprovement >= 0 ? '+' : '') + pdfBatchSummary.avgImprovement) : 'n/a'} average change)</p>
@@ -9259,7 +9261,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               '3.1.4': 'Abbreviations',
                               '3.3.2': 'Labels or Instructions',
                               '4.1.1': 'Parsing (duplicate IDs)',
-                              '4.1.2': 'Name, Role, Value'
+                              '4.1.2': 'Name, Role, Value',
+                              // WCAG 2.2 additions (B6, 2026-07-13) — the engines run wcag22
+                              // tags / the WCAG_2_2 policy, so these SC numbers reach this map.
+                              '2.4.11': 'Focus Not Obscured (Minimum)',
+                              '2.4.12': 'Focus Not Obscured (Enhanced)',
+                              '2.4.13': 'Focus Appearance',
+                              '2.5.7': 'Dragging Movements',
+                              '2.5.8': 'Target Size (Minimum)',
+                              '3.2.6': 'Consistent Help',
+                              '3.3.7': 'Redundant Entry',
+                              '3.3.8': 'Accessible Authentication (Minimum)',
+                              '3.3.9': 'Accessible Authentication (Enhanced)'
                             };
                             const scMap = {};
                             const addToSc = (sc, bucket) => {

@@ -4306,7 +4306,7 @@
     "close_esc_title": "Schließen (Esc)",
     "web": {
       "heading": "🌐 Wirbsite & HTML Barrierefreiheit",
-      "subheading": "Audit ein wirbsite URL oder einfügen HTML für voll WCAG 2.1 AA audit + remediation",
+      "subheading": "Audit ein wirbsite URL oder einfügen HTML für voll WCAG 2.2 AA audit + remediation",
       "url_label": "Wirbsite URL",
       "url_aria": "Wirbsite URL zu audit",
       "fetch_aria": "Fetch wirbsite HTML",
@@ -4403,7 +4403,7 @@
     },
     "loading": {
       "title": "Auditing PDF Barrierefreiheit...",
-      "subtitle": "Ausführenning 5 parallel WCAG 2.1 AA audits mit triangulation. dies kann take 15-30 Sekundes.",
+      "subtitle": "Ausführenning 5 parallel WCAG 2.2 AA audits mit triangulation. dies kann take 15-30 Sekundes.",
       "progress_aria": "Audit in Fortschritt"
     },
     "knowbility": {
@@ -4460,7 +4460,7 @@
       "ai_major_rule": "Major: -10 jeder (headings, tables, forms)",
       "ai_minor_rule": "Mineinr: -5 jeder (überspringen-nav, landmarks, links, Listen)",
       "ai_passes_rule": "Passes reduce gesamt deductions proportionally",
-      "axe_desc": "Deque automated WCAG 2.1 AA prüfener",
+      "axe_desc": "Deque automated WCAG 2.2 AA prüfener",
       "how_axe_scores": "How axe-core Punktzahls",
       "no_violations": "Nein violations detected",
       "average_both": "Average von beide engines (equal wiright)"
@@ -7027,11 +7027,11 @@
     "perspective_crawl_ambient_toggle": "Umschalten die ambient Audio pad (three detuned sine waves designed zu be uneinbtrusive aber mood-Einstellung). M Schlüssel shortschneiden für schnell mute. Einige Schülers Fokus better mit die Audio (filters out Klasseroom neinise); others finden it distracting. Off by Standard. Tipp: pair mit die Schüler — let them versuchen it beide ways und tell du which Hilfes; don't assume die cinematic Audio ist universally wirlcome.",
     "perspective_crawl_play_pause_btn": "Umschalten die scroll animation zwischen abspielening und pausierend. Space Schlüssel shortschneiden für schnell umschalten. Paverwenden wenn: die Schüler möchtens zu re-lesen ein line, die Lehrer möchtens zu interject ein Frage, oder ein discussion breaks out mid-passage. Tipp: train Schülers zu pausieren für ihr own Verständnis breaks — autoneinmy über die scroll pace ist part von was machens cinematic crawl anders von passively ansehening ein Video.",
     "perspective_crawl_restart_btn": "Setzt den Crawl an den Anfang zuruck und setzt die Wiedergabe fort. Nutzlich bei verpasstem Beginn oder fur Wiederholungslesungen.",
-    "pdf_audit_view_panel": "PDF Barrierefreiheit Audit — die launcher dialog für die voll WCAG 2.1 AA audit + AI remediation pipeline. Accepts single PDFs, batch PDF queues, oder wirbsite URLs / einfügend HTML. Built für Barrierefreiheit speciaListen, document remediators, und instructional designers preparing Materialien für ADA Titel IchIch compliance, Section 508, oder state Barrierefreiheit statutes. Tipp: ausführen neu documents durch Single Modus erste zu understund was die pipeline does; switch zu Batch Modus für die legacy-PDF zurücklog nach du've calibrated expectations.",
+    "pdf_audit_view_panel": "PDF Barrierefreiheit Audit — die launcher dialog für die voll WCAG 2.2 AA audit + AI remediation pipeline. Accepts single PDFs, batch PDF queues, oder wirbsite URLs / einfügend HTML. Built für Barrierefreiheit speciaListen, document remediators, und instructional designers preparing Materialien für ADA Titel IchIch compliance, Section 508, oder state Barrierefreiheit statutes. Tipp: ausführen neu documents durch Single Modus erste zu understund was die pipeline does; switch zu Batch Modus für die legacy-PDF zurücklog nach du've calibrated expectations.",
     "pdf_audit_view_close_btn": "Sticky schließen Schaltfläche (X) at top-richtig von die modal. Deaktivierend während remediation ist mid-fhell zu prevent accidental abbrechenlation von long-ausführenning batch jobs. Tipp: wenn Schließen stays deaktivierend, look für die Fortschritt indicator — there's ein remediation pass still ausführenning; let it beenden oder verwenden die explicit Stoppenpen Batch Schaltfläche rather als force-closing.",
     "pdf_audit_view_mode_single_btn": "Modusumschalter: Einzel-PDF-Verarbeitung. Ein Dokument hochladen, vollstandiges Audit plus Korrektur mit Seite-an-Seite-Vorschau erhalten.",
     "pdf_audit_view_mode_batch_btn": "Modusumschalter: Stapelverarbeitung einer Warteschlange von PDFs. Geeignet fur Altdokumente und regelmassige Barrierefreiheits-Sauberungen.",
-    "pdf_audit_view_mode_web_btn": "Modus umschalten — Wirbsite / HTML audit. Einfügen ein URL oder einfügen raw HTML source Code; die pipeline ausführens die gleich WCAG 2.1 AA audit it ausführens auf PDFs. Verwendenful für: auditing district-facing wirbpages, prüfening das LMS-embedded Inhalt ist zugänglich, und remediating Lehrer wirbpages built außerhalb formal CMS workfniedrigs. Tipp: für passWort-protected pages wo die audit kann't fetch, verwenden die einfügen-HTML approach — Ansicht-source in dein browser, kopieren die rendered HTML, einfügen here.",
+    "pdf_audit_view_mode_web_btn": "Modus umschalten — Wirbsite / HTML audit. Einfügen ein URL oder einfügen raw HTML source Code; die pipeline ausführens die gleich WCAG 2.2 AA audit it ausführens auf PDFs. Verwendenful für: auditing district-facing wirbpages, prüfening das LMS-embedded Inhalt ist zugänglich, und remediating Lehrer wirbpages built außerhalb formal CMS workfniedrigs. Tipp: für passWort-protected pages wo die audit kann't fetch, verwenden die einfügen-HTML approach — Ansicht-source in dein browser, kopieren die rendered HTML, einfügen here.",
     "pdf_audit_view_start_btn": "Primary launcher — kicks off die voll Audit & Remediate pipeline auf die auswählened single PDF. Sequence: WCAG audit (AI multi-auditor triangulation + axe-core verification) → 39 deBegriffinistic fixes → 17 surgical AI-diagneinsed fixes → iterative remediation loop until target Punktzahl reached. Gesamt Zeit depends auf document komplexity (~30 sec für ein einfach worksheet, ~3 min für ein 50-Seite komplex ladut). Tipp: don't switch tabs während die pipeline — einige browsers throttle zurückground tabs und die iterative remediation loop wird sniedrig signifikanntly.",
     "pdf_audit_view_skip_to_extract_btn": "Alternativer Start: uberspringt Audit und Korrektur und extrahiert direkt den reinen Text aus der PDF zur Weiterverwendung in anderen Werkzeugen.",
     "cornell_notes_panel": "Cornell-Notizen-Vorlage: zweispaltiges Notizraster mit Zusammenfassungsfeld unten. Hinweis-Spalte links, Notizen rechts, Zusammenfassung unten.",
@@ -7073,7 +7073,7 @@
     "pdf_audit_view_web_url_input": "Fügen Sie die Adresse der Webseite ein, die Sie prüfen möchten (zum Beispiel https://ihrdistrikt.org/handbuch), und klicken Sie dann auf Abrufen, um das HTML zu laden, damit Sie es auditieren und korrigieren können.",
     "pdf_audit_view_web_fetch_btn": "Lädt die Seite von der URL oben herunter und legt deren HTML in das Feld darunter. Wenn die Website das Abrufen blockiert, fügen Sie den Quelltext der Seite selbst in das HTML-Feld ein.",
     "pdf_audit_view_web_html_textarea": "Das HTML, das auditiert wird — entweder von Abrufen eingefügt oder von Ihnen eingefügt. Sie können es hier vor dem Audit bearbeiten (zum Beispiel eine Navigationsleiste entfernen, die nicht zu Ihnen gehört).",
-    "pdf_audit_view_web_audit_btn": "Bewertet die Seite nach WCAG 2.1 AA mit sowohl einem KI-Auditor als auch der axe-core-Engine (dieselbe Engine, die professionelle Auditoren verwenden). Nichts wird verändert — verwenden Sie dies, wenn Sie nur wissen möchten, wie die Seite heute dasteht.",
+    "pdf_audit_view_web_audit_btn": "Bewertet die Seite nach WCAG 2.2 AA mit sowohl einem KI-Auditor als auch der axe-core-Engine (dieselbe Engine, die professionelle Auditoren verwenden). Nichts wird verändert — verwenden Sie dies, wenn Sie nur wissen möchten, wie die Seite heute dasteht.",
     "pdf_audit_view_web_remediate_btn": "Bewertet die Seite, schreibt dann das HTML um, um zu korrigieren, was es kann (Kontrast, Sprach-Tag, Skip-Link, Landmarks) und gibt Ihnen eine zugängliche Kopie zum Download. Überprüfen Sie das Ergebnis immer selbst vor der Veröffentlichung.",
     "pdf_audit_view_batch_dropzone": "Ziehen Sie PDF-Dateien von Ihrem Desktop oder Download-Ordner direkt auf dieses Feld, um sie zur Stapel-Warteschlange hinzuzufügen. Nicht-PDF-Dateien werden ignoriert.",
     "pdf_audit_view_batch_browse_btn": "Öffnet Ihren Dateiauswahl-Dialog, um eine oder mehrere PDFs auszuwählen. Verwenden Sie dies, wenn das Ziehen von Dateien nicht einfach ist (Touchgerät, Screenreader, Sehbehinderung oder ein Chromebook).",
@@ -7090,7 +7090,7 @@
     "pdf_audit_view_batch_dashboard_btn": "Öffnet ein druckbares Compliance-Dashboard in einem neuen Tab — durchschnittliche Punktzahl, wie viele PDFs 90+ erreicht haben, die häufigsten WCAG-Probleme. Nützlich zum Teilen mit einem Administrator oder zum Anhängen an eine Title II / 504-Akte.",
     "pdf_audit_view_settings_panel": "Stellknöpfe für die Audit- und Remediation-Pipeline. Die Standardwerte sind vernünftig — ändern Sie diese nur, wenn der Standardlauf nicht das liefert, was Sie brauchen (mehr Gründlichkeit, geringere Kosten, anderer Haltepunkt).",
     "pdf_audit_view_audit_passes_slider": "Wie viele unabhängige KI-Auditoren das PDF betrachten — sie stimmen bei echten Problemen überein und sind bei Rauschen uneinig, also bedeuten mehr Auditoren weniger Fehlalarme. 5 ist der Sweetspot; erhöhen für hochriskante Compliance-Dokumente, verringern für Schnellprüfungen.",
-    "pdf_audit_view_target_score_slider": "Die Punktzahl, die das korrigierte PDF erreichen soll — 90 ist ein solides WCAG 2.1 AA Bestanden, 95+ ist nahezu perfekt, 70 ist ein nützlicher Boden für gescannte Dokumente. Kombinieren Sie mit Auto-Fortsetzen, damit die Pipeline weiterarbeitet, bis die Punktzahl erreicht ist.",
+    "pdf_audit_view_target_score_slider": "Die Punktzahl, die das korrigierte PDF erreichen soll — 90 ist ein solides WCAG 2.2 AA Bestanden, 95+ ist nahezu perfekt, 70 ist ein nützlicher Boden für gescannte Dokumente. Kombinieren Sie mit Auto-Fortsetzen, damit die Pipeline weiterarbeitet, bis die Punktzahl erreicht ist.",
     "pdf_audit_view_max_fix_passes_slider": "Wie viele Auto-Fix-Runden die Pipeline laufen darf, bevor sie stoppt. 8 ist Standard; verringern, um Kosten auf dem selbst gehosteten Plan zu begrenzen, oder auf 0 setzen, um Auto-Fix ganz zu überspringen (nur Audit).",
     "pdf_audit_view_auto_continue_toggle": "Wenn aktiviert, macht die Pipeline weiter mit zusätzlichen Korrekturrunden (bis zu 3 weitere), bis die Zielpunktzahl erreicht ist, und stoppt dann von selbst. Ausschalten, wenn Sie genau einen Durchgang und ein einzelnes Ergebnis zum Prüfen möchten.",
     "pdf_audit_view_polish_passes_slider": "Zusätzliche Aufräumrunden nach den eigentlichen Barrierefreiheits-Korrekturen — strafft Abstände, Überschriften, visuelle Politur. 0 überspringt, 2 ist Standard, 3 ist für Dokumente, die in den Druck oder zu externen Zielgruppen gehen.",
