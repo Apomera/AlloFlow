@@ -68,11 +68,27 @@ if (!fs.existsSync(path.join(ROOT, 'node_modules', 'vitest'))) {
 }
 
 if (!QUIET) console.log('[pipeline-tests] running ' + files.length + ' pipeline/doc-builder/scoring/security suites…');
-const res = spawnSync('npx', ['vitest', 'run', '--reporter=dot', ...files.map((f) => 'tests/' + f)], {
+// DOM-heavy axe/ACE and live-module suites can exhaust a high-core desktop when
+// Vitest auto-fans out every available worker, producing random hook timeouts.
+// Bound concurrency for a deterministic deploy gate; coverage remains identical.
+const res = spawnSync('npx', ['vitest', 'run', '--reporter=dot', '--maxWorkers=4', ...files.map((f) => 'tests/' + f)], {
   cwd: ROOT, encoding: 'utf-8', shell: true,
 });
 const out = (res.stdout || '') + (res.stderr || '');
 if (res.status === 0) {
+  const rendererHarness = path.join(ROOT, '_test_doc_builder_renderers.cjs');
+  if (!fs.existsSync(rendererHarness)) {
+    console.error('[pipeline-tests] Document Builder renderer harness is missing.');
+    process.exit(2);
+  }
+  const rendererRes = spawnSync(process.execPath, ['--test', rendererHarness], {
+    cwd: ROOT, encoding: 'utf-8', shell: false,
+  });
+  if (rendererRes.status !== 0) {
+    console.error('[pipeline-tests] Document Builder renderer harness failed:');
+    console.error(((rendererRes.stdout || '') + (rendererRes.stderr || '')).slice(-4000));
+    process.exit(1);
+  }
   // Surface the one-line tally on success too.
   const m = out.match(/Tests\s+.*$/m);
   console.log('[pipeline-tests] ✓ ' + files.length + ' suites passed' + (m ? ' — ' + m[0].trim() : ''));

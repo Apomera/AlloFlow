@@ -62,9 +62,21 @@ describe('Document Builder refinement pass', () => {
     expect(host).toContain('const _getBuilderHistorySignature = (items = history) =>');
     expect(host).toContain("draft.source === 'history'");
     expect(host).toContain('historySignature: _getBuilderHistorySignature()');
-    expect(host).toContain("doc.body.querySelector('img,svg,canvas,video,audio,math,table,form,input,textarea,select,hr')");
+    expect(host).toContain("doc.body.querySelector('img,svg,canvas,video,audio,math,table,form,input,textarea,select')");
+    expect(host).not.toContain("doc.body.querySelector('img,svg,canvas,video,audio,math,table,form,input,textarea,select,hr')");
     expect(host).not.toContain("(doc.body.textContent || '').trim().length < 50");
   });
+
+  it('writes remediation previews back only after a real edit and never persists an error preview', () => {
+    const syncStart = host.indexOf('const _syncBuilderEditsToRemediation = () => {');
+    const syncEnd = host.indexOf('// All builder close paths go through this wrapped setter', syncStart);
+    const sync = host.slice(syncStart, syncEnd);
+    expect(sync).toContain("const hasLiveEdits = doc.body.getAttribute('data-allo-user-edited') === '1';");
+    expect(sync).toContain("if (exportPreviewSource === 'remediation' && !hasLiveEdits) return;");
+    expect(sync).toContain("doc.body.getAttribute('data-allo-preview-error') === '1'");
+    expect(host).toContain('data-allo-preview-error="1"');
+  });
+
 
   it('uses the canonical close wrapper and closes only after export handoff', () => {
     expect(host).toContain('setShowExportPreview: setShowExportPreviewWrapped, handleExportSlides');
@@ -105,6 +117,7 @@ describe('Document Builder refinement pass', () => {
   it('keeps the newly relevant Builder suites in the blocking gate', () => {
     expect(gate).toContain("'builder_', 'export_preview', 'docsuite_theme'");
   });
+    expect(gate).toContain("'_test_doc_builder_renderers.cjs'");
 
   it('ships the same refinements in generated and deployable runtimes', () => {
     expect(viewModule).toContain('The document changed during the audit');

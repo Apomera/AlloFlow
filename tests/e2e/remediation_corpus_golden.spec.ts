@@ -22,6 +22,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { TAGGED_PDF_INVARIANTS_JS, PAKO_CDN } from './_tagged_pdf_invariants';
 
+const VERIFICATION_POLICY_PATH = path.resolve(__dirname, '../../verification_policy_module.js');
+const RENDERER_MODULE_PATH = path.resolve(__dirname, '../../doc_builder_renderer_module.js');
 const MODULE_PATH = path.resolve(__dirname, '../../doc_pipeline_module.js');
 const PDFLIB_CDN = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
 const ASSET = (p: string) => path.resolve(__dirname, '../../test-assets', p);
@@ -98,10 +100,12 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
     // self-load (Item 0) is precisely what this page exercises — by then window.PDFLib exists.
     page = await browser.newPage();
     await page.goto('about:blank');
+    await page.addScriptTag({ path: VERIFICATION_POLICY_PATH });
+    await page.addScriptTag({ path: RENDERER_MODULE_PATH });
     await page.addScriptTag({ path: MODULE_PATH });
     await page.addScriptTag({ url: PAKO_CDN });
     await page.addScriptTag({ content: TAGGED_PDF_INVARIANTS_JS });
-    await page.waitForFunction(() => !!(window as any).AlloModules?.createDocPipeline && !!(window as any).pako, null, { timeout: 20000 });
+    await page.waitForFunction(() => !!(window as any).AlloModules?.VerificationPolicy && !!(window as any).AlloModules?.DocBuilderRenderer && !!(window as any).AlloModules?.createDocPipeline && !!(window as any).pako, null, { timeout: 20000 });
     await page.evaluate(() => {
       const w = window as any;
       w.__calls = [];

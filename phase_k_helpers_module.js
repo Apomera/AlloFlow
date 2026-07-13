@@ -1125,6 +1125,7 @@ const executeSaveFile = async (deps) => {
     setStudentProgressLog(currentLog);
   }
   const filename = saveFileName.trim().endsWith(".json") ? saveFileName.trim() : `${saveFileName.trim()}.json`;
+  const resolvedBuilderDraft = saveType === "teacher" ? await Promise.resolve(deps.builderDraft || null) : null;
   let dataStr = "";
   const selEngagement = typeof window !== "undefined" && window.__alloflowSelEngagement || null;
   const birdLab = typeof window !== "undefined" && window.__alloflowBirdLab || null;
@@ -1180,7 +1181,7 @@ const executeSaveFile = async (deps) => {
       // Versioned, history-bound, sanitized WYSIWYG edits from the
       // Document Builder. Student files intentionally omit this
       // teacher-authoring surface.
-      builderDraft: deps.builderDraft || null,
+      builderDraft: resolvedBuilderDraft || null,
       history,
       timestamp: /* @__PURE__ */ new Date(),
       progressLog: studentProgressLog,

@@ -5,7 +5,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8')
+  + '\n' + readFileSync(resolve(process.cwd(), 'doc_builder_renderer_source.jsx'), 'utf8');
 
 // ── Extract + run the real _accessibleHeaderColors (top-level; anchor-extract — it has regex braces) ──
 const _aS = dp.indexOf('function _accessibleHeaderColors(hex) {');

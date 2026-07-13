@@ -8,7 +8,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8')
+  + '\n' + readFileSync(resolve(process.cwd(), 'doc_builder_renderer_source.jsx'), 'utf8');
 const start = src.indexOf('function _accessibleHeaderColors(hex) {');
 const end = src.indexOf('function _emitAccessibleTableHtml', start);
 if (start === -1 || end === -1) throw new Error('extraction markers missing');

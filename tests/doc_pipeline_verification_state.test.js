@@ -3,10 +3,13 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const source = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
-const helperStart = source.indexOf('function _alloDeriveVerificationState(input) {');
-const helperEnd = source.indexOf('\nvar ALLO_INTERACTIVE_OBJECT_PROFILE_VERSION', helperStart);
-if (helperStart < 0 || helperEnd < 0) throw new Error('verification helper extraction markers not found');
-const verificationHelpers = new Function(`${source.slice(helperStart, helperEnd)}\nreturn { derive: _alloDeriveVerificationState, normalize: _alloNormalizeStoredVerification, createBinding: _alloCreateVerificationHtmlBinding, verifyBinding: _alloVerifyVerificationHtmlBinding, isLiveBound: _alloIsLiveVerificationHtmlBound, applyBinding: _alloApplyVerificationHtmlBinding, enforceBinding: _alloEnforceVerificationHtmlBinding, rehydrateBinding: _alloRehydrateVerificationHtmlBinding };`)();
+const policySource = readFileSync(resolve(process.cwd(), 'verification_policy_source.jsx'), 'utf8');
+const policyStart = policySource.indexOf('function _alloDeriveVerificationState(input) {');
+const policyEnd = policySource.indexOf('\nfunction _alloUnavailableVerificationState', policyStart);
+const bindingStart = source.indexOf('var _ALLO_VERIFICATION_HTML_BINDING_REASON');
+const helperEnd = source.indexOf('\nvar ALLO_INTERACTIVE_OBJECT_PROFILE_VERSION', bindingStart);
+if (policyStart < 0 || policyEnd < 0 || bindingStart < 0 || helperEnd < 0) throw new Error('verification helper extraction markers not found');
+const verificationHelpers = new Function(`${policySource.slice(policyStart, policyEnd)}\n${source.slice(bindingStart, helperEnd)}\nreturn { derive: _alloDeriveVerificationState, normalize: _alloNormalizeStoredVerification, createBinding: _alloCreateVerificationHtmlBinding, verifyBinding: _alloVerifyVerificationHtmlBinding, isLiveBound: _alloIsLiveVerificationHtmlBound, applyBinding: _alloApplyVerificationHtmlBinding, enforceBinding: _alloEnforceVerificationHtmlBinding, rehydrateBinding: _alloRehydrateVerificationHtmlBinding };`)();
 const deriveVerificationState = verificationHelpers.derive;
 const normalizeStoredVerification = verificationHelpers.normalize;
 const createVerificationHtmlBinding = verificationHelpers.createBinding;
@@ -304,9 +307,12 @@ describe('verification policy source wiring', () => {
     expect(source).toContain('verificationHtmlBinding: _verificationHtmlBinding');
     expect(source).toContain('_alloAttachVerificationHtmlSnapshot(_result, accessibleHtml)');
     expect(source).toContain('result: _alloStripVerificationHtmlSnapshot(result)');
-    expect(source).toContain('result: f.result ? _alloStripVerificationHtmlSnapshot(f.result) : null');
+    expect(source).toContain('JSON.stringify(_alloStripVerificationHtmlSnapshot(f.result))');
+    expect(source).toContain('resultStored: !!f._checkpointResultKey');
+    expect(source).toContain('let _batchStatusWriteTail = Promise.resolve();');
+    expect(source).toContain('await _batchStatusWriteTail.catch(() => {});');
     expect(source).toContain('await _alloRehydrateVerificationHtmlBinding(cached.result)');
-    expect(source).toContain('await _alloRehydrateVerificationHtmlBinding(s.result)');
+    expect(source).toContain('await _alloRehydrateVerificationHtmlBinding(JSON.parse(rec.serialized))');
 
     const telemetryStart = source.indexOf('const telemetry = {');
     const telemetryEnd = source.indexOf("zip.file('telemetry.json'", telemetryStart);
@@ -324,10 +330,12 @@ describe('verification policy source wiring', () => {
     expect(source).toContain('snippet: r.snippet == null');
   });
 
-  it('uses canonical state for final claims and reliability outcome', () => {
+  it('uses canonical state for final claims and separate remediation reliability outcome', () => {
     expect(source).toContain('verificationCoverage: _verificationState.verificationCoverage');
     expect(source).toContain('afterScoreVerified: _verificationState.afterScoreVerified');
-    expect(source).toContain("outcome: _verificationState.verificationState === 'complete' ? 'success' : 'incomplete'");
+    expect(source).toContain('outcome: _remediationOutcome.state');
+    expect(source).toContain('remediationOutcome: _remediationOutcome');
+    expect(source).toContain('verificationState: _verificationState.verificationState');
   });
 
   it('invalidates stale deterministic evidence and normalizes stored claims conservatively', () => {
@@ -337,7 +345,8 @@ describe('verification policy source wiring', () => {
     expect(source).toContain('|| !Number.isFinite(verification.score)');
     expect(source).toContain('|| _finalAuditScoreMissing;');
     expect(source).toContain('_alloNormalizeStoredVerification(stored, derived)');
-    expect(source).toContain('_alloEqualAccessReviewCount(eaResults) > 0');
+    expect(source).toContain('const _eaConfirmedFailures = eaResults');
+    expect(source).toContain('const _reEaConfirmedFailures = eaResults');
   });
   it('threads canonical coverage into reports and honest batch artifacts', () => {
     expect(source).toContain('WCAG verification status:');

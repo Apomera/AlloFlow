@@ -1791,7 +1791,7 @@ function ExportPreviewView(props) {
                     ref={exportPreviewRef}
                     title="Editable document preview"
                     className="w-full h-full bg-white rounded-lg shadow-inner border border-slate-400"
-                    sandbox="allow-same-origin allow-scripts allow-forms"
+                    sandbox={exportPreviewSource === 'remediation' ? 'allow-same-origin' : 'allow-same-origin allow-scripts allow-forms'}
                     onLoad={() => {
                       console.info('[ExportPreview] iframe loaded');
                       // Paste/drop sanitizer (builder-review A4, 2026-07-01). The editor is an

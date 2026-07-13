@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const read = (p) => readFileSync(resolve(process.cwd(), p), 'utf8');
-const pipeline = read('doc_pipeline_source.jsx');
+const verificationPolicy = read('verification_policy_source.jsx');
+const pipeline = verificationPolicy + '\n' + read('doc_pipeline_source.jsx');
 const pipelineModule = read('doc_pipeline_module.js');
 const pipelineDeploy = read('prismflow-deploy/public/doc_pipeline_module.js');
 const view = read('view_pdf_audit_source.jsx');

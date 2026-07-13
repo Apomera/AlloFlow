@@ -132,6 +132,21 @@ async function _sha256OfBytes(bytes) {
   } catch (_) { return null; }
 }
 
+const _VIEW_MAX_PROJECT_FILE_BYTES = 320 * 1024 * 1024;
+async function _viewSha256Text(text) {
+  try {
+    if (typeof TextEncoder === 'undefined') return null;
+    return await _sha256OfBytes(new TextEncoder().encode(String(text || '')));
+  } catch (_) { return null; }
+}
+function _viewSanitizeProjectImport(parsed, pipeline) {
+  const factory = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.createDocPipeline;
+  const helper = (pipeline && pipeline.sanitizeRemediationProject) || (factory && factory.sanitizeRemediationProject);
+  if (typeof helper !== 'function') throw new Error('Remediation security module is still loading. Please retry in a moment.');
+  const result = helper(parsed);
+  if (!result || !result.project) throw new Error('The project could not be sanitized safely.');
+  return result;
+}
 function _viewVerificationBindingHelper(pipeline, name) {
   try {
     const factory = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.createDocPipeline;
@@ -393,70 +408,22 @@ function _htmlHasExplicitLanguage(html) {
 function _viewDeriveVerificationState(input, pipeline) {
   const data = input || {};
   try {
-    const factory = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.createDocPipeline;
-    const canonical = (pipeline && pipeline.deriveVerificationState) || (factory && factory.deriveVerificationState);
+    const modules = typeof window !== 'undefined' && window.AlloModules;
+    const policy = modules && modules.VerificationPolicy;
+    const factory = modules && modules.createDocPipeline;
+    const canonical = (pipeline && pipeline.deriveVerificationState)
+      || (policy && policy.deriveVerificationState)
+      || (factory && factory.deriveVerificationState);
     if (typeof canonical === 'function') {
       const result = canonical(data);
       if (result && result.coverage && typeof result.verificationState === 'string') return result;
     }
-  } catch (_) {}
-  const finite = (value) => typeof value === 'number' && Number.isFinite(value);
-  const count = (value) => finite(value) ? Math.max(0, Math.floor(value)) : null;
-  const ai = data.ai || data.verificationAudit || null;
-  const axe = data.axe || data.axeAudit || null;
-  const equalAccess = data.equalAccess || data.secondEngineAudit || null;
-  const reasons = [];
-
-  let aiStatus = 'unavailable';
-  if (!finite(ai && ai.score)) reasons.push('ai-unavailable');
-  else if (data.aiIncomplete || data.aiVerificationIncomplete || ai._partialAudit || ai.partial || ai._scoreDegraded || ai.scoreDegraded || ai.synthesized) {
-    aiStatus = 'partial';
-    if (data.aiIncomplete || data.aiVerificationIncomplete) reasons.push('ai-verification-incomplete');
-    if (ai._partialAudit || ai.partial) reasons.push('ai-partial-audit');
-    if (ai._scoreDegraded || ai.scoreDegraded) reasons.push('ai-score-degraded');
-    if (ai.synthesized) reasons.push('ai-synthesized');
-  } else aiStatus = 'complete';
-
-  let axeStatus = 'unavailable';
-  let axeReviewCount = 0;
-  if (!finite(axe && axe.score)) reasons.push('axe-unavailable');
-  else {
-    const incomplete = count(axe.totalIncomplete);
-    if (incomplete === null) { axeStatus = 'partial'; reasons.push('axe-review-count-unknown'); }
-    else if (incomplete > 0) { axeStatus = 'complete-with-review'; axeReviewCount = incomplete; reasons.push('axe-incomplete:' + incomplete); }
-    else axeStatus = 'complete';
-  }
-
-  let eaStatus = 'unavailable';
-  let eaReviewCount = 0;
-  if (!finite(equalAccess && equalAccess.score)) reasons.push('equal-access-unavailable');
-  else {
-    const potential = count(equalAccess.potentialViolations);
-    const manual = count(equalAccess.manualViolations);
-    const aggregate = count(equalAccess.reviewFindingCount);
-    if ((potential === null || manual === null) && aggregate === null) { eaStatus = 'partial'; reasons.push('equal-access-review-count-unknown'); }
-    else {
-      eaReviewCount = aggregate !== null ? Math.max(aggregate, (potential || 0) + (manual || 0)) : ((potential || 0) + (manual || 0));
-      if (eaReviewCount > 0) {
-        eaStatus = 'complete-with-review';
-        if ((potential || 0) > 0) reasons.push('equal-access-potential:' + potential);
-        if ((manual || 0) > 0) reasons.push('equal-access-manual:' + manual);
-        if ((potential === null || manual === null) && aggregate > 0) reasons.push('equal-access-review-findings:' + aggregate);
-      } else eaStatus = 'complete';
+    if (policy && typeof policy.unavailableVerificationState === 'function') {
+      return policy.unavailableVerificationState('verification-policy-module-unavailable');
     }
-  }
-
-  const extra = (Array.isArray(data.extraReasons) ? data.extraReasons : (data.extraReasons == null || data.extraReasons === '' ? [] : [data.extraReasons]))
-    .map((reason) => String(reason == null ? '' : reason).trim()).filter(Boolean);
-  reasons.push(...extra);
-  if (data.languageReviewRequired) reasons.push(String(data.languageReviewReason || 'document-language-needs-review'));
-  const reviewCount = axeReviewCount + eaReviewCount + extra.length + Number(!!data.languageReviewRequired);
-  const allComplete = aiStatus === 'complete' && axeStatus === 'complete' && eaStatus === 'complete';
-  const allUnavailable = aiStatus === 'unavailable' && axeStatus === 'unavailable' && eaStatus === 'unavailable';
-  const hasReviewEvidence = reviewCount > 0 || aiStatus === 'complete-with-review' || axeStatus === 'complete-with-review' || eaStatus === 'complete-with-review';
-  const verificationState = allUnavailable ? 'unavailable' : hasReviewEvidence ? 'review-required' : allComplete ? 'complete' : 'partial';
-  const coverage = { standard: 'WCAG 2.2 AA', ai: aiStatus, axe: axeStatus, equalAccess: eaStatus, pdfUaSelfCheck: data.pdfUaSelfCheck || 'not-run' };
-  return { verificationCoverage: coverage, coverage, verificationState, afterScoreVerified: verificationState === 'complete', requiresManualReview: verificationState !== 'complete', reviewCount, reasons };
+  } catch (_) {}
+  const coverage = { standard: 'WCAG 2.2 AA', ai: 'unavailable', axe: 'unavailable', equalAccess: 'unavailable', pdfUaSelfCheck: 'not-run' };
+  return { verificationCoverage: coverage, coverage, verificationState: 'unavailable', afterScoreVerified: false, requiresManualReview: true, reviewCount: 1, reasons: ['verification-policy-module-unavailable'] };
 }
 function _viewVerificationForExport(result, pipeline) {
   const value = result || {};
@@ -2224,11 +2191,13 @@ function PdfAuditView(props) {
     pdfAutoSaveProject, pdfBatchCurrentIndex, pdfBatchMode, pdfBatchProcessing,
     pdfBatchQueue, pdfBatchStep, pdfBatchSummary, pdfFixLoading,
     pdfFixMode, pdfFixModeRef, pdfFixResult, pdfFixResultRef,
+    capturePdfHtmlCommitToken, commitPdfFixResultIfCurrent,
     pdfFixStep, pdfMultiSession, pdfPageRange, pdfPolishPasses,
     pdfPreviewA11yInspect, pdfPreviewFontSize, pdfPreviewOpen, pdfPreviewRef,
     pdfPreviewTheme, pdfTargetScore, pdfWebMode, pendingPdfBase64,
     pendingPdfFile, proceedWithPdfTransform, processExpertCommand, refixChunk,
     remediateSurgicallyThenAI, runAutoFixLoop, runAxeAudit, runPdfAccessibilityAudit,
+    remediationReady, remediationDependencyState, retryRemediationDependencies,
     runPdfBatchRemediation, runTier2SurgicalFixes, runTier2_5SectionScopedFixes, safeCloneAudit,
     safeCloseAudit, safeDownloadBlob, sanitizeStyleForWCAG, saveProjectToFile,
     selectedPreviewImgRef, selectedVoice, setAgentActivityLog, setAgentLogFullView,
@@ -2245,6 +2214,50 @@ function PdfAuditView(props) {
     setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, startPipelineTour,
     pdfRunHistory, setPdfRunHistory
   } = props;
+  const _captureAsyncHtmlToken = () => {
+    if (typeof capturePdfHtmlCommitToken === 'function') return capturePdfHtmlCommitToken();
+    const current = pdfFixResultRef && pdfFixResultRef.current;
+    return { revision: null, html: current && typeof current.accessibleHtml === 'string' ? current.accessibleHtml : (pdfFixResult && pdfFixResult.accessibleHtml) };
+  };
+  const _commitAsyncHtmlIfCurrent = (token, updater) => {
+    if (typeof commitPdfFixResultIfCurrent === 'function') return commitPdfFixResultIfCurrent(token, updater);
+    const current = pdfFixResultRef && pdfFixResultRef.current;
+    if (!token || !current || current.accessibleHtml !== token.html) return false;
+    setPdfFixResult((prev) => prev && prev.accessibleHtml === token.html ? updater(prev) : prev);
+    return true;
+  };
+  const [currentRemediationDigest, setCurrentRemediationDigest] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    const html = String((pdfFixResult && pdfFixResult.accessibleHtml) || '');
+    setCurrentRemediationDigest(null);
+    if (!html) return () => { cancelled = true; };
+    _viewSha256Text(html).then((digest) => {
+      if (!cancelled) setCurrentRemediationDigest(digest ? ('sha256:' + digest) : null);
+    });
+    return () => { cancelled = true; };
+  }, [pdfFixResult && pdfFixResult.accessibleHtml]);
+  const _companionIsStale = (companion) => !!(companion
+    && (!currentRemediationDigest || companion.sourceDigest !== currentRemediationDigest));
+  const _requireFreshCompanion = (companion, label) => {
+    if (!_companionIsStale(companion)) return true;
+    addToast((label || 'This companion version') + ' is out of date because the remediated document changed. Regenerate it before exporting or creating audio.', 'info');
+    return false;
+  };
+  const _sourceDigestForToken = async (token) => {
+    const digest = await _viewSha256Text(String((token && token.html) || ''));
+    if (!digest) throw new Error('Could not bind this companion version to the source document.');
+    return 'sha256:' + digest;
+  };
+
+  const _requireRemediationReady = () => {
+    if (remediationReady !== false) return true;
+    const state = remediationDependencyState || { pending: [], failed: [] };
+    const names = (state.failed || []).concat(state.pending || []);
+    addToast('The remediation engine is still loading' + (names.length ? ': ' + names.join(', ') : '') + '. Retry when the dependencies are ready.', state.failed && state.failed.length ? 'error' : 'info');
+    return false;
+  };
+  const _remediationDependencies = remediationDependencyState || { pending: [], failed: [] };
 
   // WCAG 2.1.2 / 2.4.3: keep Tab inside the audit dialog while it is open.
   // The dialog previously had aria-modal + Escape but no Tab trap, so keyboard
@@ -2259,6 +2272,7 @@ function PdfAuditView(props) {
   // is found in IndexedDB. Hooks must run unconditionally before any early
   // return — keep this above the !pdfAuditResult guard.
   const [resumableBatch, setResumableBatch] = useState(null);
+  const [verificationRefreshBusy, setVerificationRefreshBusy] = useState(false);
   // A SHA-256 rehydration can finish out of order when two project files are selected quickly.
   // Both project pickers share this token: only the most recently selected file may commit.
   const _projectLoadSelectionRef = useRef(0);
@@ -3593,10 +3607,12 @@ function PdfAuditView(props) {
           verificationReasons: _verification.reasons,
           verificationReviewCount: _verification.reviewCount,
           requiresManualReview: _verification.requiresManualReview,
-          needsExpertReview: _verification.requiresManualReview || prev.fidelityLimited || prev.expertReviewReason === 'content-fidelity' || prev.expertReviewReason === 'both' || (Number.isFinite(_wscore) && _wscore < 70),
-          expertReviewReason: _verification.requiresManualReview
-            ? ((prev.fidelityLimited || prev.expertReviewReason === 'content-fidelity' || prev.expertReviewReason === 'both') ? 'both' : 'accessibility')
-            : ((prev.fidelityLimited || prev.expertReviewReason === 'content-fidelity' || prev.expertReviewReason === 'both') ? 'content-fidelity' : ((Number.isFinite(_wscore) && _wscore < 70) ? 'accessibility' : null)),
+          needsExpertReview: !!(prev.fidelityLimited || prev.expertReviewReason === 'content-fidelity' || prev.expertReviewReason === 'both'
+            || (_waOk && Array.isArray(_wa.critical) && _wa.critical.length > 0)
+            || (_weaOk && Number.isFinite(_wea.failViolations) && _wea.failViolations > 0)
+            || (Number.isFinite(_wscore) && _wscore < 50)),
+          expertReviewReason: (prev.fidelityLimited || prev.expertReviewReason === 'content-fidelity' || prev.expertReviewReason === 'both') ? 'content-fidelity'
+            : (((_waOk && Array.isArray(_wa.critical) && _wa.critical.length > 0) || (_weaOk && Number.isFinite(_wea.failViolations) && _wea.failViolations > 0) || (Number.isFinite(_wscore) && _wscore < 50)) ? 'accessibility' : null),
           issueResolution: (_wvOk && typeof recomputeIssueResolution === 'function') ? (recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution) : prev.issueResolution,
         });
         if (_freshBinding) {
@@ -3656,8 +3672,8 @@ function PdfAuditView(props) {
         verificationReasons: ['content-modified-pending-reverification'],
         verificationReviewCount: 0,
         requiresManualReview: true,
-        needsExpertReview: true,
-        expertReviewReason: prev.fidelityLimited ? 'both' : 'accessibility',
+        needsExpertReview: !!prev.fidelityLimited,
+        expertReviewReason: prev.fidelityLimited ? 'content-fidelity' : null,
         issueResolution: null,
         remainingIssues: null,
         htmlChars: newHtml.length,
@@ -3767,6 +3783,8 @@ function PdfAuditView(props) {
     if (typeof processExpertCommand !== 'function') { addToast(t('pdf_audit.issue.ai_unavailable') || 'The AI agent is unavailable right now — edit the HTML directly above instead.', 'info'); return; }
     const original = String((ed && ed.original) || '');
     if (!original) return;
+    const _commitToken = _captureAsyncHtmlToken();
+    const _sourceHtml = String((_commitToken && _commitToken.html) || '');
     _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: true } }));
     addToast(t('pdf_audit.issue.ai_running') || '✨ Asking the AI to apply that to this section…', 'info');
     let result = null;
@@ -3774,7 +3792,7 @@ function PdfAuditView(props) {
     let edited = result && result.html ? result.html : null;
     if (edited && /<body[\s>]/i.test(edited)) { const m = edited.match(/<body[^>]*>([\s\S]*?)<\/body>/i); if (m) edited = m[1].trim(); } // unwrap if the agent returned a full doc
     if (!edited || edited === original) { _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: false } })); addToast(t('pdf_audit.issue.ai_nochange') || 'The AI made no change here (or it was busy) — rephrase, or edit the HTML directly above.', 'info'); return; }
-    const sp = _spliceBlock(pdfFixResult.accessibleHtml, original, edited);
+    const sp = _spliceBlock(_sourceHtml, original, edited);
     if (!sp.ok) {
       _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: false } }));
       addToast(sp.reason === 'ambiguous'
@@ -3783,8 +3801,11 @@ function PdfAuditView(props) {
         sp.reason === 'ambiguous' ? 'info' : 'error');
       return;
     }
-    const _before = pdfFixResult.accessibleHtml;
-    setPdfFixResult((p) => p ? { ...p, accessibleHtml: sp.html, _preCmdHtml: _before } : p);
+    const _before = _sourceHtml;
+    if (!_commitAsyncHtmlIfCurrent(_commitToken, (p) => ({ ...p, accessibleHtml: sp.html, _preCmdHtml: _before }))) {
+      _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: false } }));
+      addToast(t('pdf_audit.issue.edit_moved') || 'The document changed while the AI was working ? its stale result was discarded.', 'info'); return;
+    }
     _setIssueEdit((prev) => { const n = { ...prev }; delete n[key]; return n; });
     _setIssueSourceOpen((prev) => ({ ...prev, [key]: false }));
     addToast(t('pdf_audit.issue.ai_applied') || '✨ Applied to this section — re-checking…', 'success');
@@ -4401,8 +4422,11 @@ function PdfAuditView(props) {
                             languageReviewRequired,
                             verificationExtraReasons: [_STATIC_WEB_REVIEW_REASON],
                             autoFixPasses: autoFix?.passes || 0,
-                            needsExpertReview: verification.requiresManualReview || (Number.isFinite(finalScore) && finalScore < 70),
-                            expertReviewReason: 'accessibility',
+                            needsExpertReview: !!((finalAxe && Array.isArray(finalAxe.critical) && finalAxe.critical.length > 0)
+                              || (finalEa && Number.isFinite(finalEa.failViolations) && finalEa.failViolations > 0)
+                              || (Number.isFinite(finalScore) && finalScore < 50)),
+                            expertReviewReason: ((finalAxe && Array.isArray(finalAxe.critical) && finalAxe.critical.length > 0)
+                              || (finalEa && Number.isFinite(finalEa.failViolations) && finalEa.failViolations > 0) || (Number.isFinite(finalScore) && finalScore < 50)) ? 'accessibility' : null,
                             htmlChars: fixed.length,
                             chunkState: autoFix?.chunkState || null,
                             chunkWeightedScore: autoFix?.chunkWeightedScore || null,
@@ -4857,9 +4881,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       sees it before any audit runs. The automated WCAG checks (axe / Equal Access) run locally.
                       Note: PDFs always use Gemini Vision today — there is no AI-free PDF audit mode (Office /
                       transcript inputs already run axe-only). */}
+                  {remediationReady === false && (
+                    <div role="alert" className="mb-3 rounded-xl border border-amber-400 bg-amber-50 p-3 text-xs text-amber-900">
+                      <div className="font-black">Remediation engine not ready</div>
+                      <div>{_remediationDependencies.failed.length ? 'Required modules failed to load: ' + _remediationDependencies.failed.join(', ') : 'Required modules are still loading: ' + _remediationDependencies.pending.join(', ')}</div>
+                      {_remediationDependencies.failed.length > 0 && typeof retryRemediationDependencies === 'function' && (
+                        <button type="button" onClick={retryRemediationDependencies} className="mt-2 rounded-lg border border-amber-500 bg-white px-3 py-1 font-bold hover:bg-amber-100">Retry required modules</button>
+                      )}
+                    </div>
+                  )}
                   <p className="text-[11px] leading-snug text-slate-700 mb-3 pb-2 border-b border-indigo-200">🔒 {t('pdf_audit.gemini_disclosure') || 'Privacy: this document’s text and images are sent to Google Gemini (a third-party AI service) for the AI parts of the audit. The automated WCAG checks run locally in your browser. Don’t upload documents containing student personal information you aren’t permitted to share with a third-party AI service.'}</p>
-                  <button data-help-key="pdf_audit_view_make_accessible_btn" onClick={async () => {
+                  <button data-help-key="pdf_audit_view_make_accessible_btn" disabled={remediationReady === false} onClick={async () => {
                     if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; }
+                    if (!_requireRemediationReady()) return;
                     // B1 (2026-06-28): a PRIOR run's Stop left pdfAutoContinueAbortRef.current = true and it is
                     // never reset elsewhere — so a fresh "Make Accessible" would see _stopped()===true and skip
                     // BOTH auto-continue loops (one pass, then a silent stop). Clear it at the start of each run.
@@ -4901,7 +4935,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // auditResult removes that race; the try/catch keeps an audit error from aborting
                     // the whole chain. (Make-Accessible auto-continue fix 2026-06-15)
                     let _audit = null;
-                    try { _audit = await runPdfAccessibilityAudit(pendingPdfBase64); }
+                    try { _audit = await runPdfAccessibilityAudit(pendingPdfBase64); if (!_audit) return; }
                     catch (auditErr) { addToast((t('toasts.audit_error_continuing') || '⚠ The audit hit an error — attempting remediation anyway.'), 'warning'); }
                     // Cosmetic settle only — the fix no longer depends on audit STATE (it gets auditResult below).
                     await new Promise((res) => setTimeout(res, 250));
@@ -4921,7 +4955,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // reruns. Policy reads the STRUCTURED evidence first; the message regex is only the
                     // fallback for unclassified errors. Note the old regex treated EVERY quota/429 as
                     // permanent — a per-minute burst should wait-and-retry (H2), not bail.
-                    const _permanentRegex = /\b(api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block|offline|cdn|mirror|failed to (?:load|fetch)|load timeout)\b/i;
+                    const _permanentRegex = /\b(api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block|offline|cdn|mirror|dependency|module unavailable|modules? finish loading|failed to (?:load|fetch)|load timeout)\b/i;
                     const _handsDisposition = (e) => {
                       if (!e) return 'retry';                              // no result, no error → transient shape
                       const _m = String((e && (e.message || e)) || '');
@@ -5073,7 +5107,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         if (pdfAutoVeraPdf && _isPdfSkip) setVeraPdfAutoSkipped('transport-blocked');
                       } catch (_) {}
                     }
-                  }} className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl">
+                  }} className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
                     ✨ {t('pdf_audit.one_click.label') || 'Make Accessible'} <span className="block text-[11px] font-bold opacity-80 mt-0.5">{t('pdf_audit.one_click.badge') || 'fully automatic — audit, fix, verify, repeat to target'}</span>
                   </button>
                   <p className="text-[11px] text-slate-600 mt-2 text-center">{t('pdf_audit.one_click.desc') || 'One click runs the whole pipeline hands-free with the default settings; downloads are ready at the end. Prefer control? Use "Run Audit" below, review the results, then click Fix & Verify yourself.'}
@@ -5340,7 +5374,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     </div>
                   </div>
                 </details>
-                <div className="flex gap-3 justify-center">
+                <div className={`flex gap-3 justify-center ${remediationReady === false ? 'opacity-50' : ''}`} aria-disabled={remediationReady === false} onClickCapture={(event) => { if (remediationReady === false) { event.preventDefault(); event.stopPropagation(); _requireRemediationReady(); } }}>
                   <button data-help-key="pdf_audit_view_start_btn" onClick={async () => { if (pdfAuditResult?._mediaPending) { addToast(t('toasts.digest_first') || 'Digest the recording first (Step 0 above).', 'info'); return; } setPdfAuditResult(null); addToast(t('toasts.auditing_remediating_pdf'), 'info'); await runPdfAccessibilityAudit(pendingPdfBase64); setTimeout(() => { const r = pdfFixResultRef.current; const needsLoop = pdfAutoContinue && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0); if (pdfAutoContinue && r && !r.axeAudit && (r.afterScore || 0) < pdfTargetScore) { addToast(t('toasts.auto_continue_no_axe') || '⚠ Auto-continue to target unavailable for this run — the axe-core checker could not load (network/CDN). The score shown is AI-only; re-run online for the full loop.', 'warning'); } if (needsLoop) { runAutoFixLoop(8); } else if (pdfAutoSaveProject) { saveProjectToFile(true); } }, 150); }} className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2">
                     ♿ {t('pdf_audit.run_audit_label') || 'Run Audit (step 1 of 2)'}
                   </button>
@@ -5551,13 +5585,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     📂 {t('pdf_audit.continue_session') || 'Continue a previous session'}
                     <input type="file" accept=".json" className="hidden" onChange={(e) => {
                       const file = e.target.files?.[0]; if (!file) return;
+                      if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) { addToast('This project file is larger than the 320 MB safety limit.', 'error'); e.target.value = ''; return; }
                       const _projectLoadToken = ++_projectLoadSelectionRef.current;
                       const reader = new FileReader();
                       reader.onload = async (ev) => {
                         if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
                         try {
                           const parsedProject = JSON.parse(ev.target.result);
-                          const project = await _viewRehydrateVerificationHtmlBinding(parsedProject, _docPipeline);
+                          const sanitizedImport = _viewSanitizeProjectImport(parsedProject, _docPipeline);
+                          const project = await _viewRehydrateVerificationHtmlBinding(sanitizedImport.project, _docPipeline);
                           if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
                           if (!project.version || (!project.accessibleHtml && !project.incomplete)) { addToast(t('toasts.valid_alloflow_project_file'), 'error'); return; }
                           // Forward-version guard (deep dive 2026-07-02 H12): a v3+ file half-loading
@@ -5628,6 +5664,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           });
                           const _loadedFixResult = {
                             accessibleHtml: project.accessibleHtml,
+                            documentDigest: project.documentDigest || null,
                             beforeScore: project.beforeScore,
                             afterScore: project.afterScore,
                             _aiVerificationIncomplete: !!project._aiVerificationIncomplete,
@@ -6815,6 +6852,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     </>) : (
                       <button onClick={async () => {
                         console.warn('[Fix&Verify btn] clicked — pendingPdfBase64:', !!pendingPdfBase64, 'pdfAuditResult:', !!pdfAuditResult, 'pageRange:', pdfPageRange);
+                        if (!_requireRemediationReady()) return;
                         const freshBase64 = await ensurePdfBase64();
                         if (!freshBase64) return; // user cancelled re-attach
                         if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) {
@@ -6822,7 +6860,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         } else {
                           fixAndVerifyPdf({ base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2: pipeline rethrows after toasting
                         }
-                      }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
+                      }} disabled={pdfFixLoading || remediationReady === false} className="flex-1 px-5 py-3 bg-gradient-to-r from-green-700 to-emerald-800 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-900 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
                         {pdfFixLoading ? <span className="animate-spin">⏳</span> : <Sparkles size={16} />}
                         {pdfFixLoading ? (pdfFixStep || 'Fixing...') : (pdfPageRange ? `♿ Fix Pages ${pdfPageRange.start}–${pdfPageRange.end}` : `♿ Fix & Verify${pdfAuditResult.pageCount > 1 ? ` (${pdfAuditResult.pageCount} pages)` : ''}`)}
                       </button>
@@ -8377,6 +8415,51 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               </ul>
                             )}
                           </div>
+                        );
+                      })()}
+                      {(() => {
+                        const state = pdfFixResult.verificationState || 'unavailable';
+                        const coverage = pdfFixResult.verificationCoverage || {};
+                        const reasons = Array.isArray(pdfFixResult.verificationReasons) ? pdfFixResult.verificationReasons : [];
+                        const tone = state === 'complete'
+                          ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
+                          : state === 'review-required'
+                            ? 'bg-amber-50 border-amber-300 text-amber-950'
+                            : 'bg-slate-50 border-slate-400 text-slate-900';
+                        const label = state === 'complete' ? 'Complete'
+                          : state === 'review-required' ? 'Human review required'
+                            : state === 'partial' ? 'Partial' : 'Unavailable';
+                        const engineLabel = (value) => String(value || 'unavailable').replace(/-/g, ' ');
+                        return (
+                          <section data-help-key="pdf_audit_verification_status" aria-labelledby="pdf-verification-status-heading" className={`rounded-xl border p-3 ${tone}`}>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 id="pdf-verification-status-heading" className="text-sm font-black">WCAG verification: {label}</h3>
+                              <span className="text-[10px] font-bold rounded-full border border-current/30 px-2 py-0.5">{coverage.standard || 'WCAG 2.2 AA'}</span>
+                              {state !== 'complete' && (
+                                <button
+                                  type="button"
+                                  disabled={verificationRefreshBusy || pdfFixLoading || pdfAutoContinueRunning}
+                                  onClick={async () => {
+                                    if (verificationRefreshBusy || !pdfFixResult.accessibleHtml) return;
+                                    setVerificationRefreshBusy(true);
+                                    setPdfFixStep('Re-running verification without changing the document...');
+                                    try {
+                                      const result = await _reauditAndScore(pdfFixResult.accessibleHtml, null);
+                                      if (result && result.ok) addToast('Verification refreshed: ' + result.verificationState + '.', result.verificationState === 'complete' ? 'success' : 'warning');
+                                      else addToast('Verification could not complete. The document was not changed.', 'warning');
+                                    } finally { setVerificationRefreshBusy(false); }
+                                  }}
+                                  className="ml-auto px-2.5 py-1 rounded-lg bg-white border border-current/30 text-[11px] font-bold hover:bg-black/5 disabled:opacity-50"
+                                >{verificationRefreshBusy ? 'Re-checking...' : 'Re-run verification only'}</button>
+                              )}
+                            </div>
+                            <ul className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-1 text-[11px]">
+                              <li><strong>AI:</strong> {engineLabel(coverage.ai)}</li>
+                              <li><strong>axe-core:</strong> {engineLabel(coverage.axe)}</li>
+                              <li><strong>Equal Access:</strong> {engineLabel(coverage.equalAccess)}</li>
+                            </ul>
+                            {reasons.length > 0 && <details className="mt-2 text-[11px]"><summary className="font-bold cursor-pointer">Why this status?</summary><ul className="mt-1 ml-5 list-disc space-y-0.5">{reasons.map((reason, index) => <li key={index}>{String(reason).replace(/[-:]/g, ' ')}</li>)}</ul></details>}
+                          </section>
                         );
                       })()}
                       {/* ── Results dashboard bar: pinned overview + jump-links. ──
@@ -11275,6 +11358,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <label data-help-key="pdf_audit_view_load_project_btn" className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
                           📂 Load Project
                           <input type="file" accept=".json,.alloflow.json" className="hidden" onChange={(e) => {
+                            if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) { addToast('This project file is larger than the 320 MB safety limit.', 'error'); e.target.value = ''; return; }
                             const file = e.target.files?.[0]; if (!file) return;
                             const _projectLoadToken = ++_projectLoadSelectionRef.current;
                             const reader = new FileReader();
@@ -11282,7 +11366,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
                               try {
                                 const parsedProject = JSON.parse(ev.target.result);
-                                const project = await _viewRehydrateVerificationHtmlBinding(parsedProject, _docPipeline);
+                                const sanitizedImport = _viewSanitizeProjectImport(parsedProject, _docPipeline);
+                                const project = await _viewRehydrateVerificationHtmlBinding(sanitizedImport.project, _docPipeline);
                                 if (_projectLoadToken !== _projectLoadSelectionRef.current) return;
                                 if (project && project.incomplete && project.version) {
                                   // Unfinished run: this results-screen loader only swaps in COMPLETED
@@ -11294,6 +11379,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 if (!project.accessibleHtml || !project.version) { addToast(t('toasts.invalid_project_file_2'), 'error'); return; }
                                 const _loadedFixResult = {
                                   accessibleHtml: project.accessibleHtml,
+                                  documentDigest: project.documentDigest || null,
                                   beforeScore: project.beforeScore,
                                   afterScore: project.afterScore,
                                   _aiVerificationIncomplete: !!project._aiVerificationIncomplete,
@@ -11768,28 +11854,34 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           e.preventDefault();
                           if (!expertCommandInput.trim() || isAgentRunning || !pdfFixResult?.accessibleHtml) return;
                           const cmd = expertCommandInput.trim();
+                          const _commitToken = _captureAsyncHtmlToken();
+                          const _commandSourceHtml = String((_commitToken && _commitToken.html) || '');
                           setExpertCommandInput('');
                           setIsAgentRunning(true);
                           console.info('[ExpertWorkbench] start command=' + JSON.stringify(cmd));
                           addToast(`🤖 Workbench running: ${cmd}`, 'info');
                           setAgentActivityLog(prev => [...prev, { text: '▶ ' + cmd, type: 'command', time: new Date().toLocaleTimeString() }]);
                           try {
-                            const result = await processExpertCommand(cmd, pdfFixResult.accessibleHtml, {
+                            const result = await processExpertCommand(cmd, _commandSourceHtml, {
                               onProgress: () => {},
                               onActivity: (entry) => {
                                 console.info('[ExpertWorkbench] activity type=' + entry.type + ' text=' + entry.text);
                                 setAgentActivityLog(prev => [...prev, entry]);
                               }
                             });
-                            if (result && result.html && result.html !== pdfFixResult.accessibleHtml) {
+                            if (result && result.html && result.html !== _commandSourceHtml) {
                               // Snapshot the command's before/after TEXT so "See what changed" can
                               // open a word-level diff of just this command (not the whole remediation).
                               const _stripT = (h) => String(h || '').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
-                              const _cmdDiff = { before: _stripT(pdfFixResult.accessibleHtml), after: _stripT(result.html), label: cmd };
+                              const _cmdDiff = { before: _stripT(_commandSourceHtml), after: _stripT(result.html), label: cmd };
                               // Snapshot the FULL before-HTML so a regressing fix can be reverted in one
                               // click (mini-audit, 2026-06-16) — mirrors the _preBionicHtml snapshot pattern.
-                              const _preCmdHtml = pdfFixResult.accessibleHtml;
-                              setPdfFixResult(prev => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff, _preCmdHtml: _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }));
+                              const _preCmdHtml = _commandSourceHtml;
+                              if (!_commitAsyncHtmlIfCurrent(_commitToken, (prev) => ({ ...prev, accessibleHtml: result.html, _lastCmdDiff: _cmdDiff, _preCmdHtml: _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }))) {
+                                setAgentActivityLog(prev => [...prev, { text: '? Stale result discarded ? document changed', type: 'info', time: new Date().toLocaleTimeString() }]);
+                                addToast(t('toasts.workbench_stale') || 'The document changed while Workbench was running ? its stale result was discarded.', 'info');
+                                setIsAgentRunning(false); return;
+                              }
                               // Re-audit + recompute so the headline score, "Remaining Issues" count, and the
                               // Newly-Introduced list reflect THIS Workbench fix (the mini-audit only verifies
                               // axe STRUCTURE; the panel was otherwise stale until a full re-run). The fix is
@@ -12201,6 +12293,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (!pdfFixResult?.accessibleHtml) return;
                               setPdfTranslateBusy(true);
                               try {
+                                const _translationToken = _captureAsyncHtmlToken();
+                                const _translationSource = String((_translationToken && _translationToken.html) || '');
+                                const _translationSourceDigest = await _sourceDigestForToken(_translationToken);
                                 // Any language (2026-06-12 correction): resolve the
                                 // BCP-47 code via the app's language util; for the
                                 // long tail it doesn't know (it falls back to 'en'),
@@ -12214,11 +12309,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     if (/^[a-z]{2,3}$/.test(_resp) && _resp !== 'und') _code = _resp;
                                   } catch (_) {}
                                 }
-                                const r = await translateAccessibleHtml(pdfFixResult.accessibleHtml, pdfTranslateLang, {
+                                const r = await translateAccessibleHtml(_translationSource, pdfTranslateLang, {
                                   langCode: _code,
                                   onProgress: (i, total) => setPdfTranslateProgress(i + '/' + total),
                                 });
-                                setPdfFixResult((prev) => prev ? { ...prev, _translation: { lang: r.lang, langCode: r.langCode, rtl: r.rtl, html: r.html, at: Date.now(), srcLen: (pdfFixResult.accessibleHtml || "").length, chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
+                                const _translationCommitted = _commitAsyncHtmlIfCurrent(_translationToken, (prev) => prev ? { ...prev, _translation: { lang: r.lang, langCode: r.langCode, rtl: r.rtl, html: r.html, at: Date.now(), sourceDigest: _translationSourceDigest, srcLen: _translationSource.length, chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
+                                if (!_translationCommitted) {
+                                  throw new Error('The document changed while translation was running, so the stale result was discarded. Run translation again.');
+                                }
                                 addToast('🌐 ' + (t('toasts.translated_doc') || 'Document translated to ') + r.lang + (r.chunksFailed > 0 ? (' — ' + r.chunksFailed + '/' + r.chunksTotal + (t('toasts.translated_doc_partial') || ' sections kept the original text (structure check failed); review them in Compare.')) : (t('toasts.translated_doc_ok') || ' — structure verified on every section.')) + ' ' + (t('toasts.translated_doc_review') || 'AI translation: have a bilingual reviewer check before official use.'), r.chunksFailed > 0 ? 'info' : 'success');
                               } catch (e) {
                                 addToast((t('toasts.translate_failed') || 'Translation failed: ') + ((e && e.message) || 'unknown'), 'error');
@@ -12234,6 +12332,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 ⚖ {(t('pdf_audit.translate.compare') || 'Compare')} ({pdfFixResult._translation.lang})
                               </button>
                               <button onClick={() => {
+                                if (!_requireFreshCompanion(pdfFixResult._translation, 'This translation')) return;
                                 const blob = new Blob([pdfFixResult._translation.html], { type: 'text/html' });
                                 safeDownloadBlob(blob, (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-' + (pdfFixResult._translation.langCode || 'translated') + '.html');
                                 addToast('🌐 ' + (t('toasts.translated_html_dl') || 'Translated HTML downloaded.'), 'success');
@@ -12241,6 +12340,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 📄 HTML ({pdfFixResult._translation.langCode || '…'})
                               </button>
                               <button onClick={async () => {
+                                if (!_requireFreshCompanion(pdfFixResult._translation, 'This translation')) return;
                                 try {
                                   addToast(t('toasts.typeset_translated') || '📄 Typesetting the translated document — same tagger, same gates…', 'info');
                                   const _result = await createTypesetTaggedPdf({ accessibleHtml: pdfFixResult._translation.html }, { title: (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + ' (' + pdfFixResult._translation.lang + ')', lang: pdfFixResult._translation.langCode || 'en' });
@@ -12257,6 +12357,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 📑 {(t('pdf_audit.translate.tagged') || 'Tagged PDF')} ({pdfFixResult._translation.langCode || '…'})
                               </button>
                               {callTTS && !audioJob && <button onClick={() => {
+                                if (!_requireFreshCompanion(pdfFixResult._translation, 'This translation')) return;
                                 const fullText = _audioReadyText(pdfFixResult._translation.html);
                                 if (!fullText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
                                 const segments = [];
@@ -12294,8 +12395,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (!pdfFixResult?.accessibleHtml) return;
                               setPlainLangBusy(true);
                               try {
-                                const r = await simplifyAccessibleHtml(pdfFixResult.accessibleHtml, { gradeBand: plainLangLevel, onProgress: (i, total) => setPlainLangProgress(i + '/' + total) });
-                                setPdfFixResult((prev) => prev ? { ...prev, _plainLanguage: { html: r.html, at: Date.now(), srcLen: (pdfFixResult.accessibleHtml || "").length, chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
+                                const _plainToken = _captureAsyncHtmlToken();
+                                const _plainSource = String((_plainToken && _plainToken.html) || '');
+                                const _plainSourceDigest = await _sourceDigestForToken(_plainToken);
+                                const _plainCommitted = _commitAsyncHtmlIfCurrent(_plainToken, (prev) => prev ? { ...prev, _plainLanguage: { html: r.html, at: Date.now(), sourceDigest: _plainSourceDigest, srcLen: _plainSource.length, chunksFailed: r.chunksFailed, chunksTotal: r.chunksTotal } } : prev);
+                                if (!_plainCommitted) {
+                                  throw new Error('The document changed while simplification was running, so the stale result was discarded. Run it again.');
+                                }
                                 addToast('🪶 ' + (t('toasts.plain_done') || 'Plain-language version ready') + (r.chunksFailed > 0 ? (' — ' + r.chunksFailed + '/' + r.chunksTotal + (t('toasts.plain_partial') || ' sections kept the original text (structure check failed).')) : (t('toasts.plain_ok') || ' — structure verified on every section.')) + ' ' + (t('toasts.plain_review') || 'Wording simplified, facts kept; the original remains authoritative.'), r.chunksFailed > 0 ? 'info' : 'success');
                               } catch (e) {
                                 addToast((t('toasts.plain_failed') || 'Plain-language version failed: ') + ((e && e.message) || 'unknown'), 'error');
@@ -12311,6 +12417,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 ⚖ {t('pdf_audit.plain.compare') || 'Compare'}
                               </button>
                               <button onClick={() => {
+                                if (!_requireFreshCompanion(pdfFixResult._plainLanguage, 'This plain-language version')) return;
                                 const blob = new Blob([pdfFixResult._plainLanguage.html], { type: 'text/html' });
                                 safeDownloadBlob(blob, (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + '-plain-language.html');
                                 addToast('🪶 ' + (t('toasts.plain_html_dl') || 'Plain-language HTML downloaded.'), 'success');
@@ -12318,6 +12425,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 📄 HTML
                               </button>
                               <button onClick={async () => {
+                                if (!_requireFreshCompanion(pdfFixResult._plainLanguage, 'This plain-language version')) return;
                                 try {
                                   addToast(t('toasts.typeset_plain') || '📄 Typesetting the plain-language version — same tagger, same gates…', 'info');
                                   const _result = await createTypesetTaggedPdf({ accessibleHtml: pdfFixResult._plainLanguage.html }, { title: (pendingPdfFile?.name || 'document').replace(/\.(pdf|docx|pptx)$/i, '') + ' (plain language)', lang: 'en' });
@@ -12333,6 +12441,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 📑 {t('pdf_audit.plain.tagged') || 'Tagged PDF'}
                               </button>
                               {callTTS && !audioJob && <button onClick={() => {
+                                if (!_requireFreshCompanion(pdfFixResult._plainLanguage, 'This plain-language version')) return;
                                 const fullText = _audioReadyText(pdfFixResult._plainLanguage.html);
                                 if (!fullText) { addToast(t('toasts.text_content_convert'), 'error'); return; }
                                 const segments = [];
@@ -15611,7 +15720,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         {pdfFixResult._plainLanguage.chunksFailed > 0 && (
                           <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5">⚠ {pdfFixResult._plainLanguage.chunksFailed}/{pdfFixResult._plainLanguage.chunksTotal} {t('pdf_audit.translate.kept_original') || 'sections kept the original text'}</span>
                         )}
-                        {pdfFixResult._plainLanguage.srcLen != null && pdfFixResult._plainLanguage.srcLen !== (pdfFixResult.accessibleHtml || '').length && (<span className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5" title={t('pdf_audit.plain.stale_title') || 'The document changed after this plain-language version was made — regenerate it to re-sync.'}>⚠ {t('pdf_audit.companion.stale') || 'out of date — regenerate'}</span>)}
+                        {_companionIsStale(pdfFixResult._plainLanguage) && (<span className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5" title={t('pdf_audit.plain.stale_title') || 'The document changed after this plain-language version was made — regenerate it to re-sync.'}>⚠ {t('pdf_audit.companion.stale') || 'out of date — regenerate'}</span>)}
                         <button onClick={() => setShowPlainCompare(false)} className="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200" aria-label={t('pdf_audit.translate.compare_close') || 'Close comparison'}>✕ {t('pdf_audit.translate.close') || 'Close'}</button>
                       </div>
                     </div>
@@ -15641,7 +15750,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         {pdfFixResult._translation.chunksFailed > 0 && (
                           <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5">⚠ {pdfFixResult._translation.chunksFailed}/{pdfFixResult._translation.chunksTotal} {t('pdf_audit.translate.kept_original') || 'sections kept the original text'}</span>
                         )}
-                        {pdfFixResult._translation.srcLen != null && pdfFixResult._translation.srcLen !== (pdfFixResult.accessibleHtml || '').length && (<span className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5" title={t('pdf_audit.translate.stale_title') || 'The document changed after this translation was made — regenerate it to re-sync.'}>⚠ {t('pdf_audit.companion.stale') || 'out of date — regenerate'}</span>)}
+                        {_companionIsStale(pdfFixResult._translation) && (<span className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5" title={t('pdf_audit.translate.stale_title') || 'The document changed after this translation was made — regenerate it to re-sync.'}>⚠ {t('pdf_audit.companion.stale') || 'out of date — regenerate'}</span>)}
                         <button onClick={() => setShowTranslationCompare(false)} className="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200" aria-label={t('pdf_audit.translate.compare_close') || 'Close comparison'}>✕ {t('pdf_audit.translate.close') || 'Close'}</button>
                       </div>
                     </div>

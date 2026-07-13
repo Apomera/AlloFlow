@@ -8,7 +8,8 @@ import { describe, it, expect, afterAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8')
+  + '\n' + readFileSync(resolve(process.cwd(), 'doc_builder_renderer_source.jsx'), 'utf8');
 
 // ── Extract the real loader + config + _sanitizeRawHtmlBlock (closure in doc_pipeline) ──
 const _s = dp.indexOf('var _domPurifyPromise = null;');

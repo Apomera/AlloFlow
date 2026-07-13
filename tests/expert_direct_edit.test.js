@@ -93,7 +93,9 @@ describe('S1 (2026-06-23): scope → intent → AGENT apply, blast-radius-bounde
   });
   it('unwraps a <body> the agent might add, then splices the edited region back via _spliceBlock', () => {
     expect(h).toMatch(/<body\[\\s>\]\/i\.test\(edited\)/);
-    expect(h).toMatch(/const sp = _spliceBlock\(pdfFixResult\.accessibleHtml, original, edited\)/);
+    expect(h).toMatch(/const _commitToken = _captureAsyncHtmlToken\(\)/);
+    expect(h).toMatch(/const sp = _spliceBlock\(_sourceHtml, original, edited\)/);
+    expect(h).toMatch(/_commitAsyncHtmlIfCurrent\(_commitToken,/);
   });
   it('snapshots _preCmdHtml for one-click revert and re-audits via the shared mini-audit', () => {
     expect(h).toMatch(/accessibleHtml: sp\.html, _preCmdHtml: _before/);

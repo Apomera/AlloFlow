@@ -489,73 +489,21 @@ function _htmlHasExplicitLanguage(html) {
 function _viewDeriveVerificationState(input, pipeline) {
   const data = input || {};
   try {
-    const factory = typeof window !== "undefined" && window.AlloModules && window.AlloModules.createDocPipeline;
-    const canonical = pipeline && pipeline.deriveVerificationState || factory && factory.deriveVerificationState;
+    const modules = typeof window !== "undefined" && window.AlloModules;
+    const policy = modules && modules.VerificationPolicy;
+    const factory = modules && modules.createDocPipeline;
+    const canonical = pipeline && pipeline.deriveVerificationState || policy && policy.deriveVerificationState || factory && factory.deriveVerificationState;
     if (typeof canonical === "function") {
       const result = canonical(data);
       if (result && result.coverage && typeof result.verificationState === "string") return result;
     }
+    if (policy && typeof policy.unavailableVerificationState === "function") {
+      return policy.unavailableVerificationState("verification-policy-module-unavailable");
+    }
   } catch (_) {
   }
-  const finite = (value) => typeof value === "number" && Number.isFinite(value);
-  const count = (value) => finite(value) ? Math.max(0, Math.floor(value)) : null;
-  const ai = data.ai || data.verificationAudit || null;
-  const axe = data.axe || data.axeAudit || null;
-  const equalAccess = data.equalAccess || data.secondEngineAudit || null;
-  const reasons = [];
-  let aiStatus = "unavailable";
-  if (!finite(ai && ai.score)) reasons.push("ai-unavailable");
-  else if (data.aiIncomplete || data.aiVerificationIncomplete || ai._partialAudit || ai.partial || ai._scoreDegraded || ai.scoreDegraded || ai.synthesized) {
-    aiStatus = "partial";
-    if (data.aiIncomplete || data.aiVerificationIncomplete) reasons.push("ai-verification-incomplete");
-    if (ai._partialAudit || ai.partial) reasons.push("ai-partial-audit");
-    if (ai._scoreDegraded || ai.scoreDegraded) reasons.push("ai-score-degraded");
-    if (ai.synthesized) reasons.push("ai-synthesized");
-  } else aiStatus = "complete";
-  let axeStatus = "unavailable";
-  let axeReviewCount = 0;
-  if (!finite(axe && axe.score)) reasons.push("axe-unavailable");
-  else {
-    const incomplete = count(axe.totalIncomplete);
-    if (incomplete === null) {
-      axeStatus = "partial";
-      reasons.push("axe-review-count-unknown");
-    } else if (incomplete > 0) {
-      axeStatus = "complete-with-review";
-      axeReviewCount = incomplete;
-      reasons.push("axe-incomplete:" + incomplete);
-    } else axeStatus = "complete";
-  }
-  let eaStatus = "unavailable";
-  let eaReviewCount = 0;
-  if (!finite(equalAccess && equalAccess.score)) reasons.push("equal-access-unavailable");
-  else {
-    const potential = count(equalAccess.potentialViolations);
-    const manual = count(equalAccess.manualViolations);
-    const aggregate = count(equalAccess.reviewFindingCount);
-    if ((potential === null || manual === null) && aggregate === null) {
-      eaStatus = "partial";
-      reasons.push("equal-access-review-count-unknown");
-    } else {
-      eaReviewCount = aggregate !== null ? Math.max(aggregate, (potential || 0) + (manual || 0)) : (potential || 0) + (manual || 0);
-      if (eaReviewCount > 0) {
-        eaStatus = "complete-with-review";
-        if ((potential || 0) > 0) reasons.push("equal-access-potential:" + potential);
-        if ((manual || 0) > 0) reasons.push("equal-access-manual:" + manual);
-        if ((potential === null || manual === null) && aggregate > 0) reasons.push("equal-access-review-findings:" + aggregate);
-      } else eaStatus = "complete";
-    }
-  }
-  const extra = (Array.isArray(data.extraReasons) ? data.extraReasons : data.extraReasons == null || data.extraReasons === "" ? [] : [data.extraReasons]).map((reason) => String(reason == null ? "" : reason).trim()).filter(Boolean);
-  reasons.push(...extra);
-  if (data.languageReviewRequired) reasons.push(String(data.languageReviewReason || "document-language-needs-review"));
-  const reviewCount = axeReviewCount + eaReviewCount + extra.length + Number(!!data.languageReviewRequired);
-  const allComplete = aiStatus === "complete" && axeStatus === "complete" && eaStatus === "complete";
-  const allUnavailable = aiStatus === "unavailable" && axeStatus === "unavailable" && eaStatus === "unavailable";
-  const hasReviewEvidence = reviewCount > 0 || aiStatus === "complete-with-review" || axeStatus === "complete-with-review" || eaStatus === "complete-with-review";
-  const verificationState = allUnavailable ? "unavailable" : hasReviewEvidence ? "review-required" : allComplete ? "complete" : "partial";
-  const coverage = { standard: "WCAG 2.2 AA", ai: aiStatus, axe: axeStatus, equalAccess: eaStatus, pdfUaSelfCheck: data.pdfUaSelfCheck || "not-run" };
-  return { verificationCoverage: coverage, coverage, verificationState, afterScoreVerified: verificationState === "complete", requiresManualReview: verificationState !== "complete", reviewCount, reasons };
+  const coverage = { standard: "WCAG 2.2 AA", ai: "unavailable", axe: "unavailable", equalAccess: "unavailable", pdfUaSelfCheck: "not-run" };
+  return { verificationCoverage: coverage, coverage, verificationState: "unavailable", afterScoreVerified: false, requiresManualReview: true, reviewCount: 1, reasons: ["verification-policy-module-unavailable"] };
 }
 function _viewVerificationForExport(result, pipeline) {
   const value = result || {};
@@ -2323,6 +2271,7 @@ function PdfAuditView(props) {
   _alloUseFocusTrap(pdfModalRef, !!(pdfAuditResult || pdfAuditLoading));
   const _inputIsPdf = !!(pendingPdfFile && (pendingPdfFile.type === "application/pdf" || /\.pdf$/i.test(pendingPdfFile.name || "")) || typeof pendingPdfBase64 === "string" && pendingPdfBase64.slice(0, 5) === "JVBER");
   const [resumableBatch, setResumableBatch] = useState(null);
+  const [verificationRefreshBusy, setVerificationRefreshBusy] = useState(false);
   const _projectLoadSelectionRef = useRef(0);
   const [lastTaggedValidation, _setLastTaggedValidationRaw] = useState(null);
   const _lastTaggedValidationRef = useRef(null);
@@ -3911,8 +3860,8 @@ function PdfAuditView(props) {
           verificationReasons: _verification.reasons,
           verificationReviewCount: _verification.reviewCount,
           requiresManualReview: _verification.requiresManualReview,
-          needsExpertReview: _verification.requiresManualReview || prev.fidelityLimited || prev.expertReviewReason === "content-fidelity" || prev.expertReviewReason === "both" || Number.isFinite(_wscore) && _wscore < 70,
-          expertReviewReason: _verification.requiresManualReview ? prev.fidelityLimited || prev.expertReviewReason === "content-fidelity" || prev.expertReviewReason === "both" ? "both" : "accessibility" : prev.fidelityLimited || prev.expertReviewReason === "content-fidelity" || prev.expertReviewReason === "both" ? "content-fidelity" : Number.isFinite(_wscore) && _wscore < 70 ? "accessibility" : null,
+          needsExpertReview: !!(prev.fidelityLimited || prev.expertReviewReason === "content-fidelity" || prev.expertReviewReason === "both" || _waOk && Array.isArray(_wa.critical) && _wa.critical.length > 0 || _weaOk && Number.isFinite(_wea.failViolations) && _wea.failViolations > 0 || Number.isFinite(_wscore) && _wscore < 50),
+          expertReviewReason: prev.fidelityLimited || prev.expertReviewReason === "content-fidelity" || prev.expertReviewReason === "both" ? "content-fidelity" : _waOk && Array.isArray(_wa.critical) && _wa.critical.length > 0 || _weaOk && Number.isFinite(_wea.failViolations) && _wea.failViolations > 0 || Number.isFinite(_wscore) && _wscore < 50 ? "accessibility" : null,
           issueResolution: _wvOk && typeof recomputeIssueResolution === "function" ? recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution : prev.issueResolution
         };
         if (_freshBinding) {
@@ -3972,8 +3921,8 @@ function PdfAuditView(props) {
         verificationReasons: ["content-modified-pending-reverification"],
         verificationReviewCount: 0,
         requiresManualReview: true,
-        needsExpertReview: true,
-        expertReviewReason: prev.fidelityLimited ? "both" : "accessibility",
+        needsExpertReview: !!prev.fidelityLimited,
+        expertReviewReason: prev.fidelityLimited ? "content-fidelity" : null,
         issueResolution: null,
         remainingIssues: null,
         htmlChars: newHtml.length,
@@ -4799,8 +4748,8 @@ function PdfAuditView(props) {
           languageReviewRequired,
           verificationExtraReasons: [_STATIC_WEB_REVIEW_REASON],
           autoFixPasses: autoFix?.passes || 0,
-          needsExpertReview: verification.requiresManualReview || Number.isFinite(finalScore) && finalScore < 70,
-          expertReviewReason: "accessibility",
+          needsExpertReview: !!(finalAxe && Array.isArray(finalAxe.critical) && finalAxe.critical.length > 0 || finalEa && Number.isFinite(finalEa.failViolations) && finalEa.failViolations > 0 || Number.isFinite(finalScore) && finalScore < 50),
+          expertReviewReason: finalAxe && Array.isArray(finalAxe.critical) && finalAxe.critical.length > 0 || finalEa && Number.isFinite(finalEa.failViolations) && finalEa.failViolations > 0 || Number.isFinite(finalScore) && finalScore < 50 ? "accessibility" : null,
           htmlChars: fixed.length,
           chunkState: autoFix?.chunkState || null,
           chunkWeightedScore: autoFix?.chunkWeightedScore || null,
@@ -7130,6 +7079,34 @@ Return ONLY JSON:
       const _icon = _v.level === "ready" ? "\u2705" : _v.level === "caution" ? "\u26A0\uFE0F" : "\u{1F6D1}";
       const _items = _v.level === "review" ? _v.review.concat(_v.cautions) : _v.cautions;
       return /* @__PURE__ */ React.createElement("div", { role: "status", "data-help-key": "pdf_audit_verdict_strip", className: `rounded-xl border-2 p-3 ${_sty}` }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-black" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, _icon, " "), t("pdf_audit.verdict." + _v.level) || _v.headline), _items.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-1 ml-5 list-disc text-xs space-y-0.5" }, _items.slice(0, 6).map((m, i) => /* @__PURE__ */ React.createElement("li", { key: i }, m)), _items.length > 6 && /* @__PURE__ */ React.createElement("li", null, "+ " + (_items.length - 6) + " " + (t("pdf_audit.verdict.more") || "more \u2014 see the panels below"))));
+    })(), (() => {
+      const state = pdfFixResult.verificationState || "unavailable";
+      const coverage = pdfFixResult.verificationCoverage || {};
+      const reasons = Array.isArray(pdfFixResult.verificationReasons) ? pdfFixResult.verificationReasons : [];
+      const tone = state === "complete" ? "bg-emerald-50 border-emerald-300 text-emerald-950" : state === "review-required" ? "bg-amber-50 border-amber-300 text-amber-950" : "bg-slate-50 border-slate-400 text-slate-900";
+      const label = state === "complete" ? "Complete" : state === "review-required" ? "Human review required" : state === "partial" ? "Partial" : "Unavailable";
+      const engineLabel = (value) => String(value || "unavailable").replace(/-/g, " ");
+      return /* @__PURE__ */ React.createElement("section", { "data-help-key": "pdf_audit_verification_status", "aria-labelledby": "pdf-verification-status-heading", className: `rounded-xl border p-3 ${tone}` }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("h3", { id: "pdf-verification-status-heading", className: "text-sm font-black" }, "WCAG verification: ", label), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold rounded-full border border-current/30 px-2 py-0.5" }, coverage.standard || "WCAG 2.2 AA"), state !== "complete" && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          disabled: verificationRefreshBusy || pdfFixLoading || pdfAutoContinueRunning,
+          onClick: async () => {
+            if (verificationRefreshBusy || !pdfFixResult.accessibleHtml) return;
+            setVerificationRefreshBusy(true);
+            setPdfFixStep("Re-running verification without changing the document...");
+            try {
+              const result = await _reauditAndScore(pdfFixResult.accessibleHtml, null);
+              if (result && result.ok) addToast("Verification refreshed: " + result.verificationState + ".", result.verificationState === "complete" ? "success" : "warning");
+              else addToast("Verification could not complete. The document was not changed.", "warning");
+            } finally {
+              setVerificationRefreshBusy(false);
+            }
+          },
+          className: "ml-auto px-2.5 py-1 rounded-lg bg-white border border-current/30 text-[11px] font-bold hover:bg-black/5 disabled:opacity-50"
+        },
+        verificationRefreshBusy ? "Re-checking..." : "Re-run verification only"
+      )), /* @__PURE__ */ React.createElement("ul", { className: "mt-2 grid grid-cols-1 sm:grid-cols-3 gap-1 text-[11px]" }, /* @__PURE__ */ React.createElement("li", null, /* @__PURE__ */ React.createElement("strong", null, "AI:"), " ", engineLabel(coverage.ai)), /* @__PURE__ */ React.createElement("li", null, /* @__PURE__ */ React.createElement("strong", null, "axe-core:"), " ", engineLabel(coverage.axe)), /* @__PURE__ */ React.createElement("li", null, /* @__PURE__ */ React.createElement("strong", null, "Equal Access:"), " ", engineLabel(coverage.equalAccess))), reasons.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-2 text-[11px]" }, /* @__PURE__ */ React.createElement("summary", { className: "font-bold cursor-pointer" }, "Why this status?"), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 ml-5 list-disc space-y-0.5" }, reasons.map((reason, index) => /* @__PURE__ */ React.createElement("li", { key: index }, String(reason).replace(/[-:]/g, " "))))));
     })(), (() => {
       const _jump = (id) => {
         try {

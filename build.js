@@ -836,6 +836,16 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'VerificationPolicy',
+        filename: 'verification_policy_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'DocBuilderRenderer',
+        filename: 'doc_builder_renderer_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'PdfAuditView',
         filename: 'view_pdf_audit_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1209,7 +1219,26 @@ function compileJsx(src) {
     return r.code;
 }
 
+function simplePureCompilePair(name, fileBase, guardKey) {
+    return {
+        name,
+        srcPath: path.join(ROOT, fileBase + '_source.jsx'),
+        modPath: path.join(ROOT, fileBase + '_module.js'),
+        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', fileBase + '_module.js'),
+        wrap(src) {
+            return (
+                '(function(){"use strict";\n'
+                + 'if(window.AlloModules&&window.AlloModules.' + guardKey + '){console.log("[CDN] ' + guardKey + ' already loaded, skipping"); return;}\n'
+                + src.trim() + '\n'
+                + '})();\n'
+            );
+        },
+    };
+}
+
 const COMPILE_PAIRS = [
+    simplePureCompilePair('VerificationPolicy', 'verification_policy', 'VerificationPolicyModule'),
+    simplePureCompilePair('DocBuilderRenderer', 'doc_builder_renderer', 'DocBuilderRendererModule'),
     {
         name: 'DocPipeline',
         srcPath: path.join(ROOT, 'doc_pipeline_source.jsx'),

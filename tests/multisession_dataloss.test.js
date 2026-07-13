@@ -12,15 +12,16 @@ import { resolve } from 'node:path';
 const pipeSrc = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
 // ── Mirror of _multiSessionId (the stable doc fingerprint) ──
-const multiSessionId = (filename, fileSize, pageCount) => {
-  const raw = (filename || 'doc') + '|' + (fileSize || 0) + '|' + (pageCount || 0);
-  let hash = 0;
-  for (let i = 0; i < raw.length; i++) { hash = ((hash << 5) - hash) + raw.charCodeAt(i); hash |= 0; }
-  return 'msdoc_' + Math.abs(hash).toString(36);
+const multiSessionId = (filename, fileSize, pageCount, documentDigest) => {
+  const digest = String(documentDigest || '').toLowerCase();
+  if (!/^sha256:[a-f0-9]{64}$/.test(digest)) return null;
+  return 'msdoc_v2_' + digest.slice(7);
 };
 // ── Mirror of the merge's range-html accessor ──
 const rangeHtml = (rg) => (rg && (rg.html || rg.remediatedHtml)) || '';
 
+const digestA = 'sha256:' + 'a'.repeat(64);
+const digestB = 'sha256:' + 'b'.repeat(64);
 describe('fingerprint: save and load now agree (no more orphaned ranges)', () => {
   const fileName = 'IEP_report.pdf';
   const realSize = 524288;     // pendingPdfFile.size — what the load side uses
@@ -28,19 +29,20 @@ describe('fingerprint: save and load now agree (no more orphaned ranges)', () =>
   const base64Estimate = Math.round((realSize / 0.75) * 0.75); // the old save-side estimate basis
   const rangePages = 5;        // the range length (e.g. pages 1-5) — the OLD save-side pageCount
 
-  const loadId = multiSessionId(fileName, realSize, fullPages);
-  const saveIdFixed = multiSessionId(fileName, realSize, fullPages);          // FIXED: real size + full pages
-  const saveIdOld = multiSessionId(fileName, base64Estimate, rangePages);     // OLD: estimate + range length
+  const loadId = multiSessionId(fileName, realSize, fullPages, digestA);
+  const saveIdFixed = multiSessionId(fileName, realSize, fullPages, digestA);
+  const saveIdOld = multiSessionId(fileName, base64Estimate, rangePages);
 
   it('the FIXED save fingerprint equals the load fingerprint', () => {
     expect(saveIdFixed).toBe(loadId);
   });
-  it('the OLD save fingerprint did NOT match the load (regression documented)', () => {
-    expect(saveIdOld).not.toBe(loadId);
+  it('refuses legacy metadata-only identities because they are collision-prone', () => {
+    expect(saveIdOld).toBeNull();
   });
-  it('a different document still gets a different id', () => {
-    expect(multiSessionId('other.pdf', realSize, fullPages)).not.toBe(loadId);
-    expect(multiSessionId(fileName, realSize, 31)).not.toBe(loadId);
+  it('keys only on exact content: metadata changes do not fork it, content changes do', () => {
+    expect(multiSessionId('renamed.pdf', 1, 1, digestA)).toBe(loadId);
+    expect(multiSessionId(fileName, realSize, fullPages, digestB)).not.toBe(loadId);
+    expect(multiSessionId(fileName, realSize, fullPages, 'invalid')).toBeNull();
   });
 });
 
@@ -62,11 +64,13 @@ describe('anti-drift: doc_pipeline ships both fixes', () => {
     expect(pipeSrc).toMatch(/const _rangeHtml = \(rg\) => \(rg && \(rg\.html \|\| rg\.remediatedHtml\)\)/);
     expect(pipeSrc).toMatch(/_extractBodyContent\(_rangeHtml\(r\)\)/);
   });
-  it('the save fingerprint keys on real file size + the full-doc page count', () => {
+  it('the save/load path requires the same exact document digest', () => {
     // Harness repair (2026-07-09): S1 snapshotted the size at run entry (_runFileSize = the real
     // pendingPdfFile.size captured before any concurrent upload can swap the bound var) — the
     // fingerprint still keys on REAL bytes, just via the snapshot.
-    expect(pipeSrc).toMatch(/fileSize: _runFileSize \|\| 0/);
-    expect(pipeSrc).toMatch(/pageCount: fullPageCount/);
+    expect(pipeSrc).toContain('_multiSessionId(_msMeta.fileName, _msMeta.fileSize, _msMeta.pageCount, _documentKey)');
+    expect(pipeSrc).toContain('documentDigest: _documentKey');
+    expect(pipeSrc).toContain('return loadMultiSession(sid, digest);');
+    expect(pipeSrc).toContain('var _MULTI_SESSION_SCHEMA = 2;');
   });
 });

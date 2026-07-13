@@ -142,7 +142,7 @@ describe('project JSON saves', () => {
       saveType: 'teacher',
       saveFileName: 'teacher-with-draft',
       isIndependentMode: false,
-      builderDraft
+      builderDraft: Promise.resolve(builderDraft)
     }));
     expect((await lastSavedJson()).builderDraft).toEqual(builderDraft);
 

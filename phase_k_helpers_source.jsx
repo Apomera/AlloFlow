@@ -1213,6 +1213,7 @@ const executeSaveFile = async (deps) => {
         setStudentProgressLog(currentLog);
       }
       const filename = saveFileName.trim().endsWith('.json') ? saveFileName.trim() : `${saveFileName.trim()}.json`;
+      const resolvedBuilderDraft = saveType === 'teacher' ? await Promise.resolve(deps.builderDraft || null) : null;
       let dataStr = "";
       // SEL Hub engagement state (streak, per-tool usage). Lives at
       // window.__alloflowSelEngagement, written by sel_hub_module.js whenever
@@ -1315,7 +1316,7 @@ const executeSaveFile = async (deps) => {
               // Versioned, history-bound, sanitized WYSIWYG edits from the
               // Document Builder. Student files intentionally omit this
               // teacher-authoring surface.
-              builderDraft: deps.builderDraft || null,
+              builderDraft: resolvedBuilderDraft || null,
               history: history,
               timestamp: new Date(),
               progressLog: studentProgressLog,

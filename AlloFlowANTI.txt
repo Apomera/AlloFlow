@@ -6509,6 +6509,16 @@ const AlloFlowContent = () => {
       if (timer) clearInterval(timer);
     };
   }, []);
+  const remediationModuleNames = ['DocPipelineModule', 'VerificationPolicy', 'DocBuilderRenderer'];
+  const remediationMissingModules = remediationModuleNames.filter((name) => !(window.AlloModules && window.AlloModules[name]));
+  const remediationFailedModules = remediationMissingModules.filter((name) => moduleLoadInfo.failed.includes(name));
+  const remediationPendingModules = remediationMissingModules.filter((name) => !remediationFailedModules.includes(name));
+  const remediationReady = remediationMissingModules.length === 0;
+  const remediationDependencyState = {
+    pending: remediationPendingModules,
+    failed: remediationFailedModules,
+  };
+  const retryRemediationDependencies = () => { try { window.__alloRetryFailedModules?.(); } catch (_) {} };
   const [canPlayBotIntro, setCanPlayBotIntro] = useState(false);
   useEffect(() => {
     const isWizardOpen = showStudentWelcome && hasSelectedRole && !isTeacherMode;
@@ -7731,6 +7741,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
     loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=eaa6f20fb');
+    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js');
+    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js');
     loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=eaa6f20fb');
     loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=eaa6f20fb');
     loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=eaa6f20fb');
@@ -15034,6 +15046,29 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [pdfAuditResult, setPdfAuditResult] = useState(null);
   const [pdfAuditLoading, setPdfAuditLoading] = useState(false);
   const [pendingPdfBase64, setPendingPdfBase64] = useState(null);
+  const pdfAuditEpochRef = useRef(0);
+  const pdfAuditAbortControllerRef = useRef(null);
+  const beginPdfAuditRun = React.useCallback(() => {
+    try { if (pdfAuditAbortControllerRef.current) pdfAuditAbortControllerRef.current.abort(); } catch (_) {}
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const token = { epoch: ++pdfAuditEpochRef.current, signal: controller ? controller.signal : null };
+    pdfAuditAbortControllerRef.current = controller;
+    return token;
+  }, []);
+  const isPdfAuditRunCurrent = React.useCallback((token) => !!(token
+    && token.epoch === pdfAuditEpochRef.current
+    && !(token.signal && token.signal.aborted)), []);
+  const finishPdfAuditRun = React.useCallback((token) => {
+    if (!token || token.epoch !== pdfAuditEpochRef.current) return false;
+    pdfAuditAbortControllerRef.current = null;
+    return true;
+  }, []);
+  const invalidatePdfAuditRun = React.useCallback(() => {
+    try { if (pdfAuditAbortControllerRef.current) pdfAuditAbortControllerRef.current.abort(); } catch (_) {}
+    pdfAuditAbortControllerRef.current = null;
+    pdfAuditEpochRef.current += 1;
+    setPdfAuditLoading(false);
+  }, []);
   const [pendingPdfFile, setPendingPdfFile] = useState(null);
   // Original PDF bytes survive a SOFT modal-close in this ref. The pendingPdfBase64 STATE is nulled on
   // close (it gates the "no doc loaded" panel at the LMS-audit-URLs block), but the re-entry pill reopens
@@ -15074,6 +15109,26 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     _setPdfFixResultRaw(enforced);
     return enforced;
   }, []);
+  const capturePdfHtmlCommitToken = React.useCallback(() => {
+    const current = pdfFixResultRef.current;
+    return {
+      revision: pdfHtmlRevisionRef.current,
+      html: current && typeof current.accessibleHtml === 'string' ? current.accessibleHtml : null,
+    };
+  }, []);
+  const commitPdfFixResultIfCurrent = React.useCallback((token, updater) => {
+    if (!token || token.revision !== pdfHtmlRevisionRef.current) return false;
+    const current = pdfFixResultRef.current;
+    if (!current || current.accessibleHtml !== token.html) return false;
+    let committed = false;
+    setPdfFixResult((prev) => {
+      if (!prev || token.revision !== pdfHtmlRevisionRef.current || prev.accessibleHtml !== token.html) return prev;
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      committed = !!next;
+      return next || prev;
+    });
+    return committed;
+  }, [setPdfFixResult]);
   const [pdfFixLoading, setPdfFixLoading] = useState(false);
   // Three-way "save before closing?" dialog. Fires only when there is work to lose.
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
@@ -15435,6 +15490,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       addToast(t('toasts.help_mode_close_blocked') || '❓ Help mode is on — click any control to learn about it. Press the yellow ✕ (right edge) to exit help mode first.', 'info');
       return;
     }
+    invalidatePdfAuditRun();
     setPdfFixLoading(false);
     setPdfFixStep('');
     setPendingPdfBase64(null);
@@ -15472,6 +15528,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     _closePdfAuditModal();
   };
   const startNewPdfAudit = () => {
+    invalidatePdfAuditRun();
     lastPdfAuditResultRef.current = null; // dropping the result — no re-entry pill for a cleared audit
     setPdfAuditResult(null);
     setPdfFixResult(null);
@@ -15553,16 +15610,20 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [pdfAutoSaveProject]);
   React.useEffect(() => {
     let cancelled = false;
-    if (!pdfAuditResult || !pendingPdfFile || !_docPipeline || !_docPipeline.multiSessionId || !_docPipeline.loadMultiSession) {
+    if (!pdfAuditResult || !pendingPdfFile || !pendingPdfBase64 || !_docPipeline || !_docPipeline.documentDigest || !_docPipeline.multiSessionId || !_docPipeline.loadMultiSession) {
       setPdfMultiSession(null);
       return;
     }
-    const sessionId = _docPipeline.multiSessionId(
-      pendingPdfFile.name || 'document.pdf',
-      pendingPdfFile.size || 0,
-      pdfAuditResult.pageCount || 1
-    );
-    _docPipeline.loadMultiSession(sessionId).then((record) => {
+    _docPipeline.documentDigest(pendingPdfBase64).then((digest) => {
+      if (cancelled || !digest) return null;
+      const sessionId = _docPipeline.multiSessionId(
+        pendingPdfFile.name || 'document.pdf',
+        pendingPdfFile.size || 0,
+        pdfAuditResult.pageCount || 1,
+        digest
+      );
+      return sessionId ? _docPipeline.loadMultiSession(sessionId, digest) : null;
+    }).then((record) => {
       if (cancelled) return;
       setPdfMultiSession(record);
       if (record && record.ranges && record.ranges.length > 0) {
@@ -15577,7 +15638,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       }
     }).catch(() => { if (!cancelled) setPdfMultiSession(null); });
     return () => { cancelled = true; };
-  }, [pdfAuditResult, pendingPdfFile]);
+  }, [pdfAuditResult, pendingPdfFile, pendingPdfBase64]);
   const PDF_REGRESSION_TOLERANCE = 5;
   const safeCloneAudit = (o) => { try { return o == null ? o : JSON.parse(JSON.stringify(o)); } catch { return o; } };
   const blendAiAxe = (aiScore, axeScore) => {
@@ -15731,7 +15792,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       // could enter the success numerator of the reliability rate Aaron defends to UMaine.
       // Unknown verifier state is now 'incomplete', never 'success': success requires target
       // reached AND a KNOWN-zero axe result AND a complete (non-degraded) AI verification.
-      const _outcome = (cur.afterScore >= pdfTargetScore && _resid === 0 && !cur._aiVerificationIncomplete) ? 'success' : 'incomplete';
+      const _remediationOutcome = (_docPipeline && typeof _docPipeline.remediationOutcome === 'function')
+        ? _docPipeline.remediationOutcome(cur, { targetScore: pdfTargetScore })
+        : { state: (cur.afterScore >= pdfTargetScore && _resid === 0 && !cur._aiVerificationIncomplete) ? 'success' : 'incomplete' };
       const row = {
         _k: key, at: new Date().toISOString(),
         runId: cur.runId || null, // #15 (ChatGPT review 2026-07-10): per-run identity from the pipeline (null on older/loaded rows)
@@ -15743,7 +15806,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         pages: cur.pageCount || null,
         // Reliability telemetry (2026-06-13): an honest outcome + the per-run
         // stats from fixResult.pipelineStats (null on older/loaded rows).
-        outcome: _outcome,
+        outcome: _remediationOutcome.state,
+        remediationOutcome: _remediationOutcome,
+        verificationState: cur.verificationState || 'unavailable',
         retries: _ps ? _ps.retries : null,
         // #15: the honest counter set — retries now counts real retry ATTEMPTS; the old counter
         // incremented on terminal failure (a recovered retry recorded 0, a no-retry failure 1).
@@ -21604,6 +21669,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef,
     exportAuditResult,
     setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading,
+    beginPdfAuditRun, isPdfAuditRunCurrent, finishPdfAuditRun,
     setPdfFixStep, setPendingPdfBase64, setPendingPdfFile,
     setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex,
     setPdfBatchStep, setPdfBatchSummary, setIsGeneratingStyle,
@@ -21872,10 +21938,6 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const downgraded = applyVerificationHtmlBinding(result, false, optionalReason || 'verification-html-binding-missing-or-stale');
     try { delete downgraded._verificationHtmlSnapshot; } catch (_) {}
     try { delete downgraded._verificationHtmlBindingDigest; } catch (_) {}
-    const priorReason = downgraded.expertReviewReason;
-    downgraded.needsExpertReview = true;
-    downgraded.expertReviewReason = (priorReason === 'content-fidelity' || priorReason === 'both') ? 'both' : 'accessibility';
-    downgraded._verificationExpertReview = true;
     return downgraded;
   }
   verificationBindingHelpersRef.current.enforce = enforceVerificationHtmlBinding;
@@ -22255,15 +22317,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           ? (_freshContentFidelityReview ? 'both' : 'accessibility')
           : (_freshContentFidelityReview ? 'content-fidelity' : null);
         const _expertBase = { needed: !!_expertBaseReason, reason: _expertBaseReason };
-        let _nextNeedsExpertReview;
-        let _nextExpertReviewReason;
-        if (_requiresManualReview) {
-          _nextNeedsExpertReview = true;
-          _nextExpertReviewReason = (_expertBase.reason === 'content-fidelity' || _expertBase.reason === 'both') ? 'both' : 'accessibility';
-        } else {
-          _nextNeedsExpertReview = _expertBase.needed;
-          _nextExpertReviewReason = _expertBase.reason;
-        }
+        const _nextNeedsExpertReview = _expertBase.needed;
+        const _nextExpertReviewReason = _expertBase.reason;
         cur = Object.assign({}, cur, {
           accessibleHtml: result.html,
           axeAudit: _freshAxe,
@@ -22290,8 +22345,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           secondEngineAudit: _freshEa,
           needsExpertReview: _nextNeedsExpertReview,
           expertReviewReason: _nextExpertReviewReason,
-          _verificationExpertReview: _requiresManualReview,
-          _expertReviewBeforeVerification: _requiresManualReview ? _expertBase : null,
+          _verificationExpertReview: false,
+          _expertReviewBeforeVerification: null,
           finalText: _newPlain || cur.finalText,
           autoFixPasses: (cur.autoFixPasses || 0) + (result.passes || 0),
           htmlChars: result.html.length,
@@ -22390,7 +22445,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           fileSize: (pendingPdfFile && typeof pendingPdfFile.size === 'number' && pendingPdfFile.size > 0)
             ? pendingPdfFile.size
             : (_override.base64 ? Math.floor(String(_override.base64).replace(/^data:[^,]*,/, '').replace(/\s+/g, '').length * 3 / 4) : null),
-          docKey: (() => { try { const _f = window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.docFingerprint; return (_f && _override.base64) ? _f(_override.base64) : null; } catch (_) { return null; } })(),
+          docKey: _override.docKey || null,
           extractedText: _override.extractedText || '',
           pdfBase64: _override.base64 || null,
           failureReason: _override.failureReason || 'other',
@@ -22428,6 +22483,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       version: 1,
       savedAt: new Date().toISOString(),
       fileName: pendingPdfFile?.name || 'document.pdf',
+      documentDigest: cur.documentDigest || null,
       accessibleHtml: cur.accessibleHtml,
       beforeScore: cur.beforeScore,
       afterScore: cur.afterScore,
@@ -22497,11 +22553,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     };
     if (pdfMultiSession && Array.isArray(pdfMultiSession.ranges) && pdfMultiSession.ranges.length > 0) {
       project.multiSession = {
-        schemaVersion: 1,
+        schemaVersion: 2,
         sessionId: pdfMultiSession.sessionId,
         fileName: pdfMultiSession.fileName || project.fileName,
         fileSize: pdfMultiSession.fileSize || (pendingPdfFile?.size || 0),
         pageCount: pdfMultiSession.pageCount || project.pageCount,
+        documentDigest: pdfMultiSession.documentDigest || cur.documentDigest || null,
         ranges: pdfMultiSession.ranges,
       };
     }
@@ -22659,10 +22716,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   };
 
   const _prevPdfFixLoadingRef = useRef(pdfFixLoading);
+  const _pdfFidelityRepairEpochRef = useRef(0);
   useEffect(() => {
     const wasLoading = _prevPdfFixLoadingRef.current;
     _prevPdfFixLoadingRef.current = pdfFixLoading;
     if (!wasLoading || pdfFixLoading) return; // fire only on true → false
+    const _repairEpoch = ++_pdfFidelityRepairEpochRef.current;
     const tid = setTimeout(() => {
       try {
         if (!extractionData || !extractionData.fullText) return;
@@ -22686,6 +22745,28 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           } catch (e) { return ''; }
         };
         const sourceText = extractionData.fullText || '';
+        let _repairToken = capturePdfHtmlCommitToken();
+        let _workingHtml = String((_repairToken && _repairToken.html) || '');
+        let _staleRepairNotified = false;
+        const _repairCurrent = () => !!(_repairToken
+          && _pdfFidelityRepairEpochRef.current === _repairEpoch
+          && _repairToken.revision === pdfHtmlRevisionRef.current
+          && pdfFixResultRef.current
+          && pdfFixResultRef.current.accessibleHtml === _repairToken.html);
+        const _discardStaleRepair = () => {
+          if (_staleRepairNotified) return;
+          _staleRepairNotified = true;
+          if (addToast) addToast(t('toasts.fidelity_stale_discarded') || 'The document changed during automatic fidelity repair ? the stale repair was discarded.', 'info');
+        };
+        const _commitRepairHtml = (nextHtml) => {
+          if (!_repairCurrent() || !commitPdfFixResultIfCurrent(_repairToken, (prev) => ({ ...prev, accessibleHtml: nextHtml }))) {
+            _discardStaleRepair(); return false;
+          }
+          _repairToken = capturePdfHtmlCommitToken();
+          _workingHtml = String(nextHtml || '');
+          return true;
+        };
+        const _commitRepairMeta = (updater) => _repairCurrent() && commitPdfFixResultIfCurrent(_repairToken, updater);
         const remText1 = extractText();
         const pass1 = _buildMissingList(sourceText, remText1);
         const missing1 = pass1.missing;
@@ -22698,7 +22779,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           if (addToast) addToast(t('toasts.fidelity_100_words_missing'), 'success');
           try {
             if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-              setPdfFixResult(prev => prev ? Object.assign({}, prev, {
+              _commitRepairMeta(prev => prev ? Object.assign({}, prev, {
                 integrityVerifying: false,
                 integrityFinal: {
                   coverage: beforeFidelity,
@@ -22715,7 +22796,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         }
         try {
           if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-            setPdfFixResult(prev => prev ? Object.assign({}, prev, { integrityVerifying: true }) : prev);
+            _commitRepairMeta(prev => prev ? Object.assign({}, prev, { integrityVerifying: true }) : prev);
           }
         } catch (e) { /* non-blocking */ }
         (async () => {
@@ -22723,49 +22804,48 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           const stageCounts = { retry: 0, sentence: 0 };
           let currentMissing = missing1;
           try {
-            const currentHtml = getPdfPreviewHtml ? getPdfPreviewHtml() : ((pdfFixResult && pdfFixResult.accessibleHtml) || '');
+            const currentHtml = _workingHtml;
             const stageA = await retargetMissingWordsViaGemini(currentHtml, currentMissing, sourceText);
+            if (!_repairCurrent()) { _discardStaleRepair(); return; }
             if (stageA && Array.isArray(stageA.restoredViaRetry) && stageA.restoredViaRetry.length > 0 && stageA.html && stageA.html !== currentHtml) {
               stageCounts.retry = stageA.restoredViaRetry.length;
-              if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-                setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: stageA.html } : prev);
-              }
+              if (!_commitRepairHtml(stageA.html)) return;
               currentMissing = Array.isArray(stageA.stillMissing) ? stageA.stillMissing : currentMissing;
             }
           } catch (eA) { /* non-blocking */ }
           if (currentMissing.length > 0) {
             try {
-              const currentHtml = (pdfFixResult && pdfFixResult.accessibleHtml) || (getPdfPreviewHtml ? getPdfPreviewHtml() : '');
+              const currentHtml = _workingHtml;
               const stageB = restoreSentencesDeterministic(currentHtml, currentMissing, sourceText);
               if (stageB && Array.isArray(stageB.restoredViaSentence) && stageB.restoredViaSentence.length > 0 && stageB.html && stageB.html !== currentHtml) {
                 stageCounts.sentence = stageB.restoredViaSentence.length;
-                if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-                  setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: stageB.html } : prev);
-                }
+                if (!_commitRepairHtml(stageB.html)) return;
                 currentMissing = Array.isArray(stageB.stillMissing) ? stageB.stillMissing : currentMissing;
               }
             } catch (eB) { /* non-blocking */ }
           }
           setTimeout(() => {
             try {
+            if (!_repairCurrent()) { _discardStaleRepair(); return; }
             let restoreResult = { restored: [], unplaceable: currentMissing };
             if (currentMissing.length > 0) {
               try { restoreResult = applyWordRestorationInPlace(currentMissing, sourceText) || restoreResult; }
               catch (restoreErr) { /* warn already in pipeline */ }
+              _repairToken = capturePdfHtmlCommitToken();
+              _workingHtml = String((_repairToken && _repairToken.html) || '');
             }
             let dedupResult = { autoRemoved: [], highlighted: [] };
             try {
-              const currentHtml = (pdfFixResult && pdfFixResult.accessibleHtml) || (getPdfPreviewHtml ? getPdfPreviewHtml() : '');
+              const currentHtml = _workingHtml;
               const dedup = detectAndHandleDuplicates(currentHtml, sourceText);
               if (dedup && dedup.html && dedup.html !== currentHtml) {
-                if (typeof setPdfFixResult === 'function' && pdfFixResult) {
-                  setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: dedup.html } : prev);
-                }
+                if (!_commitRepairHtml(dedup.html)) return;
                 dedupResult = { autoRemoved: dedup.autoRemoved || [], highlighted: dedup.highlighted || [] };
               }
             } catch (eD) { /* non-blocking */ }
             setTimeout(() => {
               try {
+              if (!_repairCurrent()) { _discardStaleRepair(); return; }
               try {
                 const remText2 = extractText();
                 const pass2 = _buildMissingList(sourceText, remText2);
@@ -22782,7 +22862,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                 const _dedupRemovedCount = (dedupResult.autoRemoved || []).length;
                 try {
                   if (typeof setPdfFixResult === 'function') {
-                    setPdfFixResult(prev => prev ? Object.assign({}, prev, {
+                    _commitRepairMeta(prev => prev ? Object.assign({}, prev, {
                       integrityVerifying: false,
                       integrityFinal: {
                         coverage: afterFidelity,
@@ -22818,20 +22898,20 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                 }
               } catch (e) { /* non-blocking */ }
               } finally {
-                setPdfFixResult(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
+                _commitRepairMeta(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
               }
             }, 500);
             } finally {
-              setPdfFixResult(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
+              _commitRepairMeta(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
             }
           }, 200);
           } finally {
-            setPdfFixResult(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
+            _commitRepairMeta(prev => prev && (!prev.integrityFinal || !prev.integrityFinal.verifiedAt) ? { ...prev, integrityVerifying: false } : prev);
           }
         })();
       } catch (outerErr) { /* non-blocking */ }
     }, 200);
-    return () => clearTimeout(tid);
+    return () => { clearTimeout(tid); if (_pdfFidelityRepairEpochRef.current === _repairEpoch) _pdfFidelityRepairEpochRef.current += 1; };
   }, [pdfFixLoading, extractionData, pdfMultiSession]);
 
   const [expertCommandInput, setExpertCommandInput] = useState('');
@@ -23453,9 +23533,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const iframe = exportPreviewRef.current;
       const doc = iframe && (iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document));
       if (!doc || !doc.body || !doc.documentElement) return;
+      const hasLiveEdits = doc.body.getAttribute('data-allo-user-edited') === '1';
+      if (doc.body.getAttribute('data-allo-preview-error') === '1') return;
+      if (exportPreviewSource === 'remediation' && !hasLiveEdits) return;
       // Never persist an empty/failed render, while allowing legitimate short,
       // image-led, equation-only, form, and title-page documents.
-      const hasMeaningfulContent = (doc.body.textContent || '').trim().length > 0 || !!doc.body.querySelector('img,svg,canvas,video,audio,math,table,form,input,textarea,select,hr');
+      const hasMeaningfulContent = (doc.body.textContent || '').trim().length > 0 || !!doc.body.querySelector('img,svg,canvas,video,audio,math,table,form,input,textarea,select');
       if (!hasMeaningfulContent) return;
       const clone = doc.documentElement.cloneNode(true);
       try {
@@ -23500,13 +23583,18 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     return raw.length + ':' + (hash >>> 0).toString(16);
   };
   const BUILDER_PROJECT_DRAFT_MAX_BYTES = 32 * 1024 * 1024;
+  const BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES = 32 * 1024 * 1024;
+  const _builderUtf8ByteLength = (value) => {
+    try { return new TextEncoder().encode(String(value == null ? '' : value)).byteLength; }
+    catch (_) { return String(value == null ? '' : value).length; }
+  };
   // Project files can come from outside this app. A saved Builder draft is
   // therefore treated as untrusted HTML before it is ever placed in the
   // same-origin editing iframe. Preserve document structure and styling while
   // removing executable/embedded content, event handlers, navigation targets,
   // remote CSS fetches, and dangerous URL schemes.
   const _sanitizeBuilderProjectDraft = (html, historySignature) => {
-    if (typeof html !== 'string' || html.length === 0 || html.length > BUILDER_PROJECT_DRAFT_MAX_BYTES || !/<body[\s>]/i.test(html)) return null;
+    if (typeof html !== 'string' || html.length === 0 || _builderUtf8ByteLength(html) > BUILDER_PROJECT_DRAFT_MAX_BYTES || !/<body[\s>]/i.test(html)) return null;
     try {
       const parsed = new DOMParser().parseFromString(html, 'text/html');
       if (!parsed || !parsed.documentElement || !parsed.body) return null;
@@ -23525,31 +23613,149 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       });
       parsed.querySelectorAll('form').forEach((form) => { form.removeAttribute('action'); form.removeAttribute('target'); form.removeAttribute('method'); });
       const cleanHtml = '<!DOCTYPE html>\n' + parsed.documentElement.outerHTML;
-      if (cleanHtml.length > BUILDER_PROJECT_DRAFT_MAX_BYTES) return null;
+      if (_builderUtf8ByteLength(cleanHtml) > BUILDER_PROJECT_DRAFT_MAX_BYTES) return null;
       return { version: 1, source: 'history', historySignature, html: cleanHtml, savedAt: new Date().toISOString(), activeContentRemoved: true };
     } catch (_) { return null; }
   };
-  const _getBuilderDraftForProject = () => {
+  const _deduplicateBuilderDraftAssets = (html) => {
+    const assets = [];
+    const indexes = new Map();
+    const compactHtml = String(html || '').replace(/data:image\/[a-z0-9.+-]+;base64,[a-z0-9+/=\r\n]+/gi, (asset) => {
+      let index = indexes.get(asset);
+      if (index === undefined) {
+        index = assets.length;
+        indexes.set(asset, index);
+        assets.push(asset);
+      }
+      return 'allo-builder-asset:' + index;
+    });
+    return { html: compactHtml, assets };
+  };
+  const _restoreBuilderDraftAssets = (html, assets) => {
+    if (!Array.isArray(assets) || assets.length > 2048 || assets.some((asset) => typeof asset !== 'string' || !/^data:image\/[a-z0-9.+-]+;base64,/i.test(asset))) return null;
+    return String(html || '').replace(/allo-builder-asset:(\d+)/g, (_match, rawIndex) => {
+      const index = Number(rawIndex);
+      return Number.isSafeInteger(index) && assets[index] ? assets[index] : '';
+    });
+  };
+  const _builderBytesToBase64 = (bytes) => {
+    let binary = '';
+    for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(offset, Math.min(offset + 0x8000, bytes.length)));
+    }
+    return btoa(binary);
+  };
+  const _builderBase64ToBytes = (encoded) => {
+    try {
+      const binary = atob(String(encoded || ''));
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+      return bytes;
+    } catch (_) { return null; }
+  };
+  const _readBuilderDraftStreamBounded = async (stream, maxBytes) => {
+    if (!stream || typeof stream.getReader !== 'function' || typeof TextDecoder === 'undefined') return null;
+    const reader = stream.getReader();
+    const chunks = [];
+    let total = 0;
+    try {
+      while (true) {
+        const part = await reader.read();
+        if (part.done) break;
+        total += part.value.byteLength;
+        if (total > maxBytes) { try { await reader.cancel(); } catch (_) {} return null; }
+        chunks.push(part.value);
+      }
+    } finally { try { reader.releaseLock(); } catch (_) {} }
+    const merged = new Uint8Array(total);
+    let offset = 0;
+    chunks.forEach((chunk) => { merged.set(chunk, offset); offset += chunk.byteLength; });
+    return new TextDecoder().decode(merged);
+  };
+  const _encodeBuilderDraftPayload = async (payloadText) => {
+    try {
+      if (typeof CompressionStream === 'function' && typeof Blob === 'function' && typeof Response === 'function') {
+        const compressedStream = new Blob([payloadText]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+        const compressed = new Uint8Array(await new Response(compressedStream).arrayBuffer());
+        if (compressed.byteLength <= BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES) {
+          return { encoding: 'deflate-raw-base64', payload: _builderBytesToBase64(compressed), storedByteLength: compressed.byteLength };
+        }
+        return null;
+      }
+    } catch (_) {}
+    const storedByteLength = _builderUtf8ByteLength(payloadText);
+    return storedByteLength <= BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES
+      ? { encoding: 'plain-json', payload: payloadText, storedByteLength }
+      : null;
+  };
+  const _decodeBuilderDraftPayload = async (candidate) => {
+    if (!candidate || typeof candidate.payload !== 'string' || candidate.payload.length > BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES * 2) return null;
+    if (candidate.encoding === 'plain-json') {
+      if (_builderUtf8ByteLength(candidate.payload) > BUILDER_PROJECT_DRAFT_MAX_BYTES) return null;
+      return candidate.payload;
+    }
+    if (candidate.encoding !== 'deflate-raw-base64' || typeof DecompressionStream !== 'function' || typeof Blob !== 'function') return null;
+    const bytes = _builderBase64ToBytes(candidate.payload);
+    if (!bytes || bytes.byteLength > BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES) return null;
+    try {
+      const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+      return await _readBuilderDraftStreamBounded(stream, BUILDER_PROJECT_DRAFT_MAX_BYTES);
+    } catch (_) { return null; }
+  };
+  const _packBuilderProjectDraft = async (cleanDraft, historySignature) => {
+    const compact = _deduplicateBuilderDraftAssets(cleanDraft.html);
+    const payloadText = JSON.stringify(compact);
+    if (_builderUtf8ByteLength(payloadText) > BUILDER_PROJECT_DRAFT_MAX_BYTES) return null;
+    const encoded = await _encodeBuilderDraftPayload(payloadText);
+    if (!encoded) return null;
+    return {
+      version: 2,
+      source: 'history',
+      historySignature,
+      encoding: encoded.encoding,
+      payload: encoded.payload,
+      storedByteLength: encoded.storedByteLength,
+      uncompressedByteLength: _builderUtf8ByteLength(cleanDraft.html),
+      assetCount: compact.assets.length,
+      savedAt: new Date().toISOString(),
+      activeContentRemoved: true
+    };
+  };
+  const _unpackBuilderProjectDraft = async (candidate, historySignature) => {
+    if (!candidate || candidate.source !== 'history' || candidate.historySignature !== historySignature) return null;
+    if (candidate.version === 1) return typeof candidate.html === 'string' ? candidate.html : null;
+    if (candidate.version !== 2) return null;
+    const payloadText = await _decodeBuilderDraftPayload(candidate);
+    if (!payloadText) return null;
+    try {
+      const compact = JSON.parse(payloadText);
+      if (!compact || typeof compact.html !== 'string') return null;
+      const html = _restoreBuilderDraftAssets(compact.html, compact.assets || []);
+      return html && _builderUtf8ByteLength(html) <= BUILDER_PROJECT_DRAFT_MAX_BYTES ? html : null;
+    } catch (_) { return null; }
+  };
+  const _getBuilderDraftForProject = async () => {
     try {
       _syncBuilderEditsToRemediation();
       const draft = window.__alloBuilderEditedPack;
       const signature = _getBuilderHistorySignature();
       if (!draft || draft.source !== 'history' || draft.historySignature !== signature) return null;
-      return _sanitizeBuilderProjectDraft(draft.html, signature);
+      const cleanDraft = _sanitizeBuilderProjectDraft(draft.html, signature);
+      return cleanDraft ? await _packBuilderProjectDraft(cleanDraft, signature) : null;
     } catch (_) { return null; }
   };
-  const _restoreBuilderDraftFromProject = (candidate, loadedHistory) => {
+  const _restoreBuilderDraftFromProject = async (candidate, loadedHistory) => {
     try {
       window.__alloBuilderEditedPack = null;
       if (candidate == null) return;
       const signature = _getBuilderHistorySignature(loadedHistory);
-      const validEnvelope = candidate && candidate.version === 1 && candidate.source === 'history' && candidate.historySignature === signature;
-      const cleanDraft = validEnvelope ? _sanitizeBuilderProjectDraft(candidate.html, signature) : null;
+      const unpackedHtml = await _unpackBuilderProjectDraft(candidate, signature);
+      const cleanDraft = unpackedHtml ? _sanitizeBuilderProjectDraft(unpackedHtml, signature) : null;
       if (!cleanDraft) {
         addToast(t('toasts.builder_draft_skipped') || 'A saved Document Builder draft was not restored because it was stale or unsafe.', 'info');
         return;
       }
-      window.__alloBuilderEditedPack = { ...cleanDraft, at: Date.now(), restoredFromProject: true };
+      window.__alloBuilderEditedPack = { ...cleanDraft, at: Date.now(), restoredFromProject: true, storedVersion: candidate.version };
       addToast(t('toasts.builder_draft_restored') || 'Document Builder edits were restored with this project.', 'success');
     } catch (_) {
       try { window.__alloBuilderEditedPack = null; } catch (_) {}
@@ -23577,13 +23783,17 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     // their own CSS on repeated application. Slides mode stays history-based
     // (no remediation slide deck exists; the audit modal's accessible-PPTX
     // export covers decks).
+      if (!_docPipeline || typeof _docPipeline.sanitizeRemediationHtml !== 'function') {
+        throw new Error('Remediation security module unavailable ? reload after the application modules finish loading.');
+      }
+      const _safeRemediationHtml = _docPipeline.sanitizeRemediationHtml(pdfFixResult.accessibleHtml);
     if (exportPreviewSource === 'remediation' && pdfFixResult?.accessibleHtml && exportPreviewMode !== 'slides') {
       try {
         if (_docPipeline && typeof _docPipeline.applyStyleSeedToHtml === 'function') {
-          return _docPipeline.applyStyleSeedToHtml(pdfFixResult.accessibleHtml, exportTheme, exportConfig.fontSize || 16);
+          return _docPipeline.applyStyleSeedToHtml(_safeRemediationHtml, exportTheme, exportConfig.fontSize || 16);
         }
       } catch (err) { warnLog('[Export preview] remediation theming failed — serving unthemed remediated HTML:', err); }
-      return pdfFixResult.accessibleHtml;
+      return _safeRemediationHtml;
     }
     if (exportPreviewMode === 'slides') {
       return getSlidesPreviewHTML();
@@ -23643,7 +23853,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         addToast && addToast(t('toasts.preview_failed_render_document_pipeline'), 'error');
       }
       const escapedMsg = msg.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-      html = `<!DOCTYPE html><html><body style="font-family:system-ui;padding:2rem;color:#991b1b;background:#fef2f2"><h2>Preview error</h2><pre style="white-space:pre-wrap;font-size:12px">${escapedMsg}</pre><p style="font-size:12px;color:#7f1d1d;margin-top:1rem">If this persists, the CDN-loaded doc pipeline likely needs a redeploy with the latest fix.</p></body></html>`;
+      html = `<!DOCTYPE html><html><body data-allo-preview-error="1" style="font-family:system-ui;padding:2rem;color:#991b1b;background:#fef2f2"><h2>Preview error</h2><pre style="white-space:pre-wrap;font-size:12px">${escapedMsg}</pre><p style="font-size:12px;color:#7f1d1d;margin-top:1rem">If this persists, the CDN-loaded doc pipeline likely needs a redeploy with the latest fix.</p></body></html>`;
     }
     doc.open();
     doc.write(html);
@@ -33719,6 +33929,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         <FileDown size={12} /> {t('input.load_project') || 'Load Project'}
                         <input type="file" accept=".json" className="hidden" onChange={(e) => {
                           const file = e.target.files?.[0]; if (!file) return;
+                          if (file.size > 320 * 1024 * 1024) { addToast('This project file is larger than the 320 MB safety limit.', 'error'); e.target.value = ''; return; }
                           const _projectLoadEpoch = ++pdfProjectLoadEpochRef.current;
                           const reader = new FileReader();
                           reader.onload = async (ev) => {
@@ -33728,7 +33939,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                               if (!_savedProject.accessibleHtml || !_savedProject.version) { addToast(t('toasts.not_valid_alloflow_project'), 'error'); return; }
                               // Ignore any serialized runtime snapshot. Rehydrate makes it live
                               // only when the persisted SHA-256 digest matches accessibleHtml.
-                              const project = await rehydrateVerificationHtmlBinding(_savedProject);
+                              const _projectSanitizer = window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.sanitizeRemediationProject;
+                              if (typeof _projectSanitizer !== 'function') throw new Error('Remediation security module is still loading. Please retry in a moment.');
+                              const _sanitizedImport = _projectSanitizer(_savedProject);
+                              const project = await rehydrateVerificationHtmlBinding(_sanitizedImport.project);
                               if (_projectLoadEpoch !== pdfProjectLoadEpochRef.current) return;
                               const _derivedProjectVerification = deriveVerificationState({
                                 ai: project.verificationAudit || null,
@@ -33756,6 +33970,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                               });
                               const _loadedPdfFixResult = {
                                 accessibleHtml: project.accessibleHtml,
+                                documentDigest: project.documentDigest || null,
                                 beforeScore: project.beforeScore, afterScore: project.afterScore,
                                 axeAudit: project.axeAudit || null, verificationAudit: project.verificationAudit || null,
                                 secondEngineAudit: project.secondEngineAudit || null,
@@ -36688,6 +36903,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit, _docPipeline, recomputeIssueResolution,
           _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit, addToast, agentActivityLog,
           agentLogFullView, applyWordRestorationInPlace, auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary,
+          remediationReady, remediationDependencyState, retryRemediationDependencies,
           boringPalettePrompt, callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
           applyFormBlanks, detectFormBlanks, detectPdfBlankFields, overlayPdfFormFields, languageToTTSCode, callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, convertXlsxToMarkdownTables, createTaggedPdf, createTypesetTaggedPdf, transcribeMediaToPayload, simplifyAccessibleHtml, translateAccessibleHtml, t, theme, updatePdfPreview,
           diffLibReady, downloadAccessiblePdf, downloadBatchResults, ensurePdfBase64, expertCommandInput,
@@ -36700,6 +36916,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           pdfAutoSaveProject, pdfBatchCurrentIndex, pdfBatchMode, pdfBatchProcessing, pdfBatchQueue,
           pdfBatchStep, pdfBatchSummary, pdfFixLoading, pdfFixMode, pdfFixModeRef,
           pdfFixResult, pdfFixResultRef, pdfFixStep, pdfMultiSession, pdfPageRange,
+          capturePdfHtmlCommitToken, commitPdfFixResultIfCurrent,
           pdfPolishPasses, pdfPreviewA11yInspect, pdfPreviewFontSize, pdfPreviewOpen, pdfPreviewRef,
           pdfPreviewTheme, pdfTargetScore, pdfWebMode, pendingPdfBase64, pendingPdfFile,
           proceedWithPdfTransform, processExpertCommand, refixChunk, remediateSurgicallyThenAI, runAutoFixLoop,
