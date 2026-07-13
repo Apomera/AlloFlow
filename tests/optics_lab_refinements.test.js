@@ -59,4 +59,13 @@ describe('Optics Lab refinements', () => {
     expect(source).not.toContain('Quest auto-tracking on the calc render');
     expect(source).not.toContain('Set later via upd to avoid re-render storm');
   });
+  it('runs visualizer clocks through cancellable lifecycle effects', () => {
+    const source = readFileSync('stem_lab/stem_tool_optics.js', 'utf8');
+
+    expect(source).toContain("}, [d.phenoAfterPhase, d.phenoAfterStartedAt, d.phenoAfterTick]);");
+    expect(source).toContain("}, [d.phenoQuantumPlaying, d.phenoQuantumRate, d.phenoQuantumDots, d.phenoQuantumCount]);");
+    expect(source.match(/return function\(\) \{ clearTimeout\(timer\); \};/g).length).toBeGreaterThanOrEqual(2);
+    expect(source).not.toContain('Schedule a per-second re-render so the countdown updates');
+    expect(source).not.toContain('Auto-fire scheduling (mirrors after-image timer pattern)');
+  });
 });

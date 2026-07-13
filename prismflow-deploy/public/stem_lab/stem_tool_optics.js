@@ -2896,6 +2896,48 @@
         }
       }, [d.mode, d.lensType, d.lensFocal, d.lensDo, d.realImageFormed, d.virtualImageFormed]);
 
+      React.useEffect(function() {
+        var phase = d.phenoAfterPhase || 'idle';
+        if (phase === 'idle') return;
+        var timer = setTimeout(function() {
+          var elapsedMs = Date.now() - (d.phenoAfterStartedAt || Date.now());
+          if (phase === 'staring' && elapsedMs >= 12000) {
+            upd({ phenoAfterPhase: 'reveal', phenoAfterStartedAt: Date.now() });
+          } else if (phase === 'reveal' && elapsedMs >= 8000) {
+            upd({ phenoAfterPhase: 'idle', phenoAfterStartedAt: 0 });
+          } else {
+            upd('phenoAfterTick', Date.now());
+          }
+        }, 250);
+        return function() { clearTimeout(timer); };
+      }, [d.phenoAfterPhase, d.phenoAfterStartedAt, d.phenoAfterTick]);
+
+      React.useEffect(function() {
+        if (!d.phenoQuantumPlaying) return;
+        var rate = d.phenoQuantumRate || 'slow';
+        var timer = setTimeout(function() {
+          var width = 460, height = 200;
+          var perTick = rate === 'fast' ? 12 : 1;
+          var fresh = [];
+          for (var i = 0; i < perTick; i++) {
+            var point = null;
+            for (var attempt = 0; attempt < 30; attempt++) {
+              var x = Math.random() * width;
+              var wave = Math.cos((x / width - 0.5) * 8 * Math.PI);
+              if (Math.random() < wave * wave) {
+                point = { x: x, y: 14 + Math.random() * (height - 28) };
+                break;
+              }
+            }
+            fresh.push(point || { x: width / 2, y: height / 2 });
+          }
+          var combined = (d.phenoQuantumDots || []).concat(fresh);
+          if (combined.length > 1500) combined = combined.slice(-1500);
+          upd({ phenoQuantumDots: combined, phenoQuantumCount: (d.phenoQuantumCount || 0) + perTick });
+        }, rate === 'fast' ? 50 : 120);
+        return function() { clearTimeout(timer); };
+      }, [d.phenoQuantumPlaying, d.phenoQuantumRate, d.phenoQuantumDots, d.phenoQuantumCount]);
+
       // Build UI
       var OP_CORE_MODES = ['home', 'reflection', 'refraction', 'lenses', 'interference', 'diffraction', 'polarization', 'quiz', 'mastery', 'inquiry'];
       var opMastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
@@ -4672,18 +4714,8 @@
     var remaining;
     if (phase === 'staring') {
       remaining = Math.max(0, stareDur - elapsed);
-      if (remaining === 0 && typeof setTimeout === 'function') {
-        setTimeout(function() { upd({ phenoAfterPhase: 'reveal', phenoAfterStartedAt: Date.now() }); }, 0);
-      }
     } else if (phase === 'reveal') {
       remaining = Math.max(0, revealDur - elapsed);
-      if (remaining === 0 && typeof setTimeout === 'function') {
-        setTimeout(function() { upd({ phenoAfterPhase: 'idle', phenoAfterStartedAt: 0 }); }, 0);
-      }
-    }
-    // Schedule a per-second re-render so the countdown updates
-    if (phase !== 'idle' && typeof setTimeout === 'function') {
-      setTimeout(function() { upd('phenoAfterTick', Date.now()); }, 250);
     }
     function complementHex(hex) {
       var r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
@@ -5808,19 +5840,6 @@
       }
       // Fallback (very unlikely): center
       return { x: W / 2, y: H / 2 };
-    }
-    // Auto-fire scheduling (mirrors after-image timer pattern)
-    if (playing && typeof setTimeout === 'function') {
-      var perTick = rate === 'fast' ? 12 : 1;
-      setTimeout(function() {
-        var fresh = [];
-        for (var i = 0; i < perTick; i++) fresh.push(fireOne());
-        var combined = dots.concat(fresh);
-        // Cap at 1500 dots for SVG-render perf — beyond this the pattern is
-        // already saturated visually and the marginal photon adds no info.
-        if (combined.length > 1500) combined = combined.slice(-1500);
-        upd({ phenoQuantumDots: combined, phenoQuantumCount: count + perTick });
-      }, rate === 'fast' ? 50 : 120);
     }
     // Render dots as small SVG circles. 1500 circles is borderline but works.
     // The newest dot gets a brief landing flash (scale + glow → settle) so
