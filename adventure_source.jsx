@@ -689,39 +689,39 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
         className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
         onClick={onClose}
     >
-      <div role="button" tabIndex={0} className="bg-slate-900 border-4 border-indigo-500 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden relative flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+      <div className="bg-slate-900 border-4 border-indigo-500 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden relative flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
         <div className="bg-indigo-600 p-3 sm:p-6 text-white flex justify-between items-center shrink-0 shadow-lg relative z-10">
             <div>
                 <h2 className="text-2xl font-black uppercase tracking-widest flex items-center gap-3">
                     <div className="bg-yellow-400 text-indigo-900 p-2 rounded-lg shadow-inner border-2 border-indigo-800">
-                        <ShoppingBag size={24} />
+                        <ShoppingBag size={24} aria-hidden="true" />
                     </div>
                     {t('adventure.shop')}
                 </h2>
-                <p className="text-indigo-200 text-sm font-bold mt-1 ml-1">{t('adventure.shop_desc')}</p>
+                <p className="text-white text-sm font-bold mt-1 ml-1">{t('adventure.shop_desc')}</p>
             </div>
-            <button onClick={onClose} className="bg-indigo-800 hover:bg-indigo-700 text-white p-2 rounded-full transition-colors border-2 border-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" autoFocus aria-label={t('adventure.close_shop_aria')}>
-                <X size={24}/>
+            <button onClick={onClose} className="min-w-11 min-h-11 bg-indigo-800 hover:bg-indigo-700 text-white p-2 rounded-full transition-colors border-2 border-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white" autoFocus aria-label={t('adventure.close_shop_aria')}>
+                <X size={24} aria-hidden="true"/>
             </button>
         </div>
         <div className="bg-slate-800 p-2 sm:p-4 flex justify-between items-center border-b border-slate-700 shrink-0 gap-2 sm:gap-4 flex-wrap sm:flex-nowrap">
             <div className="flex gap-6">
                 <div className="flex items-center gap-2 bg-slate-700 px-4 py-2 rounded-xl border border-slate-600">
-                    <span className="text-2xl">💰</span>
+                    <span className="text-2xl" aria-hidden="true">💰</span>
                     <div>
-                        <div className="text-[11px] text-slate-600 font-bold uppercase tracking-wider">{t('adventure.gold')}</div>
+                        <div className="text-[11px] text-slate-200 font-bold uppercase tracking-wider">{t('adventure.gold')}</div>
                         <div className="text-xl font-black text-yellow-400 leading-none">{gold}</div>
                     </div>
                 </div>
                 <div className="flex items-center gap-2 bg-slate-700 px-4 py-2 rounded-xl border border-slate-600">
-                    <span className="text-2xl">🏆</span>
+                    <span className="text-2xl" aria-hidden="true">🏆</span>
                     <div>
-                        <div className="text-[11px] text-slate-600 font-bold uppercase tracking-wider">{t('adventure.global_xp')}</div>
+                        <div className="text-[11px] text-slate-200 font-bold uppercase tracking-wider">{t('adventure.global_xp')}</div>
                         <div className="text-xl font-black text-green-400 leading-none">{globalXP}</div>
                     </div>
                 </div>
             </div>
-            <div className="text-xs text-slate-600 italic text-right ml-auto">
+            <div className="text-xs text-slate-300 italic text-right ml-auto">
                 {t('adventure.xp_earn_tip')}
             </div>
         </div>
@@ -729,7 +729,7 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
             {ADVENTURE_SHOP_ITEMS.map((item) => (
                 <div key={item.id} className="bg-slate-800 border-2 border-slate-700 rounded-2xl p-3 sm:p-4 flex flex-col hover:border-indigo-500 transition-colors group relative overflow-hidden">
                     <div className="flex justify-between items-start mb-2 relative z-10">
-                        <div className="text-2xl sm:text-4xl bg-slate-700 w-10 h-10 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center shadow-inner border border-slate-600">
+                        <div className="text-2xl sm:text-4xl bg-slate-700 w-10 h-10 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center shadow-inner border border-slate-600" aria-hidden="true">
                             {item.icon}
                         </div>
                         <div className="text-right">
@@ -749,7 +749,7 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
                         <button
                             onClick={() => onPurchase(item)}
                             disabled={gold < item.cost}
-                            className={`w-full py-2 sm:py-2.5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0 min-h-[40px] ${
+                            className={`w-full py-2 sm:py-2.5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 ${
                                 gold >= item.cost
                                 ? 'bg-yellow-500 hover:bg-yellow-400 text-indigo-900 shadow-lg shadow-yellow-500/30 border-2 border-yellow-300 ring-1 ring-yellow-400/50'
                                 : 'bg-slate-700 text-slate-300 cursor-not-allowed'

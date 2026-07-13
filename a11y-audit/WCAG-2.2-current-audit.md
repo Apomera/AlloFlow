@@ -157,6 +157,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Completed Timeline Studio modal focus management: focus now enters on the enlarged, visibly focused Close control; Tab and Shift+Tab remain within the dialog; Escape closes it; and focus returns to the invoking control after dismissal (WCAG 2.1.1, 2.1.2, 2.4.3, 2.4.7, 2.5.8, 4.1.2).
 
+- Remediated Adventure Shop as a named, focus-trapped modal without a misleading focusable simulated-button container; restored Escape closure in the deployed module, enlarged Close and Purchase targets, strengthened keyboard focus indicators and small-text contrast, and hid decorative shop, currency, trophy, and item icons from assistive technology (WCAG 1.1.1, 1.3.1, 1.4.3, 2.1.1, 2.4.3, 2.4.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
