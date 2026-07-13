@@ -85,15 +85,33 @@ describe('Fisher Lab voyage progression', () => {
     expect(getCoreEncounter('greatlakes').vessel).toBe('lake freighter');
     expect(evaluateCoreEncounter('maine', 'give-way').correct).toBe(true);
     expect(evaluateCoreEncounter('maine', 'stand-on').correct).toBe(false);
+
+    expect(getCoreEncounter('maine', 'skipper')).toMatchObject({
+      vessel: 'outbound lobsterboat',
+      approachSide: 'port',
+      correctAction: 'stand-on',
+      maneuverType: 'stand-on'
+    });
+    expect(evaluateCoreEncounter('maine', 'stand-on', 'skipper').correct).toBe(true);
+    expect(evaluateCoreEncounter('maine', 'give-way', 'skipper').correct).toBe(false);
   });
 
-  it('requires both safe speed and a clear starboard alteration', () => {
+  it('requires both safe speed and a clear starboard alteration when giving way', () => {
     const { evaluateCoreManeuver } = window.__FisherLabCore;
 
-    expect(evaluateCoreManeuver(Math.PI, Math.PI, 2)).toMatchObject({ slowEnough: true, turnedEnough: false, complete: false });
-    expect(evaluateCoreManeuver(Math.PI, Math.PI - Math.PI / 9, 5)).toMatchObject({ slowEnough: false, turnedEnough: true, complete: false });
-    expect(evaluateCoreManeuver(Math.PI, Math.PI - Math.PI / 9, 2)).toMatchObject({ slowEnough: true, turnedEnough: true, complete: true });
-    expect(evaluateCoreManeuver(Math.PI, Math.PI + Math.PI / 6, 1).turnDegrees).toBe(0);
+    expect(evaluateCoreManeuver('give-way', Math.PI, Math.PI, 3, 2, 1)).toMatchObject({ criterionOne: true, criterionTwo: false, complete: false });
+    expect(evaluateCoreManeuver('give-way', Math.PI, Math.PI - Math.PI / 9, 3, 5, 1)).toMatchObject({ criterionOne: false, criterionTwo: true, complete: false });
+    expect(evaluateCoreManeuver('give-way', Math.PI, Math.PI - Math.PI / 9, 3, 2, 1)).toMatchObject({ criterionOne: true, criterionTwo: true, complete: true });
+    expect(evaluateCoreManeuver('give-way', Math.PI, Math.PI + Math.PI / 6, 3, 1, 1).turnDegrees).toBe(0);
+  });
+
+  it('requires a steady five-second watch when standing on', () => {
+    const { evaluateCoreManeuver } = window.__FisherLabCore;
+
+    expect(evaluateCoreManeuver('stand-on', Math.PI, Math.PI + Math.PI / 45, 3, 3.5, 5)).toMatchObject({ criterionOne: true, criterionTwo: true, observedEnough: true, complete: true });
+    expect(evaluateCoreManeuver('stand-on', Math.PI, Math.PI + Math.PI / 12, 3, 3.5, 5)).toMatchObject({ criterionOne: false, complete: false });
+    expect(evaluateCoreManeuver('stand-on', Math.PI, Math.PI, 3, 5, 5)).toMatchObject({ criterionTwo: false, complete: false });
+    expect(evaluateCoreManeuver('stand-on', Math.PI, Math.PI, 3, 3, 4.9)).toMatchObject({ observedEnough: false, complete: false });
   });
 
   it('awards ranks from combined score, accuracy, and fuel stewardship', () => {
@@ -126,12 +144,15 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain("activeRegion === 'chesapeake'");
     expect(source).toContain('Traffic: vessel clearing');
     expect(source).toContain('trafficManeuverSeconds >= 20');
-    expect(source).toContain('Give-way maneuver complete');
+    expect(source).toContain("encounterProfile.maneuverLabel + ' complete");
+    expect(source).toContain("mode === 'skipper' ? CORE_COLREGS_STAND_ON");
     expect(source).toContain('Safe speed ≤ 2.5 kt');
     expect(source).toContain("label: 'Reduce speed or reverse'");
     expect(source).toContain('trafficManeuverComplete ? 1 : 0');
-    expect(source).toContain("if (objective.id === 'maneuver') objectiveBearing = 25;");
+    expect(source).toContain("if (objective.id === 'maneuver') objectiveBearing = encounterProfile.maneuverType === 'stand-on' ? 0 : 25;");
     expect(source).toContain('Alter starboard · open closest approach');
+    expect(source).toContain('Maintain course · monitor closest approach');
+    expect(source).toContain('Observe crossing 5 s');
     expect(source).toContain("type: 'fish-haul'");
     expect(source).toContain("role: 'dialog', 'aria-modal': 'true'");
     expect(source).not.toContain('resumeSim');
