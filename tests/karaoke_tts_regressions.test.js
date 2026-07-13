@@ -55,6 +55,7 @@ beforeAll(() => {
 
   loadAlloModule('immersive_reader_module.js');
   loadAlloModule('tts_module.js');
+  loadAlloModule('karaoke_audio_store_module.js');
   KaraokeReaderOverlay = window.AlloModules.KaraokeReaderOverlay;
   createTTS = window.AlloModules.createTTS;
   if (!KaraokeReaderOverlay) throw new Error('KaraokeReaderOverlay did not register');
@@ -79,6 +80,10 @@ afterEach(() => {
   delete window._piperTTS;
   delete window.__ttsGeminiAuthFailed;
   delete window.__ttsGeminiQuotaFailed;
+  if (window.AlloModules && window.AlloModules.KaraokeAudioStore) {
+    window.AlloModules.KaraokeAudioStore.current = null;
+    window.AlloModules.KaraokeAudioStore.currentResourceId = null;
+  }
 });
 
 function renderKaraoke(props) {
@@ -227,6 +232,98 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
 
     expect(getAudioUrl).toHaveBeenCalledWith('Heading');
     expect(getAudioUrl).not.toHaveBeenCalledWith('Heading First sentence.');
+  });
+
+  it('offers a bounded retry when a played clip fails to save', async () => {
+    audioInstances = [];
+    global.Audio = window.Audio = FakeAudio;
+    const capture = vi.fn()
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true);
+    window.__alloCaptureKaraokeAudio = capture;
+    const getAudioUrl = vi.fn(() => Promise.resolve('blob:retryable-clip'));
+
+    renderKaraoke(karaokeProps({
+      text: 'Retry this save.',
+      sentenceList: ['Retry this save.'],
+      getAudioUrl,
+      isTeacher: true,
+      captureOn: true,
+    }));
+    const play = host.querySelector('button[aria-label="Play"]');
+    await act(async () => {
+      play.click();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    const retryButton = Array.from(host.querySelectorAll('button')).find((candidate) =>
+      candidate.textContent.includes('Retry failed saves'));
+    expect(retryButton).toBeTruthy();
+
+    await act(async () => {
+      retryButton.click();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(capture).toHaveBeenCalledTimes(2);
+    expect(getAudioUrl).toHaveBeenCalledTimes(2);
+    expect(Array.from(host.querySelectorAll('button')).some((candidate) =>
+      candidate.textContent.includes('Retry failed saves'))).toBe(false);
+  });
+  it('plays a serialized and rehydrated clip without invoking TTS generation', async () => {
+    audioInstances = [];
+    global.Audio = window.Audio = FakeAudio;
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(() => 'blob:rehydrated-read-aloud'),
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(),
+    });
+
+    const KS = window.AlloModules.KaraokeAudioStore;
+    const writer = KS.createStore();
+    writer.put('Already saved.', Buffer.from('saved audio').toString('base64'), 'audio/mpeg', 'ai-played', {
+      voice: 'Kore',
+      speed: 1,
+      language: 'English',
+      provider: 'played-tts-mp3',
+    });
+    const transferred = JSON.parse(JSON.stringify({ karaokeAudio: writer.serialize() }));
+    const reader = KS.createStore();
+    reader.hydrate(transferred.karaokeAudio);
+    KS.current = reader;
+
+    const synthesize = vi.fn(() => Promise.resolve('blob:unexpected-new-tts'));
+    const getAudioUrl = vi.fn((sentence) => {
+      const stored = reader.get(sentence);
+      return stored ? Promise.resolve(stored) : synthesize(sentence);
+    });
+
+    renderKaraoke(karaokeProps({
+      text: 'Already saved.',
+      sentenceList: ['Already saved.'],
+      getAudioUrl,
+      captureOn: false,
+    }));
+    const play = host.querySelector('button[aria-label="Play"]');
+    await act(async () => {
+      play.click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(getAudioUrl).toHaveBeenCalledWith('Already saved.');
+    expect(synthesize).not.toHaveBeenCalled();
+    expect(audioInstances).toHaveLength(1);
+    expect(audioInstances[0].src).toBe('blob:rehydrated-read-aloud');
   });
 });
 

@@ -1031,6 +1031,26 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
     // sentences also reached the durable per-resource store so turning capture
     // on after warming can persist the cached URL without re-synthesis.
     const capturedWarmRef = useRef(new Set());
+    const captureRetryRef = useRef(new Map());
+    const capturePendingRef = useRef(new Set());
+    const captureIssueRef = useRef({ limit: false, message: '' });
+    const [captureSaveState, setCaptureSaveState] = useState({ pending: 0, failed: 0, limit: false, message: '' });
+    const [captureRetrying, setCaptureRetrying] = useState(false);
+    const refreshCaptureSaveState = useCallback(() => {
+        setCaptureSaveState({
+            pending: capturePendingRef.current.size,
+            failed: captureRetryRef.current.size,
+            limit: !!captureIssueRef.current.limit,
+            message: captureIssueRef.current.message || ''
+        });
+    }, []);
+    const captureKeyFor = useCallback((sentenceText) => {
+        try {
+            const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+            if (KS && typeof KS.keyFor === 'function') return KS.keyFor(sentenceText);
+        } catch (e) {}
+        return String(sentenceText || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    }, []);
     const reducedMotion = typeof window !== 'undefined' && window.matchMedia
         ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
         : false;
@@ -1051,19 +1071,84 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
     const scheduleCaptureForStorage = useCallback((sentenceText, url) => {
         if (!captureOn || !sentenceText || !url) return Promise.resolve(false);
         if (typeof window === 'undefined' || typeof window.__alloCaptureKaraokeAudio !== 'function') return Promise.resolve(false);
+        const key = captureKeyFor(sentenceText);
+        capturePendingRef.current.add(key);
+        refreshCaptureSaveState();
         // Invoke immediately so the persistence helper can snapshot the blob URL
         // before playback cleanup. It defers only the heavy MP3 encode after it
         // owns the bytes.
+        let request;
         try {
-            return Promise.resolve(window.__alloCaptureKaraokeAudio(sentenceText, url)).catch(() => false);
+            request = Promise.resolve(window.__alloCaptureKaraokeAudio(sentenceText, url));
         } catch (e) {
-            return Promise.resolve(false);
+            request = Promise.resolve(false);
         }
-    }, [captureOn]);
+        return request.then((saved) => {
+            let stored = false;
+            try {
+                const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
+                stored = !!(st && st.has(sentenceText));
+            } catch (e) {}
+            capturePendingRef.current.delete(key);
+            if (saved || stored) {
+                captureRetryRef.current.delete(key);
+                if (captureRetryRef.current.size === 0) captureIssueRef.current = { limit: false, message: '' };
+            } else {
+                captureRetryRef.current.set(key, { sentence: sentenceText, url });
+                if (!captureIssueRef.current.message) captureIssueRef.current = { limit: false, message: 'Some played audio could not be saved.' };
+            }
+            refreshCaptureSaveState();
+            return !!(saved || stored);
+        }).catch(() => {
+            capturePendingRef.current.delete(key);
+            captureRetryRef.current.set(key, { sentence: sentenceText, url });
+            captureIssueRef.current = { limit: false, message: 'Some played audio could not be saved.' };
+            refreshCaptureSaveState();
+            return false;
+        });
+    }, [captureOn, captureKeyFor, refreshCaptureSaveState]);
+
+    useEffect(() => {
+        if (!isOpen || typeof window === 'undefined') return;
+        const onCaptureStatus = (event) => {
+            const detail = event && event.detail ? event.detail : {};
+            if (detail.status !== 'error' && detail.status !== 'limit') return;
+            const key = captureKeyFor(detail.sentence);
+            if (!key || !sentences.some(sentence => captureKeyFor(sentence) === key)) return;
+            captureIssueRef.current = {
+                limit: detail.status === 'limit',
+                message: detail.reason || (detail.status === 'limit' ? 'Saved read-aloud storage is full.' : 'Some played audio could not be saved.')
+            };
+            refreshCaptureSaveState();
+        };
+        window.addEventListener('alloflow:karaoke-audio-capture', onCaptureStatus);
+        return () => window.removeEventListener('alloflow:karaoke-audio-capture', onCaptureStatus);
+    }, [isOpen, sentences, captureKeyFor, refreshCaptureSaveState]);
+
+    const retryFailedCaptures = useCallback(async () => {
+        if (captureRetrying || captureRetryRef.current.size === 0 || captureIssueRef.current.limit) return;
+        setCaptureRetrying(true);
+        const failed = Array.from(captureRetryRef.current.values());
+        const resolver = getAudioUrlRef.current;
+        for (let i = 0; i < failed.length; i++) {
+            const item = failed[i];
+            let retryUrl = item.url;
+            try {
+                if (typeof resolver === 'function') retryUrl = (await resolver(item.sentence)) || retryUrl;
+            } catch (e) {}
+            if (retryUrl) await scheduleCaptureForStorage(item.sentence, retryUrl);
+        }
+        setCaptureRetrying(false);
+        refreshCaptureSaveState();
+    }, [captureRetrying, scheduleCaptureForStorage, refreshCaptureSaveState]);
 
     // Split text into sentences once (self-contained — parent's splitTextToSentences isn't exported)
     useEffect(() => {
         setCurrentAudioReadyIdx(-1);
+        captureRetryRef.current.clear();
+        capturePendingRef.current.clear();
+        captureIssueRef.current = { limit: false, message: '' };
+        setCaptureSaveState({ pending: 0, failed: 0, limit: false, message: '' });
         const canonicalSentences = (Array.isArray(sentenceList) ? sentenceList : [])
             .map(s => String(s || '').trim())
             .filter(Boolean);
@@ -1140,6 +1225,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                 // bytes must also enter the durable resource store.
                 try {
                     const warmedUrl = await resolver(sentences[i]);
+                    if (cancelled) return;
                     if (!warmedUrl) {
                         warmedRef.current.delete(i);
                         capturedWarmRef.current.delete(i);
@@ -1342,7 +1428,15 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
         setPrepState({ busy: true, done: 0, total: sentences.length });
         try {
             const res = await window.__alloPrepareReadAloud(sentences, function (done, total) { setPrepState({ busy: true, done: done, total: total }); });
-            setPrepState({ busy: false, done: (res && res.generated) || 0, total: (res && res.total) || 0, bytes: (res && res.bytes) || 0 });
+            setPrepState({
+                busy: false,
+                done: (res && res.generated) || 0,
+                total: (res && res.total) || 0,
+                failed: (res && res.failed) || 0,
+                remaining: (res && res.remaining) || 0,
+                bytes: (res && res.bytes) || 0,
+                failure: res && res.failure
+            });
         } catch (e) { setPrepState(null); }
     }, [prepState, sentences]);
     // Record the teacher’s own voice for the CURRENT sentence, sentence by
@@ -1566,6 +1660,28 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                                 <input type="checkbox" checked={captureOn} onChange={e => setCaptureOn(e.target.checked)} aria-label={safeT(t, "immersive.save_readaloud", "Save read-aloud as I listen")} />
                                 <span>{'💾'} {safeT(t, 'immersive.save_readaloud', 'Save read-aloud')}</span>
                             </label>
+                            {captureSaveState.pending > 0 && (
+                                <span role="status" aria-live="polite" style={{ color: c.sweep }}>
+                                    {safeT(t, 'immersive.saving_readaloud', 'Saving')} {captureSaveState.pending}
+                                </span>
+                            )}
+                            {captureSaveState.failed > 0 && captureSaveState.limit && (
+                                <span role="alert" title={captureSaveState.message} style={{ color: '#b45309' }}>
+                                    {safeT(t, 'immersive.readaloud_limit', 'Storage limit reached')} · {captureSaveState.failed}
+                                </span>
+                            )}
+                            {captureSaveState.failed > 0 && !captureSaveState.limit && (
+                                <button
+                                    type="button"
+                                    onClick={retryFailedCaptures}
+                                    disabled={captureRetrying}
+                                    title={captureSaveState.message || safeT(t, 'immersive.retry_readaloud_tip', 'Retry audio that could not be saved.')}
+                                    className="px-2.5 py-1 rounded-full transition-all"
+                                    style={{ background: 'transparent', color: '#b91c1c', border: '1px solid #fca5a5', opacity: captureRetrying ? 0.65 : 1 }}
+                                >
+                                    {captureRetrying ? '…' : '↻'} {safeT(t, 'immersive.retry_failed_saves', 'Retry failed saves')} · {captureSaveState.failed}
+                                </button>
+                            )}
                             <button
                                 onClick={regenerateCurrent}
                                 disabled={regenBusy}
@@ -1593,9 +1709,11 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                             >
                                 {prepState && prepState.busy
                                     ? `… ${prepState.done}/${prepState.total} ✕`
-                                    : (prepState && !prepState.busy)
-                                        ? `✓ ${safeT(t, 'immersive.readaloud_saved', 'Saved')}${prepState.bytes ? ' · ' + Math.max(1, Math.round(prepState.bytes / 1048576 * 10) / 10) + ' MB' : ''}`
-                                        : `💾 ${safeT(t, 'immersive.prepare_readaloud', 'Prepare read-aloud for students')}`}
+                                    : (prepState && !prepState.busy && prepState.remaining)
+                                        ? `↻ ${safeT(t, 'immersive.retry_failed_saves', 'Retry failed saves')} · ${prepState.remaining}`
+                                        : (prepState && !prepState.busy)
+                                            ? `✓ ${safeT(t, 'immersive.readaloud_saved', 'Saved')}${prepState.bytes ? ' · ' + Math.max(1, Math.round(prepState.bytes / 1048576 * 10) / 10) + ' MB' : ''}`
+                                            : `💾 ${safeT(t, 'immersive.prepare_readaloud', 'Prepare read-aloud for students')}`}
                             </button>
                         </div>
                     )}

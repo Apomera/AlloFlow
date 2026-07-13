@@ -358,6 +358,9 @@ function SimplifiedView(props) {
   var savingAudioKeys_state = React.useState({});
   var savingAudioKeys = savingAudioKeys_state[0];
   var setSavingAudioKeys = savingAudioKeys_state[1];
+  var captureAudioErrors_state = React.useState({});
+  var captureAudioErrors = captureAudioErrors_state[0];
+  var setCaptureAudioErrors = captureAudioErrors_state[1];
   var regenAudioKey_state = React.useState(null);
   var regenAudioKey = regenAudioKey_state[0];
   var setRegenAudioKey = regenAudioKey_state[1];
@@ -440,12 +443,33 @@ function SimplifiedView(props) {
             [key]: true
           });
         });
+        setCaptureAudioErrors(function (prev) {
+          var next = Object.assign({}, prev);
+          delete next[key];
+          return next;
+        });
       } else {
         setSavingAudioKeys(function (prev) {
           var next = Object.assign({}, prev);
           delete next[key];
           return next;
         });
+        setCaptureAudioErrors(function (prev) {
+          var next = Object.assign({}, prev);
+          if (detail.status === 'error' || detail.status === 'limit') {
+            next[key] = {
+              status: detail.status,
+              code: detail.code || 'capture-failed',
+              reason: detail.reason || 'Played TTS could not be saved.'
+            };
+          } else {
+            delete next[key];
+          }
+          return next;
+        });
+        if (detail.status === 'error' || detail.status === 'limit') {
+          setEditAudioNotice(detail.reason || 'Played TTS could not be saved. Generate that sentence again to retry.');
+        }
         setAudioStatusTick(function (n) {
           return n + 1;
         });
@@ -460,6 +484,7 @@ function SimplifiedView(props) {
   }, [generatedContent && generatedContent.id]);
   React.useEffect(function () {
     setSavingAudioKeys({});
+    setCaptureAudioErrors({});
   }, [generatedContent && generatedContent.id]);
   React.useEffect(function () {
     if (isEditingLeveledText) return;
@@ -540,24 +565,42 @@ function SimplifiedView(props) {
   var getReadAloudAudioProvenance = function (sentence) {
     var st = getReadAloudStore();
     var source = null;
+    var metadata = null;
     try {
       if (st && typeof st.sourceOf === 'function') source = st.sourceOf(sentence);
+      if (st && typeof st.metadataOf === 'function') metadata = st.metadataOf(sentence);
     } catch (_) {}
     if (source === 'human-teacher') return {
       source: source,
-      label: 'Teacher recording'
+      label: 'Teacher recording',
+      metadata: metadata,
+      stale: false
     };
     if (source === 'human-student') return {
       source: source,
-      label: 'Student recording'
+      label: 'Student recording',
+      metadata: metadata,
+      stale: false
     };
     if (source && String(source).indexOf('human') === 0) return {
       source: source,
-      label: 'Human recording'
+      label: 'Human recording',
+      metadata: metadata,
+      stale: false
     };
+    var currentVoice = selectedVoice || typeof window !== 'undefined' && window.__alloSelectedVoice || 'Puck';
+    var currentSpeed = typeof voiceSpeed === 'number' && voiceSpeed > 0 ? voiceSpeed : 1;
+    var currentLanguage = leveledTextLanguage || 'English';
+    var stale = !!(metadata && (metadata.voice && String(metadata.voice).toLowerCase() !== String(currentVoice).toLowerCase() || metadata.speed && Math.abs(Number(metadata.speed) - currentSpeed) > 0.001 || metadata.language && String(metadata.language).toLowerCase() !== String(currentLanguage).toLowerCase()));
+    var details = ['AI voice'];
+    if (metadata && metadata.voice) details.push(metadata.voice);
+    if (metadata && metadata.speed) details.push(Number(metadata.speed) + '×');
+    if (metadata && metadata.language) details.push(metadata.language);
     return {
       source: source || 'ai',
-      label: 'AI voice'
+      label: details.join(' · '),
+      metadata: metadata,
+      stale: stale
     };
   };
   var hasStoredReadAloudAudio = function (sentence) {
@@ -573,9 +616,18 @@ function SimplifiedView(props) {
     var saved = list.reduce(function (n, sentence) {
       return n + (hasStoredReadAloudAudio(sentence) ? 1 : 0);
     }, 0);
+    var bytes = 0;
+    var maxBytes = 0;
+    try {
+      var st = getReadAloudStore();
+      if (st && typeof st.estimateBytes === 'function') bytes = st.estimateBytes();
+      if (st && typeof st.limits === 'function') maxBytes = st.limits().maxBytes || 0;
+    } catch (_) {}
     return {
       saved: saved,
-      total: list.length
+      total: list.length,
+      bytes: bytes,
+      maxBytes: maxBytes
     };
   };
   var getReadAloudSentencesForText = function (rawText) {
@@ -609,13 +661,18 @@ function SimplifiedView(props) {
       total: sentences.length
     });
     try {
-      await window.__alloPrepareReadAloud(sentences, function (done, total) {
+      var result = await window.__alloPrepareReadAloud(sentences, function (done, total) {
         setTtsPrepState({
           busy: true,
           done: done,
           total: total || sentences.length
         });
       });
+      if (result && result.remaining) {
+        setEditAudioNotice(result.failure && result.failure.reason || result.remaining + ' sentence audio clips remain. Run Save TTS again to retry only missing clips.');
+      } else if (result && result.ok) {
+        setEditAudioNotice('Read-aloud audio is ready for all sentences.');
+      }
     } finally {
       setTtsPrepState({
         busy: false,
@@ -925,6 +982,7 @@ function SimplifiedView(props) {
     if (!sentences.length) return null;
     var summary = getReadAloudAudioSummary(sentences);
     var savingCount = Object.keys(savingAudioKeys || {}).length;
+    var captureErrorCount = Object.keys(captureAudioErrors || {}).length;
     var panelId = 'allo-edit-audio-' + String(generatedContent && generatedContent.id || 'current').replace(/[^a-z0-9_-]/gi, '-');
     var anyRecordingWork = !!editAudioMicRequestKey || !!editAudioRecordingKey || !!editAudioRecordingSaveKey;
     return /*#__PURE__*/React.createElement("div", {
@@ -942,7 +1000,7 @@ function SimplifiedView(props) {
       size: 14
     }), /*#__PURE__*/React.createElement("span", null, "Edit audio"), /*#__PURE__*/React.createElement("span", {
       className: "rounded-full bg-orange-100 text-orange-800 px-2 py-0.5 normal-case"
-    }, summary.saved, "/", summary.total, " saved"), editAudioOpen ? /*#__PURE__*/React.createElement(ChevronUp, {
+    }, summary.saved, "/", summary.total, " saved", summary.maxBytes ? ` · ${Math.round(summary.bytes / 104857.6) / 10}/${Math.round(summary.maxBytes / 104857.6) / 10} MB` : ''), editAudioOpen ? /*#__PURE__*/React.createElement(ChevronUp, {
       size: 14
     }) : /*#__PURE__*/React.createElement(ChevronDown, {
       size: 14
@@ -953,7 +1011,12 @@ function SimplifiedView(props) {
     }, /*#__PURE__*/React.createElement(RefreshCw, {
       size: 10,
       className: "animate-spin"
-    }), " Saving ", savingCount), /*#__PURE__*/React.createElement("label", {
+    }), " Saving ", savingCount), captureErrorCount > 0 && /*#__PURE__*/React.createElement("span", {
+      role: "alert",
+      className: "inline-flex items-center gap-1 text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-1"
+    }, /*#__PURE__*/React.createElement(AlertCircle, {
+      size: 10
+    }), " ", captureErrorCount, " save ", captureErrorCount === 1 ? 'issue' : 'issues'), /*#__PURE__*/React.createElement("label", {
       className: "inline-flex items-center gap-1.5 text-[11px] text-slate-700 font-semibold cursor-pointer"
     }, /*#__PURE__*/React.createElement("input", {
       type: "checkbox",
@@ -987,8 +1050,11 @@ function SimplifiedView(props) {
       var isSaved = hasStoredReadAloudAudio(sentence);
       var provenance = isSaved ? getReadAloudAudioProvenance(sentence) : {
         source: null,
-        label: 'No saved source'
+        label: 'No saved source',
+        stale: false
       };
+      var captureIssue = captureAudioErrors[audioKey];
+      var needsRebuild = !!(isSaved && provenance.stale);
       var isGenerating = regenAudioKey === key;
       var isLoading = editAudioLoadingKey === key;
       var isPlayingSentence = editAudioPlayingKey === key;
@@ -996,8 +1062,8 @@ function SimplifiedView(props) {
       var isRecording = editAudioRecordingKey === key;
       var isRecordingSave = editAudioRecordingSaveKey === key;
       var isRemoving = removeAudioKey === key;
-      var statusLabel = isMicRequest ? 'Opening microphone' : isRecording ? 'Recording' : isRecordingSave ? 'Saving recording' : isGenerating ? isSaved ? 'Regenerating' : 'Generating' : isRemoving ? 'Removing' : isSaving ? 'Caching played TTS' : isSaved ? 'Ready' : 'Missing audio';
-      var statusClass = isRecording ? 'bg-red-50 text-red-700 border-red-200' : isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : isSaved ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200';
+      var statusLabel = isMicRequest ? 'Opening microphone' : isRecording ? 'Recording' : isRecordingSave ? 'Saving recording' : isGenerating ? isSaved ? 'Regenerating' : 'Generating' : isRemoving ? 'Removing' : isSaving ? 'Caching played TTS' : captureIssue ? captureIssue.status === 'limit' ? 'Storage limit' : 'Save failed' : needsRebuild ? 'Ready · settings changed' : isSaved ? 'Ready' : 'Missing audio';
+      var statusClass = isRecording ? 'bg-red-50 text-red-700 border-red-200' : isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : captureIssue ? captureIssue.status === 'limit' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-red-50 text-red-700 border-red-200' : needsRebuild ? 'bg-amber-50 text-amber-800 border-amber-200' : isSaved ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200';
       var controlsBlocked = isSaving || isGenerating || isRemoving || ttsPrepState.busy;
       var recordDisabled = !isRecording && (anyRecordingWork || !!regenAudioKey || !!removeAudioKey || isSaving || ttsPrepState.busy);
       var actionClass = 'inline-flex items-center justify-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-45 disabled:cursor-not-allowed';
@@ -1024,6 +1090,8 @@ function SimplifiedView(props) {
         className: "animate-spin"
       }) : isRecording ? /*#__PURE__*/React.createElement("span", {
         className: "h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"
+      }) : captureIssue || needsRebuild ? /*#__PURE__*/React.createElement(AlertCircle, {
+        size: 9
       }) : isSaved ? /*#__PURE__*/React.createElement(CheckCircle2, {
         size: 9
       }) : /*#__PURE__*/React.createElement(AlertCircle, {
@@ -1057,14 +1125,15 @@ function SimplifiedView(props) {
           handleRegenerateReadAloudSentence(sentence, key, sentenceNumber);
         },
         disabled: !!regenAudioKey || isSaving || isRemoving || anyRecordingWork || ttsPrepState.busy,
-        "aria-label": `${isSaved ? 'Regenerate' : 'Generate'} audio for sentence ${sentenceNumber}`,
+        "aria-label": `${needsRebuild ? 'Rebuild' : isSaved ? 'Regenerate' : 'Generate'} audio for sentence ${sentenceNumber}`,
+        title: needsRebuild ? 'Rebuild this clip with the currently selected voice, speed, and language.' : isSaved ? 'Replace this saved clip with current voice settings.' : 'Generate audio with current voice settings.',
         className: `${actionClass} bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50`
       }, isGenerating ? /*#__PURE__*/React.createElement(RefreshCw, {
         size: 12,
         className: "animate-spin"
       }) : /*#__PURE__*/React.createElement(Volume2, {
         size: 12
-      }), /*#__PURE__*/React.createElement("span", null, isGenerating ? isSaved ? 'Regenerating' : 'Generating' : isSaved ? 'Regenerate' : 'Generate')), /*#__PURE__*/React.createElement("button", {
+      }), /*#__PURE__*/React.createElement("span", null, isGenerating ? isSaved ? 'Regenerating' : 'Generating' : needsRebuild ? 'Rebuild' : isSaved ? 'Regenerate' : 'Generate')), /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: function () {
           handleRecordEditAudioSentence(sentence, key, sentenceNumber);

@@ -7787,7 +7787,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=4c0ef3aae');
+    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=488e97b5');
     loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=4c0ef3aae');
     loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=4c0ef3aae');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
@@ -7801,7 +7801,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=4c0ef3aae');
     loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=4c0ef3aae');
     loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=4c0ef3aae');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=9dadb72f1');
+    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=2a568b03');
     loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=4c0ef3aae');
     loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=4c0ef3aae');
     loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=4c0ef3aae');
@@ -7821,7 +7821,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=4c0ef3aae');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=4c0ef3aae');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=4c0ef3aae');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=4c0ef3aae');
+    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=790bd86a');
     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=4c0ef3aae');
     loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=4c0ef3aae');
     loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=4c0ef3aae');
@@ -21387,6 +21387,30 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       r.readAsDataURL(blob);
     } catch (e) { reject(e); }
   });
+  const _karaokeAudioMetadata = (provider, includeVoice) => {
+    const meta = {
+      provider: provider || 'unknown',
+      language: leveledTextLanguage || currentUiLanguage || 'English',
+      createdAt: new Date().toISOString(),
+    };
+    if (includeVoice !== false) {
+      meta.voice = selectedVoice || window.__alloSelectedVoice || 'Puck';
+      meta.speed = (typeof voiceSpeed === 'number' && voiceSpeed > 0) ? voiceSpeed : 1;
+    }
+    return meta;
+  };
+  const _karaokePutFailureDetail = (st) => {
+    let error = null;
+    try { error = st && typeof st.lastPutError === 'function' ? st.lastPutError() : null; } catch (_) {}
+    const code = (error && error.code) || 'store-failed';
+    const limit = code === 'resource-limit' || code === 'clip-too-large';
+    const reason = code === 'resource-limit'
+      ? 'This resource reached its 12 MB saved read-aloud limit.'
+      : code === 'clip-too-large'
+        ? 'This sentence audio is larger than the 2 MB per-clip limit.'
+        : 'The generated audio could not be stored.';
+    return Object.assign({ code, reason, retryable: !limit }, error || {});
+  };
   // The karaoke store module arrives asynchronously. Resolve the active
   // resource's store lazily at every entry point so Save TTS is never required
   // merely to initialize it, and hydrate persisted clips before the first play.
@@ -21477,7 +21501,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           // 64 kbps mono is transparent for 24 kHz speech and halves the
           // embedded-JSON weight vs the 128 kbps download default.
           const mp3Blob = _ah.pcmToMp3(r.bytes, 24000, 64);
-          return { b64: await _blobToBase64(mp3Blob), mime: 'audio/mpeg' };
+          return { b64: await _blobToBase64(mp3Blob), mime: 'audio/mpeg', provider: 'gemini-pcm' };
         }
       }
     } catch (_) {}
@@ -21485,7 +21509,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const url = await callTTS(sentence, selectedVoice, voiceSpeed || 1, { language: leveledTextLanguage || currentUiLanguage || 'English' }).catch(() => null);
       if (!url) return null;
       const blob = await (await fetch(url)).blob();
-      return { b64: await _blobToBase64(blob), mime: blob.type || 'audio/wav' };
+      return { b64: await _blobToBase64(blob), mime: blob.type || 'audio/wav', provider: 'tts-resolver' };
     } catch (_) { return null; }
   };
   const _persistKaraokeAudioField = (field, payload, targetResourceId) => {
@@ -21516,7 +21540,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const resourceId = generatedContent && generatedContent.id;
     const out = await _synthSentenceForStore(sentence);
     if (!out || !out.b64) return null;
-    const url = st.put(sentence, out.b64, out.mime);
+    const url = st.put(sentence, out.b64, out.mime, 'ai-generated', _karaokeAudioMetadata(out.provider || 'tts-resolver'));
+    if (!url) {
+      const detail = _karaokePutFailureDetail(st);
+      _notifyKaraokeAudioCapture(sentence, detail.retryable ? 'error' : 'limit', resourceId, detail);
+      return null;
+    }
     _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
     return url;
   };
@@ -21543,21 +21572,34 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const todo = st.missing(list);
     let n = 0;
     let generatedCount = 0;
+    let failedCount = 0;
+    let lastFailure = null;
+    let wasCancelled = false;
     // A Stop click that landed after the previous run finished must not
     // cancel this run's first sentence.
     window.__alloPrepareReadAloudCancel = false;
     for (let i = 0; i < todo.length; i++) {
-      if (window.__alloPrepareReadAloudCancel) { window.__alloPrepareReadAloudCancel = false; break; }
+      if (window.__alloPrepareReadAloudCancel) { window.__alloPrepareReadAloudCancel = false; wasCancelled = true; break; }
       const out = await _synthSentenceForStore(todo[i]);
       if (out && out.b64) {
-        st.put(todo[i], out.b64, out.mime);
-        generatedCount++;
+        const storedUrl = st.put(todo[i], out.b64, out.mime, 'ai-generated', _karaokeAudioMetadata(out.provider || 'tts-resolver'));
+        if (storedUrl) {
+          generatedCount++;
+        } else {
+          failedCount++;
+          lastFailure = _karaokePutFailureDetail(st);
+          _notifyKaraokeAudioCapture(todo[i], lastFailure.retryable ? 'error' : 'limit', resourceId, lastFailure);
+        }
+      } else {
+        failedCount++;
+        lastFailure = { code: 'synthesis-failed', reason: 'Audio generation failed for this sentence.', retryable: true };
       }
       n++;
       try { if (typeof onProgress === 'function') onProgress(n, todo.length, todo[i]); } catch (_) {}
     }
     _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
-    return { ok: generatedCount === todo.length, generated: generatedCount, attempted: n, total: todo.length, bytes: st.estimateBytes() };
+    const remainingCount = Math.max(0, todo.length - generatedCount);
+    return { ok: remainingCount === 0, generated: generatedCount, failed: failedCount, remaining: remainingCount, cancelled: wasCancelled, attempted: n, total: todo.length, bytes: st.estimateBytes(), failure: lastFailure };
   };
   const _notifyKaraokeAudioCapture = (sentence, status, resourceId, extra) => {
     try {
@@ -21573,45 +21615,98 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // Prefers MP3 (the played clip is our own 24kHz mono WAV, RIFF + 44-byte
   // header) to keep the resource small; stores the raw clip if conversion
   // isn't possible. Persists into the resource like regenerate does.
+  const _karaokeCaptureInFlight = window.__alloKaraokeCaptureInFlight instanceof Map
+    ? window.__alloKaraokeCaptureInFlight
+    : (window.__alloKaraokeCaptureInFlight = new Map());
+  const _fetchKaraokeCaptureBuffer = async (url) => {
+    let lastError = null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const response = await fetch(url);
+        if (!response || response.ok === false || typeof response.arrayBuffer !== 'function') {
+          throw new Error('Audio clip fetch failed');
+        }
+        return await response.arrayBuffer();
+      } catch (error) {
+        lastError = error;
+        if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 120));
+      }
+    }
+    throw lastError || new Error('Audio clip fetch failed');
+  };
   window.__alloCaptureKaraokeAudio = async (sentence, url) => {
     if (!sentence || !url) return false;
     const st = _ensureKaraokeStore('reference');
     if (!st) return false;
     const resourceId = generatedContent && generatedContent.id;
     if (st.has(sentence)) return false;
-    _notifyKaraokeAudioCapture(sentence, 'saving', resourceId);
-    try {
-      // Snapshot the bytes IMMEDIATELY: playSequence revokes the played clip's
-      // blob URL in its onended handler, so a deferred fetch can lose very
-      // short clips. The heavy part (MP3 encode) still waits for an idle slot.
-      const buf = await (await fetch(url)).arrayBuffer();
-      await new Promise(res => {
-        try {
-          if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(res, { timeout: 1200 });
-          else setTimeout(res, 250);
-        } catch (_) { setTimeout(res, 250); }
-      });
-      const bytes = new Uint8Array(buf);
-      const isWav = bytes.length > 44 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46; // 'RIFF'
-      const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
-      if (isWav && window.lamejs && _ah && typeof _ah.pcmToMp3 === 'function') {
-        try {
-          const pcm = new Uint8Array(buf, 44); // strip WAV header -> PCM
-          const mp3Blob = _ah.pcmToMp3(pcm, 24000, 64); // 64 kbps: speech-transparent, half the JSON weight
-          st.put(sentence, await _blobToBase64(mp3Blob), 'audio/mpeg');
-          _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
-          _notifyKaraokeAudioCapture(sentence, 'saved', resourceId, { mime: 'audio/mpeg' });
-          return true;
-        } catch (_) {}
+    const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+    const sentenceKey = KS && typeof KS.keyFor === 'function' ? KS.keyFor(sentence) : String(sentence).toLowerCase().replace(/\s+/g, ' ').trim();
+    const captureKey = String(resourceId || 'unsaved') + '::' + sentenceKey;
+    if (_karaokeCaptureInFlight.has(captureKey)) return _karaokeCaptureInFlight.get(captureKey);
+
+    const capturePromise = (async () => {
+      _notifyKaraokeAudioCapture(sentence, 'saving', resourceId);
+      try {
+        // Snapshot the bytes IMMEDIATELY: playSequence may revoke the blob URL
+        // in its onended handler. A bounded retry covers transient fetch races.
+        const buf = await _fetchKaraokeCaptureBuffer(url);
+        await new Promise(res => {
+          try {
+            if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(res, { timeout: 1200 });
+            else setTimeout(res, 250);
+          } catch (_) { setTimeout(res, 250); }
+        });
+        // An explicit regenerate/record may have won while capture was idle.
+        if (st.has(sentence)) return false;
+        const bytes = new Uint8Array(buf);
+        const isWav = bytes.length > 44 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46;
+        const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
+        let b64 = null;
+        let mime = null;
+        let provider = 'played-tts';
+        if (isWav && window.lamejs && _ah && typeof _ah.pcmToMp3 === 'function') {
+          try {
+            const pcm = new Uint8Array(buf, 44);
+            const mp3Blob = _ah.pcmToMp3(pcm, 24000, 64);
+            b64 = await _blobToBase64(mp3Blob);
+            mime = 'audio/mpeg';
+            provider = 'played-tts-mp3';
+          } catch (_) {}
+        }
+        if (!b64) {
+          const blob = new Blob([buf], { type: isWav ? 'audio/wav' : 'audio/mpeg' });
+          b64 = await _blobToBase64(blob);
+          mime = blob.type;
+        }
+        const storedUrl = st.put(sentence, b64, mime, 'ai-played', _karaokeAudioMetadata(provider));
+        if (!storedUrl) {
+          const detail = _karaokePutFailureDetail(st);
+          _notifyKaraokeAudioCapture(sentence, detail.retryable ? 'error' : 'limit', resourceId, detail);
+          return false;
+        }
+        _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
+        _notifyKaraokeAudioCapture(sentence, 'saved', resourceId, {
+          mime,
+          storedBytes: st.estimateBytes(),
+          maxBytes: st.limits && st.limits().maxBytes,
+        });
+        return true;
+      } catch (error) {
+        _notifyKaraokeAudioCapture(sentence, 'error', resourceId, {
+          code: 'capture-failed',
+          reason: 'The played audio could not be saved.',
+          retryable: true,
+          message: error && error.message ? error.message : String(error || ''),
+        });
+        return false;
       }
-      const blob = new Blob([buf], { type: isWav ? 'audio/wav' : 'audio/mpeg' });
-      st.put(sentence, await _blobToBase64(blob), blob.type);
-      _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
-      _notifyKaraokeAudioCapture(sentence, 'saved', resourceId, { mime: blob.type });
-      return true;
-    } catch (_) {
-      _notifyKaraokeAudioCapture(sentence, 'error', resourceId);
-      return false;
+    })();
+    _karaokeCaptureInFlight.set(captureKey, capturePromise);
+    try {
+      return await capturePromise;
+    } finally {
+      if (_karaokeCaptureInFlight.get(captureKey) === capturePromise) _karaokeCaptureInFlight.delete(captureKey);
     }
   };
   // Human voice takes: persist a recorded clip (teacher or student) as one
@@ -21630,7 +21725,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     try {
       const normalized = await _normalizeRecordedAudioForStore(blob);
       if (!normalized || !normalized.b64) return false;
-      st.put(sentence, normalized.b64, normalized.mime, 'human-student');
+      const storedUrl = st.put(sentence, normalized.b64, normalized.mime, 'human-student', _karaokeAudioMetadata('microphone', false));
+      if (!storedUrl) return false;
       _persistKaraokeAudioField('karaokeStudentAudio', st.serialize(), resourceId);
       return true;
     } catch (_) { return false; }
@@ -21643,7 +21739,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     try {
       const normalized = await _normalizeRecordedAudioForStore(blob);
       if (!normalized || !normalized.b64) return false;
-      st.put(sentence, normalized.b64, normalized.mime, source || 'human-teacher');
+      const storedUrl = st.put(sentence, normalized.b64, normalized.mime, source || 'human-teacher', _karaokeAudioMetadata('microphone', false));
+      if (!storedUrl) return false;
       _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
       return true;
     } catch (_) { return false; }

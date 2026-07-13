@@ -235,6 +235,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'KaraokeAudioStoreModule',
+        filename: 'karaoke_audio_store_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'GenerationHelpersModule',
         filename: 'generation_helpers_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1672,6 +1677,9 @@ const CONTENT_HASH_PINNED = new Set([
     'view_student_join_panel_module.js',
     'view_student_save_adventure_module.js',
     'view_socratic_chat_module.js',
+    'karaoke_audio_store_module.js',
+    'immersive_reader_module.js',
+    'view_simplified_module.js',
 ]);
 const _contentHashCache = {};
 function contentHashPin(filename) {
