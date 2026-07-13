@@ -161,6 +161,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Remediated Adventure's timed dice overlay as a named, focus-trapped modal: the actual roll result is announced assertively while all twenty decorative die faces are hidden; the Skip control receives initial focus, supports Escape, has a 44 CSS-pixel target and visible focus; the fake dice button was removed; focus returns after dismissal; and reduced-motion users receive the final orientation immediately with a shortened dwell (WCAG 1.1.1, 1.3.1, 2.1.1, 2.1.2, 2.3.3, 2.4.3, 2.4.7, 2.5.8, 4.1.2, 4.1.3).
 
+- Remediated Adventure Mission Report as a named, focus-trapped completion dialog with Escape closure and launcher focus restoration; exposed proficiency as a named progressbar with numeric bounds and value; corrected the New Game accessible name; enlarged all actions with visible focus; repaired small-text contrast; and hid decorative report and action icons (WCAG 1.1.1, 1.3.1, 1.4.3, 2.1.1, 2.1.2, 2.4.3, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

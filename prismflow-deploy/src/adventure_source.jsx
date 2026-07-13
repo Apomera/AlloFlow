@@ -15,25 +15,27 @@ if (typeof ADVENTURE_SHOP_ITEMS === 'undefined') {
 // ═══ MissionReportCard (lines 8564-8670) ═══
 const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, onExport, onContinue, onNewGame, isProcessing }) => {
   const { t } = useContext(LanguageContext);
+  const reportRef = useRef(null);
+  useFocusTrap(reportRef, true, onClose);
   const { stats, climax, xp, level } = adventureState;
   const safeStats = stats || { successes: 0, failures: 0, decisions: 0, conceptsFound: [] };
   const totalDecisions = Math.max(1, safeStats.decisions);
   const efficiency = Math.round((safeStats.successes / totalDecisions) * 100);
-  const proficiency = climax?.masteryScore || 0;
+  const proficiency = Math.max(0, Math.min(100, Number(climax?.masteryScore) || 0));
   let ratingLabel = t('adventure.mission_report.rating_novice');
   if (proficiency >= 90) ratingLabel = t('adventure.mission_report.rating_mastery');
   else if (proficiency >= 70) ratingLabel = t('adventure.mission_report.rating_proficient');
   else if (proficiency >= 50) ratingLabel = t('adventure.mission_report.rating_developing');
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-700 p-4">
+    <div ref={reportRef} role="dialog" aria-modal="true" aria-labelledby="adventure-mission-report-title" className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-700 p-4">
       <div className="bg-slate-900 w-full max-w-md rounded-3xl border-4 border-yellow-500 shadow-[0_0_50px_rgba(234,179,8,0.3)] overflow-hidden relative transform scale-100 animate-in zoom-in-95 duration-500 flex flex-col max-h-[90vh]">
         <div className="bg-yellow-500 p-4 text-center shrink-0">
-            <h2 className="text-3xl font-black text-slate-900 uppercase tracking-widest drop-shadow-sm flex items-center justify-center gap-2">
-                <Trophy size={32} /> {t('adventure.mission_report.title')}
+            <h2 id="adventure-mission-report-title" className="text-3xl font-black text-slate-900 uppercase tracking-widest drop-shadow-sm flex items-center justify-center gap-2">
+                <Trophy size={32} aria-hidden="true" /> {t('adventure.mission_report.title')}
             </h2>
             <div className="flex items-center justify-center gap-2 text-slate-900 font-bold text-sm opacity-80 mt-1">
                 <span>{t('adventure.mission_report.status_success')}</span>
-                <span>•</span>
+                <span aria-hidden="true">•</span>
                 <span>{new Date().toLocaleDateString()}</span>
             </div>
         </div>
@@ -51,7 +53,7 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
                     <span className="text-cyan-400 uppercase">{t('adventure.mission_report.proficiency_rating')}</span>
                     <span className="text-white">{proficiency}/100 ({ratingLabel})</span>
                 </div>
-                <div className="h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700 relative">
+                <div role="progressbar" aria-label={t('adventure.mission_report.proficiency_rating')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={proficiency} className="h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700 relative">
                     <div
                         className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 transition-all duration-1000 ease-out"
                         style={{ width: `${proficiency}%` }}
@@ -61,20 +63,20 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
             <div className="grid grid-cols-2 gap-4 relative z-20">
                 <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
                     <div className="flex items-center gap-2 mb-2 text-yellow-400">
-                        <Zap size={16} /> <span className="text-[11px] font-bold uppercase">{t('adventure.mission_report.efficiency')}</span>
+                        <Zap size={16} aria-hidden="true" /> <span className="text-[11px] font-bold uppercase">{t('adventure.mission_report.efficiency')}</span>
                     </div>
                     <div className="text-3xl font-black">{efficiency}%</div>
                 </div>
                 <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center">
                     <div className="flex items-center gap-2 mb-2 text-green-400">
-                        <Key size={16} /> <span className="text-[11px] font-bold uppercase">{t('adventure.mission_report.concepts')}</span>
+                        <Key size={16} aria-hidden="true" /> <span className="text-[11px] font-bold uppercase">{t('adventure.mission_report.concepts')}</span>
                     </div>
                     <div className="text-3xl font-black">{safeStats.conceptsFound.length}</div>
                 </div>
             </div>
             {safeStats.conceptsFound.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-slate-700/50 relative z-20">
-                    <div className="text-[11px] text-slate-600 font-bold uppercase mb-2">{t('adventure.mission_report.concepts_secured')}</div>
+                    <div className="text-[11px] text-slate-300 font-bold uppercase mb-2">{t('adventure.mission_report.concepts_secured')}</div>
                     <div className="flex flex-wrap gap-2">
                         {safeStats.conceptsFound.map((c, i) => (
                             <span key={i} className="px-2 py-1 rounded-md bg-cyan-900/30 text-cyan-200 text-xs border border-cyan-800/50">
@@ -89,29 +91,29 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
              <button aria-label={t('common.create_storybook')}
                 onClick={onExport}
                 disabled={isProcessing}
-                className="w-full py-3 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition-colors shadow-lg flex items-center justify-center gap-2"
+                className="w-full min-h-11 py-3 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition-colors shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
              >
-                 {isProcessing ? <RefreshCw size={18} className="animate-spin"/> : <BookOpen size={18}/>}
+                 {isProcessing ? <RefreshCw size={18} className="animate-spin" aria-hidden="true"/> : <BookOpen size={18} aria-hidden="true"/>}
                  {isProcessing ? t('adventure.storybook_writing') : t('adventure.storybook')}
              </button>
              <div className="grid grid-cols-2 gap-3">
                  <button
                     onClick={() => { onClose(); if(onContinue) onContinue(); }}
-                    className="w-full py-3 rounded-xl font-bold bg-green-600 text-white hover:bg-green-500 transition-colors shadow-lg flex items-center justify-center gap-2"
+                    className="w-full min-h-11 py-3 rounded-xl font-bold bg-green-700 text-white hover:bg-green-600 transition-colors shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
                  >
-                     <MapIcon size={18} /> {t('adventure.start_sequel') || "Continue"}
+                     <MapIcon size={18} aria-hidden="true" /> {t('adventure.start_sequel') || "Continue"}
                  </button>
-                 <button aria-label={t('common.on_close')}
+                 <button aria-label={t('adventure.new_game') || "New Game"}
                     onClick={() => { onClose(); if(onNewGame) onNewGame(); }}
-                    className="w-full py-3 rounded-xl font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white transition-colors border border-slate-600 flex items-center justify-center gap-2"
+                    className="w-full min-h-11 py-3 rounded-xl font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 hover:text-white transition-colors border border-slate-500 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
                  >
-                     <RefreshCw size={18} /> {t('adventure.new_game') || "New Game"}
+                     <RefreshCw size={18} aria-hidden="true" /> {t('adventure.new_game') || "New Game"}
                  </button>
              </div>
              <button
                  aria-label={t('common.close')}
                 onClick={onClose}
-                className="w-full py-2 text-xs font-bold text-slate-300 hover:text-white transition-colors"
+                className="w-full min-h-11 py-2 text-sm font-bold text-slate-200 hover:text-white transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
              >
                  {t('adventure.mission_report.confirm_exit')}
              </button>

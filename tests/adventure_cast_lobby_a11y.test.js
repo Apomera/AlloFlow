@@ -76,3 +76,36 @@ describe('adventure dice overlay accessibility', () => {
     expect(rootModule).toContain('useFocusTrap(diceRef, true, onComplete)');
   });
 });
+describe('adventure mission report accessibility', () => {
+  it('uses a named focus-trapped modal with focus return and Escape closure', () => {
+    expect(source).toContain('const reportRef = useRef(null)');
+    expect(source).toContain('useFocusTrap(reportRef, true, onClose)');
+    expect(source).toContain('ref={reportRef} role="dialog" aria-modal="true" aria-labelledby="adventure-mission-report-title"');
+    expect(source).toContain('id="adventure-mission-report-title"');
+  });
+
+  it('exposes proficiency as a named progressbar and correctly names every action', () => {
+    expect(source).toContain('role="progressbar"');
+    expect(source).toContain('aria-valuemin={0} aria-valuemax={100} aria-valuenow={proficiency}');
+    expect(source).toContain('Math.max(0, Math.min(100, Number(climax?.masteryScore) || 0))');
+    expect(source).toContain('bg-green-700 text-white hover:bg-green-600');
+    expect(source).toContain("<button aria-label={t('adventure.new_game') || \"New Game\"}");
+    expect(source).not.toContain("<button aria-label={t('common.on_close')}");
+  });
+
+  it('provides larger visible-focus actions, sufficient contrast, and hidden decorative icons', () => {
+    expect(source).toContain('w-full min-h-11 py-3 rounded-xl font-bold bg-indigo-600');
+    expect(source).toContain('w-full min-h-11 py-2 text-sm font-bold text-slate-200');
+    expect(source).toContain('text-[11px] text-slate-300 font-bold uppercase mb-2');
+    expect(source).toContain('<Trophy size={32} aria-hidden="true" />');
+    expect(source).toContain('<MapIcon size={18} aria-hidden="true" />');
+  });
+
+  it('keeps Mission Report source and deploy modules synchronized', () => {
+    const rootModule = fs.readFileSync('adventure_module.js', 'utf8');
+    expect(fs.readFileSync('prismflow-deploy/src/adventure_source.jsx', 'utf8')).toBe(source);
+    expect(fs.readFileSync('prismflow-deploy/public/adventure_module.js', 'utf8')).toBe(rootModule);
+    expect(rootModule).toContain('useFocusTrap(reportRef, true, onClose)');
+    expect(rootModule).toContain('role: "progressbar"');
+  });
+});
