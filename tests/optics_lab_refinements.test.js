@@ -24,9 +24,14 @@ describe('Optics Lab refinements', () => {
     const html = renderTool('opticsLab', state());
 
     expect(html).toContain('role="tablist"');
-    expect(html).toMatch(/role="tab" aria-selected="true" tabindex="0"/);
-    expect(html).toMatch(/role="tab" aria-selected="false" tabindex="-1"/);
+    expect(html).toMatch(/role="tab"[^>]*aria-selected="true"[^>]*tabindex="0"/);
+    expect(html).toMatch(/role="tab"[^>]*aria-selected="false"[^>]*tabindex="-1"/);
     expect(html).toContain('data-op-tab-value="home"');
+    expect(html).toContain('id="op-tab-home"');
+    expect(html).toContain('aria-controls="op-panel-home"');
+    expect(html).toContain('id="op-panel-home"');
+    expect(html).toContain('role="tabpanel"');
+    expect(html).toContain('aria-labelledby="op-tab-home"');
   });
 
   it('supports arrow, Home, and End keys across every tab system', () => {

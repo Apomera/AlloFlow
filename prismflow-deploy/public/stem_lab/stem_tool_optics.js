@@ -3076,8 +3076,10 @@
             var sel = d.mode === tab.id;
             return h('button', {
               key: tab.id,
+              id: 'op-tab-' + tab.id,
               role: 'tab',
               'aria-selected': sel,
+              'aria-controls': 'op-panel-' + tab.id,
               tabIndex: sel ? 0 : -1,
               'data-op-focusable': 'true',
               'data-op-tab-value': tab.id,
@@ -3095,6 +3097,13 @@
           })
         ),
         // Active mode
+        h('div', {
+          id: 'op-panel-' + d.mode,
+          role: 'tabpanel',
+          'aria-labelledby': 'op-tab-' + d.mode,
+          tabIndex: 0,
+          'data-op-focusable': 'true'
+        },
         d.mode === 'home' && _renderHome(d, upd, h),
         d.mode === 'reflection' && _renderTopicPanel({
           d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, tab: 'reflection',
@@ -3274,7 +3283,8 @@
             iq.understood && h('textarea', { 'aria-label': 'Explain the refraction result in your own words', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.optics.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
             h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, t('stem.optics.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Dispersion model is illustrative (Cauchy-like first-order); real dispersion curves are material-specific (Sellmeier coefficients).'))
           );
-        })(),
+        })()
+        ),
         // Concept-mastery celebration overlay — fixed-position, top of screen,
         // self-clears after 3.5s. Renders on top of any view.
         opCeleb && h('div', {
