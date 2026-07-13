@@ -153,6 +153,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Completed a second Timeline Game interaction pass: moved keyboard lift/drop semantics from a focusable parent list item into a native 44 CSS-pixel button, keeping speech, explanation, and reorder actions as sibling controls; separated full-card touch hit-test refs from keyboard-focus refs; preserved arrow-key movement and optional drag/touch input; made mobile reorder controls persistently visible and 44 CSS pixels; enlarged dismiss, explanation, Reset, Hint, Reveal, and Check actions; kept image-size adjustment available at narrow widths; wrapped header/footer actions; strengthened focus and contrast; hid decorative icons; and consolidated all spatial motion and confetti behind one reduced-motion preference (WCAG 1.1.1, 1.3.1, 1.4.10, 2.1.1, 2.3.3, 2.4.3, 2.4.7, 2.5.7, 2.5.8, 4.1.2, 4.1.3).
 
+- Corrected Timeline Studio's AI generation lifecycle so Paste and Topic Research modes open their companion timeline window within the initiating button gesture, avoiding browser popup blocking after asynchronous AI calls and preventing stale timeline data from being resent. Removed the modal backdrop's invalid simulated-button semantics, retained Escape handling on the named dialog, prevented the popup handshake from overwriting in-progress research status, and exposed generation and summary changes through polite atomic live regions (WCAG 1.3.1, 2.1.1, 2.4.3, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

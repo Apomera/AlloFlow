@@ -387,6 +387,7 @@
     var busyState = React.useState(false);
     var busy = busyState[0];
     var setBusy = busyState[1];
+    var busyRef = React.useRef(false);
     var summaryState = React.useState(null); // {events, sourcedCount, flagged, verifyStatus, hasGrounding}
     var summary = summaryState[0];
     var setSummary = summaryState[1];
@@ -410,7 +411,7 @@
           try {
             if (replyTo && dataRef.current) replyTo.postMessage({ type: 'allotimeline-data', timeline: dataRef.current }, '*');
           } catch (_) {}
-          setStatus('open');
+          if (!busyRef.current) setStatus('open');
           return;
         }
         if (data.type === 'allotimeline-closed') setStatus('closed');
@@ -454,6 +455,10 @@
         openPopup();
         return;
       }
+      dataRef.current = null;
+      var w = openPopup();
+      if (!w) return;
+      busyRef.current = true;
       setBusy(true);
       setSummary(null);
       setStatus('thinking');
@@ -461,6 +466,7 @@
         return callGemini(buildTimelinePrompt(text, grade), true, false, 0.3);
       }).then(function (raw) {
         var tl = coerceTimeline(raw);
+        busyRef.current = false;
         setBusy(false);
         if (!tl || !tl.events || !tl.events.length) {
           setStatus('noevents');
@@ -468,9 +474,9 @@
         }
         dataRef.current = tl;
         setStatus('ready');
-        var w = openPopup();
-        if (w) setTimeout(sendData, 400);
+        setTimeout(sendData, 400);
       }).catch(function (e) {
+        busyRef.current = false;
         setBusy(false);
         setStatus('error:' + String((e && e.message) || e).slice(0, 100));
       });
@@ -490,6 +496,10 @@
         openPopup();
         return;
       }
+      dataRef.current = null;
+      var w = openPopup();
+      if (!w) return;
+      busyRef.current = true;
       setBusy(true);
       setSummary(null);
       setStatus('researching');
@@ -505,6 +515,7 @@
         rawTextForSpans = String(rawText || '');
         var tl = coerceTimeline(rawText);
         if (!tl || !tl.events || !tl.events.length) {
+          busyRef.current = false;
           setBusy(false);
           setStatus('noevents_topic');
           return null;
@@ -530,12 +541,13 @@
             verifyStatus: verify.status,
             hasGrounding: hasGrounding
           });
+          busyRef.current = false;
           setBusy(false);
           setStatus('ready');
-          var w = openPopup();
-          if (w) setTimeout(sendData, 400);
+          setTimeout(sendData, 400);
         });
       }).catch(function (e) {
+        busyRef.current = false;
         setBusy(false);
         setStatus('error:' + String((e && e.message) || e).slice(0, 100));
       });
@@ -590,17 +602,16 @@
 
     return h('div', {
       className: 'fixed inset-0 z-[70] bg-slate-950/70 flex items-center justify-center p-4',
-      onClick: onClose,
-      role: 'button',
-      tabIndex: 0,
-      onKeyDown: function (e) { if (e.key === 'Escape') onClose(); }
+      onClick: onClose
     },
       h('section', {
         className: 'allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden',
         role: 'dialog',
+        tabIndex: -1,
         'aria-modal': 'true',
         'aria-label': tr(t, 'timeline_studio.title', 'Timeline Studio'),
-        onClick: function (e) { e.stopPropagation(); }
+        onClick: function (e) { e.stopPropagation(); },
+        onKeyDown: function (e) { if (e.key === 'Escape') onClose(); }
       },
         h('div', { className: 'flex items-start justify-between gap-4 px-6 py-5 border-b border-slate-200 bg-slate-50' },
           h('div', null,
@@ -694,8 +705,8 @@
               'aria-label': tr(t, 'timeline_studio.manual_title', 'Open the timeline window to build one by hand')
             }, tr(t, 'timeline_studio.manual', 'Build by hand'))
           ),
-          statusLine(),
-          summaryLine(),
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true' }, statusLine()),
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true' }, summaryLine()),
           h('div', { className: 'bg-slate-50 rounded-xl p-4 border border-slate-200 text-sm text-slate-700 space-y-1.5' },
             h('p', null, aiOn
               ? (isTopic
