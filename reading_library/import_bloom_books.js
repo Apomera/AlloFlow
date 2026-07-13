@@ -154,11 +154,13 @@ function titleFor(record, meta, code) {
 const includeReligious = process.argv.includes('--include-religious');
 function isReligiousInstructional(record) {
   if ((record.tags || []).some((t) => /bible|scripture|christian|quran|koran|islamic|religio/i.test(t))) return true;
-  // Some religious titles carry no tags (a candy-cane "Jesus" story slipped
-  // through on tags alone). Deliberately unambiguous tokens only — generic
-  // words like "god" appear in folk tales and names.
+  // Some religious titles carry no tags (a candy-cane "Jesus" story, "Yesu
+  // atamboli likolo ya ebale", and "David e Golyat" all slipped through on
+  // tags alone in the first run). Deliberately unambiguous tokens only —
+  // generic words like "god" appear in folk tales and names. "Yesu" is Jesus
+  // in the Bantu languages; Golyat/Goliath names the Bible story.
   const text = JSON.stringify(record.titles || []) + ' ' + String(record.summary || '');
-  return /jesus|bible|scripture|ісус|біблі|христ/i.test(text);
+  return /jesus|\byesu\b|bible|biblia|scripture|gospel|golyat|goliath|ісус|біблі|христ/i.test(text);
 }
 
 function computedLevel(record) {
@@ -353,6 +355,17 @@ async function main() {
   const catalog = JSON.parse(fs.readFileSync(OPEN_CATALOG_PATH, 'utf8'));
   catalog.items = catalog.items || [];
   const existing = new Set(catalog.items.map((item) => item.slug));
+  // Bloom hosts duplicate uploads of the same book under different record
+  // ids ("Bibin" appeared twice); dedupe by language+title across existing
+  // and newly imported entries.
+  const seenTitles = new Set();
+  for (const item of catalog.items) {
+    if (!item.slug.startsWith('bloom')) continue;
+    try {
+      const d = JSON.parse(fs.readFileSync(path.join(ROOT, item.file), 'utf8'));
+      seenTitles.add(d.langCode + '|' + String(d.title).toLowerCase());
+    } catch (_) {}
+  }
   let importedTotal = 0;
 
   for (const lang of langs) {
@@ -389,6 +402,12 @@ async function main() {
           count++;
           continue;
         }
+        const titleKey = lang.code + '|' + book.title.toLowerCase();
+        if (seenTitles.has(titleKey)) {
+          console.log('   SKIP duplicate upload: ' + book.title);
+          continue;
+        }
+        seenTitles.add(titleKey);
         if (!dryRun) {
           fs.writeFileSync(path.join(ROOT, file), JSON.stringify(book, null, 2) + '\n');
           catalog.items.push({ slug: book.slug, file });
@@ -420,6 +439,9 @@ async function main() {
         const card = makeCard(row.record, row.meta, lang, cover);
         const file = 'books/' + card.slug + '.json';
         if (existing.has(card.slug)) { cards++; continue; }
+        const cardTitleKey = lang.code + '|' + card.title.toLowerCase();
+        if (seenTitles.has(cardTitleKey)) { continue; }
+        seenTitles.add(cardTitleKey);
         if (!dryRun) {
           fs.writeFileSync(path.join(ROOT, file), JSON.stringify(card, null, 2) + '\n');
           catalog.items.push({ slug: card.slug, file });

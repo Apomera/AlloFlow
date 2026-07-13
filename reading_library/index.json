@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-13T13:57:56.111Z",
+ "generatedAt": "2026-07-13T14:04:19.496Z",
  "attribution": {
   "text": "Open reading materials from StoryWeaver and curated public/open education sources. Item-level licenses are shown on each text.",
   "url": "https://storyweaver.org.in",
@@ -143,11 +143,6 @@
    "count": 25
   },
   {
-   "name": "Haitian Creole",
-   "code": "ht",
-   "count": 23
-  },
-  {
    "name": "Filipino",
    "code": "fil",
    "count": 23
@@ -156,6 +151,11 @@
    "name": "Thai",
    "code": "th",
    "count": 22
+  },
+  {
+   "name": "Haitian Creole",
+   "code": "ht",
+   "count": 21
   },
   {
    "name": "Malay",
@@ -248,11 +248,6 @@
    "count": 10
   },
   {
-   "name": "Lingala",
-   "code": "ln",
-   "count": 9
-  },
-  {
    "name": "Lao",
    "code": "lo",
    "count": 8
@@ -266,6 +261,11 @@
    "name": "Wolof",
    "code": "wo",
    "count": 8
+  },
+  {
+   "name": "Lingala",
+   "code": "ln",
+   "count": 6
   },
   {
    "name": "Dari",
@@ -92084,68 +92084,6 @@
    "file": "books/bloom-2042d454-baniama-ndaku.json"
   },
   {
-   "slug": "bloom-a66961a3-yesu-atamboli-likolo-ya-ebale",
-   "title": "Yesu atamboli likolo ya ebale",
-   "description": "A Bible Story based on Matthew 14:22-33.",
-   "language": "Lingala",
-   "langCode": "ln",
-   "isRtl": false,
-   "level": "4",
-   "sourceId": "bloom",
-   "contentType": "story",
-   "subjects": [
-    "Spiritual"
-   ],
-   "license": "CC BY",
-   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-   "source": {
-    "id": "bloom",
-    "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/cWazvuhTUU"
-   },
-   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2fa66961a3-41c3-4b41-ad1e-9f41e38af6e3%2fJ2+Jesus+Walks+on+Water+2%2fJesus+Walks+Cover4.png",
-   "authors": [
-    "Little Zebra Books"
-   ],
-   "illustrators": [],
-   "publisher": "Little Zebra Books",
-   "hasAudio": false,
-   "pageCount": 8,
-   "wordCount": 341,
-   "file": "books/bloom-a66961a3-yesu-atamboli-likolo-ya-ebale.json"
-  },
-  {
-   "slug": "bloom-f21242ab-yesu-na-zashe",
-   "title": "Yesu na Zashe",
-   "description": "A Bible story based on Luke 19:1-10.",
-   "language": "Lingala",
-   "langCode": "ln",
-   "isRtl": false,
-   "level": "4",
-   "sourceId": "bloom",
-   "contentType": "story",
-   "subjects": [
-    "Spiritual"
-   ],
-   "license": "CC BY",
-   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-   "source": {
-    "id": "bloom",
-    "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/cmZchxC4hB"
-   },
-   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/intern%40littlezebrabooks.com%2ff21242ab-e027-4d3f-a5c9-720597e76919%2fJ3+Jesus+and+Zacchaeus+2%2fJesus+Zac+Cover.png",
-   "authors": [
-    "Little Zebra Books"
-   ],
-   "illustrators": [],
-   "publisher": "Little Zebra Books",
-   "hasAudio": false,
-   "pageCount": 8,
-   "wordCount": 257,
-   "file": "books/bloom-f21242ab-yesu-na-zashe.json"
-  },
-  {
    "slug": "bloom-card-5aa6731c-21-mbua-na-mbwa-na-minzoto",
    "title": "21 - Mbua na Mbwa na Minzoto",
    "description": "Sat ek Lisien anvi anvol ver bann zetwal...",
@@ -92175,37 +92113,6 @@
    "pageCount": 3,
    "wordCount": 70,
    "file": "books/bloom-card-5aa6731c-21-mbua-na-mbwa-na-minzoto.json"
-  },
-  {
-   "slug": "bloom-card-c504cffa-kotela-na-nsango-malamu-ya-luka",
-   "title": "Kotela na Nsango Malamu ya Luka",
-   "description": "Ce livre visent des gens qui enseignent la Bible. Nous voulons les aider à comprendre le contexte littéraire interne du livre concerné.",
-   "language": "Lingala",
-   "langCode": "ln",
-   "isRtl": false,
-   "level": "4",
-   "sourceId": "bloom",
-   "contentType": "open-access-source-card",
-   "subjects": [
-    "Spiritual"
-   ],
-   "license": "CC BY-NC-SA",
-   "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
-   "source": {
-    "id": "bloom",
-    "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/VjQjvOuwXT"
-   },
-   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/paul_morgan%40sil.org%2fc504cffa-ab35-42a8-8325-63c970266be7%2fIntroduction+%c3%a0+l+Evangile+de+Luc%2fGT4.png",
-   "authors": [
-    "Wycliffe Bible Translators, Inc"
-   ],
-   "illustrators": [],
-   "publisher": "Wycliffe Bible Translators, Inc",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 83,
-   "file": "books/bloom-card-c504cffa-kotela-na-nsango-malamu-ya-luka.json"
   },
   {
    "slug": "bloom-705de33b-umuserebanyi-n-imfyisi",
@@ -92359,37 +92266,6 @@
    "file": "books/bloom-card-eae77629-1-2-2-1-2-2-2-3-2-4-2-5-2-6.json"
   },
   {
-   "slug": "bloom-8f9b9b74-bibin",
-   "title": "Bibin",
-   "description": "A Haitian Creole picture book from Bloom Library.",
-   "language": "Haitian Creole",
-   "langCode": "ht",
-   "isRtl": false,
-   "level": "3",
-   "sourceId": "bloom",
-   "contentType": "story",
-   "subjects": [
-    "Story Book"
-   ],
-   "license": "CC BY",
-   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-   "source": {
-    "id": "bloom",
-    "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/ShL0un2KCv"
-   },
-   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/ShL0un2KCv%2f1768362077162%2fKarOsi+Tetenyinte%2f4l1-p0.jpg",
-   "authors": [
-    "NABU.ORG, Laforest Bichly-Marie-Gaëlle"
-   ],
-   "illustrators": [],
-   "publisher": "NABU.ORG, Laforest Bichly-Marie-Gaëlle",
-   "hasAudio": false,
-   "pageCount": 8,
-   "wordCount": 150,
-   "file": "books/bloom-8f9b9b74-bibin.json"
-  },
-  {
    "slug": "bloom-5d5ec6d5-bibin",
    "title": "Bibin",
    "description": "A Haitian Creole picture book from Bloom Library.",
@@ -92419,35 +92295,6 @@
    "pageCount": 8,
    "wordCount": 150,
    "file": "books/bloom-5d5ec6d5-bibin.json"
-  },
-  {
-   "slug": "bloom-873ac958-david-e-golyat",
-   "title": "David e Golyat",
-   "description": "A Haitian Creole picture book from Bloom Library.",
-   "language": "Haitian Creole",
-   "langCode": "ht",
-   "isRtl": false,
-   "level": "3",
-   "sourceId": "bloom",
-   "contentType": "story",
-   "subjects": [],
-   "license": "CC BY",
-   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-   "source": {
-    "id": "bloom",
-    "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/ExZyKj82s2"
-   },
-   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/pcvcwhcomoros%40gmail.com%2f873ac958-694d-4b56-87fa-1f2642b6d675%2fDawud+na+Jalut%2fimage.png",
-   "authors": [
-    "Cam Houser"
-   ],
-   "illustrators": [],
-   "publisher": "Cam Houser",
-   "hasAudio": false,
-   "pageCount": 35,
-   "wordCount": 1493,
-   "file": "books/bloom-873ac958-david-e-golyat.json"
   },
   {
    "slug": "bloom-4c88d493-yon-nonm-neglijan",
