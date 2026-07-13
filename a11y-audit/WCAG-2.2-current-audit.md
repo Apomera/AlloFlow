@@ -123,6 +123,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Made Word Scramble a named focus-managed dialog with the guess field as its initial focus, Tab containment, Escape closing, and launcher focus restoration. Correct/incorrect answers, hints, skips, round progress, and completion are announced; focus returns to the guess field between rounds, controls expose strong keyboard focus, Close meets 44 CSS pixels, decorative icons are hidden, and game/feedback/completion motion honors reduced-motion preferences (WCAG 1.1.1, 2.1.1, 2.3.3, 2.4.3, 2.4.7, 2.5.8, 3.3.1, 4.1.2, 4.1.3).
 
+- Made the teacher Bingo generator/caller a named focus-managed dialog with initial Close focus, Tab containment, Escape closing, launcher focus restoration, and a 44 CSS-pixel Close target. Card-count and caller-speed labels are programmatically associated; readiness, current clues, and autoplay changes are announced; history exposes disclosure state and controls its named region; autoplay exposes toggle state; caller navigation and exit controls have larger targets and visible focus; decorative icons are hidden; and modal, clue, audio, countdown, history, and press motion honors reduced-motion preferences (WCAG 1.1.1, 1.3.1, 2.1.1, 2.3.3, 2.4.3, 2.4.6, 2.4.7, 2.5.8, 3.3.2, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels

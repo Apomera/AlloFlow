@@ -4946,6 +4946,10 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [callDelay, setCallDelay] = useState(8);
   const [isHistoryVisible, setIsHistoryVisible] = useState(true);
+  const [announcement, setAnnouncement] = useState('');
+  const bingoDialogRef = useRef(null);
+  const bingoCloseRef = useRef(null);
+  useGameDialogFocus(bingoDialogRef, bingoCloseRef, onClose);
   const callerAudioRef = useRef(null);
   const autoPlayTimerRef = useRef(null);
   const startCaller = () => {
@@ -4956,6 +4960,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
       setIsAutoPlaying(false);
       setIsAudioPlaying(false);
       setIsHistoryVisible(true);
+      setAnnouncement(t('bingo.ready'));
   };
   const playCurrentClue = async (index) => {
       if (index < 0 || index >= callerQueue.length) return;
@@ -4997,6 +5002,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
       if (currentCallIndex < callerQueue.length - 1) {
           const nextIdx = currentCallIndex + 1;
           setCurrentCallIndex(nextIdx);
+          setAnnouncement(`${t('bingo.current_clue')}: ${callerQueue[nextIdx].def}`);
           playCurrentClue(nextIdx);
       } else {
           setIsAutoPlaying(false);
@@ -5006,12 +5012,14 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
       if (currentCallIndex > 0) {
           const prevIdx = currentCallIndex - 1;
           setCurrentCallIndex(prevIdx);
+          setAnnouncement(`${t('bingo.current_clue')}: ${callerQueue[prevIdx].def}`);
           playCurrentClue(prevIdx);
       }
   };
   const toggleAutoPlay = () => {
       const newState = !isAutoPlaying;
       setIsAutoPlaying(newState);
+      setAnnouncement(newState ? t('bingo.start_auto') : t('bingo.stop_auto'));
       if (newState && !isAudioPlaying) {
           if (currentCallIndex === -1) {
               nextCall();
@@ -5043,19 +5051,21 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
       };
   }, []);
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+    <div ref={bingoDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="bingo-generator-title" className="fixed inset-0 z-[100] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
         <div className="bg-white w-full max-w-6xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] p-6 relative bingo-modal-container">
+            <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
             <button
+                ref={bingoCloseRef}
+                type="button"
                 onClick={onClose}
-                className="absolute top-4 right-4 text-slate-600 hover:text-slate-900 transition-colors no-print rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                autoFocus
+                className="absolute top-4 right-4 min-w-11 min-h-11 text-slate-600 hover:text-slate-900 transition-colors no-print rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 data-help-key="bingo_close_btn" aria-label={t('bingo.close_generator')}
             >
-                <X size={24} />
+                <X size={24} aria-hidden="true" />
             </button>
             <div className="text-center mb-4 no-print">
-                <h2 className="text-2xl font-black text-slate-800 mb-1 flex items-center justify-center gap-2">
-                    <Gamepad2 className="text-rose-500" /> {isCallerMode ? t('bingo.caller_title') : t('bingo.generator_title')}
+                <h2 id="bingo-generator-title" className="text-2xl font-black text-slate-800 mb-1 flex items-center justify-center gap-2">
+                    <Gamepad2 className="text-rose-500" aria-hidden="true" /> {isCallerMode ? t('bingo.caller_title') : t('bingo.generator_title')}
                 </h2>
                 <p className="text-slate-600 text-sm">{isCallerMode ? t('bingo.teacher_mode_desc') : t('bingo.generated_desc').replace('{count}', bingoState.cards ? bingoState.cards.length : 0)}</p>
             </div>
@@ -5063,8 +5073,9 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                 {!isCallerMode ? (
                     <>
                         <div className="flex items-center gap-2">
-                            <label className="text-sm font-bold text-slate-600">{t('bingo.card_count')}</label>
+                            <label htmlFor="bingo-card-count" className="text-sm font-bold text-slate-600">{t('bingo.card_count')}</label>
                             <input
+                                id="bingo-card-count"
                                 type="number"
                                 min="1"
                                 max="50"
@@ -5083,15 +5094,15 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                 data-help-key="bingo_images_chk" aria-label={t('bingo.include_pictures')}
                             />
                             <div className="flex items-center gap-1">
-                                <ImageIcon size={14} className="text-rose-700"/> {t('bingo.include_pictures')}
+                                <ImageIcon size={14} className="text-rose-700" aria-hidden="true"/> {t('bingo.include_pictures')}
                             </div>
                         </label>
                         <button
                             onClick={onGenerate}
-                            className="flex items-center gap-2 bg-rose-700 hover:bg-rose-800 text-white px-5 py-2 rounded-full font-bold text-xs transition-colors shadow-sm active:scale-95"
+                            className="flex items-center gap-2 bg-rose-700 hover:bg-rose-800 text-white px-5 py-2 rounded-full font-bold text-xs transition-colors shadow-sm motion-safe:active:scale-95"
                             data-help-key="bingo_regenerate_btn" aria-label={t('bingo.regenerate')}
                         >
-                            <RefreshCw size={14}/> {t('bingo.regenerate')}
+                            <RefreshCw size={14} aria-hidden="true"/> {t('bingo.regenerate')}
                         </button>
                         <div className="w-px h-6 bg-slate-300 mx-2"></div>
                         <button
@@ -5101,33 +5112,34 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                 }
                                 window.print();
                             }}
-                            className="bg-indigo-600 text-white px-6 py-2 rounded-full font-bold text-xs shadow-lg hover:bg-indigo-700 transition-colors flex items-center gap-2 active:scale-95"
+                            className="bg-indigo-600 text-white px-6 py-2 rounded-full font-bold text-xs shadow-lg hover:bg-indigo-700 transition-colors flex items-center gap-2 motion-safe:active:scale-95"
                             data-help-key="bingo_print_btn" aria-label={t('bingo.print_cards')}
                         >
-                            <Printer size={16}/> {t('bingo.print_cards')}
+                            <Printer size={16} aria-hidden="true"/> {t('bingo.print_cards')}
                         </button>
                         <div className="w-px h-6 bg-slate-300 mx-2"></div>
                         <button
                             onClick={startCaller}
-                            className="bg-teal-700 text-white px-6 py-2 rounded-full font-bold text-xs shadow-lg hover:bg-teal-800 transition-colors flex items-center gap-2 active:scale-95"
+                            className="bg-teal-700 text-white px-6 py-2 rounded-full font-bold text-xs shadow-lg hover:bg-teal-800 transition-colors flex items-center gap-2 motion-safe:active:scale-95"
                             data-help-key="bingo_launch_caller_btn" aria-label={t('bingo.launch_caller_aria')}
                         >
-                            <Mic size={16}/> {t('bingo.launch_caller')}
+                            <Mic size={16} aria-hidden="true"/> {t('bingo.launch_caller')}
                         </button>
                     </>
                 ) : (
                     <div className="flex items-center gap-4 w-full justify-between">
                          <button
                             onClick={() => setIsCallerMode(false)}
-                            className="flex items-center gap-2 text-slate-600 hover:text-slate-700 font-bold text-xs"
+                            className="min-h-11 px-3 flex items-center gap-2 text-slate-600 hover:text-slate-700 font-bold text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
                             data-help-key="bingo_exit_caller_btn" aria-label={t('bingo.exit_caller_aria')}
                         >
-                            <ArrowDown className="rotate-90" size={14}/> {t('bingo.exit_caller')}
+                            <ArrowDown className="rotate-90" size={14} aria-hidden="true"/> {t('bingo.exit_caller')}
                         </button>
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-400 shadow-sm">
-                                <span className="text-xs font-bold text-slate-600 uppercase">{t('bingo.speed')}</span>
+                                <label htmlFor="bingo-call-speed" className="text-xs font-bold text-slate-600 uppercase">{t('bingo.speed')}</label>
                                 <input
+                                    id="bingo-call-speed"
                                     type="range"
                                     min="3" max="15" step="1"
                                     value={callDelay}
@@ -5140,36 +5152,36 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                             </div>
                             <button
                                 onClick={() => setIsHistoryVisible(prev => !prev)}
-                                className={`p-2 rounded-full transition-colors ${isHistoryVisible ? 'bg-slate-200 text-slate-600 hover:bg-slate-300' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}
+                                className={`min-w-11 min-h-11 p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 ${isHistoryVisible ? 'bg-slate-200 text-slate-600 hover:bg-slate-300' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}
                                 title={isHistoryVisible ? t('bingo.hide_list') : t('bingo.show_list')}
-                                data-help-key="bingo_toggle_history" aria-label={isHistoryVisible ? t('bingo.hide_list') : t('bingo.show_list')}
+                                data-help-key="bingo_toggle_history" aria-expanded={isHistoryVisible} aria-controls="bingo-called-history" aria-label={isHistoryVisible ? t('bingo.hide_list') : t('bingo.show_list')}
                             >
-                                {isHistoryVisible ? <Eye size={20}/> : <EyeOff size={20}/>}
+                                {isHistoryVisible ? <Eye size={20} aria-hidden="true"/> : <EyeOff size={20} aria-hidden="true"/>}
                             </button>
                             <button
                                 onClick={prevCall}
                                 disabled={currentCallIndex <= 0}
-                                className="p-2 rounded-full hover:bg-slate-200 text-slate-600 disabled:opacity-30"
+                                className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-200 text-slate-600 disabled:opacity-30 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
                                 data-help-key="bingo_prev_clue" aria-label={t('bingo.prev_clue')}
                                 title={t('bingo.prev_clue')}
                             >
-                                <ArrowDown className="rotate-90" size={20}/>
+                                <ArrowDown className="rotate-90" size={20} aria-hidden="true"/>
                             </button>
                             <button
                                 onClick={toggleAutoPlay}
                                 className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold text-sm shadow-md transition-all ${isAutoPlaying ? 'bg-red-700 text-white hover:bg-red-600' : 'bg-teal-700 text-white hover:bg-teal-800'}`}
-                                data-help-key="bingo_toggle_autoplay" aria-label={isAutoPlaying ? t('bingo.stop_auto') : t('bingo.start_auto')}
+                                data-help-key="bingo_toggle_autoplay" aria-pressed={isAutoPlaying} aria-label={isAutoPlaying ? t('bingo.stop_auto') : t('bingo.start_auto')}
                             >
-                                {isAutoPlaying ? <span className="flex items-center gap-2"><StopCircle size={16}/> {t('bingo.stop_auto')}</span> : <span className="flex items-center gap-2"><MonitorPlay size={16}/> {t('bingo.start_auto')}</span>}
+                                {isAutoPlaying ? <span className="flex items-center gap-2"><StopCircle size={16} aria-hidden="true"/> {t('bingo.stop_auto')}</span> : <span className="flex items-center gap-2"><MonitorPlay size={16} aria-hidden="true"/> {t('bingo.start_auto')}</span>}
                             </button>
                             <button
                                 onClick={() => { setIsAutoPlaying(false); nextCall(); }} data-help-key="bingo_next_clue"
                                 disabled={currentCallIndex >= callerQueue.length - 1}
-                                className="p-2 rounded-full hover:bg-slate-200 text-slate-600 disabled:opacity-30"
+                                className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-200 text-slate-600 disabled:opacity-30 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
                                 aria-label={t('bingo.next_clue')}
                                 title={t('bingo.next_clue')}
                             >
-                                <ArrowDown className="-rotate-90" size={20}/>
+                                <ArrowDown className="-rotate-90" size={20} aria-hidden="true"/>
                             </button>
                         </div>
                         <div className="text-xs font-bold text-slate-600">
@@ -5182,7 +5194,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                 <div className="flex-grow flex gap-6 overflow-hidden">
                     <div className="flex-grow bg-slate-100 rounded-2xl border-4 border-teal-500 flex flex-col items-center justify-center p-8 text-center relative shadow-inner">
                         {currentCallIndex >= 0 ? (
-                            <div className="animate-in zoom-in duration-300 max-w-3xl">
+                            <div role="status" aria-live="polite" className="motion-safe:animate-in motion-safe:zoom-in motion-safe:duration-300 max-w-3xl">
                                 <div className="mb-6">
                                     <span className="bg-teal-100 text-teal-800 text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full border border-teal-200">{t('bingo.current_clue')}</span>
                                 </div>
@@ -5199,14 +5211,14 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                     </div>
                                 )}
                                 {isAudioPlaying && (
-                                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 text-teal-600 animate-pulse font-bold">
-                                        <Volume2 size={24}/> {t('status.reading')}
+                                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 text-teal-600 motion-safe:animate-pulse font-bold">
+                                        <Volume2 size={24} aria-hidden="true"/> {t('status.reading')}
                                     </div>
                                 )}
                                 {isAutoPlaying && !isAudioPlaying && (
                                     <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-64 h-1 bg-slate-200 rounded-full overflow-hidden">
                                         <div
-                                            className="h-full bg-teal-500 animate-indeterminate-slide"
+                                            className="h-full bg-teal-500 motion-safe:animate-indeterminate-slide"
                                             style={{ animationDuration: `${callDelay}s` }}
                                         ></div>
                                     </div>
@@ -5224,11 +5236,11 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                             <span>{t('bingo.called_terms')}</span>
                             <span className="bg-white/50 px-2 py-0.5 rounded text-slate-600">{currentCallIndex + 1}</span>
                         </div>
-                        <div className="flex-grow overflow-y-auto p-2 custom-scrollbar space-y-1 relative">
+                        <div id="bingo-called-history" className="flex-grow overflow-y-auto p-2 custom-scrollbar space-y-1 relative">
                             {isHistoryVisible ? (
                                 <>
                                     {callerQueue.slice(0, currentCallIndex + 1).reverse().map((item, i) => (
-                                        <div key={currentCallIndex - i} className={`bg-white p-3 rounded border shadow-sm flex items-center justify-between animate-in slide-in-from-left-2 ${i === 0 ? 'border-teal-400 ring-1 ring-teal-200' : 'border-slate-400'}`}>
+                                        <div key={currentCallIndex - i} className={`bg-white p-3 rounded border shadow-sm flex items-center justify-between motion-safe:animate-in motion-safe:slide-in-from-left-2 ${i === 0 ? 'border-teal-400 ring-1 ring-teal-200' : 'border-slate-400'}`}>
                                             <span className="font-bold text-slate-800 text-sm">{item.term}</span>
                                             <span className="text-[11px] text-slate-600 font-mono">#{currentCallIndex - i + 1}</span>
                                         </div>
@@ -5237,7 +5249,7 @@ const BingoGame = React.memo(({ data, onClose, settings, setSettings, onGenerate
                                 </>
                             ) : (
                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600/50">
-                                    <EyeOff size={48} className="mb-2"/>
+                                    <EyeOff size={48} className="mb-2" aria-hidden="true"/>
                                     <p className="text-sm font-bold">{t('bingo.hide_list')}</p>
                                 </div>
                             )}
