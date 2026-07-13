@@ -3507,6 +3507,94 @@ function _tableContentPreserved(beforeHtml, afterHtml, index, op) {
   return _r;
 }
 
+// ── Table cell-POSITION gate (phase-2 of the numeric multiset gate, 2026-07-13) ──
+// The value-fidelity gates are bag-of-values: two SWAPPED WISC subtest scores pass
+// them clean (the known blind spot the multiset gate's own comment schedules as
+// "phase-2: table cells"). This helper detects pure transposition: for each table
+// whose cell-text MULTISET is unchanged (value loss/creation is the other gates'
+// job), it tracks every UNIQUE non-trivial cell value and reports any whose
+// (row,col) moved. No legitimate remediation transform swaps cell CONTENTS between
+// positions, so callers may treat any hit as blocking. High precision by design:
+// duplicate values are untrackable and skipped; different multisets, different
+// table counts, and tiny tables (<4 cells) are skipped. Returns
+// { checked, moved: [{table, value, from:[r,c], to:[r,c]}] } or null (uncheckable).
+function _alloTableCellDrift(beforeHtml, afterHtml) {
+  try {
+    if (typeof DOMParser === 'undefined') return null;
+    var norm = function (s) { return String(s || '').replace(/\s+/g, ' ').trim().toLowerCase(); };
+    var tablesOf = function (html) {
+      var doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+      return Array.prototype.slice.call(doc.querySelectorAll('table'));
+    };
+    var gridOf = function (tableEl) {
+      var grid = [];
+      var rows = Array.prototype.slice.call(tableEl.querySelectorAll('tr'));
+      for (var r = 0; r < rows.length; r++) {
+        // Rows of NESTED tables belong to their own table's grid.
+        var owner = rows[r].parentElement;
+        while (owner && String(owner.tagName || '').toLowerCase() !== 'table') owner = owner.parentElement;
+        if (owner !== tableEl) continue;
+        var rowArr = [];
+        var kids = rows[r].children || [];
+        for (var c = 0; c < kids.length; c++) {
+          var tag = String(kids[c].tagName || '').toLowerCase();
+          if (tag === 'td' || tag === 'th') rowArr.push(norm(kids[c].textContent));
+        }
+        grid.push(rowArr);
+      }
+      return grid;
+    };
+    var flat = function (grid) { return [].concat.apply([], grid).filter(Boolean); };
+    var beforeTables = tablesOf(beforeHtml);
+    var afterTables = tablesOf(afterHtml);
+    if (!beforeTables.length || beforeTables.length !== afterTables.length) {
+      var _skip = { checked: 0, moved: [] };
+      return _skip;
+    }
+    var moved = [];
+    var checked = 0;
+    for (var t = 0; t < beforeTables.length && moved.length < 12; t++) {
+      var bg = gridOf(beforeTables[t]);
+      var ag = gridOf(afterTables[t]);
+      var bCells = flat(bg);
+      var aCells = flat(ag);
+      if (bCells.length < 4 || bCells.length !== aCells.length) continue;
+      var bSorted = bCells.slice().sort();
+      var aSorted = aCells.slice().sort();
+      var sameMultiset = true;
+      for (var i = 0; i < bSorted.length; i++) { if (bSorted[i] !== aSorted[i]) { sameMultiset = false; break; } }
+      if (!sameMultiset) continue;
+      checked++;
+      var posOf = function (grid) {
+        var map = Object.create(null);
+        var dup = Object.create(null);
+        for (var r2 = 0; r2 < grid.length; r2++) {
+          for (var c2 = 0; c2 < grid[r2].length; c2++) {
+            var v = grid[r2][c2];
+            if (!v || v.length < 2) continue;
+            if (map[v]) dup[v] = 1; else map[v] = { r: r2, c: c2 };
+          }
+        }
+        for (var k in dup) delete map[k];
+        return map;
+      };
+      var bPos = posOf(bg);
+      var aPos = posOf(ag);
+      for (var key in bPos) {
+        var bp = bPos[key];
+        var ap = aPos[key];
+        if (!ap) continue;
+        if (bp.r !== ap.r || bp.c !== ap.c) {
+          moved.push({ table: t, value: key.slice(0, 60), from: [bp.r, bp.c], to: [ap.r, ap.c] });
+          if (moved.length >= 12) break;
+        }
+      }
+    }
+    var _out = { checked: checked, moved: moved };
+    return _out;
+  } catch (_) { return null; }
+}
+
 // ── Issue-resolution diff (shared, 2026-06-19) ───────────────────────────────
 // Diffs the pre-fix audit's issues against a verification audit → {resolved, persisted, introduced,
 // summary, baseline}. Extracted so a FOLLOW-UP pass (auto-continue, Fix-Remaining, Additional-Sweep)
@@ -4794,6 +4882,19 @@ var createDocPipeline = function(deps) {
     if (!(fixed.includes('<!DOCTYPE') || fixed.includes('<html') || fixed.includes('<main') || fixed.includes('<body'))) {
       return { accepted: false, reason: 'no-doc-markers' };
     }
+    // Table cell-POSITION gate (phase-2, 2026-07-13) — BLOCKING, unlike the
+    // reading-order WARN below: an equal cell multiset with MOVED unique values is
+    // transposition, and no remediation transform legitimately swaps cell contents
+    // between positions. A silently transposed score table is this tool's worst-case
+    // failure (psych-report subtest tables), so the chunk ships as ORIGINAL instead.
+    if (original.indexOf('<table') !== -1 && fixed.indexOf('<table') !== -1) {
+      try {
+        var _cellDrift = _alloTableCellDrift(original, fixed);
+        if (_cellDrift && _cellDrift.moved && _cellDrift.moved.length > 0) {
+          return { accepted: false, reason: 'table-cell-transposition', cellDrift: _cellDrift };
+        }
+      } catch (_) {}
+    }
     // Reading-order WARN (H-4, audit 2026-06-23): the size/text magnitude checks above CANNOT see a block
     // REORDER — they pass as long as char/word totals hold. Attach a non-blocking `readingOrderWarn` (mirrors
     // the fabrication WARN pattern below) so a reorder is SURFACED, not silently shipped with a high score.
@@ -4824,6 +4925,13 @@ var createDocPipeline = function(deps) {
     }
     if (r && r.accepted && r.readingOrderWarn) { // H-4: reading order changed but content magnitude held — surface it (was silent)
       try { warnLog('[acceptFixedHtml] reading-order WARN — a block may have moved or dropped (token "' + (r.readingOrderWarn.droppedToken || '') + '"; ' + r.readingOrderWarn.beforeCount + '->' + r.readingOrderWarn.afterCount + '). Char/word checks passed but ORDER was not preserved — review before distributing.'); } catch (_) {}
+    }
+    if (r && !r.accepted && r.reason === 'table-cell-transposition') {
+      // Phase-2 gate: name the moved values so the log is actionable, not just "rejected".
+      try {
+        var _mv = (r.cellDrift && r.cellDrift.moved || []).slice(0, 3).map(function (m) { return '"' + m.value + '" [' + m.from + ']->[' + m.to + ']'; }).join(', ');
+        warnLog('[acceptFixedHtml] REJECTED: table cell values changed POSITIONS (transposition risk): ' + _mv + (r.cellDrift && r.cellDrift.moved.length > 3 ? ' +' + (r.cellDrift.moved.length - 3) + ' more' : '') + '. The original content ships for this pass.');
+      } catch (_) {}
     }
     return r.accepted;
   };
@@ -15685,6 +15793,9 @@ Return ONLY the complete fixed HTML.`, true);
             warnLog(`[Auto-fix] Single-pass rejected (reason=${_singlePassDecision.reason}${_pct != null ? `, ${_pct}% text loss` : ''}): output ${fixedHtml.length} chars (text=${textCharCount(fixedHtml)}) vs source ${currentHtml.length} chars (text=${textCharCount(currentHtml)})`);
             if (_singlePassDecision.reason === 'text-shrink' && typeof addToast === 'function') {
               addToast(`Remediation rejected: ${_pct}% text loss detected. Falling back to chunked fix.`, 'warning');
+            }
+            if (_singlePassDecision.reason === 'table-cell-transposition' && typeof addToast === 'function') {
+              addToast('Remediation pass rejected: table cell values would have moved positions (transposition risk). The original table layout was kept.', 'warning');
             }
           }
           // Emit single-pass completion so Live UI updates
@@ -33831,6 +33942,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     computeHeadline: _alloComputeHeadline, // single source of truth for the weakest-layer headline (the view reaches it via this instance prop)
     ocrBlockLayout: _alloOcrBlockLayout, // exposed for tests: the scanned-OCR block-fallback line distribution
     structuralFoundations: _alloStructuralFoundations, // the view's foundations scorecard calls this (single source for the regex set)
+    tableCellDrift: _alloTableCellDrift, // phase-2 cell-position gate (pure; blocking in acceptFixedHtmlDetailed)
     weightedDeductions: _alloWeightedDeductions, // #5: single source for the output-audit deduction (single-chunk + chunked-merge)
     contrastFixPair: _alloContrastFixPair, // deterministic which-colour-to-move contrast fixer (auto | preserve fg/bg/both)
     applyStyleSeedToHtml: _wrap(applyStyleSeedToHtml),
@@ -33866,6 +33978,7 @@ window.AlloModules.createDocPipeline.INTERACTIVE_OBJECT_PROFILE_VERSION = ALLO_I
 window.AlloModules.createDocPipeline.computeHeadline = _alloComputeHeadline; // static: the AlloFlowANTI monolith delegates blendAiAxe here so its copy can never re-drift to a mean
 window.AlloModules.createDocPipeline.ocrBlockLayout = _alloOcrBlockLayout; // static: exposed for tests (scanned-OCR block-fallback layout)
 window.AlloModules.createDocPipeline.structuralFoundations = _alloStructuralFoundations; // static: exposed for tests
+window.AlloModules.createDocPipeline.tableCellDrift = _alloTableCellDrift; // static: exposed for tests
 window.AlloModules.createDocPipeline.weightedDeductions = _alloWeightedDeductions; // static: exposed for tests (#5)
 window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // static: exposed for tests (contrast pair-fixer)
 window.AlloModules.createDocPipeline.docFingerprint = _alloDocFingerprint; // static: H2 (2026-07-02) — the ANTI host stamps v2 resume projects with it so resume can refuse a different file wearing the same name
