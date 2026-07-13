@@ -66,7 +66,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       '.fl-pill { display:inline-block; padding: 2px 8px; border-radius: 999px; background: rgba(56,189,248,0.12); color:#bae6fd; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; }',
       '@media (prefers-reduced-motion: reduce) { .fl-bob { animation: none !important; } .fl-pulse { animation: none !important; } }',
       '@keyframes fl-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }',
-      '.fl-pulse { animation: fl-pulse 1.6s ease-in-out infinite; }'
+      '.fl-pulse { animation: fl-pulse 1.6s ease-in-out infinite; }',
+      '.fl-sim-canvas:focus-visible { outline: 4px solid #fbbf24; outline-offset: -4px; }',
+      '.fl-sim-stage { position: relative; overflow: hidden; border-radius: 0 0 8px 8px; background: #06131f; }',
+      '.fl-sim-touch { position: absolute; z-index: 20; left: 50%; bottom: 116px; transform: translateX(-50%); display: flex; gap: 6px; padding: 6px; border-radius: 8px; background: rgba(2,6,23,0.78); border: 1px solid rgba(125,211,252,0.28); }',
+      '@media (max-width: 760px) { .fl-sim-stage { display: grid; overflow: visible; } .fl-sim-stage .fl-sim-canvas { height: 330px !important; } .fl-sim-instruments, .fl-sim-mission, .fl-sim-log, .fl-sim-touch { position: static !important; width: auto !important; max-width: none !important; margin: 8px 8px 0 !important; transform: none !important; } .fl-sim-touch { justify-self: stretch; justify-content: center; flex-wrap: wrap; } }'
     ].join('\n');
     document.head.appendChild(s);
   })();
@@ -424,6 +428,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     if (reg === 'greatlakes') return GREATLAKES_SPECIES;
     return MAINE_SPECIES;
   }
+
+  var CORE_SIM_PROFILES = {
+    maine: { title: 'Casco Bay Stewardship Run', targetFishId: 'cod', targetFish: 'Atlantic cod', trapCatch: 'lobster', destination: 'Halfway Rock' },
+    chesapeake: { title: 'Chesapeake Stewardship Run', targetFishId: 'stripedbass', targetFish: 'striped bass', trapCatch: 'blue crab', destination: 'Thomas Point grounds' },
+    pnw: { title: 'Salish Sea Stewardship Run', targetFishId: 'chinook', targetFish: 'Chinook salmon', trapCatch: 'Dungeness crab', destination: 'Burrows Island grounds' },
+    greatlakes: { title: 'St. Marys Stewardship Run', targetFishId: 'laketrout', targetFish: 'lake trout', trapCatch: 'crayfish', destination: 'Point Iroquois grounds' }
+  };
+  function getCoreSimProfile(region) {
+    return CORE_SIM_PROFILES[region] || CORE_SIM_PROFILES.maine;
+  }
+  function scoreCoreDecision(score, streak, correct) {
+    var nextStreak = correct ? streak + 1 : 0;
+    var delta = correct ? 25 + Math.min(20, Math.max(0, nextStreak - 1) * 5) : -15;
+    return { score: Math.max(0, score + delta), streak: nextStreak, delta: delta };
+  }
+  function isCoreMissionReady(state) {
+    return !!(state && state.passedRedNun && state.reachedHalfwayRock && state.targetFishDecision && state.trapDecisionMade);
+  }
+  window.__FisherLabCore = { getCoreSimProfile: getCoreSimProfile, scoreCoreDecision: scoreCoreDecision, isCoreMissionReady: isCoreMissionReady };
 
   // ───────────────────────────────────────────────────────────
   // DATA: GEAR & METHODS
@@ -7957,7 +7980,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
         // ── procedural textures ──
         function radialTex(inner, outer) {
-          var c = document.createElement('canvas'); c.width = c.height = 64;
+          var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'Decorative simulator texture'); c.width = c.height = 64;
           var g = c.getContext('2d');
           var grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
           grd.addColorStop(0, inner); grd.addColorStop(1, outer);
@@ -7965,7 +7988,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           return keep(new THREE.CanvasTexture(c));
         }
         function streakTex() {
-          var c = document.createElement('canvas'); c.width = 8; c.height = 32;
+          var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'Decorative simulator texture'); c.width = 8; c.height = 32;
           var g = c.getContext('2d');
           var gr = g.createLinearGradient(0, 0, 0, 32);
           gr.addColorStop(0, 'rgba(205,222,236,0)'); gr.addColorStop(0.5, 'rgba(214,230,242,0.9)'); gr.addColorStop(1, 'rgba(205,222,236,0)');
@@ -7973,7 +7996,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           return keep(new THREE.CanvasTexture(c));
         }
         function gullTex() {
-          var c = document.createElement('canvas'); c.width = 32; c.height = 32;
+          var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'Decorative simulator texture'); c.width = 32; c.height = 32;
           var g = c.getContext('2d');
           g.strokeStyle = 'rgba(58,66,76,0.92)'; g.lineWidth = 2.6; g.lineCap = 'round';
           g.beginPath(); g.moveTo(4, 20); g.quadraticCurveTo(12, 9, 16, 16); g.quadraticCurveTo(20, 9, 28, 20); g.stroke();
@@ -8681,6 +8704,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     // ─── Boat state
+    var missionProfile = getCoreSimProfile(activeRegion);
     var boatState = {
       pos: new THREE.Vector3(0, 0, 5.5),
       heading: Math.PI, // facing south (out of harbor)
@@ -8700,7 +8724,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       closestTrapHauled: false,
       timeOfDay: 'day',
       weather: 'clear',
-      cameraView: 'chase'
+      cameraView: 'chase',
+      paused: false,
+      stewardshipScore: 0,
+      decisionStreak: 0,
+      correctDecisions: 0,
+      totalDecisions: 0,
+      targetFishDecision: false,
+      trapDecisionMade: false,
+      missionComplete: false,
+      fuelDepletedWarned: false,
+      earlyDockWarned: false
     };
     boat.position.copy(boatState.pos);
 
@@ -8802,15 +8836,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // ─── Keyboard state
     var keys = {};
     function onKeyDown(e) {
-      if (document.activeElement && (
-        document.activeElement.tagName === 'INPUT' ||
-        document.activeElement.tagName === 'SELECT' ||
-        document.activeElement.tagName === 'TEXTAREA'
-      )) {
+      if (document.activeElement !== canvas) return;
+      keys[e.key.toLowerCase()] = true;
+      if (e.key === ' ' || e.key.indexOf('Arrow') === 0) e.preventDefault();
+      if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+        setPaused(!boatState.paused, true);
         return;
       }
-      keys[e.key.toLowerCase()] = true;
-      if (e.key === ' ') e.preventDefault();
 
       if (e.key === 'h' || e.key === 'H') {
         startHauling();
@@ -8836,6 +8868,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var cameraTarget = new THREE.Vector3();
     var hudCb = (opts && opts.onHudUpdate) || function() {};
     var statusCb = (opts && opts.onStatus) || function() {};
+    var lastHud = {};
+    function setPaused(paused, announce) {
+      boatState.paused = !!paused;
+      keys = {};
+      boatState.throttle = 0;
+      if (announce) {
+        flAnnounce(boatState.paused ? 'Simulation paused.' : 'Simulation resumed. Focus the harbor scene to steer.');
+        statusCb({ type: 'system', text: boatState.paused ? 'Simulation paused' : 'Simulation resumed' });
+      }
+      hudCb(Object.assign({}, lastHud, { paused: boatState.paused }));
+    }
+    function resolveCatch(kind, action, correct, speciesId) {
+      var scored = scoreCoreDecision(boatState.stewardshipScore, boatState.decisionStreak, correct);
+      boatState.stewardshipScore = scored.score;
+      boatState.decisionStreak = scored.streak;
+      boatState.totalDecisions += 1;
+      if (correct) boatState.correctDecisions += 1;
+      if (kind === 'shellfish') {
+        boatState.lobstersHauled += 1;
+        boatState.trapDecisionMade = correct || boatState.trapDecisionMade;
+        if (action === 'keep' && correct) boatState.keeperLobsters += 1;
+      } else if (speciesId === missionProfile.targetFishId && correct) {
+        boatState.targetFishDecision = true;
+      }
+      setPaused(false, false);
+      statusCb({ type: correct ? 'score' : 'violation', text: (correct ? '+' : '') + scored.delta + ' stewardship points' + (correct && scored.streak > 1 ? ' · ' + scored.streak + ' decision streak' : '') });
+    }
 
     var t0 = performance.now();
     var raf = null;
@@ -8848,6 +8907,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var now = performance.now();
       var dt = Math.min(0.08, (now - lastT) / 1000);
       lastT = now;
+      if (boatState.paused) {
+        var pausedComposer = renderer._alloComposer;
+        if (pausedComposer) pausedComposer.render(); else renderer.render(scene, camera);
+        raf = requestAnimationFrame(tick);
+        return;
+      }
       elapsed += dt;
 
       // Inputs
@@ -8857,11 +8922,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       if (keys['a'] || keys['arrowleft']) steer = 1;
       if (keys['d'] || keys['arrowright']) steer = -1;
       if (keys[' ']) accel = 1.5;
+      if (boatState.fuel <= 0) {
+        accel = 0;
+        if (!boatState.fuelDepletedWarned) {
+          boatState.fuelDepletedWarned = true;
+          statusCb({ type: 'violation', text: 'Fuel exhausted — propulsion offline. Restart the mission and plan a reserve.' });
+          flAnnounce('Fuel exhausted. Propulsion offline.');
+        }
+      }
 
-      // Boat physics & dynamic pitch/roll feedback
-      boatState.throttle += (accel - boatState.throttle) * 0.04;
+      // Frame-rate-independent response keeps handling consistent across devices.
+      var throttleResponse = 1 - Math.exp(-3.0 * dt);
+      boatState.throttle += (accel - boatState.throttle) * throttleResponse;
       boatState.speed += boatState.throttle * 6 * dt;
-      boatState.speed *= 0.985;
+      boatState.speed *= Math.exp(-0.9 * dt);
       if (boatState.speed > 8) boatState.speed = 8;
       if (boatState.speed < -3) boatState.speed = -3;
       boatState.heading += steer * dt * 0.9 * Math.min(1, Math.abs(boatState.speed) / 2 + 0.2);
@@ -8876,7 +8950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var dz = Math.cos(boatState.heading) * boatState.speed * dt;
       boatState.pos.x += dx;
       boatState.pos.z -= dz;
-      boatState.fuel -= Math.abs(boatState.throttle) * dt * 0.5;
+      boatState.fuel = Math.max(0, boatState.fuel - Math.abs(boatState.throttle) * dt * 0.5);
 
       boat.position.x = boatState.pos.x;
       boat.position.z = boatState.pos.z;
@@ -9061,6 +9135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             keeper = (length >= 3.25) && (length <= 5.0) && !isVNotched;
           }
 
+          setPaused(true, false);
           statusCb({
             type: 'lobster-haul',
             specimenType: (activeRegion === 'chesapeake' || activeRegion === 'pnw') ? 'crab' : activeRegion === 'greatlakes' ? 'crayfish' : 'lobster',
@@ -9087,7 +9162,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             var localX = Math.cos(boatState.heading) * toBuoy.x + Math.sin(boatState.heading) * toBuoy.z;
             if (localX > 0.5) {
               boatState.passedRedNun = true;
-              flAnnounce('Passed red nun on starboard.');
+              boatState.stewardshipScore += 20;
+              flAnnounce('Passed red nun on starboard. Twenty navigation points earned.');
               statusCb({ type: 'milestone', text: 'Passed first red nun on starboard ✓' });
             } else if (localX < -0.5) {
               flAnnounce('Passed red nun on the wrong side (port).');
@@ -9102,18 +9178,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         var dRock = boat.position.distanceTo(rock.position);
         if (dRock < 6) {
           boatState.reachedHalfwayRock = true;
-          flAnnounce('Reached Halfway Rock. Drop a jig (press F).');
-          statusCb({ type: 'milestone', text: 'Reached Halfway Rock — press F to fish' });
+          boatState.stewardshipScore += 30;
+          flAnnounce('Reached the fishing grounds. Drop a jig with F.');
+          statusCb({ type: 'milestone', text: 'Reached ' + missionProfile.destination + ' — press F to fish' });
         }
       }
 
-      // Returned home
+      // A safe return completes the run only after all learning objectives.
       if (boatState.reachedHalfwayRock && !boatState.returnedHome) {
         var dDock = boat.position.distanceTo(dock.position);
         if (dDock < 4 && Math.abs(boatState.speed) < 1) {
-          boatState.returnedHome = true;
-          flAnnounce('Docked safely. Mission summary available.');
-          statusCb({ type: 'complete', text: 'Mission complete — review summary' });
+          if (isCoreMissionReady(boatState)) {
+            boatState.returnedHome = true;
+            boatState.missionComplete = true;
+            boatState.stewardshipScore += 50;
+            setPaused(true, false);
+            flAnnounce('Docked safely. Mission complete. Review your stewardship debrief.');
+            statusCb({ type: 'mission-complete', score: boatState.stewardshipScore, text: 'Mission complete — safe return bonus +50' });
+          } else if (!boatState.earlyDockWarned) {
+            boatState.earlyDockWarned = true;
+            statusCb({ type: 'guidance', text: 'Not ready to dock: finish the fish and trap decisions before returning.' });
+          }
         }
       }
 
@@ -9157,14 +9242,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           }
         }
         
+        setPaused(true, false);
         statusCb({
-          type: 'fish',
+          type: 'fish-haul',
           species: sp,
           length: len,
           isKeeper: isKeeper,
           text: 'Landed a ' + len + '" ' + sp.name + (isKeeper ? ' — KEEPER' : ' — release (' + (sp.slot ? 'slot ' + sp.slot : 'min ' + sp.minSize + '"') + ')')
         });
-        if (sp.id === 'cod' && isKeeper) boatState.keptKeeperCod = true;
+        // The learner decides keep or release in the inspection overlay.
       }
 
       // Wave animation — 3 octaves; amplitude scales with weather-driven sea state
@@ -9214,7 +9300,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         camera.lookAt(cameraTarget);
       }
 
-      hudCb({
+      var hudPayload = {
         speed: boatState.speed,
         heading: boatState.heading,
         fuel: boatState.fuel,
@@ -9232,8 +9318,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         distToDock: boat.position.distanceTo(dock.position),
         cameraView: cameraView,
         timeOfDay: boatState.timeOfDay,
-        weather: boatState.weather
-      });
+        weather: boatState.weather,
+        paused: boatState.paused,
+        stewardshipScore: boatState.stewardshipScore,
+        decisionStreak: boatState.decisionStreak,
+        correctDecisions: boatState.correctDecisions,
+        totalDecisions: boatState.totalDecisions,
+        targetFishDecision: boatState.targetFishDecision,
+        trapDecisionMade: boatState.trapDecisionMade,
+        missionComplete: boatState.missionComplete
+      };
+      lastHud = hudPayload;
+      hudCb(hudPayload);
 
       AF.update(dt, elapsed);
       var _ac = renderer._alloComposer;
@@ -9280,15 +9376,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       haulTrap: function() {
         startHauling();
       },
+      fish: function() {
+        if (boatState.reachedHalfwayRock) keys['f'] = true;
+        else statusCb({ type: 'guidance', text: 'Navigate to the fishing grounds before dropping a line.' });
+      },
+      setControl: function(key, pressed) {
+        if (!boatState.paused) keys[key] = !!pressed;
+      },
+      setPaused: function(paused) {
+        setPaused(paused, true);
+      },
+      resolveCatch: function(kind, action, correct, speciesId) {
+        resolveCatch(kind, action, correct, speciesId);
+      },
       setWeather: function(w) {
         boatState.weather = w;
         updateEnvironment(boatState.timeOfDay, w);
       },
-      addKeeperLobster: function(isKeeper) {
-        boatState.lobstersHauled += 1;
-        if (isKeeper) {
-          boatState.keeperLobsters += 1;
-        }
+      restartMission: function() {
+        boatState.pos.set(0, 0, 5.5);
+        boat.position.copy(boatState.pos);
+        boatState.heading = Math.PI;
+        boatState.speed = 0;
+        boatState.throttle = 0;
+        boatState.passedRedNun = false;
+        boatState.reachedHalfwayRock = false;
+        boatState.returnedHome = false;
+        boatState.fuel = 100;
+        boatState.fishLanded = 0;
+        boatState.lobstersHauled = 0;
+        boatState.keeperLobsters = 0;
+        boatState.targetFishDecision = false;
+        boatState.trapDecisionMade = false;
+        boatState.missionComplete = false;
+        boatState.stewardshipScore = 0;
+        boatState.decisionStreak = 0;
+        boatState.correctDecisions = 0;
+        boatState.totalDecisions = 0;
+        boatState.fuelDepletedWarned = false;
+        boatState.earlyDockWarned = false;
+        buoys.forEach(function(b) { if (b.userData.type === 'lobster-buoy') b.userData.hauled = false; });
+        setPaused(false, false);
+        statusCb({ type: 'system', text: missionProfile.title + ' restarted' });
       }
     };
   }
@@ -9336,6 +9465,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var aqCondIQ = aqCondHook[0], setAqCondIQ = aqCondHook[1];
     var canvasRef = useRef(null);
     var harborRef = useRef(null);
+    var decisionFocusRef = useRef(null);
 
     var soundHook = useState(false);
     var soundOn = soundHook[0], setSoundOn = soundHook[1];
@@ -9347,6 +9477,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var weather = weatherHook[0], setWeatherState = weatherHook[1];
     var activeLobsterHook = useState(null);
     var activeLobster = activeLobsterHook[0], setActiveLobster = activeLobsterHook[1];
+    var activeFishHook = useState(null);
+    var activeFish = activeFishHook[0], setActiveFish = activeFishHook[1];
     var caliperHook = useState(3.5);
     var caliperVal = caliperHook[0], setCaliperVal = caliperHook[1];
     var missionDrawerHook = useState(false);
@@ -9426,6 +9558,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       setCheckpointResult(null);
     }
 
+    useEffect(function() {
+      if (!activeFish && !activeLobster) return;
+      setTimeout(function() {
+        if (decisionFocusRef.current && decisionFocusRef.current.focus) decisionFocusRef.current.focus();
+      }, 0);
+    }, [activeFish, activeLobster]);
+
     // Regenerate checkpoint specimen on region changes
     useEffect(function() {
       generateCheckpointSpecimen();
@@ -9488,9 +9627,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         setActiveLobster(ev);
         setCaliperVal(3.5);
       }
+      if (ev.type === 'fish-haul') setActiveFish(ev);
+      if (ev.type === 'mission-complete') {
+        var saved = loadState();
+        saved.completedMissions = saved.completedMissions || {};
+        saved.completedMissions['core-' + region] = true;
+        saved.bestCoreScores = saved.bestCoreScores || {};
+        saved.bestCoreScores[region] = Math.max(saved.bestCoreScores[region] || 0, ev.score || 0);
+        saved.coreTrips = (saved.coreTrips || 0) + 1;
+        saveState(saved);
+      }
     }
 
     function startSim() {
+      setStatus([]);
+      setHud({});
+      setActiveFish(null);
+      setActiveLobster(null);
       if (window.THREE) {
         setSim({ active: true, threeLoaded: true, threeError: false, loading: false });
       } else {
@@ -9534,7 +9687,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             harborRef.current.setTimeOfDay(timeOfDay);
             harborRef.current.setCameraView(cameraView);
             harborRef.current.setWeather(weather);
-            flAnnounce('FisherLab 3D sim launched for ' + REGIONS[region].label + '. Use WASD/arrows to steer, Space for boost, F to fish, H to haul trap, V to cycle camera, M to toggle sound.');
+            setTimeout(function() { if (canvasRef.current && canvasRef.current.focus) canvasRef.current.focus(); }, 0);
+            flAnnounce('FisherLab 3D sim launched for ' + REGIONS[region].label + '. Harbor scene focused. Use WASD or arrows to steer, F to fish, H to haul, and P to pause.');
           } catch (err) {
             console.error('[FisherLab] Error starting 3D simulation:', err);
             setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
@@ -9683,6 +9837,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     ];
 
     function tabBar() {
+      function onSectionTabKey(e) {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
+        var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+        var current = Array.prototype.indexOf.call(tabs, e.currentTarget);
+        if (current < 0 || !tabs.length) return;
+        var next = e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : (current + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+        e.preventDefault();
+        tabs[next].focus();
+        tabs[next].click();
+      }
       var activeCatObj = CATEGORIES.find(function(c) { return c.tabs.indexOf(tab) !== -1; }) || CATEGORIES[0];
       var activeCat = activeCatObj.id;
       var query = String(tabSearch || '').trim().toLocaleLowerCase();
@@ -9764,7 +9928,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           })
         ),
         !query && h('div', {
-          role: 'group',
+          role: 'tablist',
           'aria-label': activeCatObj.name + ' sections',
           style: { display: 'flex', flexWrap: 'wrap', gap: 5, padding: 6, background: 'rgba(15,23,42,0.35)', borderRadius: 8, border: '1px solid rgba(56,189,248,0.1)' }
         },
@@ -9774,9 +9938,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             var selected = tab === tId;
             return h('button', {
               key: tId,
+              id: 'fl-tab-' + tId,
               type: 'button',
-              'aria-current': selected ? 'page' : undefined,
+              role: 'tab',
+              'aria-selected': selected,
+              'aria-controls': 'fl-active-panel',
+              tabIndex: selected ? 0 : -1,
               className: 'fl-btn',
+              onKeyDown: onSectionTabKey,
               onClick: function() { openTab(tObj); },
               style: {
                 padding: '6px 10px',
@@ -9913,7 +10082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('span', null, s.label),
                 h('span', { style: { fontFamily: 'monospace', color: sm.color, fontWeight: 700 } }, (s.step < 1 ? iq[s.k].toFixed(1) : iq[s.k]) + ' ' + s.unit)
               ),
-              h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: iq[s.k], onChange: function(e) { setKey(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+              h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: iq[s.k], 'aria-label': s.label + ' (' + s.unit + ')', onChange: function(e) { setKey(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
             );
           })
         ),
@@ -9951,7 +10120,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
           h('span', null, 'I can explain why these parameters yield this species ranking.')
         ),
-        iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+        iq.understood && h('textarea', { 'aria-label': 'Explain the species ranking in your own words', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
         h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Illustrative tolerance ranges only; do not use for actual stocking or fishery decisions. Always consult primary literature and DMR for production use.')
       );
     }
@@ -10159,10 +10328,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     // ─── SIM tab
     function simTab() {
+      var mission = getCoreSimProfile(region);
+      var completedObjectives = (hud.passedRedNun ? 1 : 0) + (hud.reachedHalfwayRock ? 1 : 0) + (hud.targetFishDecision ? 1 : 0) + (hud.trapDecisionMade ? 1 : 0) + (hud.returnedHome ? 1 : 0);
+      var missionProgressPct = completedObjectives * 20;
+      var fuelValue = hud.fuel == null ? 100 : Math.max(0, hud.fuel);
+      var decisionAccuracy = hud.totalDecisions ? Math.round((hud.correctDecisions || 0) / hud.totalDecisions * 100) : 0;
+      function setHeldControl(key, pressed) {
+        if (harborRef.current && harborRef.current.setControl) harborRef.current.setControl(key, pressed);
+      }
+      function restartCoreMission() {
+        setStatus([]);
+        setActiveFish(null);
+        setActiveLobster(null);
+        if (harborRef.current && harborRef.current.restartMission) harborRef.current.restartMission();
+        if (canvasRef.current && canvasRef.current.focus) canvasRef.current.focus();
+      }
       return h('div', null,
         regionBar(),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '3D Simulator'),
+          h('section', { 'aria-labelledby': 'fl-core-mission-title', style: { marginBottom: 12, padding: 12, borderRadius: 8, background: 'linear-gradient(135deg, rgba(8,47,73,0.9), rgba(6,78,59,0.72))', border: '1px solid rgba(125,211,252,0.32)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 12, alignItems: 'center' } },
+            h('div', { style: { minWidth: 0 } },
+              h('h3', { id: 'fl-core-mission-title', style: { margin: '0 0 4px', color: '#f8fafc', fontSize: 16 } }, mission.title),
+              h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 11, lineHeight: 1.5 } }, 'Navigate correctly, reach ' + mission.destination + ', classify a ' + mission.targetFish + ' and a ' + mission.trapCatch + ', then return with fuel in reserve. Correct decisions build a streak; unsafe or incorrect choices reduce your score.')),
+            h('div', { style: { display: 'grid', gap: 3, textAlign: 'right', fontFamily: 'ui-monospace, monospace' } },
+              h('strong', { style: { color: '#fde68a', fontSize: 18 } }, (hud.stewardshipScore || 0) + ' pts'),
+              h('span', { style: { color: '#a7f3d0', fontSize: 10 } }, completedObjectives + '/5 objectives'),
+              h('span', { style: { color: '#bae6fd', fontSize: 10 } }, fuelValue.toFixed(0) + '% fuel'))
+          ),
           !sim.threeLoaded && !sim.threeError && !sim.loading ? h('div', { style: { textAlign: 'center', padding: 20 } },
             h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 14 } }, 'The 3D engine (three.js r128, ~600 KB) loads on demand from cdnjs.'),
             h('button', { className: 'fl-btn',
@@ -10185,7 +10378,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             h('button', { className: 'fl-btn', onClick: startSim,
               style: { padding: '12px 24px', background: '#0ea5e9', color: '#04141f', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
               '▶ Cast off — start Mission 1')) : null,
-          sim.active ? h('div', { style: { position: 'relative' } },
+          sim.active ? h('div', { className: 'fl-sim-stage' },
             // Sound, View and Weather Controls bar
             h('div', { style: { display: 'flex', gap: 10, padding: 10, background: 'rgba(15,23,42,0.85)', borderRadius: '8px 8px 0 0', border: '1px solid rgba(56,189,248,0.22)', borderBottom: 'none', flexWrap: 'wrap', alignItems: 'center' } },
               h('button', {
@@ -10193,54 +10386,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 onClick: function() { setSoundOn(!soundOn); },
                 style: { padding: '6px 12px', background: soundOn ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: soundOn ? '#04141f' : '#cbd5e1', border: '1px solid ' + (soundOn ? '#38bdf8' : 'rgba(100,116,139,0.3)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, soundOn ? '🔊 Sound: ON (M)' : '🔇 Sound: OFF (M)'),
-              h('div', { style: { display: 'flex', gap: 4 } },
+              h('div', { role: 'group', 'aria-label': 'Camera view', style: { display: 'flex', gap: 4 } },
                 ['chase', 'firstperson', 'topdown'].map(function(view) {
                   var isSel = cameraView === view;
                   var labels = { chase: '📹 Chase', firstperson: '👁️ First-Person', topdown: '🛰️ Top-Down' };
                   return h('button', {
                     key: view,
+                    className: 'fl-btn',
+                    'aria-pressed': isSel,
                     onClick: function() { setCameraViewState(view); },
                     style: { padding: '6px 10px', background: isSel ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: isSel ? '#04141f' : '#cbd5e1', border: '1px solid ' + (isSel ? '#38bdf8' : 'rgba(100,116,139,0.2)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
                   }, labels[view]);
                 })
               ),
-              h('div', { style: { display: 'flex', gap: 4 } },
+              h('div', { role: 'group', 'aria-label': 'Time of day', style: { display: 'flex', gap: 4 } },
                 ['day', 'sunset', 'night'].map(function(tod) {
                   var isSel = timeOfDay === tod;
                   var labels = { day: '☀️ Day', sunset: '🌅 Sunset', night: '🌙 Night' };
                   return h('button', {
                     key: tod,
+                    className: 'fl-btn',
+                    'aria-pressed': isSel,
                     onClick: function() { setTimeOfDayState(tod); },
                     style: { padding: '6px 10px', background: isSel ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: isSel ? '#04141f' : '#cbd5e1', border: '1px solid ' + (isSel ? '#38bdf8' : 'rgba(100,116,139,0.2)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
                   }, labels[tod]);
                 })
               ),
-              h('div', { style: { display: 'flex', gap: 4 } },
+              h('div', { role: 'group', 'aria-label': 'Weather', style: { display: 'flex', gap: 4 } },
                 ['clear', 'foggy', 'rainy'].map(function(w) {
                   var isSel = weather === w;
                   var labels = { clear: '☀️ Clear', foggy: '🌫️ Foggy', rainy: '🌧️ Rainy' };
                   return h('button', {
                     key: w,
+                    className: 'fl-btn',
+                    'aria-pressed': isSel,
                     onClick: function() { setWeatherState(w); },
                     style: { padding: '6px 10px', background: isSel ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: isSel ? '#04141f' : '#cbd5e1', border: '1px solid ' + (isSel ? '#38bdf8' : 'rgba(100,116,139,0.2)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
                   }, labels[w]);
                 })
               ),
+              h('button', { className: 'fl-btn', 'aria-pressed': !!hud.paused, onClick: function() { if (harborRef.current && harborRef.current.setPaused) harborRef.current.setPaused(!hud.paused); }, style: { padding: '6px 10px', background: hud.paused ? '#fbbf24' : 'rgba(15,23,42,0.5)', color: hud.paused ? '#04141f' : '#cbd5e1', border: '1px solid rgba(251,191,36,0.45)', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, hud.paused ? '▶ Resume (P)' : '⏸ Pause (P)'),
+              h('button', { className: 'fl-btn', onClick: stopSim, style: { padding: '6px 10px', background: 'rgba(127,29,29,0.78)', color: '#fee2e2', border: '1px solid rgba(248,113,113,0.45)', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Exit'),
               hud.closestTrapId && !hud.closestTrapHauled ? h('button', {
                 className: 'fl-btn',
                 onClick: function() { if (harborRef.current && harborRef.current.haulTrap) harborRef.current.haulTrap(); },
                 style: { marginLeft: 'auto', padding: '6px 12px', background: '#fbbf24', color: '#04141f', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' }
               }, '🦞 Haul Trap (H)') : null
             ),
-            h('canvas', { ref: canvasRef, style: { width: '100%', height: 460, display: 'block', borderRadius: '0 0 8px 8px', background: '#9bc4d8' },
-              'aria-label': '3D harbor scene. Use WASD or arrow keys to steer the boat. Press F at Halfway Rock to fish.' }),
+            h('canvas', { ref: canvasRef, className: 'fl-sim-canvas', role: 'application', tabIndex: 0, style: { width: '100%', height: 460, display: 'block', background: '#9bc4d8' },
+              'aria-label': 'Interactive 3D harbor. Focus this scene to steer with WASD or arrow keys. Press F at the fishing grounds, H near a trap, and P to pause.',
+              'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight Space F H P V M Escape',
+              onClick: function(e) { if (e.currentTarget && e.currentTarget.focus) e.currentTarget.focus(); },
+              onFocus: function() { flAnnounce('Harbor controls active. Steer with WASD or arrows. Press P to pause.'); } }),
             
             // HUD Instruments and Compass Dial overlay
-            h('div', { style: { position: 'absolute', top: 58, left: 10, background: 'rgba(8,18,32,0.85)', padding: '12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace', zIndex: 10, border: '1px solid rgba(56,189,248,0.3)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', width: 140 } },
+            h('div', { className: 'fl-sim-instruments', style: { position: 'absolute', top: 58, left: 10, background: 'rgba(8,18,32,0.85)', padding: '12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace', zIndex: 10, border: '1px solid rgba(56,189,248,0.3)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', width: 140 } },
               h('div', { style: { textAlign: 'center', marginBottom: 8, fontSize: 10, color: '#38bdf8', fontWeight: 'bold' } }, 'INSTRUMENTS'),
               // Rotating Compass
               h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 8, position: 'relative' } },
-                h('svg', { width: 70, height: 70, viewBox: '0 0 100 100', style: { transform: 'rotate(' + (-(hud.heading || 0) * 180 / Math.PI) + 'deg)', transition: 'transform 0.1s ease-out' } },
+                h('svg', { width: 70, height: 70, viewBox: '0 0 100 100', role: 'img', 'aria-label': 'Compass heading ' + headingToCompass(hud.heading), style: { transform: 'rotate(' + (-(hud.heading || 0) * 180 / Math.PI) + 'deg)', transition: 'transform 0.1s ease-out' } },
                   h('circle', { cx: 50, cy: 50, r: 45, fill: '#0b1329', stroke: '#38bdf8', strokeWidth: 2 }),
                   h('text', { x: 50, y: 22, textAnchor: 'middle', fontSize: 16, fill: '#ef4444', fontWeight: 'bold' }, 'N'),
                   h('text', { x: 78, y: 55, textAnchor: 'middle', fontSize: 14, fill: '#cbd5e1' }, 'E'),
@@ -10256,7 +10460,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('div', { style: { borderTop: '1px solid rgba(56,189,248,0.2)', paddingTop: 6, display: 'flex', flexDirection: 'column', gap: 3 } },
                 h('div', null, 'Speed: ', h('b', { style: { color: '#86efac' } }, (hud.speed || 0).toFixed(1) + ' kt')),
                 h('div', null, 'Heading: ', h('b', { style: { color: '#bae6fd' } }, headingToCompass(hud.heading))),
-                h('div', null, 'Fuel: ', h('b', { style: { color: (hud.fuel || 100) < 30 ? '#fb923c' : '#86efac' } }, Math.max(0, hud.fuel || 0).toFixed(0) + '%')),
+                h('div', null, 'Fuel: ', h('b', { style: { color: fuelValue < 30 ? '#fb923c' : '#86efac' } }, fuelValue.toFixed(0) + '%')),
                 h('div', null, 'Fish: ', h('b', { style: { color: '#fbbf24' } }, hud.fishLanded || 0)),
                 h('div', null, 'Lobster Keepers: ', h('b', { style: { color: '#fbbf24' } }, hud.keeperLobsters || 0)),
                 h('div', null, 'Traps Hauled: ', h('b', { style: { color: '#bae6fd' } }, hud.lobstersHauled || 0))
@@ -10271,25 +10475,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             ),
 
             // Mission progress
-            h('div', { style: { position: 'absolute', top: 58, right: 10, background: 'rgba(8,18,32,0.75)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', maxWidth: 220, zIndex: 10 } },
-              h('div', { style: { fontWeight: 800, color: '#bae6fd', marginBottom: 4 } }, 'Mission 1'),
-              h('div', { style: { fontSize: 10 } }, hud.passedRedNun ? '✓ Passed red nun' : '• Pass red nun on starboard'),
-              h('div', { style: { fontSize: 10 } }, hud.reachedHalfwayRock ? '✓ Reached Halfway Rock' : '• Reach Halfway Rock'),
-              h('div', { style: { fontSize: 10 } }, hud.keptKeeperCod ? '✓ Landed keeper cod' : '• Land a cod ≥22"'),
-              h('div', { style: { fontSize: 10 } }, (hud.keeperLobsters || 0) >= 1 ? '✓ Caught keeper lobster' : '• Haul lobster trap & keep a legal lobster (3-1/4" to 5")'),
-              h('div', { style: { fontSize: 10 } }, hud.returnedHome ? '✓ Returned home' : '• Return to dock')),
+            h('div', { className: 'fl-sim-mission', style: { position: 'absolute', top: 58, right: 10, background: 'rgba(8,18,32,0.75)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', maxWidth: 220, zIndex: 10 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, fontWeight: 800, color: '#bae6fd', marginBottom: 5 } }, h('span', null, mission.title), h('span', { style: { color: '#fde68a' } }, (hud.stewardshipScore || 0) + ' pts')),
+              h('div', { style: { height: 5, borderRadius: 4, overflow: 'hidden', background: 'rgba(148,163,184,0.22)', marginBottom: 6 } }, h('div', { style: { width: missionProgressPct + '%', height: '100%', background: 'linear-gradient(90deg,#22c55e,#38bdf8)', transition: 'width 0.25s ease' } })),
+              h('div', { style: { fontSize: 10 } }, hud.passedRedNun ? '✓ Navigate red nun correctly' : '○ Pass red nun on starboard'),
+              h('div', { style: { fontSize: 10 } }, hud.reachedHalfwayRock ? '✓ Reach ' + mission.destination : '○ Reach ' + mission.destination),
+              h('div', { style: { fontSize: 10 } }, hud.targetFishDecision ? '✓ Classify ' + mission.targetFish : '○ Classify ' + mission.targetFish),
+              h('div', { style: { fontSize: 10 } }, hud.trapDecisionMade ? '✓ Classify ' + mission.trapCatch : '○ Classify ' + mission.trapCatch),
+              h('div', { style: { fontSize: 10 } }, hud.returnedHome ? '✓ Return safely' : '○ Return with fuel reserve'),
+              h('div', { style: { marginTop: 5, fontSize: 9, color: '#a7f3d0' } }, (hud.decisionStreak || 0) ? 'Decision streak ×' + hud.decisionStreak + ' · ' + decisionAccuracy + '% accurate' : 'Build a streak with correct classifications')),
             
             // Status log
-            h('div', { style: { position: 'absolute', bottom: 10, left: 10, right: 10, maxHeight: 100, overflowY: 'auto', background: 'rgba(8,18,32,0.85)', padding: 8, borderRadius: 8, zIndex: 10 } },
+            h('div', { className: 'fl-sim-log', role: 'log', 'aria-live': 'polite', 'aria-label': 'Voyage log', style: { position: 'absolute', bottom: 10, left: 10, right: 10, maxHeight: 100, overflowY: 'auto', background: 'rgba(8,18,32,0.85)', padding: 8, borderRadius: 8, zIndex: 10 } },
               (status || []).slice(-4).map(function(ev, ei) {
                 var color = ev.type === 'fish' || ev.type === 'lobster' ? '#fbbf24' : (ev.type === 'violation' ? '#fb923c' : (ev.type === 'complete' ? '#86efac' : '#bae6fd'));
                 return h('div', { key: ei, style: { fontSize: 11, color: color, marginBottom: 2 } }, '• ' + ev.text);
               })),
             
-            // Stop button
-            h('button', { onClick: stopSim, className: 'fl-btn',
-              style: { position: 'absolute', bottom: 10, right: 10, padding: '6px 12px', background: 'rgba(220,38,38,0.85)', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', zIndex: 15 } },
-              '✕ Exit sim'),
+            h('div', { className: 'fl-sim-touch', role: 'group', 'aria-label': 'On-screen boat controls' },
+              [
+                { key: 'arrowleft', label: 'Turn port', icon: '←' },
+                { key: 'arrowup', label: 'Throttle forward', icon: '↑' },
+                { key: 'arrowright', label: 'Turn starboard', icon: '→' }
+              ].map(function(control) {
+                return h('button', { key: control.key, type: 'button', className: 'fl-btn', 'aria-label': control.label,
+                  onPointerDown: function(e) { e.preventDefault(); setHeldControl(control.key, true); },
+                  onPointerUp: function() { setHeldControl(control.key, false); },
+                  onPointerCancel: function() { setHeldControl(control.key, false); },
+                  onPointerLeave: function() { setHeldControl(control.key, false); },
+                  style: { width: 38, height: 34, borderRadius: 6, border: '1px solid rgba(125,211,252,0.4)', background: '#0f2740', color: '#e0f2fe', fontSize: 18, cursor: 'pointer' }
+                }, control.icon);
+              }),
+              h('button', { type: 'button', className: 'fl-btn', onClick: function() { if (harborRef.current && harborRef.current.fish) harborRef.current.fish(); }, style: { minHeight: 34, padding: '0 10px', borderRadius: 6, border: '1px solid rgba(196,181,253,0.5)', background: '#312e81', color: '#ede9fe', fontWeight: 800, cursor: 'pointer' } }, 'Fish'),
+              h('button', { type: 'button', className: 'fl-btn', disabled: !hud.closestTrapId || hud.closestTrapHauled, onClick: function() { if (harborRef.current && harborRef.current.haulTrap) harborRef.current.haulTrap(); }, style: { minHeight: 34, padding: '0 10px', borderRadius: 6, border: '1px solid rgba(251,191,36,0.5)', background: '#713f12', color: '#fef3c7', fontWeight: 800, cursor: hud.closestTrapId ? 'pointer' : 'not-allowed', opacity: hud.closestTrapId ? 1 : 0.55 } }, 'Haul')
+            ),
+
+            activeFish ? h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-fish-inspection-title', style: { position: 'absolute', inset: 0, zIndex: 90, display: 'grid', placeItems: 'center', padding: 16, background: 'rgba(2,8,23,0.94)' } },
+              h('div', { style: { width: 'min(560px, 100%)', padding: 18, borderRadius: 8, border: '1px solid rgba(125,211,252,0.5)', background: 'linear-gradient(145deg,#082f49,#0f172a)', boxShadow: '0 22px 60px rgba(0,0,0,0.6)' } },
+                h('div', { style: { color: '#7dd3fc', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, 'Catch inspection · simulation paused'),
+                h('h3', { id: 'fl-fish-inspection-title', style: { margin: '5px 0 8px', color: '#f8fafc', fontSize: 22 } }, activeFish.species.emoji + ' ' + activeFish.species.name + ' · ' + activeFish.length + ' in'),
+                h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } }, activeFish.species.idMarks),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 8, margin: '12px 0' } },
+                  h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } }, h('strong', { style: { color: '#fde68a', fontSize: 11 } }, 'Training rule'), h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 12 } }, activeFish.species.slot ? 'Slot: ' + activeFish.species.slot : activeFish.species.minSize ? 'Minimum: ' + activeFish.species.minSize + ' in' : 'No size score in this activity')),
+                  h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } }, h('strong', { style: { color: '#a7f3d0', fontSize: 11 } }, 'Stewardship context'), h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 11, lineHeight: 1.4 } }, activeFish.species.stewardship))
+                ),
+                h('p', { style: { color: '#bae6fd', fontSize: 12, fontWeight: 800 } }, 'Classify this catch. “Legal to retain” describes the training rule; voluntary release is always allowed.'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                  h('button', { type: 'button', ref: decisionFocusRef, className: 'fl-btn', onClick: function() { var correct = !!activeFish.isKeeper; var msg = correct ? 'Correct: this fish meets the training size rule.' : 'Incorrect: this fish must be released under the training size rule.'; pushStatus({ type: 'fish', species: activeFish.species, length: activeFish.length, isKeeper: correct, text: msg }); if (harborRef.current && harborRef.current.resolveCatch) harborRef.current.resolveCatch('finfish', 'keep', correct, activeFish.species.id); flAnnounce(msg); setActiveFish(null); }, style: { flex: '1 1 200px', padding: 11, border: 0, borderRadius: 7, background: '#059669', color: '#fff', fontWeight: 900, cursor: 'pointer' } }, 'Legal to retain'),
+                  h('button', { type: 'button', className: 'fl-btn', onClick: function() { var correct = !activeFish.isKeeper; var msg = correct ? 'Correct: this fish must be released under the training size rule.' : 'Not quite: this fish meets the size rule, though voluntary release remains allowed.'; pushStatus({ type: correct ? 'complete' : 'guidance', text: msg }); if (harborRef.current && harborRef.current.resolveCatch) harborRef.current.resolveCatch('finfish', 'release', correct, activeFish.species.id); flAnnounce(msg); setActiveFish(null); }, style: { flex: '1 1 200px', padding: 11, border: '1px solid rgba(148,163,184,0.5)', borderRadius: 7, background: '#334155', color: '#fff', fontWeight: 900, cursor: 'pointer' } }, 'Must release')
+                )
+              )
+            ) : null,
+
+            hud.missionComplete ? h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-debrief-title', style: { position: 'absolute', inset: 0, zIndex: 85, display: 'grid', placeItems: 'center', padding: 16, background: 'rgba(2,8,23,0.88)' } },
+              h('div', { style: { width: 'min(500px,100%)', padding: 20, borderRadius: 8, border: '1px solid rgba(52,211,153,0.55)', background: 'linear-gradient(145deg,#064e3b,#082f49 58%,#0f172a)', textAlign: 'center', boxShadow: '0 24px 70px rgba(0,0,0,0.65)' } },
+                h('div', { style: { color: '#6ee7b7', fontSize: 12, fontWeight: 900, textTransform: 'uppercase' } }, 'Safe return · voyage complete'),
+                h('h3', { id: 'fl-debrief-title', style: { margin: '6px 0', color: '#fff', fontSize: 24 } }, mission.title),
+                h('div', { style: { color: '#fde68a', fontSize: 34, fontWeight: 900 } }, (hud.stewardshipScore || 0) + ' pts'),
+                h('p', { style: { color: '#dbeafe', fontSize: 12 } }, (hud.correctDecisions || 0) + ' of ' + (hud.totalDecisions || 0) + ' catch classifications correct · ' + fuelValue.toFixed(0) + '% fuel remaining'),
+                h('p', { style: { color: '#a7f3d0', fontSize: 11, lineHeight: 1.5 } }, fuelValue >= 25 && decisionAccuracy >= 80 ? 'Excellent command: accurate decisions and a prudent fuel reserve.' : 'Replay target: finish with at least 25% fuel and 80% classification accuracy.'),
+                h('div', { style: { display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 8 } },
+                  h('button', { type: 'button', className: 'fl-btn', onClick: restartCoreMission, style: { padding: '10px 16px', border: 0, borderRadius: 7, background: '#34d399', color: '#052e2b', fontWeight: 900, cursor: 'pointer' } }, 'Replay voyage'),
+                  h('button', { type: 'button', className: 'fl-btn', onClick: stopSim, style: { padding: '10px 16px', border: '1px solid rgba(186,230,253,0.4)', borderRadius: 7, background: 'rgba(15,23,42,0.7)', color: '#e0f2fe', fontWeight: 900, cursor: 'pointer' } }, 'Return to briefing')
+                )
+              )
+            ) : null,
               
             // Interactive Carapace Caliper Inspection Screen Overlay
             activeLobster ? (function() {
@@ -10384,6 +10634,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                       width: '100%',
                       height: '100%',
                       viewBox: '0 0 540 280',
+                      role: 'img',
+                      'aria-label': 'Measurement diagram for a ' + activeLobster.length.toFixed(2) + ' inch ' + activeLobster.specimenType + '.',
                       style: { flex: 1, background: '#111827', borderRadius: '6px' }
                     },
                       // Ruler background markings
@@ -10569,6 +10821,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                       ),
                       h('input', {
                         type: 'range',
+                        'aria-label': 'Caliper measurement in inches',
                         min: activeLobster.specimenType === 'crab' ? 3.00 : activeLobster.specimenType === 'crayfish' ? 1.50 : 2.50,
                         max: activeLobster.specimenType === 'crab' ? 8.00 : activeLobster.specimenType === 'crayfish' ? 5.00 : 6.00,
                         step: 0.05,
@@ -10607,6 +10860,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                       h('div', { style: { textAlign: 'center', fontSize: '11px', color: '#94a3b8', marginBottom: '4px' } }, 'Confirm your compliance action:'),
                       h('button', {
                         className: 'fl-btn',
+                        ref: decisionFocusRef,
                         onClick: function() {
                           var decisionCorrect = activeLobster.isKeeper;
                           var msg = '';
@@ -10657,13 +10911,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                             pushStatus({ type: 'violation', text: violationText });
                           }
 
-                          if (harborRef.current && harborRef.current.resumeSim) {
-                            harborRef.current.resumeSim('keep', decisionCorrect);
+                          if (harborRef.current && harborRef.current.resolveCatch) {
+                            harborRef.current.resolveCatch('shellfish', 'keep', decisionCorrect, activeLobster.specimenType);
                           }
                           setActiveLobster(null);
                         },
                         style: { padding: '10px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: 'pointer', fontSize: '12px' }
-                      }, '📥 KEEP IN LIVEWELL (LEGAL CATCH)'),
+                      }, 'CLASSIFY: LEGAL TO RETAIN'),
 
                       h('button', {
                         className: 'fl-btn',
@@ -10676,18 +10930,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                             flAnnounce(msg);
                             pushStatus({ type: 'complete', text: msg });
                           } else {
-                            msg = '⚠ Released a legal keeper ' + (activeLobster.specimenType === 'crab' ? 'crab' : activeLobster.specimenType === 'crayfish' ? 'crayfish' : 'lobster') + ' (' + activeLobster.length.toFixed(2) + '"). Lost catch market value.';
+                            msg = 'Not quite: this specimen meets the training rule, though voluntary release remains allowed (' + activeLobster.length.toFixed(2) + '").';
                             flAnnounce(msg);
                             pushStatus({ type: 'complete', text: msg });
                           }
                           
-                          if (harborRef.current && harborRef.current.resumeSim) {
-                            harborRef.current.resumeSim('release', false);
+                          if (harborRef.current && harborRef.current.resolveCatch) {
+                            harborRef.current.resolveCatch('shellfish', 'release', decisionCorrect, activeLobster.specimenType);
                           }
                           setActiveLobster(null);
                         },
                         style: { padding: '10px', background: '#64748b', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', cursor: 'pointer', fontSize: '12px' }
-                      }, '🌊 RELEASE OVERBOARD (RETURN TO SEA)')
+                      }, 'CLASSIFY: MUST RELEASE')
                     )
                   )
                 )
@@ -10707,7 +10961,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               { k: 'F', d: 'Fish (at fishing waypoint)', c: '#a78bfa' },
               { k: 'H', d: 'Haul lobster trap (near buoy)', c: '#fbbf24' },
               { k: 'V', d: 'Cycle camera view', c: '#38bdf8' },
-              { k: 'M', d: 'Toggle sound mute', c: '#86efac' }
+              { k: 'M', d: 'Toggle sound mute', c: '#86efac' },
+              { k: 'P / Esc', d: 'Pause or resume', c: '#fde68a' }
             ].map(function(c, i) {
               return h('div', { key: i, style: { padding: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '3px solid ' + c.c } },
                 h('div', { style: { fontWeight: 800, color: c.c, fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 2 } }, c.k),
@@ -10892,7 +11147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             h('thead', null,
               h('tr', { style: { background: 'rgba(56,189,248,0.15)' } },
                 ['Species', 'Min size', 'Slot', 'Daily bag', 'Season'].map(function(c, ci) {
-                  return h('th', { key: ci, style: { padding: '6px 8px', textAlign: 'left', color: '#bae6fd', fontWeight: 700 } }, c);
+                  return h('th', { key: ci, scope: 'col', style: { padding: '6px 8px', textAlign: 'left', color: '#bae6fd', fontWeight: 700 } }, c);
                 }))),
             h('tbody', null,
               currentSpeciesList.map(function(s, i) {
@@ -12599,8 +12854,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return h('div', { style: { padding: 16, background: 'linear-gradient(180deg, #031523 0%, #06313a 52%, #071827 100%)', minHeight: 400 } },
       tabBar(),
       h('section', {
-        id: 'fl-panel-' + tab,
-        role: 'region',
+        id: 'fl-active-panel',
+        role: 'tabpanel',
         'aria-label': activeTabEntry.label,
         style: { minWidth: 0 }
       },
