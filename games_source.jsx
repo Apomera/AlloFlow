@@ -1122,6 +1122,9 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   const [answerRevealed, setAnswerRevealed] = useState(false);
   const itemRefs = useRef([]);
   const normalizedItemsRef = useRef([]);
+  const timelineDialogRef = useRef(null);
+  const timelineCloseRef = useRef(null);
+  useGameDialogFocus(timelineDialogRef, timelineCloseRef, onClose);
   useEffect(() => {
     if (!data) return;
     const fallback = t('timeline.progression_label_default') || 'Sequential Order';
@@ -1346,11 +1349,11 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
      // bestScore intentionally preserved across resets within the same game session.
   };
   return (
-    <div className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
+    <div ref={timelineDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="timeline-game-title" className={`fixed inset-0 z-[100] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? '' : ' animate-in fade-in duration-300'}`}>
        <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
        <div className="p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20">
            <div>
-               <h3 className="font-bold text-lg flex items-center gap-2">
+               <h3 id="timeline-game-title" className="font-bold text-lg flex items-center gap-2">
                    <ListOrdered size={20} className="text-yellow-300"/> {t('timeline.game.header')}
                </h3>
                <p className="text-xs text-indigo-200">{t('timeline.game.desc')}</p>
@@ -1372,7 +1375,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                    <span className="font-bold w-7 text-end tabular-nums">{imageSize}</span>
                </label>
                <GameThemeToggle />
-               <button onClick={onClose} className="p-2 hover:bg-indigo-500 rounded-full transition-colors" aria-label={t('timeline.game.close_aria')}><X size={24}/></button>
+               <button ref={timelineCloseRef} type="button" onClick={onClose} className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white" aria-label={t('timeline.game.close_aria')}><X size={24} aria-hidden="true"/></button>
            </div>
        </div>
        <div className="flex-grow overflow-y-auto p-6 bg-slate-100 relative custom-scrollbar">
