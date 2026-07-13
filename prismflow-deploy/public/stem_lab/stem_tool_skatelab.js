@@ -2003,17 +2003,8 @@ window.StemLab = window.StemLab || {
         return function() { window.removeEventListener('keydown', onKey); };
       }, [muted]);
 
-      // Auto-open tour on first mount when the student hasn't seen
-      // it yet. Small delay so the panel renders before the overlay
-      // pops, otherwise the focus flash feels jarring.
-      React.useEffect(function() {
-        if (d.tour && !d.tour.seen && !d.tour.open) {
-          var to = setTimeout(function() {
-            upd({ tour: Object.assign({}, d.tour, { open: true, step: 0 }) });
-          }, 400);
-          return function() { clearTimeout(to); };
-        }
-      }, []);
+      // The tour opens only on request. Automatic modal focus changes can
+      // interrupt reading and keyboard workflows on first visit.
 
       // Generate a fresh gap on each "New Gap" press
       function newGap() {
@@ -4333,14 +4324,18 @@ window.StemLab = window.StemLab || {
             onClick: function() { upd({ tour: { open: true, step: 0, seen: !!(d.tour && d.tour.seen) } }); },
             'aria-label': __alloT('stem.skatelab.open_the_skatelab_tour', 'Open the SkateLab tour'),
             'data-sk-focusable': 'true',
-            title: __alloT('stem.skatelab.re_open_the_5_step_tour', 'Re-open the 5-step tour'),
+            title: (d.tour && d.tour.seen)
+              ? __alloT('stem.skatelab.re_open_the_5_step_tour', 'Re-open the 5-step tour')
+              : __alloT('stem.skatelab.start_the_5_step_tour', 'Start the 5-step tour'),
             style: {
               padding: '4px 10px', fontSize: 10, fontWeight: 700,
               background: 'rgba(254,243,199,0.14)', color: 'var(--allo-stem-text, #cbd5e1)',
               border: '1px solid rgba(254,243,199,0.55)',
               borderRadius: 20, cursor: 'pointer', minHeight: 26
             }
-          }, __alloT('stem.skatelab.tour', '💡 Tour')),
+          }, (d.tour && d.tour.seen)
+            ? __alloT('stem.skatelab.tour', '💡 Tour')
+            : __alloT('stem.skatelab.start_tour', '💡 Start tour')),
           // Mute toggle — gates every skTone call. Persists in
           // localStorage so a teacher who silences the classroom
           // doesn't have to re-mute every reload. Also bound to 'M'.
@@ -5163,9 +5158,9 @@ window.StemLab = window.StemLab || {
         })(),
         // Last-result analysis panel — pedagogically valuable, shows
         // the actual physics that produced what the student just saw.
-        d.lastResult && h('div', { role: 'status', 'aria-live': 'polite', style: { background: d.lastResult.landed ? 'rgba(22,163,74,0.12)' : 'rgba(180,83,9,0.12)', border: '1px solid ' + (d.lastResult.landed ? '#22c55e' : '#d97706'), borderRadius: 10, padding: 12, marginBottom: 12 } },
+        d.lastResult && h('div', { style: { background: d.lastResult.landed ? 'rgba(22,163,74,0.12)' : 'rgba(180,83,9,0.12)', border: '1px solid ' + (d.lastResult.landed ? '#22c55e' : '#d97706'), borderRadius: 10, padding: 12, marginBottom: 12 } },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
-            h('div', { style: { fontSize: 13, fontWeight: 800, color: d.lastResult.landed ? '#86efac' : '#fbbf24' } },
+            h('div', { role: 'status', 'aria-atomic': 'true', style: { fontSize: 13, fontWeight: 800, color: d.lastResult.landed ? '#86efac' : '#fbbf24' } },
               d.lastResult.landed ? '✅ Clean landing — what made it work' : '💥 Bail — here\'s why'),
             // Slow-motion replay buttons — re-run the cached lastSim
             // at half / quarter speed. Disabled when an animation is

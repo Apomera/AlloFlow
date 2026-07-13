@@ -234,4 +234,29 @@ describe('Skate Lab UX refinement', () => {
     expect(source).toContain('min-block-size:24px;min-inline-size:24px');
     expect(source).toContain('.sk-canvas-summary{border-color:CanvasText!important');
   });
+  it('keeps first-visit focus stable until the learner starts the tour', () => {
+    const html = renderTool('skatelab', state({ tour: { open: false, step: 0, seen: false } }));
+    const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
+
+    expect(html).toContain('Start tour');
+    expect(html).toContain('Start the 5-step tour');
+    expect(html).not.toContain('role="dialog"');
+    expect(source).not.toContain('Auto-open tour on first mount');
+    expect(source).not.toContain("upd({ tour: Object.assign({}, d.tour, { open: true, step: 0 }) });");
+  });
+
+  it('keeps replay controls outside the result status announcement', () => {
+    const html = renderTool('skatelab', state({
+      lastResult: {
+        mode: 'halfpipe', landed: true, hFt: 2.5, completed: 360,
+        vMph: 12, airTime: 1.2, rotation: 360, score: 50,
+      },
+      lastSim: { mode: 'halfpipe' },
+    }));
+    const resultStatus = html.match(/<div role="status" aria-atomic="true"[^>]*>([^<]*)<\/div>/)?.[1] || '';
+
+    expect(resultStatus).toContain('Clean landing');
+    expect(resultStatus).not.toContain('Replay');
+    expect(html).toContain('Replay last attempt at 50 percent speed');
+  });
 });
