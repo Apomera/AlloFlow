@@ -5,6 +5,14 @@
   var st = document.createElement('style');
   st.id = 'allo-stem-motion-reduce-css';
   st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('ce-explorer-focus-css')) return;
+  var st = document.createElement('style');
+  st.id = 'ce-explorer-focus-css';
+  st.textContent = '.ce-explorer-root:focus-visible, .ce-explorer-root [role="tab"]:focus-visible { outline: 3px solid #fbbf24; outline-offset: 3px; }';
+  if (document.head) document.head.appendChild(st);
+})();
   if (document.head) document.head.appendChild(st);
 })();
 
@@ -1242,6 +1250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         var tgt = e.target || {};
         var tn = (tgt.tagName || '').toUpperCase();
         if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;
+        if (!e.altKey || e.ctrlKey || e.metaKey) return;
         var k = e.key;
         if (k >= '1' && k <= '6') {
           var idx = parseInt(k, 10) - 1;
@@ -1255,6 +1264,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           upd('quizOpen', !quizOpen);
           if (announceToSR) announceToSR(quizOpen ? 'Quiz closed.' : 'Quiz opened.');
         }
+      }
+      function onCeTabKey(e) {
+        var key = e.key;
+        if (key !== 'ArrowLeft' && key !== 'ArrowRight' && key !== 'Home' && key !== 'End') return;
+        var tablist = e.currentTarget && e.currentTarget.parentNode;
+        if (!tablist || !tablist.querySelectorAll) return;
+        var tabs = tablist.querySelectorAll('[role="tab"]');
+        var current = Array.prototype.indexOf.call(tabs, e.currentTarget);
+        if (current < 0 || !tabs.length) return;
+        var next = key === 'Home' ? 0 : key === 'End' ? tabs.length - 1 : (current + (key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+        e.preventDefault();
+        tabs[next].focus();
+        tabs[next].click();
       }
       // Layered planetary backdrop. Base is the original forest-to-navy
       // diagonal (kept for color-identity continuity); an upper radial
@@ -1297,6 +1319,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         { id: 'solutions', label: ceTabTitles.solutions, hint: t('stem.climateExplorer.route_solutions_hint', 'Choose practical levers.') }
       ];
       return el('div', {
+        className: 'ce-explorer-root',
         style: {
           background: ceBgLayers,
           backgroundRepeat: 'no-repeat, no-repeat, repeat, no-repeat',
@@ -1304,11 +1327,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           borderRadius: 16,
           minHeight: '70vh',
           padding: 0,
-          boxShadow: '0 0 40px rgba(34,197,94,0.15)',
-          outline: 'none'
+          boxShadow: '0 0 40px rgba(34,197,94,0.15)'
         },
         role: 'region',
-        'aria-label': t('stem.climateExplorer.climate_explorer_keyboard_shortcuts_1_', 'Climate Explorer. Keyboard shortcuts: 1 through 6 switch tabs, Q toggles quiz.'),
+        'aria-label': t('stem.climateExplorer.climate_explorer_keyboard_shortcuts_alt', 'Climate Explorer. Keyboard shortcuts: Alt plus 1 through 6 switches tabs; Alt plus Q toggles the quiz.'),
+        'aria-keyshortcuts': 'Alt+1 Alt+2 Alt+3 Alt+4 Alt+5 Alt+6 Alt+Q',
         tabIndex: 0,
         onKeyDown: onCeKey
       },
@@ -1456,9 +1479,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     }
                     g.globalAlpha = 1;
                   }
-                  requestAnimationFrame(heroDraw);
+                  if (!heroRM) requestAnimationFrame(heroDraw);
                 }
-                requestAnimationFrame(heroDraw);
+                heroDraw();
               },
               style: { width: '100%', height: 130, display: 'block', background: '#020617' }
             }),
@@ -1556,8 +1579,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             { id: 'solutions', icon: '\uD83D\uDCA1', label: t('stem.climateExplorer.solutions', 'Solutions') }
           ]).map(function(t) {
             var active = tab === t.id;
-            return el('button', { key: t.id, onClick: function() { visitTab(t.id); },
-              role: 'tab', 'aria-selected': active,
+            return el('button', { key: t.id, id: 'ce-tab-' + t.id, onClick: function() { visitTab(t.id); }, onKeyDown: onCeTabKey,
+              role: 'tab', 'aria-selected': active, 'aria-controls': 'ce-panel', tabIndex: active ? 0 : -1,
               style: { padding: '12px 16px', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #22c55e' : '2px solid transparent', background: 'none', color: active ? '#4ade80' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.2s' } },
               el('span', null, t.icon), t.label);
           })
@@ -1596,7 +1619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         })(),
 
         // ── Content ──
-        el('div', { style: { padding: 20 } },
+        el('div', { id: 'ce-panel', role: 'tabpanel', 'aria-labelledby': 'ce-tab-' + tab, tabIndex: 0, style: { padding: 20 } },
 
           // ═══ QUIZ PANEL ═══
           quizOpen && el('div', { style: { maxWidth: 600, margin: '0 auto 20px', padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(168,85,247,0.1), rgba(99,102,241,0.1))', border: '1px solid rgba(168,85,247,0.25)' } },
