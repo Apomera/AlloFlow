@@ -4732,6 +4732,11 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
   const [userOrder, setUserOrder] = useState([]);
   const [gameStatus, setGameStatus] = useState('playing');
   const [score, setScore] = useState(0);
+  const syntaxDialogRef = useRef(null);
+  const syntaxCloseRef = useRef(null);
+  const syntaxFinishRef = useRef(null);
+  useGameDialogFocus(syntaxDialogRef, syntaxCloseRef, onClose);
+  useEffect(() => { if (gameStatus === 'complete') syntaxFinishRef.current?.focus(); }, [gameStatus]);
   useEffect(() => {
     if (!text) return;
     let cleanText = text.replace(/[#*_~`]/g, '');
@@ -4806,24 +4811,24 @@ const SyntaxScramble = React.memo(({ text, onClose, playSound, onScoreUpdate, on
   };
   if (sentences.length === 0) return null;
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in zoom-in-95">
-      <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div role="presentation" className={`fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4${useReducedMotion() ? '' : ' animate-in zoom-in-95'}` }>
+      <div ref={syntaxDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="syntax-game-title" className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] focus:outline-none">
         <div className="bg-indigo-600 p-4 text-white flex justify-between items-center">
-           <h3 className="font-bold text-xl flex items-center gap-2"><Layout size={24}/> {t('games.syntax.title')}</h3>
+           <h3 id="syntax-game-title" className="font-bold text-xl flex items-center gap-2"><Layout size={24} aria-hidden="true"/> {t('games.syntax.title')}</h3>
            <div className="flex items-center gap-4">
                <div className="bg-indigo-800 px-3 py-1 rounded-full text-xs font-bold text-yellow-300 border border-indigo-500">{t('memory.score')}: {score}</div>
                <GameThemeToggle />
-               <button data-help-key="syntax_close" onClick={onClose} className="hover:bg-indigo-500 p-1 rounded-full" aria-label={t('common.close')}><X size={24}/></button>
+               <button ref={syntaxCloseRef} type="button" data-help-key="syntax_close" onClick={onClose} className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full focus:outline-none focus:ring-2 focus:ring-white" aria-label={t('common.close')}><X size={24} aria-hidden="true"/></button>
            </div>
         </div>
         <div className="p-8 flex-grow flex flex-col items-center justify-center bg-slate-50 gap-8 overflow-y-auto">
            {gameStatus === 'complete' ? (
-               <div className="text-center animate-in zoom-in">
+               <div role="status" aria-labelledby="syntax-complete-title" className={`text-center${useReducedMotion() ? '' : ' animate-in zoom-in'}` }>
                    {!useReducedMotion() && <ConfettiExplosion />}
-                   <Trophy size={64} className="text-yellow-500 mx-auto mb-4"/>
-                   <h2 className="text-3xl font-black text-slate-800 mb-2">{t('games.syntax.complete')}</h2>
+                   <Trophy size={64} className="text-yellow-500 mx-auto mb-4" aria-hidden="true"/>
+                   <h2 id="syntax-complete-title" className="text-3xl font-black text-slate-800 mb-2">{t('games.syntax.complete')}</h2>
                    <p className="text-slate-600 mb-6">{t('games.syntax.summary', { count: sentences.length })}</p>
-                    <button data-help-key="syntax_finish" onClick={onClose} className="bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-indigo-300">{t('games.syntax.finish')}</button>
+                    <button ref={syntaxFinishRef} type="button" data-help-key="syntax_finish" onClick={onClose} className="bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-indigo-300">{t('games.syntax.finish')}</button>
                </div>
            ) : (
                <>

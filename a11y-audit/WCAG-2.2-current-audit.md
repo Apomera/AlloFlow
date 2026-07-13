@@ -115,6 +115,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Made Pipeline Builder a named focus-managed full-screen dialog and its completion overlay a named/described nested dialog; added initial Play again focus, Tab containment, Escape closing, replay focus return, reduced-motion-aware entry, 44 CSS-pixel controls, and retained the keyboard node-selection workflow for building connections without pointer dragging (WCAG 2.1.1, 2.3.3, 2.4.3, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
 
+- Made Syntax Builder a named focus-managed dialog with initial Close focus, Tab containment, Escape closing, launcher focus restoration, and a 44 CSS-pixel Close target; exposed completion as a named status, moved focus to Finish, hid decorative icons, and made workspace/completion entry honor reduced motion (WCAG 1.1.1, 2.1.1, 2.3.3, 2.4.3, 2.4.6, 2.4.7, 2.5.8, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
