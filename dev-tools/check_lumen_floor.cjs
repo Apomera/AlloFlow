@@ -63,6 +63,11 @@ ok(evilHtml.indexOf('<img src=x onerror') === -1, 'buildExportHtml must escape a
 const hyps = L.validateHypotheses([{ text: 'a', kind: 'effect', rank: 1 }, { text: 'b', kind: 'null', rank: 2 }]).hypotheses;
 ok(L.assertDefensible({ audience: 'iep-team', aiHyps: hyps, signoff: null }).blocked === true, 'unsigned L3 IEP-team export must be BLOCKED');
 ok(L.assertDefensible({ audience: 'iep-team', aiHyps: hyps, signoff: L.signoffHash(hyps) }).blocked === false, 'an owned (matching-hash) sign-off must unblock');
+// 7b. The sign-off is DATA-BOUND: with a claimHash in play, a sign-off earned over one
+// dataset must NOT clear an export over edited data (the stale-signoff-across-edit hole).
+ok(L.assertDefensible({ audience: 'iep-team', aiHyps: hyps, signoff: L.signoffHash(hyps, 111), claimHash: 111 }).blocked === false, 'a data-bound sign-off must unblock for the SAME data');
+ok(L.assertDefensible({ audience: 'iep-team', aiHyps: hyps, signoff: L.signoffHash(hyps, 111), claimHash: 222 }).blocked === true, 'a data edit (new claim hash) must RE-BLOCK a prior sign-off');
+ok(L.assertExportClean({ audience: 'iep-team', aiHyps: hyps, signoff: L.signoffHash(hyps, 111), claimHash: 222 }).blocked === true, 'assertExportClean must thread claimHash into the sign-off gate');
 
 // 8. The prose-template invariant: level word first, then the interval + n.
 ok(/^Derived \(math\):/.test(claim.text) && /interval/.test(claim.text) && /n=/.test(claim.text), 'prose invariant (level word + interval + n) must hold');
