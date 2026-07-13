@@ -9,6 +9,8 @@
 // (scoreCommand / buildAlloCommands / routeUtterance) never touch React.
 
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 let AC;
@@ -27,6 +29,22 @@ beforeAll(() => {
   if (!AC) throw new Error('AlloCommands failed to register');
 });
 afterAll(() => { vi.unstubAllGlobals(); });
+
+describe('AlloCommandPalette accessibility', () => {
+  it('connects combobox selection and live search feedback for assistive technology', () => {
+    const source = readFileSync(resolve(process.cwd(), 'allo_commands_source.jsx'), 'utf-8');
+    expect(source).toContain('aria-autocomplete="list"');
+    expect(source).toContain('aria-describedby="allo-palette-status"');
+    expect(source).toContain('id="allo-palette-status" role="status" aria-live="polite" aria-atomic="true"');
+    expect(source).toContain("count + ' matching command'");
+    expect(source).toContain("selectedCommand.label + ' selected.'");
+    expect(source).toContain("document.getElementById('allo-cmd-' + selectedCommandId)");
+    expect(source).toContain("scrollIntoView({ block: 'nearest' })");
+    expect(source).toContain("const COMMAND_RECENTS_KEY = 'allo_command_recents_v1'");
+    expect(source).toContain("t('palette.group.recent', 'Recent')");
+    expect(source).toContain('rememberCommand(cmd.id)');
+  });
+});
 
 describe('scoreCommand', () => {
   const cmd = { label: 'Open the educator hub', aliases: ['hub'] };

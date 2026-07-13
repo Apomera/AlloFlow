@@ -2166,7 +2166,11 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('id="demoRepairBtn"');
     expect(html).toContain('id="demoContinueBtn"');
     expect(html).toContain('id="demoContinueEditBtn"');
+    expect(html).toContain('id="demoContinuationDismissBtn"');
+    expect(html).toContain('id="demoContinuationDismissEditBtn"');
     expect(html).toContain('function offerDemoContinuation(steps, response)');
+    expect(html).toContain('function dismissDemoContinuation()');
+    expect(html).toContain("var progressText = ' (' + completed + '/' + total + ' complete)'");
     expect(html).toContain('id="demoDraftClearBtn"');
     expect(html).toContain('id="demoScriptReviewBtn"');
     expect(html).toContain('id="demoScriptCopyBtn"');
@@ -2183,6 +2187,10 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('demoState.activeSteps = steps.map(cleanDemoDraftStep)');
     expect(html).toContain("var DEMO_DRAFT_KEY = 'vs_demo_draft_v1'");
     expect(html).toContain('function restoreDemoDraft()');
+    expect(html).toContain("var DEMO_CONTINUATION_KEY = 'vs_demo_continuation_v1'");
+    expect(html).toContain('function saveDemoContinuation()');
+    expect(html).toContain('function restoreDemoContinuation()');
+    expect(html).toContain('restoreDemoDraft();\n  restoreDemoContinuation();');
     expect(html).toContain('function updateDemoStepReadinessUI()');
     expect(html).toContain('data-demo-step-readiness');
     expect(html).toContain('version !== demoState.preflightVersion');

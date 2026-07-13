@@ -368,6 +368,7 @@
         <button class="quiet" id="demoPacingFitBtn" disabled title="Increase result holds to fit the estimated spoken narration time.">Fit pacing to narration</button>
         <button class="quiet" id="demoRepairBtn" hidden title="Ask the planner for a new safe sequence using the current AlloFlow state.">Repair plan from current state</button>
         <button class="quiet" id="demoContinueBtn" hidden title="Load only the unfinished steps and check them again before recording a separate continuation take.">Continue unfinished steps</button>
+        <button class="quiet" id="demoContinuationDismissBtn" hidden title="Forget the saved unfinished sequence without changing the current on-screen plan.">Dismiss saved continuation</button>
         <button class="quiet" id="demoPlanResetBtn" hidden>Reset step order</button>
         <button class="quiet" id="demoDraftClearBtn" hidden>Forget saved draft</button>
       </div>
@@ -416,6 +417,7 @@
         </select>
         <label><input type="checkbox" id="editorShowAll"> Show all</label>
         <button class="action" id="demoContinueEditBtn" hidden title="Load the unfinished steps in Record and check them again before recording a separate continuation take.">Continue unfinished steps</button>
+        <button class="quiet" id="demoContinuationDismissEditBtn" hidden title="Forget the saved unfinished sequence without changing the current on-screen plan.">Dismiss saved continuation</button>
       </div>
     </div>
     <div class="grid2">
@@ -10435,6 +10437,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // bridge stamped with the recording clock and become caption cues.
   var DEMO_DRAFT_KEY = 'vs_demo_draft_v1';
   var DEMO_DRAFT_MAX_AGE = 12 * 60 * 60 * 1000;
+  var DEMO_CONTINUATION_KEY = 'vs_demo_continuation_v1';
+  var DEMO_CONTINUATION_MAX_AGE = 12 * 60 * 60 * 1000;
   var demoState = { steps: null, originalSteps: null, activeSteps: [], active: false, events: [], running: false, rehearsing: false, abandoned: false, voice: '', previousMicOn: null, officialId: null, preflightOk: false, commandReport: null, preflightVersion: 0, restoringDraft: false, continuation: null };
   function cleanDemoResultHold(value) {
     if (value == null || value === '') return 2.2;
@@ -10524,8 +10528,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function demoContinuationButtons() {
     return ['demoContinueBtn', 'demoContinueEditBtn'].map(function (id) { return $(id); }).filter(Boolean);
   }
-  function clearDemoContinuation() {
+  function demoContinuationDismissButtons() {
+    return ['demoContinuationDismissBtn', 'demoContinuationDismissEditBtn'].map(function (id) { return $(id); }).filter(Boolean);
+  }
+  function clearDemoContinuation(options) {
+    options = options || {};
     demoState.continuation = null;
+    if (!options.keepSaved) { try { sessionStorage.removeItem(DEMO_CONTINUATION_KEY); } catch (_) {} }
     if (demoContinuationEnableTimer) clearTimeout(demoContinuationEnableTimer);
     demoContinuationEnableTimer = null;
     demoContinuationButtons().forEach(function (btn) {
@@ -10533,11 +10542,43 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       btn.disabled = false;
       btn.textContent = 'Continue unfinished steps';
     });
+    demoContinuationDismissButtons().forEach(function (btn) { btn.hidden = true; btn.disabled = false; });
+  }
+  function showDemoContinuationControls() {
+    if (!demoState.continuation || !demoState.continuation.steps.length) return false;
+    var count = demoState.continuation.steps.length;
+    var total = Math.max(count, Math.round(Number(demoState.continuation.total) || 0));
+    var completed = Math.max(0, Math.min(total, Math.round(Number(demoState.continuation.completed) || 0)));
+    var progressText = ' (' + completed + '/' + total + ' complete)';
+    demoContinuationButtons().forEach(function (btn) {
+      btn.textContent = 'Continue ' + count + ' unfinished step' + (count === 1 ? '' : 's') + progressText;
+      btn.title = completed + ' of ' + total + ' demo steps are complete. Load only the unfinished steps and check them again before recording.';
+      btn.disabled = true;
+      btn.hidden = false;
+    });
+    demoContinuationDismissButtons().forEach(function (btn) { btn.disabled = true; btn.hidden = false; });
+    enableDemoContinuationWhenReady();
+    return true;
+  }
+  function saveDemoContinuation() {
+    if (!demoState.continuation || !demoState.continuation.steps.length) return false;
+    try {
+      var payload = {
+        version: 1,
+        savedAt: Date.now(),
+        completed: Math.max(0, Math.round(Number(demoState.continuation.completed) || 0)),
+        total: Math.max(0, Math.round(Number(demoState.continuation.total) || 0)),
+        steps: demoState.continuation.steps.slice(0, 8).map(cleanDemoDraftStep).filter(function (step) { return step.commandId; })
+      };
+      if (!payload.steps.length) return false;
+      sessionStorage.setItem(DEMO_CONTINUATION_KEY, JSON.stringify(payload));
+      return true;
+    } catch (_) { return false; }
   }
   function enableDemoContinuationWhenReady() {
     if (demoContinuationEnableTimer) clearTimeout(demoContinuationEnableTimer);
     demoContinuationEnableTimer = null;
-    var buttons = demoContinuationButtons().filter(function (btn) { return !btn.hidden; });
+    var buttons = demoContinuationButtons().concat(demoContinuationDismissButtons()).filter(function (btn) { return !btn.hidden; });
     if (!buttons.length) return;
     var busy = !!demoState.running || !!(rec && rec.state !== 'inactive');
     buttons.forEach(function (btn) { btn.disabled = busy; });
@@ -10555,14 +10596,26 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       completed: plan.completed,
       total: plan.total
     };
-    var count = plan.remainingSteps.length;
-    demoContinuationButtons().forEach(function (btn) {
-      btn.textContent = 'Continue ' + count + ' unfinished step' + (count === 1 ? '' : 's');
-      btn.disabled = true;
-      btn.hidden = false;
-    });
-    enableDemoContinuationWhenReady();
+    saveDemoContinuation();
+    showDemoContinuationControls();
     return plan;
+  }
+  function restoreDemoContinuation() {
+    var data = null;
+    try { data = JSON.parse(sessionStorage.getItem(DEMO_CONTINUATION_KEY) || 'null'); } catch (_) {}
+    if (!data || data.version !== 1 || !Array.isArray(data.steps)) return false;
+    if (!isFinite(Number(data.savedAt)) || Date.now() - Number(data.savedAt) > DEMO_CONTINUATION_MAX_AGE) { clearDemoContinuation(); return false; }
+    var steps = data.steps.slice(0, 8).map(cleanDemoDraftStep).filter(function (step) { return step.commandId; });
+    if (!steps.length) { clearDemoContinuation(); return false; }
+    demoState.continuation = {
+      steps: steps,
+      completed: Math.max(0, Math.round(Number(data.completed) || 0)),
+      total: Math.max(steps.length, Math.round(Number(data.total) || 0))
+    };
+    showDemoContinuationControls();
+    setStatus($('demoStatus'), 'Restored ' + steps.length + ' saved unfinished step' + (steps.length === 1 ? '' : 's') + ' (' + demoState.continuation.completed + ' of ' + demoState.continuation.total + ' complete). Continue when ready; command readiness will be checked again first.', 'ok');
+    announce('Saved demo continuation restored');
+    return true;
   }
   function restoreDemoDraft() {
     var data = null;
@@ -11045,7 +11098,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     announce('Unfinished demo steps loaded for a continuation take');
     setTimeout(function () { $('demoPreflightBtn').focus(); }, 0);
   }
+  function dismissDemoContinuation() {
+    if (demoState.running || (rec && rec.state !== 'inactive') || !demoState.continuation) return;
+    clearDemoContinuation();
+    setStatus($('demoStatus'), 'Saved unfinished steps dismissed. The current on-screen plan is unchanged.', 'ok');
+    announce('Saved demo continuation dismissed. Current plan unchanged.');
+  }
   ['demoContinueBtn', 'demoContinueEditBtn'].forEach(function (id) { $(id).addEventListener('click', loadDemoContinuation); });
+  ['demoContinuationDismissBtn', 'demoContinuationDismissEditBtn'].forEach(function (id) { $(id).addEventListener('click', dismissDemoContinuation); });
   $('demoGoal').addEventListener('change', saveDemoDraft);
   $('demoGoal').addEventListener('keydown', function (e) {
     if (e.key !== 'Enter' || (!e.ctrlKey && !e.metaKey) || e.shiftKey || e.altKey) return;
@@ -11121,6 +11181,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   $('demoPreflightBtn').addEventListener('click', runDemoPreflight);
   $('demoAudioMode').addEventListener('change', function () { demoState.preflightOk = false; saveDemoDraft(); if (demoState.steps) runDemoPreflight(); });
   restoreDemoDraft();
+  restoreDemoContinuation();
   $('demoRehearseBtn').addEventListener('click', async function () {
     if (!approvedDemoSteps().length || demoState.running) return;
     setStatus($('demoStatus'), 'Checking the approved plan without running any app actions…');

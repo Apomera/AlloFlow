@@ -979,6 +979,8 @@ const CMD_CONTEXT = {
 };
 const GROUP_ORDER = ['navigate','create','tools','accessibility','display','pipeline','help','voice'];
 const GROUP_LABEL_FALLBACK = { navigate:'Navigate', create:'Create from this content', tools:'Open a tool', accessibility:'Reading & access', display:'Display & motion', pipeline:'Pipeline results', help:'Help', voice:'Voice' };
+const COMMAND_RECENTS_KEY = 'allo_command_recents_v1';
+const COMMAND_RECENTS_LIMIT = 5;
 // context → ctx signal (string boolean-key, OR a function for derived ones like reading).
 const CTX_FLAG = { pipeline:'pipelineOpen', educatorHub:'educatorHubOpen', learningHub:'learningHubOpen', symbolStudio:'symbolStudioOpen', stemLab:'stemLabOpen', behaviorLens:'behaviorLensOpen', content:'contentLoaded', reading:(c)=>!!(c.zenActive||c.focusActive) };
 // Priority when several contexts are active (tool > pipeline > hub > content > reading).
@@ -999,6 +1001,12 @@ const AlloCommandPalette = ({ ctx }) => {
   const [query, setQuery] = useState('');
   const [sel, setSel] = useState(0);
   const [confirming, setConfirming] = useState(null);
+  const [recentCommandIds, setRecentCommandIds] = useState(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(COMMAND_RECENTS_KEY) || '[]');
+      return Array.isArray(saved) ? saved.filter((id) => typeof id === 'string').slice(0, COMMAND_RECENTS_LIMIT) : [];
+    } catch (_) { return []; }
+  });
   const inputRef = useRef(null);
   const prevFocusRef = useRef(null);
   const t = _mkT(ctx && ctx.t);
@@ -1030,6 +1038,11 @@ const AlloCommandPalette = ({ ctx }) => {
         promoted.forEach((c) => out.push({ kind: 'cmd', c }));
       }
     }
+    const recent = recentCommandIds.map((id) => commands.find((c) => c.id === id)).filter((c) => c && !promotedIds.has(c.id)).slice(0, COMMAND_RECENTS_LIMIT);
+    if (recent.length) {
+      out.push({ kind: 'header', label: t('palette.group.recent', 'Recent') });
+      recent.forEach((c) => { promotedIds.add(c.id); out.push({ kind: 'cmd', c }); });
+    }
     // Browse view: show EVERY group (breadth) with a per-group cap, so a newly added command
     // family (e.g. the tool launchers) stays discoverable instead of being squeezed out of the
     // list by a global cap. "Type to search" reveals the rest of any group. MAX_ROWS is a final
@@ -1046,8 +1059,19 @@ const AlloCommandPalette = ({ ctx }) => {
       cmdCount += take.length;
     }
     return out;
-  }, [commands, query, ctx, t]);
+  }, [commands, query, ctx, t, recentCommandIds]);
   const selectable = useMemo(() => { const a = []; rows.forEach((r, i) => { if (r.kind === 'cmd') a.push(i); }); return a; }, [rows]);
+  const selectedCommand = rows[sel] && rows[sel].kind === 'cmd' ? rows[sel].c : null;
+  const selectedCommandId = selectedCommand ? selectedCommand.id : '';
+  const paletteStatus = (() => {
+    if (confirming && selectedCommand && confirming === selectedCommand.id) return 'Confirmation required for ' + selectedCommand.label + '. Press Enter again to confirm.';
+    const count = selectable.length;
+    if (!count) return query.trim() ? 'No matching commands.' : 'No commands are available here.';
+    const resultText = query.trim()
+      ? count + ' matching command' + (count === 1 ? '.' : 's.')
+      : count + ' command' + (count === 1 ? ' shown.' : 's shown.');
+    return resultText + (selectedCommand ? ' ' + selectedCommand.label + ' selected.' : '');
+  })();
 
   useEffect(() => {
     const onKey = (e) => {
@@ -1082,11 +1106,28 @@ const AlloCommandPalette = ({ ctx }) => {
     if (!selectable.length) { if (sel !== 0) setSel(0); return; }
     if (selectable.indexOf(sel) === -1) setSel(selectable[0]);
   }, [open, selectable, sel]);
+  // The combobox keeps DOM focus in the search input, so make its active
+  // descendant visible as arrow navigation moves through a long result list.
+  useEffect(() => {
+    if (!open || !selectedCommandId) return;
+    try {
+      const option = document.getElementById('allo-cmd-' + selectedCommandId);
+      if (option && option.scrollIntoView) option.scrollIntoView({ block: 'nearest' });
+    } catch (_) {}
+  }, [open, sel, selectedCommandId]);
 
   const announce = useCallback((msg) => {
     try { if (window.alloAnnounce) window.alloAnnounce(msg); } catch (_) {}
     try { if (ctx && ctx.addToast) ctx.addToast(msg, 'success'); } catch (_) {}
   }, [ctx]);
+  const rememberCommand = useCallback((id) => {
+    if (!id) return;
+    setRecentCommandIds((previous) => {
+      const next = [id].concat((Array.isArray(previous) ? previous : []).filter((savedId) => savedId !== id)).slice(0, COMMAND_RECENTS_LIMIT);
+      try { sessionStorage.setItem(COMMAND_RECENTS_KEY, JSON.stringify(next)); } catch (_) {}
+      return next;
+    });
+  }, []);
 
   const runCmd = useCallback((cmd) => {
     if (!cmd) return;
@@ -1102,9 +1143,10 @@ const AlloCommandPalette = ({ ctx }) => {
       setOpen(false);
       return;
     }
+    rememberCommand(cmd.id);
     setOpen(false);
     if (msg) announce(msg);
-  }, [ctx, confirming, announce, t]);
+  }, [ctx, confirming, announce, rememberCommand, t]);
 
   if (!open) return null;
   return (
@@ -1123,10 +1165,11 @@ const AlloCommandPalette = ({ ctx }) => {
               else if (e.key === 'Escape') { e.preventDefault(); if (confirming) setConfirming(null); else setOpen(false); }
             }}
             placeholder={t('palette.placeholder', 'Type a command — “bigger text”, “educator hub”, “read this page”…')}
-            aria-label={t('palette.input_aria', 'Search commands')} role="combobox" aria-expanded="true" aria-controls="allo-palette-list" aria-activedescendant={rows[sel] && rows[sel].kind === 'cmd' ? ('allo-cmd-' + rows[sel].c.id) : undefined}
+            aria-label={t('palette.input_aria', 'Search commands')} role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="allo-palette-list" aria-describedby="allo-palette-status" aria-activedescendant={selectedCommandId ? ('allo-cmd-' + selectedCommandId) : undefined}
             className="flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500" />
           <kbd className="text-[10px] text-slate-500 border border-slate-300 rounded px-1.5 py-0.5">Esc</kbd>
         </div>
+        <div id="allo-palette-status" role="status" aria-live="polite" aria-atomic="true" className="sr-only">{paletteStatus}</div>
         <ul id="allo-palette-list" role="listbox" aria-label={t('palette.list_aria', 'Matching commands')} className="max-h-[46vh] overflow-y-auto py-1">
           {selectable.length === 0 && (
             <li role="presentation" className="px-4 py-6 text-center text-xs text-slate-600">{t('palette.no_match', 'No matching command. The bot chat (and soon voice) understands free-form requests.')}</li>
