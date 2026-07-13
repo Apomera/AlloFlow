@@ -5751,6 +5751,10 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
   const [isGameOver, setIsGameOver] = useState(false);
   const [hintLevel, setHintLevel] = useState(0);
   const [results, setResults] = useState([]);
+  const [announcement, setAnnouncement] = useState('');
+  const scrambleDialogRef = useRef(null);
+  const scrambleInputRef = useRef(null);
+  useGameDialogFocus(scrambleDialogRef, scrambleInputRef, onClose);
   useEffect(() => {
     if (!data) return;
     const items = data.filter(item => item.term && item.term.length > 2);
@@ -5777,8 +5781,11 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
           setGuess('');
           setFeedback('idle');
           setHintLevel(0);
+          setAnnouncement(t('games.scramble.progress', { current: nextIdx + 1, total: gameItems.length }));
+          requestAnimationFrame(() => scrambleInputRef.current?.focus());
       } else {
           setIsGameOver(true);
+          setAnnouncement(`${t('games.syntax.complete')}. ${t('games.scramble.score')}: ${currentScore}`);
           if (onScoreUpdate) onScoreUpdate(currentScore, "Word Scramble Complete");
           if (playSound) playSound('correct');
       }
@@ -5791,6 +5798,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
       if (userGuess === target) {
           if (playSound) playSound('correct');
           setFeedback('correct');
+          setAnnouncement(t('games.scramble.correct') || 'Correct');
           setResults(prev => [...prev, { term: currentItem.term, def: currentItem.def, correct: true }]);
           const newScore = score + 10;
           setScore(newScore);
@@ -5800,12 +5808,16 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
       } else {
           if (playSound) playSound('incorrect');
           setFeedback('incorrect');
+          setAnnouncement(t('games.scramble.incorrect') || 'Incorrect. Try again.');
           setTimeout(() => setFeedback('idle'), 800);
       }
   };
   const handleSkip = () => {
       const currentItem = gameItems[currentIndex];
-      if (currentItem) setResults(prev => [...prev, { term: currentItem.term, def: currentItem.def, correct: false }]);
+      if (currentItem) {
+          setResults(prev => [...prev, { term: currentItem.term, def: currentItem.def, correct: false }]);
+          setAnnouncement(`${currentItem.term}. ${t('common.skip')}`);
+      }
       nextRound(score);
   };
   const useHint = () => {
@@ -5814,6 +5826,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
       const maxHints = Math.max(1, currentItem.term.length - 1);
       if (hintLevel >= maxHints) return;
       setHintLevel(h => h + 1);
+      setAnnouncement(`${t('games.scramble.hint_label')}: ${currentItem.term.slice(0, hintLevel + 1).toUpperCase()}`);
       setScore(s => Math.max(0, s - 3));
       if (playSound) playSound('click');
   };
@@ -5821,27 +5834,29 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
       ? gameItems[currentIndex].term.slice(0, hintLevel).toUpperCase() + '_ '.repeat(gameItems[currentIndex].term.length - hintLevel).trim()
       : null;
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in zoom-in-95">
+    <div ref={scrambleDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="word-scramble-title" className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 motion-safe:animate-in motion-safe:zoom-in-95">
         <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col relative p-8 text-center border-4 border-indigo-500">
+            <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
             <button
+                type="button"
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 transition-colors"
+                className="absolute top-4 right-4 min-w-11 min-h-11 p-2 rounded-full text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
                 aria-label={t('common.close')}
             >
-                <X size={24} />
+                <X size={24} aria-hidden="true" />
             </button>
             <div className="mb-6">
                 <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600">
-                    <Type size={32} />
+                    <Type size={32} aria-hidden="true" />
                 </div>
-                <h2 className="text-3xl font-black text-indigo-900 mb-2">{t('games.scramble.title')}</h2>
+                <h2 id="word-scramble-title" className="text-3xl font-black text-indigo-900 mb-2">{t('games.scramble.title')}</h2>
                 <p className="text-slate-600 font-medium">{t('games.scramble.subtitle')}</p>
             </div>
             <div className="flex-grow flex flex-col items-center justify-center min-h-[300px] bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 p-6 gap-6">
                 {isGameOver ? (
-                    <div className="text-center animate-in zoom-in">
+                    <div role="status" className="text-center motion-safe:animate-in motion-safe:zoom-in">
                         <ConfettiExplosion />
-                        <Trophy size={64} className="text-yellow-500 mx-auto mb-4"/>
+                        <Trophy size={64} className="text-yellow-500 mx-auto mb-4" aria-hidden="true"/>
                         <h2 className="text-3xl font-black text-slate-800 mb-2">{t('games.syntax.complete')}</h2>
                         <div className="text-lg font-bold text-indigo-600 mb-6 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-100 inline-block">
                             {t('games.scramble.score')}: {score}
@@ -5862,7 +5877,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                              <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-bold text-sm">{t('flashcards.score_label')} {score}</div>
                         </div>
                         <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm max-w-lg w-full">
-                            <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1 justify-center"><Search size={12}/> {t('games.scramble.hint_label')}</h4>
+                            <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1 justify-center"><Search size={12} aria-hidden="true"/> {t('games.scramble.hint_label')}</h4>
                             <div className="flex items-center justify-center gap-2">
                                 <p className="text-lg font-medium text-slate-700 leading-relaxed">"{gameItems[currentIndex].def}"</p>
                                 <SpeakButton text={gameItems[currentIndex].def} />
@@ -5872,7 +5887,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                             {scrambled.split('').map((char, idx) => (
                                 <div
                                     key={`${currentIndex}-${idx}`}
-                                    className="w-12 h-12 sm:w-16 sm:h-16 bg-white border-b-4 border-indigo-300 rounded-lg flex items-center justify-center text-2xl sm:text-4xl font-black text-indigo-900 shadow-sm animate-in zoom-in"
+                                    className="w-12 h-12 sm:w-16 sm:h-16 bg-white border-b-4 border-indigo-300 rounded-lg flex items-center justify-center text-2xl sm:text-4xl font-black text-indigo-900 shadow-sm motion-safe:animate-in motion-safe:zoom-in"
                                     style={{ animationDelay: `${idx * 50}ms` }}
                                 >
                                     {char.toUpperCase()}
@@ -5880,42 +5895,42 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
                             ))}
                         </div>
                         {hintText && (
-                            <div className="bg-amber-50 border-2 border-amber-300 text-amber-800 px-4 py-2 rounded-xl font-mono text-xl tracking-[0.3em] font-bold animate-in fade-in">
+                            <div className="bg-amber-50 border-2 border-amber-300 text-amber-800 px-4 py-2 rounded-xl font-mono text-xl tracking-[0.3em] font-bold motion-safe:animate-in motion-safe:fade-in">
                                 {hintText}
                             </div>
                         )}
-                        <div className="flex flex-col gap-3 w-full max-w-xs animate-in slide-in-from-bottom-4 fade-in">
+                        <div className="flex flex-col gap-3 w-full max-w-xs motion-safe:animate-in motion-safe:slide-in-from-bottom-4 motion-safe:fade-in">
                             <input
+                                ref={scrambleInputRef}
                                 type="text"
                                 value={guess}
                                 onChange={(e) => setGuess(e.target.value.toUpperCase())}
                                 onKeyDown={(e) => e.key === 'Enter' && handleCheck()}
                                 className={`w-full text-center text-2xl font-black p-3 rounded-xl border-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all uppercase tracking-widest ${
                                     feedback === 'correct' ? 'border-green-500 bg-green-50 text-green-800' :
-                                    feedback === 'incorrect' ? 'border-red-400 bg-red-50 text-red-800 animate-shake' :
+                                    feedback === 'incorrect' ? 'border-red-400 bg-red-50 text-red-800 motion-safe:animate-shake' :
                                     'border-indigo-200 focus:border-indigo-400 text-indigo-900 bg-white'
                                 }`}
                                 placeholder={t('games.scramble.input_placeholder')}
                                 disabled={feedback === 'correct'}
-                                autoFocus
                                 aria-label={t('games.scramble.input_placeholder')}
                             />
                             <div className="flex gap-2 w-full">
-                                <button onClick={useHint} className="flex-1 py-3 rounded-xl font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center justify-center gap-1" aria-label={t('games.scramble.get_hint_aria') || 'Get a hint'}>
-                                    <HelpCircle size={14}/> {t('games.scramble.hint_button') || 'Hint'}
+                                <button onClick={useHint} className="flex-1 py-3 rounded-xl font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center justify-center gap-1 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-2" aria-label={t('games.scramble.get_hint_aria') || 'Get a hint'}>
+                                    <HelpCircle size={14} aria-hidden="true"/> {t('games.scramble.hint_button') || 'Hint'}
                                 </button>
                                 <button data-help-ignore="true"
                                     aria-label={t('common.skip')}
                                     data-help-key="wizard_skip_btn"
                     onClick={handleSkip}
-                                    className="flex-1 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                                    className="flex-1 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
                                 >
                                     {t('games.scramble.skip')}
                                 </button>
                                 <button
                                     aria-label={t('common.check')}
                                     onClick={handleCheck}
-                                    className="flex-[2] py-3 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30 transition-all active:scale-95"
+                                    className="flex-[2] py-3 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30 transition-all motion-safe:active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
                                 >
                                     {t('games.scramble.submit')}
                                 </button>
