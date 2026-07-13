@@ -8946,6 +8946,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       });
       var controlsRef = useRef({ throttle: 0, pitch: 0, bank: 0 });
       var hudRef = useRef({});
+      // Per-frame gradient cache (Chromebook alloc sweep): the sky, ground,
+      // dashboard, and vignette gradients were re-created ~60×/s with stable
+      // (or quantized-stable) parameters. CanvasGradient objects survive the
+      // per-frame canvas.width reset, so reuse is safe. Capped Map.
+      var gradCacheRef = useRef(new Map());
+      var cachedGrad = function(key, make) {
+        var gm = gradCacheRef.current;
+        var gg = gm.get(key);
+        if (!gg) {
+          if (gm.size > 200) gm.clear();
+          gg = make();
+          gm.set(key, gg);
+        }
+        return gg;
+      };
       var flyingRef = useRef(false);
       var timeRef = useRef(0);
       var pausedRef = useRef(false);
@@ -11507,19 +11522,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var hbStep = 0.04;
           var hblatC = Math.round(state.lat / hbStep) * hbStep;
           var hblonC = Math.round(state.lon / hbStep) * hbStep;
+          // Hoisted out of the 25-cell loop (alloc sweep)
+          var hbNb = [[0, -hbStep], [0, hbStep], [-hbStep, 0], [hbStep, 0]];
           for (var hbi = -2; hbi <= 2; hbi++) {
             for (var hbj = -2; hbj <= 2; hbj++) {
               var hbLat = hblatC + hbi * hbStep;
               var hbLon = hblonC + hbj * hbStep;
-              // Adjacent ocean check: noisy isWater, NOT the regional guard,
-              // so it can fire over coastal areas where the cell is land but
-              // a neighbor is water.
-              var hbAdjW = terrainHash(hbLat * 2, (hbLon - 0.04) * 2) > 0.45
-                        || terrainHash(hbLat * 2, (hbLon + 0.04) * 2) > 0.45
-                        || terrainHash((hbLat - 0.04) * 2, hbLon * 2) > 0.45;
-              if (!hbAdjW) continue;
+              // VISIBLE-water adjacency. The old check sampled the raw noise
+              // fallback of isWater — which never runs inside the continental
+              // boxes — so docks + sailboats appeared over dry mid-continent
+              // land ("harbors in Kansas"). A dock must sit beside water the
+              // sim actually DRAWS: a rendered lake cell (same 0.04° lattice
+              // + seed formula the lake layer uses) or true ocean per
+              // isWater(). The harbor cell itself must be land.
+              var hbAdjW = false;
+              for (var hbn = 0; hbn < 4; hbn++) {
+                var hbNLat = hbLat + hbNb[hbn][0];
+                var hbNLon = hbLon + hbNb[hbn][1];
+                if (terrainHash(hbNLat * 173, hbNLon * 89) > 0.90 || isWater(hbNLat, hbNLon)) { hbAdjW = true; break; }
+              }
+              if (!hbAdjW || isWater(hbLat, hbLon)) continue;
               var hbSeed = terrainHash(hbLat * 251, hbLon * 191);
-              if (hbSeed < 0.85) continue; // 15% of qualifying cells host a harbor
+              if (hbSeed < 0.75) continue; // lakeside/coastal cells host docks fairly often now that adjacency is strict
               var phb = projectLatLon(hbLat, hbLon);
               if (!phb) continue;
               // Dock structure — a thin gray bar
@@ -11864,7 +11888,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       };
 
       var drawOtherAircraft = function(gfx, W, H, horizonY, state, time, dayNight2) {
-        if (dayNight2 && dayNight2.isNight) return; // navigation lights handled separately
+        // At night the sky sweeps render as MOVING NAV LIGHTS instead of
+        // vanishing. (An old comment claimed night lights were "handled
+        // separately" — nothing else drew these three aircraft after dark, so
+        // the night sky was dead. Real night skies are full of blinking
+        // traffic; it's also a natural see-and-avoid moment.)
+        var acNight = !!(dayNight2 && dayNight2.isNight);
         for (var ac = 0; ac < 3; ac++) {
           // Each aircraft cycles across the sky over ~120s with a different speed.
           var period = 90 + ac * 35;
@@ -11881,6 +11910,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Aircraft type: high-altitude jet (contrail), mid-altitude commercial,
           // low Cessna-style (no contrail).
           var isHigh = ac === 2;
+          if (acNight) {
+            // Red (port) + green (starboard) steady lights a couple px apart,
+            // oriented by direction of travel, with a white anti-collision
+            // strobe that flashes ~once a second. No body, no contrail.
+            var portX = ax + (goingRight ? -2.4 : 2.4);
+            var stbdX = ax + (goingRight ? 2.4 : -2.4);
+            gfx.fillStyle = 'rgba(255,70,70,0.9)';
+            gfx.fillRect(portX - 0.8, ay - 0.8, 1.6, 1.6);
+            gfx.fillStyle = 'rgba(80,230,110,0.9)';
+            gfx.fillRect(stbdX - 0.8, ay - 0.8, 1.6, 1.6);
+            if (Math.sin(time * 6.3 + ac * 2.1) > 0.82) {
+              gfx.fillStyle = 'rgba(255,255,255,0.95)';
+              gfx.fillRect(ax - 1.1, ay - 1.1, 2.2, 2.2);
+            }
+            continue;
+          }
           var bodyAlpha = 0.55 + 0.35 * (1 - Math.abs(phase - 0.5) * 2); // brighter mid-pass
           gfx.fillStyle = 'rgba(45,55,70,' + bodyAlpha + ')';
           // Silhouette — a small horizontal capsule with a vertical tail tab
@@ -15571,10 +15616,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // Two-stop vertical gradient (brighter near the viewer, darker at the horizon)
         // + deterministic grass tufts so the field doesn't read as a flat slab.
         var groundTop = horizonY;
-        var groundGrad = gfx.createLinearGradient(0, groundTop, 0, H);
-        var grassTint = dayNight.isNight ? ['#1f3024', '#16241a'] : ['#3f6e3a', '#4a8a45'];
-        groundGrad.addColorStop(0, grassTint[0]);
-        groundGrad.addColorStop(1, grassTint[1]);
+        // Cached per (px-rounded horizon, height, day/night) — the damped
+        // horizon is stable most frames, so this is a near-100% hit rate.
+        var groundGrad = cachedGrad('gnd|' + Math.round(groundTop) + '|' + H + '|' + (dayNight.isNight ? 1 : 0), function() {
+          var gg2 = gfx.createLinearGradient(0, groundTop, 0, H);
+          var grassTint = dayNight.isNight ? ['#1f3024', '#16241a'] : ['#3f6e3a', '#4a8a45'];
+          gg2.addColorStop(0, grassTint[0]);
+          gg2.addColorStop(1, grassTint[1]);
+          return gg2;
+        });
         gfx.fillStyle = groundGrad;
         gfx.fillRect(0, groundTop, W, H - groundTop);
         // Grass tufts — seeded so they don't crawl every frame. Near the
@@ -17913,16 +17963,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var goldenSide = dawnProx > duskProx ? 'east' : 'west'; // east = left, west = right
 
           // Sky gradient — biased warmer at the horizon during golden hour.
-          var skyGrad = gfx.createLinearGradient(0, 0, 0, H * 0.6);
+          // Cached on quantized params (1/40 steps ≈ <2 RGB units per bucket:
+          // invisible), rebuilt only when altitude band / golden proximity /
+          // canvas height actually change.
           var altFactor = Math.min(1, state.altitude / 40000);
-          var topR = 10 + altFactor * 5;
-          var topG = 10 + altFactor * 20 + goldenProx * 10;
-          var topB = 40 + altFactor * 60 - goldenProx * 10;
-          var botR = 80 - altFactor * 40 + goldenProx * 120;
-          var botG = 140 - altFactor * 40 + goldenProx * 30;
-          var botB = 220 - altFactor * 20 - goldenProx * 80;
-          skyGrad.addColorStop(0, 'rgb(' + Math.round(topR) + ',' + Math.round(topG) + ',' + Math.round(topB) + ')');
-          skyGrad.addColorStop(1, 'rgb(' + Math.round(botR) + ',' + Math.round(botG) + ',' + Math.round(botB) + ')');
+          var skyGrad = cachedGrad('sky|' + H + '|' + Math.round(altFactor * 40) + '|' + Math.round(goldenProx * 40), function() {
+            var sg = gfx.createLinearGradient(0, 0, 0, H * 0.6);
+            var topR = 10 + altFactor * 5;
+            var topG = 10 + altFactor * 20 + goldenProx * 10;
+            var topB = 40 + altFactor * 60 - goldenProx * 10;
+            var botR = 80 - altFactor * 40 + goldenProx * 120;
+            var botG = 140 - altFactor * 40 + goldenProx * 30;
+            var botB = 220 - altFactor * 20 - goldenProx * 80;
+            sg.addColorStop(0, 'rgb(' + Math.round(topR) + ',' + Math.round(topG) + ',' + Math.round(topB) + ')');
+            sg.addColorStop(1, 'rgb(' + Math.round(botR) + ',' + Math.round(botG) + ',' + Math.round(botB) + ')');
+            return sg;
+          });
           if (threeLoaded) {
             gfx.clearRect(0, 0, W, H);
             renderWebGLFlight(state, ctrl, W, H, dayNight);
@@ -20053,9 +20109,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             // yoke silhouette so the student feels their hands on something.
             var dashH = 58;
             var dashTop = H - dashH;
-            var dashGrad = gfx.createLinearGradient(0, dashTop, 0, H);
-            dashGrad.addColorStop(0, 'rgba(18,22,28,0.92)');
-            dashGrad.addColorStop(1, 'rgba(6,8,12,0.98)');
+            // Cached per height — constant otherwise (alloc sweep)
+            var dashGrad = cachedGrad('dash|' + H, function() {
+              var dg = gfx.createLinearGradient(0, dashTop, 0, H);
+              dg.addColorStop(0, 'rgba(18,22,28,0.92)');
+              dg.addColorStop(1, 'rgba(6,8,12,0.98)');
+              return dg;
+            });
             gfx.fillStyle = dashGrad;
             gfx.fillRect(0, dashTop, W, dashH);
             // Glareshield top edge highlight (thin light line for shape)
@@ -20110,9 +20170,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           }
 
           // ── Vignette (darkened edges for depth) ──
-          var vigGrad = gfx.createRadialGradient(W/2, H/2, W * 0.3, W/2, H/2, W * 0.7);
-          vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
-          vigGrad.addColorStop(1, 'rgba(0,0,0,0.25)');
+          // Cached per canvas size — constant otherwise (alloc sweep)
+          var vigGrad = cachedGrad('vig|' + W + 'x' + H, function() {
+            var vg = gfx.createRadialGradient(W/2, H/2, W * 0.3, W/2, H/2, W * 0.7);
+            vg.addColorStop(0, 'rgba(0,0,0,0)');
+            vg.addColorStop(1, 'rgba(0,0,0,0.25)');
+            return vg;
+          });
           gfx.fillStyle = vigGrad;
           gfx.fillRect(0, 0, W, H);
 
