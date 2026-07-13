@@ -472,6 +472,18 @@
     return ((page && page.audio) || []).map(function (c) { return c && c.src; }).filter(Boolean);
   }
 
+  // Multilingual Bloom records share one instanceId, and mirrored editions
+  // share the slug prefix 'bloom-<inst8>-'. Returns the OTHER readable
+  // language editions of the same work — a bilingual family's bridge.
+  function bloomEditionsFor(slug, indexBooks) {
+    var m = /^bloom-(?!card-)([a-z0-9]{8})-/.exec(String(slug || ''));
+    if (!m) return [];
+    var prefix = 'bloom-' + m[1] + '-';
+    return (indexBooks || []).filter(function (b) {
+      return b && b.slug !== slug && String(b.slug).indexOf(prefix) === 0 && !/card/.test(b.contentType || '');
+    });
+  }
+
   // Assign narration cue ids to whitespace tokens of the page text by walking
   // both sequences in order (punctuation-insensitive compare). Tokens without
   // a confident match simply get no cue — they still render, just never
@@ -1903,6 +1915,18 @@
         e('div', { className: 'w-full max-w-3xl m-auto' },
           isCardContent(book) ? e('div', { className: 'mb-3 mx-auto max-w-xl text-[12px] text-sky-900 bg-sky-50 border border-sky-200 rounded-lg px-3 py-2 text-center' },
             '🔗 ' + tr('readinglib_card_notice', 'This is a source card — a short overview with a link to the real thing. Use “Open original” above to read the full text at the source.')) : null,
+          // Same work, other languages (multilingual Bloom records) — one tap
+          // switches editions, so a family can read in both languages.
+          (props.editions && props.editions.length) ? e('div', { className: 'mb-3 mx-auto max-w-xl flex flex-wrap items-center justify-center gap-1 text-[12px]' },
+            e('span', { className: 'text-slate-500 font-semibold' }, '🌐 ' + tr('readinglib_editions', 'Also in:')),
+            props.editions.map(function (ed) {
+              return e('button', {
+                key: ed.slug,
+                className: 'px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-800 font-semibold hover:bg-indigo-100',
+                onClick: function () { if (props.onOpenEdition) props.onOpenEdition(ed); },
+                title: tr('readinglib_editions_hint', 'Open this same book in another language'),
+              }, ed.language + (ed.hasAudio ? ' 🔊' : ''));
+            })) : null,
           page.img ? e('img', {
             src: page.img,
             alt: tr('readinglib_page_illustration', 'Illustration from') + ' "' + book.title + '", ' + tr('readinglib_page', 'page') + ' ' + page.n,
@@ -2819,6 +2843,8 @@
     if (openBook) {
       body = e(BookReader, {
         book: openBook,
+        editions: bloomEditionsFor(openBook.slug, books),
+        onOpenEdition: openBookBySlug,
         onExit: onExitReader,
         addToast: props.addToast,
         callGemini: props.callGemini,
@@ -3073,6 +3099,7 @@
   ReadingLibrary._assignCues = assignCues;
   ReadingLibrary._findActiveCue = findActiveCue;
   ReadingLibrary._pageAudioClips = pageAudioClips;
+  ReadingLibrary._bloomEditionsFor = bloomEditionsFor;
   ReadingLibrary._pageCueRange = pageCueRange;
   ReadingLibrary._cleanReadingText = cleanReadingText;
   ReadingLibrary._pageTextForPipeline = pageTextForPipeline;

@@ -65,9 +65,11 @@ const PLAN = [
   { code: 'ti', name: 'Tigrinya', cap: 20 },
   { code: 'am', name: 'Amharic', cap: 20 },
   { code: 'prs', name: 'Dari', cap: 20 },
-  { code: 'km', name: 'Khmer', cap: 20 },
-  { code: 'my', name: 'Burmese', cap: 20 },
-  { code: 'ne', name: 'Nepali', cap: 20 },
+  // Raised caps (2026-07-13): Portland's Cambodian community + the deepest
+  // talking-book pools — narrated books get priority within every cap.
+  { code: 'km', name: 'Khmer', cap: 32 },
+  { code: 'my', name: 'Burmese', cap: 28 },
+  { code: 'ne', name: 'Nepali', cap: 28 },
   { code: 'lo', name: 'Lao', cap: 20 },
   { code: 'vi', name: 'Vietnamese', cap: 12 },
   { code: 'mww', name: 'Hmong', cap: 20 },
@@ -463,7 +465,13 @@ async function main() {
     const rows = await census(lang);
     const byLicense = {};
     rows.forEach((r) => { byLicense[r.license] = (byLicense[r.license] || 0) + 1; });
-    const eligible = rows.filter((r) => LICENSES[r.license]);
+    // Narrated books (Bloom's talkingBook feature) win cap slots first —
+    // real recorded voices in languages that usually have no TTS are worth
+    // more than any un-narrated book. Stable sort keeps API order within
+    // each group.
+    const hasTalking = (r) => (r.record.features || []).some((f) => /talkingBook/i.test(f));
+    const eligible = rows.filter((r) => LICENSES[r.license])
+      .sort((a, b) => (hasTalking(b) ? 1 : 0) - (hasTalking(a) ? 1 : 0));
     const cardable = rows.filter((r) => CARD_LICENSES[r.license]);
     console.log('== ' + lang.name + ' (' + lang.code + '): ' + rows.length + ' books; licenses ' +
       JSON.stringify(byLicense) + ' → mirror ' + eligible.length + ', cardable ' + cardable.length +

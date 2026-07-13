@@ -116,6 +116,26 @@ describe('pageAudioClips — Bloom talking-book clip queue', () => {
   });
 });
 
+describe('bloomEditionsFor — cross-language edition linking', () => {
+  const idx = [
+    { slug: 'bloom-5a8f7349-untitled', language: 'Ukrainian', contentType: 'story' },
+    { slug: 'bloom-5a8f7349-untitled-ar', language: 'Arabic', contentType: 'story' },
+    { slug: 'bloom-card-5a8f7349-something', language: 'Somali', contentType: 'open-access-source-card' },
+    { slug: 'bloom-99999999-other-book', language: 'Khmer', contentType: 'story' },
+    { slug: '16411-too-big-too-small', language: 'English', contentType: 'story' },
+  ];
+  it('finds sibling editions of the same Bloom record, excluding self and cards', () => {
+    const eds = RL._bloomEditionsFor('bloom-5a8f7349-untitled', idx);
+    expect(eds.map((b) => b.slug)).toEqual(['bloom-5a8f7349-untitled-ar']);
+  });
+  it('returns nothing for non-Bloom slugs, cards, and unmatched records', () => {
+    expect(RL._bloomEditionsFor('16411-too-big-too-small', idx)).toEqual([]);
+    expect(RL._bloomEditionsFor('bloom-card-5a8f7349-something', idx)).toEqual([]);
+    expect(RL._bloomEditionsFor('bloom-99999999-other-book', idx)).toEqual([]);
+    expect(RL._bloomEditionsFor(null, idx)).toEqual([]);
+  });
+});
+
 describe('bookPlainText / attributionLine', () => {
   const book = {
     title: 'Test Book',
