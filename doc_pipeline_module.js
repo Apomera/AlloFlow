@@ -1932,12 +1932,13 @@ function _alloSanitizeImportedCss(css) {
       .replace(/@font-face\b[^{}]*\{[\s\S]*?\}/gi, '')
       .replace(/url\s*\(\s*(?:"[^"]*"|'[^']*'|[^)]*)\)/gi, 'none')
       .replace(/(?:-webkit-)?image-set\s*\((?:[^()]|\([^()]*\))*\)/gi, 'none')
+      .replace(/\b(?:image|src)\s*\((?:[^()]|\([^()]*\))*\)/gi, 'none')
       .replace(/expression\s*\((?:[^()]|\([^()]*\))*\)/gi, '')
       .replace(/(?:-moz-binding|behavior)\s*:[^;}]*(?:;|(?=\}))/gi, '');
     if (clean === before) break;
   }
   // Unknown escapes or any residual fetch/execution primitive fail closed for this style block.
-  if (/\\|@(?:import|font-face)\b|\b(?:url|expression|(?:-webkit-)?image-set)\s*\(|(?:-moz-binding|behavior)\s*:/i.test(clean)) return '';
+  if (/\\|@(?:import|font-face)\b|\b(?:url|image|src|expression|(?:-webkit-)?image-set)\s*\(|(?:-moz-binding|behavior)\s*:/i.test(clean)) return '';
   return clean;
 }
 function _alloSanitizeRemediationHtml(rawHtml) {
@@ -1956,7 +1957,8 @@ function _alloSanitizeRemediationHtml(rawHtml) {
       var name = String(attr.name || '').toLowerCase();
       var value = String(attr.value || '').trim();
       if (/^on/i.test(name) || name === 'srcdoc' || name === 'srcset' || name === 'background'
-          || name === 'action' || name === 'formaction' || name === 'autofocus' || name === 'nonce') {
+          || name === 'action' || name === 'formaction' || name === 'autofocus' || name === 'nonce'
+          || name === 'ping' || name === 'manifest') {
         el.removeAttribute(attr.name); return;
       }
       if (name === 'style') {
@@ -10406,14 +10408,18 @@ var createDocPipeline = function(deps) {
   };
 
   // ── Tier 4: Mid-batch resume persistence ──
-  // Split into two IDB stores:
+  // Legacy layout (the shared status key below is now read only for migration):
   //   _ACTIVE_BATCH_FILES_KEY  → heavy payload (base64) + settings, written once at batch start
   //   _ACTIVE_BATCH_STATUS_KEY → light per-file status/result, rewritten after each completion
+  // v4 writes current status through _ACTIVE_BATCH_STATUS_PREFIX and bounded
+  // result blobs through _ACTIVE_BATCH_RESULT_PREFIX, both scoped to one batch.
   // This keeps per-completion writes small (a 50-file batch with 5MB/file no
   // longer rewrites 250MB on every file finish). Load merges the two stores.
   // Stale entries (>7 days or prompt-version mismatch) auto-invalidate.
   const _ACTIVE_BATCH_FILES_KEY = 'pdf_active_batch_files_v1';
-  const _ACTIVE_BATCH_STATUS_KEY = 'pdf_active_batch_status_v1';
+  const _ACTIVE_BATCH_STATUS_KEY = 'pdf_active_batch_status_v1'; // legacy v2/v3 shared status record
+  const _ACTIVE_BATCH_STATUS_PREFIX = 'pdf_active_batch_status_v4_';
+  const _ACTIVE_BATCH_ROOT_LOCK = 'alloflow-pdf-active-batch-root-v1';
   const _ACTIVE_BATCH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
   // Strip the heavy base64 + result payloads so the status delta stays tiny.
   const _ACTIVE_BATCH_LEGACY_RESULT_PREFIX = 'pdf_active_batch_result_v2_';
@@ -10450,6 +10456,113 @@ var createDocPipeline = function(deps) {
   const _batchResultKeyFor = (batchId, f) => {
     return _batchResultPrefixFor(batchId) + encodeURIComponent(String(f && f.id != null ? f.id : f.fileName || 'file'));
   };
+  const _batchStatusKeyFor = (batchId) => {
+    return _ACTIVE_BATCH_STATUS_PREFIX + encodeURIComponent(_normalizeBatchCheckpointId(batchId) || 'invalid');
+  };
+  const _withBatchCheckpointRootLock = (fn, mode) => {
+    const locks = typeof navigator !== 'undefined' && navigator && navigator.locks;
+    if (locks && typeof locks.request === 'function') {
+      const lockMode = mode === 'shared' ? 'shared' : 'exclusive';
+      try { return locks.request(_ACTIVE_BATCH_ROOT_LOCK, { mode: lockMode }, fn); } catch (_) {}
+    }
+    return Promise.resolve().then(fn);
+  };
+  const _deleteBatchStorageKey = async (key) => {
+    if (!key) return;
+    try {
+      if (typeof window !== 'undefined' && window.idbKeyval && typeof window.idbKeyval.del === 'function') {
+        await window.idbKeyval.del(key);
+      } else {
+        await storageDB.set(key, null);
+      }
+    } catch (_) {}
+  };
+  const _sameBatchFilesRecord = (current, expected) => {
+    if (!current || !expected) return false;
+    const expectedId = _normalizeBatchCheckpointId(expected.batchId);
+    if (_normalizeBatchCheckpointId(current.batchId) !== expectedId) return false;
+    if (current.rootWriteId || expected.rootWriteId) {
+      return !!expected.rootWriteId && current.rootWriteId === expected.rootWriteId;
+    }
+    if (current.savedAt !== expected.savedAt) return false;
+    return !!expectedId || current.startedAt === expected.startedAt;
+  };
+  const _statusRecordMatchesBatch = (record, batchId) => {
+    if (!record) return false;
+    return batchId
+      ? _normalizeBatchCheckpointId(record.batchId) === batchId
+      : !record.batchId;
+  };
+  const _sameBatchStatusRecord = (current, expected, batchId) => {
+    if (!current || !expected
+        || !_statusRecordMatchesBatch(current, batchId)
+        || !_statusRecordMatchesBatch(expected, batchId)) return false;
+    if (current.writeId || expected.writeId) {
+      return !!expected.writeId && current.writeId === expected.writeId;
+    }
+    return current.lastUpdatedAt === expected.lastUpdatedAt;
+  };
+  const _readBatchStatusForFiles = async (filesRec) => {
+    const batchId = _normalizeBatchCheckpointId(filesRec && filesRec.batchId);
+    if (batchId) {
+      const scopedKey = _batchStatusKeyFor(batchId);
+      const scoped = await storageDB.get(scopedKey);
+      if (_statusRecordMatchesBatch(scoped, batchId)) return { key: scopedKey, record: scoped, legacy: false };
+      const legacy = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
+      if (_statusRecordMatchesBatch(legacy, batchId)) return { key: _ACTIVE_BATCH_STATUS_KEY, record: legacy, legacy: true };
+      return { key: scopedKey, record: null, legacy: false };
+    }
+    const legacy = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
+    return {
+      key: _ACTIVE_BATCH_STATUS_KEY,
+      record: _statusRecordMatchesBatch(legacy, null) ? legacy : null,
+      legacy: true,
+    };
+  };
+  const _deleteLegacyBatchCheckpointData = async (filesRec) => {
+    if (!filesRec) return;
+    const batchId = _normalizeBatchCheckpointId(filesRec.batchId);
+    const statusInfo = await _readBatchStatusForFiles(filesRec);
+    if (!statusInfo.legacy || !statusInfo.record) return;
+    const legacyResultKeys = new Set((statusInfo.record.statuses || [])
+      .map(s => s && s.resultKey)
+      .filter(key => typeof key === 'string' && key.startsWith(_ACTIVE_BATCH_LEGACY_RESULT_PREFIX)));
+    for (const key of legacyResultKeys) await _deleteBatchStorageKey(key);
+    const currentStatus = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
+    if (_sameBatchStatusRecord(currentStatus, statusInfo.record, batchId)) {
+      await _deleteBatchStorageKey(_ACTIVE_BATCH_STATUS_KEY);
+    }
+  };
+  const _sweepInactiveBatchCheckpointData = async (activeBatchId) => {
+    const cleanBatchId = _normalizeBatchCheckpointId(activeBatchId);
+    if (!cleanBatchId || typeof window === 'undefined' || !window.idbKeyval
+        || typeof window.idbKeyval.keys !== 'function') return;
+    try {
+      const keys = await window.idbKeyval.keys();
+      const activeResultPrefix = _batchResultPrefixFor(cleanBatchId);
+      const activeStatusKey = _batchStatusKeyFor(cleanBatchId);
+      for (const key of (keys || [])) {
+        if (typeof key !== 'string') continue;
+        const legacyResult = key.startsWith(_ACTIVE_BATCH_LEGACY_RESULT_PREFIX);
+        const inactiveResult = key.startsWith(_ACTIVE_BATCH_RESULT_PREFIX) && !key.startsWith(activeResultPrefix);
+        const inactiveStatus = key.startsWith(_ACTIVE_BATCH_STATUS_PREFIX) && key !== activeStatusKey;
+        if (legacyResult || inactiveResult || inactiveStatus) await _deleteBatchStorageKey(key);
+      }
+      // Once a v4 root is installed, the shared v2/v3 status record is no longer
+      // authoritative. The in-memory resume queue already contains any restored data.
+      await _deleteBatchStorageKey(_ACTIVE_BATCH_STATUS_KEY);
+    } catch (_) {}
+  };
+  const _deleteNewlyStoredBatchResults = async (files, keys) => {
+    const ownedKeys = new Set(keys || []);
+    for (const key of ownedKeys) await _deleteBatchStorageKey(key);
+    for (const file of (files || [])) {
+      if (ownedKeys.has(file && file._checkpointResultKey)) {
+        file._checkpointResultKey = null;
+        file._checkpointResultBytes = 0;
+      }
+    }
+  };
   const _batchResultSummary = (result) => {
     if (!result) return null;
     return {
@@ -10470,29 +10583,61 @@ var createDocPipeline = function(deps) {
     resultSummary: _batchResultSummary(f.result),
   });
   const _saveBatchFiles = async (files, settings, startedAt, batchId) => {
-    if (typeof window === 'undefined' || !window.idbKeyval || !Array.isArray(files)) return;
+    if (typeof window === 'undefined' || !window.idbKeyval || !Array.isArray(files)) return false;
     const cleanBatchId = _normalizeBatchCheckpointId(batchId);
-    if (!cleanBatchId) return;
+    if (!cleanBatchId) return false;
     try {
-      // Heavy payload: base64 per file + settings. Written once at batch start.
-      await storageDB.set(_ACTIVE_BATCH_FILES_KEY, {
-        schemaVersion: 3,
+      let previousFilesRec = null;
+      const nextFilesRec = {
+        schemaVersion: 4,
         batchId: cleanBatchId,
+        rootWriteId: _newBatchCheckpointId(),
+        statusKey: _batchStatusKeyFor(cleanBatchId),
         files: files.map(f => ({ id: f.id, fileName: f.fileName, fileSize: f.fileSize, base64: f.base64 })),
         settings,
         startedAt,
         promptVersion: _PIPELINE_PROMPT_VERSION,
         savedAt: Date.now(),
+      };
+      // Serialize the shared active-root mutation across tabs. Status and results are
+      // batch-scoped, but the root swap and inactive sweep form one transaction.
+      await _withBatchCheckpointRootLock(async () => {
+        previousFilesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+        await storageDB.set(_ACTIVE_BATCH_FILES_KEY, nextFilesRec);
+        // Keeping the sweep under the same lock prevents two simultaneous starts
+        // from deleting the namespace belonging to the later root writer.
+        await _sweepInactiveBatchCheckpointData(cleanBatchId);
       });
-    } catch (e) { warnLog('[Batch Resume] saveFiles failed:', e?.message || e); }
+      const previousId = _normalizeBatchCheckpointId(previousFilesRec && previousFilesRec.batchId);
+      if (previousFilesRec && previousId !== cleanBatchId) {
+        await _deleteLegacyBatchCheckpointData(previousFilesRec);
+      }
+      return true;
+    } catch (e) {
+      warnLog('[Batch Resume] saveFiles failed:', e?.message || e);
+      return false;
+    }
   };
   const _saveBatchStatusNow = async (files, batchId) => {
-    if (typeof window === 'undefined' || !window.idbKeyval || !Array.isArray(files)) return;
+    if (typeof window === 'undefined' || !window.idbKeyval || !Array.isArray(files)) return false;
     const cleanBatchId = _normalizeBatchCheckpointId(batchId);
-    if (!cleanBatchId) return;
+    if (!cleanBatchId) return false;
+    return _withBatchCheckpointRootLock(async () => {
+    const newlyStoredKeys = [];
+    let writtenStatusKey = null;
+    let writtenStatusRecord = null;
     try {
       const initialFilesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
-      if (!initialFilesRec || _normalizeBatchCheckpointId(initialFilesRec.batchId) !== cleanBatchId) return;
+      if (!initialFilesRec || _normalizeBatchCheckpointId(initialFilesRec.batchId) !== cleanBatchId) return false;
+      // Legacy/global keys and cross-file keys are not valid ownership proofs for
+      // this file. Re-serialize the in-memory result into its exact v3 namespace.
+      for (const f of files) {
+        const expectedKey = _batchResultKeyFor(cleanBatchId, f);
+        if (f && f._checkpointResultKey && f._checkpointResultKey !== expectedKey) {
+          f._checkpointResultKey = null;
+          f._checkpointResultBytes = 0;
+        }
+      }
       let storedBytes = files.reduce((sum, f) => sum + (Number(f._checkpointResultBytes) || 0), 0);
       for (const f of files) {
         if (!f.result || f._checkpointResultKey || f._checkpointResultOmitted) continue;
@@ -10511,24 +10656,58 @@ var createDocPipeline = function(deps) {
         }
         const resultKey = _batchResultKeyFor(cleanBatchId, f);
         try {
-          await storageDB.set(resultKey, { serialized, bytes, savedAt: Date.now(), promptVersion: _PIPELINE_PROMPT_VERSION });
+          await storageDB.set(resultKey, { serialized, bytes, batchId: cleanBatchId, savedAt: Date.now(), promptVersion: _PIPELINE_PROMPT_VERSION });
         } catch (_) {
           f._checkpointResultOmitted = true;
           _warnBatchCheckpointOnce('Browser storage could not save a batch result. That file will be safely re-run if you resume.');
           continue;
         }
+        newlyStoredKeys.push(resultKey);
         f._checkpointResultKey = resultKey;
         f._checkpointResultBytes = bytes;
         storedBytes += bytes;
       }
       const activeFilesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
-      if (!activeFilesRec || _normalizeBatchCheckpointId(activeFilesRec.batchId) !== cleanBatchId) return;
-      await storageDB.set(_ACTIVE_BATCH_STATUS_KEY, {
-        schemaVersion: 3, batchId: cleanBatchId, statuses: files.map(_toStatusEntry), lastUpdatedAt: Date.now() });
+      if (!_sameBatchFilesRecord(activeFilesRec, initialFilesRec)) {
+        await _deleteNewlyStoredBatchResults(files, newlyStoredKeys);
+        return false;
+      }
+      const statusKey = _batchStatusKeyFor(cleanBatchId);
+      const statusRecord = {
+        schemaVersion: 4, batchId: cleanBatchId, writeId: _newBatchCheckpointId(),
+        statuses: files.map(_toStatusEntry), lastUpdatedAt: Date.now(),
+      };
+      writtenStatusKey = statusKey;
+      writtenStatusRecord = statusRecord;
+      await storageDB.set(statusKey, statusRecord);
+      // A tab can lose ownership after its initial check. Its scoped write cannot
+      // clobber the new batch, but remove it immediately so large blobs do not orphan.
+      const activeAfterWrite = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+      if (!_sameBatchFilesRecord(activeAfterWrite, initialFilesRec)) {
+        const currentStatus = await storageDB.get(statusKey);
+        if (_sameBatchStatusRecord(currentStatus, statusRecord, cleanBatchId)) await _deleteBatchStorageKey(statusKey);
+        await _deleteNewlyStoredBatchResults(files, newlyStoredKeys);
+        return false;
+      }
+      // Successful v4 persistence completes an in-place migration from the deployed
+      // v3 shared status record without discarding already-restored result blobs.
+      const legacyStatus = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
+      if (_statusRecordMatchesBatch(legacyStatus, cleanBatchId)) await _deleteBatchStorageKey(_ACTIVE_BATCH_STATUS_KEY);
+      return true;
     } catch (e) {
       warnLog('[Batch Resume] saveStatus failed:', e?.message || e);
+      if (writtenStatusKey && writtenStatusRecord) {
+        let currentStatus = null;
+        try { currentStatus = await storageDB.get(writtenStatusKey); } catch (_) {}
+        if (_sameBatchStatusRecord(currentStatus, writtenStatusRecord, cleanBatchId)) {
+          await _deleteBatchStorageKey(writtenStatusKey);
+        }
+      }
+      await _deleteNewlyStoredBatchResults(files, newlyStoredKeys);
       _warnBatchCheckpointOnce('Browser storage could not update the batch checkpoint. Keep this tab open until the batch finishes.');
+      return false;
     }
+    }, 'shared');
   };
   let _batchStatusWriteTail = Promise.resolve();
   const _saveBatchStatus = (files, batchId) => {
@@ -10551,24 +10730,27 @@ var createDocPipeline = function(deps) {
         await _clearActiveBatch(batchId);
         return null;
       }
-      const statusRec = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
-      const statusMatches = batchId
-        ? !!(statusRec && _normalizeBatchCheckpointId(statusRec.batchId) === batchId)
-        : !!(statusRec && !statusRec.batchId);
+      const statusInfo = await _readBatchStatusForFiles(filesRec);
+      const statusRec = statusInfo.record;
+      const statusMatches = _statusRecordMatchesBatch(statusRec, batchId);
       const byId = {};
       (statusMatches && statusRec.statuses || []).forEach(s => { byId[s.id] = s; });
       // Merge the heavy input payload with lightweight status and separately bounded results.
       const merged = await Promise.all(filesRec.files.map(async f => {
         const s = byId[f.id] || {};
         let restoredResult = null;
-        const expectedResultPrefix = batchId ? _batchResultPrefixFor(batchId) : _ACTIVE_BATCH_LEGACY_RESULT_PREFIX;
-        const resultKeyMatches = typeof s.resultKey === 'string' && s.resultKey.startsWith(expectedResultPrefix);
+        const expectedResultKey = batchId ? _batchResultKeyFor(batchId, f) : null;
+        const resultKeyMatches = typeof s.resultKey === 'string' && (batchId
+          ? s.resultKey === expectedResultKey
+          : s.resultKey.startsWith(_ACTIVE_BATCH_LEGACY_RESULT_PREFIX));
         if (resultKeyMatches) {
           try {
             const rec = await storageDB.get(s.resultKey);
             const valid = rec && typeof rec.serialized === 'string' && rec.savedAt
               && Date.now() - rec.savedAt <= _ACTIVE_BATCH_TTL_MS
               && (!rec.promptVersion || rec.promptVersion === _PIPELINE_PROMPT_VERSION)
+              && (batchId ? (!rec.batchId || _normalizeBatchCheckpointId(rec.batchId) === batchId)
+                : !rec.batchId)
               && rec.bytes <= _ACTIVE_BATCH_RESULT_MAX_BYTES;
             if (valid) {
               restoredResult = await _alloRehydrateVerificationHtmlBinding(JSON.parse(rec.serialized));
@@ -10606,6 +10788,7 @@ var createDocPipeline = function(deps) {
     if (typeof window === 'undefined' || !window.idbKeyval) return false;
     try {
       await _batchStatusWriteTail.catch(() => {});
+      return !!(await _withBatchCheckpointRootLock(async () => {
       const requestedRaw = batchId == null ? '' : String(batchId).trim();
       const requestedId = _normalizeBatchCheckpointId(requestedRaw);
       if (requestedRaw && !requestedId) return false;
@@ -10614,42 +10797,44 @@ var createDocPipeline = function(deps) {
       const activeId = _normalizeBatchCheckpointId(filesRec.batchId);
       if (requestedId && activeId !== requestedId) return false;
 
-      const statusRec = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
-      const statusMatches = activeId
-        ? !!(statusRec && _normalizeBatchCheckpointId(statusRec.batchId) === activeId)
-        : !!(statusRec && !statusRec.batchId);
-      const legacyResultKeys = new Set((statusMatches && statusRec.statuses || [])
+      const statusInfo = await _readBatchStatusForFiles(filesRec);
+      const legacyResultKeys = new Set((statusInfo.legacy && statusInfo.record && statusInfo.record.statuses || [])
         .map(s => s && s.resultKey)
         .filter(key => typeof key === 'string' && key.startsWith(_ACTIVE_BATCH_LEGACY_RESULT_PREFIX)));
-      if (typeof window.idbKeyval.keys === 'function' && typeof window.idbKeyval.del === 'function') {
+      if (typeof window.idbKeyval.keys === 'function') {
         const keys = await window.idbKeyval.keys();
         const scopedPrefix = activeId ? _batchResultPrefixFor(activeId) : null;
         for (const key of (keys || [])) {
           const owned = typeof key === 'string' && (scopedPrefix
             ? key.startsWith(scopedPrefix)
             : legacyResultKeys.has(key));
-          if (owned) {
-            try { await window.idbKeyval.del(key); } catch (_) {}
-          }
+          if (owned) await _deleteBatchStorageKey(key);
         }
       }
+      if (statusInfo.record) {
+        if (statusInfo.legacy) {
+          const currentStatus = await storageDB.get(statusInfo.key);
+          if (_sameBatchStatusRecord(currentStatus, statusInfo.record, activeId)) {
+            await _deleteBatchStorageKey(statusInfo.key);
+          }
+        } else {
+          await _deleteBatchStorageKey(statusInfo.key);
+        }
+      }
+      // A partially migrated v3 record can coexist with its new scoped status.
+      // Remove the old shared copy only when it belongs to this exact batch.
+      if (activeId) {
+        const legacyStatus = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
+        if (_statusRecordMatchesBatch(legacyStatus, activeId)) await _deleteBatchStorageKey(_ACTIVE_BATCH_STATUS_KEY);
+      }
 
-      const filesStillActive = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
-      const sameFiles = filesStillActive && filesStillActive.savedAt === filesRec.savedAt
-        && _normalizeBatchCheckpointId(filesStillActive.batchId) === activeId;
-      if (!sameFiles) return false;
-      const statusStillActive = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
-      const sameStatus = activeId
-        ? !!(statusStillActive && _normalizeBatchCheckpointId(statusStillActive.batchId) === activeId)
-        : !!(statusStillActive && !statusStillActive.batchId);
-      if (statusMatches && sameStatus) await storageDB.set(_ACTIVE_BATCH_STATUS_KEY, null);
-
-      const filesBeforeClear = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
-      const mayClearFiles = filesBeforeClear && filesBeforeClear.savedAt === filesRec.savedAt
-        && _normalizeBatchCheckpointId(filesBeforeClear.batchId) === activeId;
-      if (!mayClearFiles) return false;
+      // Shared status writers cannot recreate artifacts between this cleanup and
+      // the active-root clear because this entire lifecycle mutation is exclusive.
+      const currentFiles = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
+      if (!_sameBatchFilesRecord(currentFiles, filesRec)) return false;
       await storageDB.set(_ACTIVE_BATCH_FILES_KEY, null);
       return true;
+      }));
     } catch (_) { return false; }
   };
 
@@ -11634,9 +11819,9 @@ Return ONLY valid JSON:
     const queue = [..._sourceQueue];
     const startTime = Date.now();
     const _batchId = _resumeBatchId || _newBatchCheckpointId();
-    const _ownedResultPrefix = _batchResultPrefixFor(_batchId);
     for (const item of queue) {
-      if (item && item._checkpointResultKey && !String(item._checkpointResultKey).startsWith(_ownedResultPrefix)) {
+      const _ownedResultKey = _batchResultKeyFor(_batchId, item);
+      if (item && item._checkpointResultKey && item._checkpointResultKey !== _ownedResultKey) {
         item._checkpointResultKey = null;
         item._checkpointResultBytes = 0;
       }

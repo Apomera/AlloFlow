@@ -25,29 +25,35 @@ if (cssSanitizerStart < 0 || cssSanitizerEnd < 0) throw new Error('Imported CSS 
 const sanitizeImportedCss = new Function(
   pipe.slice(cssSanitizerStart, cssSanitizerEnd) + '\nreturn _alloSanitizeImportedCss;'
 )();
-const checkpointHelpersStart = pipe.indexOf("const _ACTIVE_BATCH_LEGACY_RESULT_PREFIX");
-const checkpointHelpersEnd = pipe.indexOf('const _batchResultSummary', checkpointHelpersStart);
-if (checkpointHelpersStart < 0 || checkpointHelpersEnd < 0) throw new Error('Batch checkpoint helper markers missing');
-const checkpointHelpers = new Function(
-  pipe.slice(checkpointHelpersStart, checkpointHelpersEnd)
-    + '\nreturn { normalize: _normalizeBatchCheckpointId, newId: _newBatchCheckpointId, prefixFor: _batchResultPrefixFor, keyFor: _batchResultKeyFor };'
-)();
-const clearBatchStart = pipe.indexOf('const _clearActiveBatch = async');
-const clearBatchEnd = pipe.indexOf('  //', clearBatchStart);
-if (clearBatchStart < 0 || clearBatchEnd < 0) throw new Error('Batch checkpoint cleanup markers missing');
-const makeClearActiveBatch = (storageDB, idbKeyval) => new Function(
-  'storageDB', 'window', '_batchStatusWriteTail', '_normalizeBatchCheckpointId', '_batchResultPrefixFor',
-  '_ACTIVE_BATCH_FILES_KEY', '_ACTIVE_BATCH_STATUS_KEY', '_ACTIVE_BATCH_LEGACY_RESULT_PREFIX',
-  pipe.slice(clearBatchStart, clearBatchEnd) + '\nreturn _clearActiveBatch;'
+const checkpointRuntimeStart = pipe.indexOf("const _ACTIVE_BATCH_FILES_KEY");
+const checkpointRuntimeEnd = pipe.indexOf('  const _AUDIT_SLICE_BYTES_KB', checkpointRuntimeStart);
+if (checkpointRuntimeStart < 0 || checkpointRuntimeEnd < 0) throw new Error('Batch checkpoint runtime markers missing');
+const makeCheckpointRuntime = (storageDB, idbKeyval, navigatorApi = {}) => new Function(
+  'storageDB', 'window', 'navigator', '_PIPELINE_PROMPT_VERSION',
+  '_alloStripVerificationHtmlSnapshot', '_alloRehydrateVerificationHtmlBinding', 'warnLog', 'addToast',
+  pipe.slice(checkpointRuntimeStart, checkpointRuntimeEnd)
+    + '\nreturn { normalize: _normalizeBatchCheckpointId, newId: _newBatchCheckpointId, prefixFor: _batchResultPrefixFor, keyFor: _batchResultKeyFor, statusKeyFor: _batchStatusKeyFor, saveFiles: _saveBatchFiles, saveStatusNow: _saveBatchStatusNow, load: _loadActiveBatch, clear: _clearActiveBatch };'
 )(
-  storageDB, { idbKeyval }, Promise.resolve(), checkpointHelpers.normalize, checkpointHelpers.prefixFor,
-  'pdf_active_batch_files_v1', 'pdf_active_batch_status_v1', 'pdf_active_batch_result_v2_'
+  storageDB, { idbKeyval }, navigatorApi, 'test-prompt-v1',
+  (value) => value, async (value) => value, () => {}, () => {}
+);
+const _checkpointHelperValues = new Map();
+const checkpointHelpers = makeCheckpointRuntime(
+  {
+    get: async (key) => _checkpointHelperValues.get(key),
+    set: async (key, value) => { _checkpointHelperValues.set(key, value); },
+  },
+  {
+    keys: async () => Array.from(_checkpointHelperValues.keys()),
+    del: async (key) => { _checkpointHelperValues.delete(key); },
+  }
 );
 
 describe('remediation deep-dive hardening', () => {
   it('sanitizes every imported remediation HTML lane before commit or Builder preview', () => {
     expect(pipe).toContain("querySelectorAll('script,iframe,frame,object,embed,base,link,meta,svg,math,template')");
     expect(pipe).toContain("if (/^on/i.test(name)");
+    expect(pipe).toContain("name === 'ping' || name === 'manifest'");
     expect(pipe).toContain("out._translation = Object.assign({}, out._translation, { html: sanitize(out._translation.html) })");
     expect(pipe).toContain("out._plainLanguage = Object.assign({}, out._plainLanguage, { html: sanitize(out._plainLanguage.html) })");
     expect(pipe).toContain("cleanRange.result = Object.assign({}, cleanRange.result, { accessibleHtml: sanitize(cleanRange.result.accessibleHtml) })");
@@ -64,12 +70,14 @@ describe('remediation deep-dive hardening', () => {
       '.safe { color: rgb(1, 2, 3); background-image: u\\72l("https://evil.example/a.png"); }',
       '.split { width: 50%; background: u/**/rl("https://evil.example/b.png"); }',
       '.set { background-image: -webkit-\\69mage-set("https://evil.example/c.png" 1x); }',
+      '.image { background-image: \\69mage("https://evil.example/d.png"); }',
+      '.source { background-image: s\\000072c("https://evil.example/e.png"); }',
       '.old { be\\000068avior: u\\72l("https://evil.example/x.htc"); x: exp\\000072ession(alert(1)); }',
     ].join('\n');
     const clean = sanitizeImportedCss(hostile);
     expect(clean).toContain('color: rgb(1, 2, 3)');
     expect(clean).toContain('width: 50%');
-    expect(clean).not.toMatch(/evil\.example|@import|@font-face|url\s*\(|image-set\s*\(|expression\s*\(|behavior\s*:/i);
+    expect(clean).not.toMatch(/evil\.example|@import|@font-face|url\s*\(|image\s*\(|src\s*\(|image-set\s*\(|expression\s*\(|behavior\s*:/i);
     expect(sanitizeImportedCss('color: red;' + '\\')).toBe('');
   });
 
@@ -156,27 +164,44 @@ describe('remediation deep-dive hardening', () => {
     expect(pipe).toContain('const _ACTIVE_BATCH_RESULTS_MAX_BYTES = 128 * 1024 * 1024;');
     expect(pipe).toContain("? (restoredResult ? 'done' : 'pending')");
     expect(pipe).toContain("const _ACTIVE_BATCH_RESULT_PREFIX = 'pdf_active_batch_result_v3_';");
-    expect(pipe).toContain('schemaVersion: 3, batchId: cleanBatchId');
-    expect(pipe).toContain('_normalizeBatchCheckpointId(activeFilesRec.batchId) !== cleanBatchId');
+    expect(pipe).toContain("const _ACTIVE_BATCH_STATUS_PREFIX = 'pdf_active_batch_status_v4_';");
+    expect(pipe).toContain('schemaVersion: 4,');
+    expect(pipe).toContain('_withBatchCheckpointRootLock(async () =>');
+    expect(pipe).toContain('rootWriteId: _newBatchCheckpointId()');
+    expect(pipe).toContain('writeId: _newBatchCheckpointId()');
+    expect(pipe).toContain('_sameBatchFilesRecord(activeFilesRec, initialFilesRec)');
     expect(pipe).toContain('if (requestedId && activeId !== requestedId) return false;');
-    expect(pipe).not.toContain('key.startsWith(_ACTIVE_BATCH_RESULT_PREFIX)');
+    expect(pipe).toContain('key.startsWith(_ACTIVE_BATCH_RESULT_PREFIX) && !key.startsWith(activeResultPrefix)');
     const firstKey = checkpointHelpers.keyFor('batch_first_owner', { id: 'same-file' });
     const secondKey = checkpointHelpers.keyFor('batch_second_owner', { id: 'same-file' });
     expect(firstKey).not.toBe(secondKey);
+    expect(checkpointHelpers.statusKeyFor('batch_first_owner'))
+      .not.toBe(checkpointHelpers.statusKeyFor('batch_second_owner'));
     expect(checkpointHelpers.normalize(checkpointHelpers.newId())).toBeTruthy();
     expect(checkpointHelpers.normalize('../not-an-owner')).toBeNull();
   });
 
   it('refuses stale checkpoint cleanup and deletes only the owning batch namespace', async () => {
     const filesKey = 'pdf_active_batch_files_v1';
-    const statusKey = 'pdf_active_batch_status_v1';
+    const legacyStatusKey = 'pdf_active_batch_status_v1';
     const newId = 'batch_new_owner';
     const staleId = 'batch_stale_owner';
+    const newStatusKey = checkpointHelpers.statusKeyFor(newId);
     const newResultKey = checkpointHelpers.keyFor(newId, { id: 'shared-file' });
     const staleResultKey = checkpointHelpers.keyFor(staleId, { id: 'shared-file' });
     const values = new Map([
-      [filesKey, { batchId: newId, files: [{ id: 'shared-file' }], savedAt: 10 }],
-      [statusKey, { batchId: newId, statuses: [{ id: 'shared-file', resultKey: newResultKey }] }],
+      [filesKey, {
+        schemaVersion: 4,
+        batchId: newId,
+        statusKey: newStatusKey,
+        files: [{ id: 'shared-file' }],
+        savedAt: 10,
+      }],
+      [newStatusKey, {
+        schemaVersion: 4,
+        batchId: newId,
+        statuses: [{ id: 'shared-file', resultKey: newResultKey }],
+      }],
       [newResultKey, { serialized: '{}' }],
       [staleResultKey, { serialized: '{}' }],
     ]);
@@ -188,26 +213,211 @@ describe('remediation deep-dive hardening', () => {
       keys: async () => Array.from(values.keys()),
       del: async (key) => { values.delete(key); },
     };
-    const clear = makeClearActiveBatch(storageDB, idbKeyval);
+    const clear = makeCheckpointRuntime(storageDB, idbKeyval).clear;
 
     await expect(clear(staleId)).resolves.toBe(false);
     expect(values.get(filesKey).batchId).toBe(newId);
     expect(values.has(newResultKey)).toBe(true);
     await expect(clear(newId)).resolves.toBe(true);
     expect(values.get(filesKey)).toBeNull();
-    expect(values.get(statusKey)).toBeNull();
+    expect(values.has(newStatusKey)).toBe(false);
+    expect(values.has(legacyStatusKey)).toBe(false);
     expect(values.has(newResultKey)).toBe(false);
     expect(values.has(staleResultKey)).toBe(true);
 
     const legacyOwned = 'pdf_active_batch_result_v2_owned';
     const legacyOrphan = 'pdf_active_batch_result_v2_orphan';
     values.set(filesKey, { files: [{ id: 'legacy' }], savedAt: 20 });
-    values.set(statusKey, { schemaVersion: 2, statuses: [{ id: 'legacy', resultKey: legacyOwned }] });
+    values.set(legacyStatusKey, {
+      schemaVersion: 2,
+      statuses: [{ id: 'legacy', resultKey: legacyOwned }],
+      lastUpdatedAt: 20,
+    });
     values.set(legacyOwned, { serialized: '{}' });
     values.set(legacyOrphan, { serialized: '{}' });
     await expect(clear(null)).resolves.toBe(true);
     expect(values.has(legacyOwned)).toBe(false);
     expect(values.has(legacyOrphan)).toBe(true);
+  });
+  it('keeps root replacement and inactive cleanup in one lock and restores scoped v4 results', async () => {
+    const filesKey = 'pdf_active_batch_files_v1';
+    const legacyStatusKey = 'pdf_active_batch_status_v1';
+    const batchId = 'batch_scoped_owner';
+    const inactiveId = 'batch_inactive_owner';
+    const legacyResultKey = 'pdf_active_batch_result_v2_orphan';
+    const values = new Map([
+      [legacyStatusKey, { schemaVersion: 3, batchId: inactiveId, statuses: [], lastUpdatedAt: 1 }],
+    ]);
+    let lockTail = Promise.resolve();
+    let lockDepth = 0;
+    const lockModes = [];
+    let cleanupOutsideLock = false;
+    const navigatorApi = {
+      locks: {
+        request: (_name, options, fn) => {
+          lockModes.push(options.mode);
+          const run = async () => {
+            lockDepth++;
+            try { return await fn(); } finally { lockDepth--; }
+          };
+          const next = lockTail.then(run, run);
+          lockTail = next.catch(() => {});
+          return next;
+        },
+      },
+    };
+    const storageDB = {
+      get: async (key) => values.get(key),
+      set: async (key, value) => { values.set(key, value); },
+    };
+    const runtime = makeCheckpointRuntime(storageDB, {
+      keys: async () => Array.from(values.keys()),
+      del: async (key) => {
+        if (key === legacyResultKey
+            || key === runtime.keyFor(inactiveId, { id: 'old-file' })
+            || key === runtime.statusKeyFor(inactiveId)) {
+          cleanupOutsideLock = cleanupOutsideLock || lockDepth === 0;
+        }
+        values.delete(key);
+      },
+    }, navigatorApi);
+    const inactiveResultKey = runtime.keyFor(inactiveId, { id: 'old-file' });
+    const inactiveStatusKey = runtime.statusKeyFor(inactiveId);
+    values.set(legacyResultKey, { serialized: '{}' });
+    values.set(inactiveResultKey, { serialized: '{}' });
+    values.set(inactiveStatusKey, { schemaVersion: 4, batchId: inactiveId, statuses: [] });
+
+    const result = { beforeScore: 40, afterScore: 96, verificationState: 'complete' };
+    const files = [{
+      id: 'file-a',
+      fileName: 'a.pdf',
+      fileSize: 4,
+      base64: 'AA==',
+      status: 'done',
+      result,
+    }];
+    await expect(runtime.saveFiles(files, { pdfTargetScore: 95 }, 100, batchId)).resolves.toBe(true);
+    expect(cleanupOutsideLock).toBe(false);
+    expect(values.has(legacyResultKey)).toBe(false);
+    expect(values.has(inactiveResultKey)).toBe(false);
+    expect(values.has(inactiveStatusKey)).toBe(false);
+    expect(values.has(legacyStatusKey)).toBe(false);
+
+    await expect(runtime.saveStatusNow(files, batchId)).resolves.toBe(true);
+    const root = values.get(filesKey);
+    const statusKey = runtime.statusKeyFor(batchId);
+    const status = values.get(statusKey);
+    const goodResultKey = runtime.keyFor(batchId, files[0]);
+    expect(root).toMatchObject({ schemaVersion: 4, batchId, statusKey });
+    expect(root.rootWriteId).toMatch(/^batch_/);
+    expect(status).toMatchObject({ schemaVersion: 4, batchId });
+    expect(status.writeId).toMatch(/^batch_/);
+    expect(values.has(goodResultKey)).toBe(true);
+    expect(lockModes).toEqual(['exclusive', 'shared']);
+
+    const restored = await runtime.load();
+    expect(restored.files[0]).toMatchObject({ status: 'done', result });
+
+    const wrongFileKey = runtime.keyFor(batchId, { id: 'different-file' });
+    values.set(wrongFileKey, values.get(goodResultKey));
+    values.set(statusKey, {
+      ...status,
+      statuses: status.statuses.map((entry) => ({ ...entry, resultKey: wrongFileKey })),
+    });
+    const crossFileRestore = await runtime.load();
+    expect(crossFileRestore.files[0].status).toBe('pending');
+    expect(crossFileRestore.files[0].result).toBeNull();
+
+    await expect(runtime.clear(batchId)).resolves.toBe(true);
+    expect(lockModes).toEqual(['exclusive', 'shared', 'exclusive']);
+    expect(values.get(filesKey)).toBeNull();
+    expect(values.has(statusKey)).toBe(false);
+  });
+
+  it('rolls back newly written results when a batch loses root ownership mid-write', async () => {
+    const filesKey = 'pdf_active_batch_files_v1';
+    const oldId = 'batch_losing_owner';
+    const newId = 'batch_replacement_owner';
+    const values = new Map();
+    let flipOnResultWrite = false;
+    let oldResultKey = null;
+    const storageDB = {
+      get: async (key) => values.get(key),
+      set: async (key, value) => {
+        values.set(key, value);
+        if (flipOnResultWrite && key === oldResultKey) {
+          values.set(filesKey, {
+            schemaVersion: 4,
+            batchId: newId,
+            rootWriteId: 'batch_replacement_root',
+            statusKey: 'pdf_active_batch_status_v4_' + newId,
+            files: [{ id: 'new-file' }],
+            startedAt: 200,
+            savedAt: Date.now(),
+          });
+        }
+      },
+    };
+    const idbKeyval = {
+      keys: async () => Array.from(values.keys()),
+      del: async (key) => { values.delete(key); },
+    };
+    const runtime = makeCheckpointRuntime(storageDB, idbKeyval);
+    const file = {
+      id: 'old-file',
+      fileName: 'old.pdf',
+      fileSize: 4,
+      base64: 'AA==',
+      status: 'done',
+      result: { afterScore: 95 },
+    };
+    oldResultKey = runtime.keyFor(oldId, file);
+    await expect(runtime.saveFiles([file], {}, 100, oldId)).resolves.toBe(true);
+    flipOnResultWrite = true;
+
+    await expect(runtime.saveStatusNow([file], oldId)).resolves.toBe(false);
+    expect(values.get(filesKey).batchId).toBe(newId);
+    expect(values.has(oldResultKey)).toBe(false);
+    expect(values.has(runtime.statusKeyFor(oldId))).toBe(false);
+    expect(file._checkpointResultKey).toBeNull();
+    expect(file._checkpointResultBytes).toBe(0);
+  });
+
+  it('removes result and status artifacts when the scoped status write fails', async () => {
+    const batchId = 'batch_status_failure';
+    const values = new Map();
+    let failStatusWrite = false;
+    let statusKey = null;
+    const storageDB = {
+      get: async (key) => values.get(key),
+      set: async (key, value) => {
+        values.set(key, value);
+        if (failStatusWrite && key === statusKey) throw new Error('simulated status quota failure');
+      },
+    };
+    const idbKeyval = {
+      keys: async () => Array.from(values.keys()),
+      del: async (key) => { values.delete(key); },
+    };
+    const runtime = makeCheckpointRuntime(storageDB, idbKeyval);
+    statusKey = runtime.statusKeyFor(batchId);
+    const file = {
+      id: 'quota-file',
+      fileName: 'quota.pdf',
+      fileSize: 4,
+      base64: 'AA==',
+      status: 'done',
+      result: { afterScore: 97 },
+    };
+    const resultKey = runtime.keyFor(batchId, file);
+    await expect(runtime.saveFiles([file], {}, 300, batchId)).resolves.toBe(true);
+    failStatusWrite = true;
+
+    await expect(runtime.saveStatusNow([file], batchId)).resolves.toBe(false);
+    expect(values.has(statusKey)).toBe(false);
+    expect(values.has(resultKey)).toBe(false);
+    expect(file._checkpointResultKey).toBeNull();
+    expect(file._checkpointResultBytes).toBe(0);
   });
 });
 
