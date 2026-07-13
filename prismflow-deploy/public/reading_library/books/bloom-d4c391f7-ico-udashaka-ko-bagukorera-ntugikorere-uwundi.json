@@ -25,12 +25,20 @@
     "url": "https://bloomlibrary.org/book/ZXLGvubVTf"
   },
   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2fd4c391f7-0d93-4a67-b545-0e02d58b4e92%2fIco+udashaka+ko+bagukorera+ntugikorere+uwundi%2faor_Pc15.png",
-  "audio": null,
+  "audio": {
+    "mode": "perPage"
+  },
   "pages": [
     {
       "n": 1,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2fd4c391f7-0d93-4a67-b545-0e02d58b4e92%2fIco+udashaka+ko+bagukorera+ntugikorere+uwundi%2faor_S-1-12.png",
-      "text": "Kanyana ni umwana yavuka mu muryango ubayabaye. Abavyeyi biwe bari abirimizi kandi bafungura bibagoye."
+      "text": "Kanyana ni umwana yavuka mu muryango ubayabaye. Abavyeyi biwe bari abirimizi kandi bafungura bibagoye.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2fd4c391f7-0d93-4a67-b545-0e02d58b4e92%2fIco+udashaka+ko+bagukorera+ntugikorere+uwundi%2faudio%2fd8e50af4-b6a1-4aa4-a93d-b8141489fff8.mp3",
+          "dur": 4.336252
+        }
+      ]
     },
     {
       "n": 2,

@@ -27,7 +27,9 @@
     "url": "https://bloomlibrary.org/book/lV27SO2m35"
   },
   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_20_Image_3.png",
-  "audio": null,
+  "audio": {
+    "mode": "perPage"
+  },
   "pages": [
     {
       "n": 1,
@@ -42,82 +44,178 @@
     {
       "n": 3,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_05_Image_4.png",
-      "text": "Kwa Macibiri bari bafite umurima munini, bahingagamo ibishyimbo, amashaza n’ibihwagari."
+      "text": "Kwa Macibiri bari bafite umurima munini, bahingagamo ibishyimbo, amashaza n’ibihwagari.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2faudio%2fi05b066a7-83cf-47e8-91f5-1ae145b0cc96.mp3",
+          "dur": 10.91
+        }
+      ]
     },
     {
       "n": 4,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_06_Image_2.png",
-      "text": "Umunsi umwe, Macibiri yahuriyemo n’inzuki."
+      "text": "Umunsi umwe, Macibiri yahuriyemo n’inzuki.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2faudio%2fi03edded4-1776-4321-a2ea-b9c574bcbe8a.mp3",
+          "dur": 4.93
+        }
+      ]
     },
     {
       "n": 5,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_07_Image_2.png",
-      "text": "Inzuki ziti: “Nudushakira aho tuba, natwe tuzaguha ubuki.”"
+      "text": "Inzuki ziti: “Nudushakira aho tuba, natwe tuzaguha ubuki.”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2faudio%2fi53bd1bec-7030-432e-8384-a3cd3642763a.mp3",
+          "dur": 7.04
+        }
+      ]
     },
     {
       "n": 6,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_08_Image_1.jpg",
-      "text": "Macibiri asaba ababyeyi be kuboha imizinga y’inzuki."
+      "text": "Macibiri asaba ababyeyi be kuboha imizinga y’inzuki.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2faudio%2fi3d93968d-441b-47e0-93b7-de55b99e4acc.mp3",
+          "dur": 6.01
+        }
+      ]
     },
     {
       "n": 7,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_09_Image_0001.png",
-      "text": "Imizinga imaze kuzura, za nzuki ziyitahamo. Zimererwa neza maze zikajya ziha Macibiri ubuki bwinshi."
+      "text": "Imizinga imaze kuzura, za nzuki ziyitahamo. Zimererwa neza maze zikajya ziha Macibiri ubuki bwinshi.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2faudio%2fac9c3ca9-bdc6-4065-bbb4-144cf4600276.mp3",
+          "dur": 12.55
+        }
+      ]
     },
     {
       "n": 8,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_10_Image_2.png",
-      "text": "Bukeye Macibiri abaza inzuki ati: “Ubu buki mubukura he?”"
+      "text": "Bukeye Macibiri abaza inzuki ati: “Ubu buki mubukura he?”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2faudio%2fi6c722f1f-d436-466b-87af-085b772a1efc.mp3",
+          "dur": 7.12
+        }
+      ]
     },
     {
       "n": 9,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_11_Image_1.jpg",
-      "text": "Inzuki ziti: “Ku mushongi uva mu ndabyo z’ibihingwa byo mu murima wanyu, tuvanga n’ibindi bintu dukura hirya no hino.”"
+      "text": "Inzuki ziti: “Ku mushongi uva mu ndabyo z’ibihingwa byo mu murima wanyu, tuvanga n’ibindi bintu dukura hirya no hino.”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2faudio%2fi5c64d90d-03c3-4386-bb0f-bbb701da3471.mp3",
+          "dur": 13.29
+        }
+      ]
     },
     {
       "n": 10,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_12_Image_0001.png",
-      "text": "Macibiri arazibaza ati: “Ko mufata umushongi w’indabyo mwe muzimarira iki?”"
+      "text": "Macibiri arazibaza ati: “Ko mufata umushongi w’indabyo mwe muzimarira iki?”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2faudio%2fe7e40084-58cf-43e2-94db-ea8a04a3baa4.mp3",
+          "dur": 8.37
+        }
+      ]
     },
     {
       "n": 11,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_13_Image_0001.png",
-      "text": "Inzuki ziramusubiza ziti: “Izo ndabyo ziduha umushongi dukoramo ubuki, natwe tukazikwizamo umurama utuma zera zigatanga umusaruro.”"
+      "text": "Inzuki ziramusubiza ziti: “Izo ndabyo ziduha umushongi dukoramo ubuki, natwe tukazikwizamo umurama utuma zera zigatanga umusaruro.”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2faudio%2fi38cc46be-1eb3-45aa-a201-a8d37d545f2c.mp3",
+          "dur": 16
+        }
+      ]
     },
     {
       "n": 12,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_14_Image_0001.png",
-      "text": "Macibiri ati: “Ibyo simbyemeye. Ntimuzasubire mu ndabyo z’ibihingwa byacu.”"
+      "text": "Macibiri ati: “Ibyo simbyemeye. Ntimuzasubire mu ndabyo z’ibihingwa byacu.”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2faudio%2ffac5169c-73eb-42f6-99e4-560a8390a5f0.mp3",
+          "dur": 9.3
+        }
+      ]
     },
     {
       "n": 13,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_15_Image_0001.png",
-      "text": "Nuko inzuki ntizasubira mu ndabyo zo kwa Macibiri."
+      "text": "Nuko inzuki ntizasubira mu ndabyo zo kwa Macibiri.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2faudio%2fi46167803-c5c8-4e53-a269-4b431a2ec5c6.mp3",
+          "dur": 6.8
+        }
+      ]
     },
     {
       "n": 14,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_16_Image_1.jpg",
-      "text": "Kuva ubwo, ubuki ntibwongera kuboneka."
+      "text": "Kuva ubwo, ubuki ntibwongera kuboneka.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2faudio%2fi48d967ee-d7aa-41a6-9703-ff1f1233d3ba.mp3",
+          "dur": 4.57
+        }
+      ]
     },
     {
       "n": 15,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_17_Image_1.jpg",
-      "text": "Za ndabyo zirarwara, zihungukira hasi, ibihingwa ntibyongera gutanga umusaruro."
+      "text": "Za ndabyo zirarwara, zihungukira hasi, ibihingwa ntibyongera gutanga umusaruro.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2faudio%2fi257bd8af-3294-47d9-8603-6a28e850a1a0.mp3",
+          "dur": 9.18
+        }
+      ]
     },
     {
       "n": 16,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_18_Image_0001.png",
-      "text": "Ibishyimbo, amashaza n’ibihwagari ntibyonger kwera. Macibiri n’ababyeyi be batangira kwibaza aho bazakura ibibatunga."
+      "text": "Ibishyimbo, amashaza n’ibihwagari ntibyonger kwera. Macibiri n’ababyeyi be batangira kwibaza aho bazakura ibibatunga.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2faudio%2fi4a4e9501-1d13-4e79-a8c8-f37570ec7298.mp3",
+          "dur": 12.08
+        }
+      ]
     },
     {
       "n": 17,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_19_Image_0001.png",
-      "text": "Macibiri yibuka ibyo inzuki zamubwiye, nuko ajya kuzishaka. Azisaba kongera gutara ubuki mu ndabyo z’ibihingwa byabo."
+      "text": "Macibiri yibuka ibyo inzuki zamubwiye, nuko ajya kuzishaka. Azisaba kongera gutara ubuki mu ndabyo z’ibihingwa byabo.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2faudio%2fi1bebb352-3663-4320-855d-0e1eead2d5c2.mp3",
+          "dur": 11.55
+        }
+      ]
     },
     {
       "n": 18,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2fINZUKI_N__INDABYO_Page_20_Image_0001.png",
-      "text": "Inzuki zisubira mu ndabyo z’ibihingwa, ubuki burongera buraboneka, n’imyaka irera."
+      "text": "Inzuki zisubira mu ndabyo z’ibihingwa, ubuki burongera buraboneka, n’imyaka irera.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2ff9003a7d-1d44-4437-bf14-bdf6ef91812f%2fInzuki+N+indabyo%2faudio%2fa6f9a2de-1802-4bce-be03-494cd2239ab4.mp3",
+          "dur": 9.72
+        }
+      ]
     },
     {
       "n": 19,

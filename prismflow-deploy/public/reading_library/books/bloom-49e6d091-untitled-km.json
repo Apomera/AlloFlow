@@ -1,0 +1,117 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-49e6d091-untitled-km",
+  "title": "២៤ខ នអើន ពេបអុចនតីរាឆ៝",
+  "description": "A story of duck wanting to learn letters (Easy Reader - Level 1)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/UP5tBfj3wT"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f49e6d091-49d2-49b5-992e-0f5d84f94444%2f%e1%9f%a2%e1%9f%a4%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e2%80%8b%e1%9e%96%e1%9f%81%e1%9e%94%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%b8%e2%80%8b%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%2fimage15.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f49e6d091-49d2-49b5-992e-0f5d84f94444%2f%e1%9f%a2%e1%9f%a4%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e2%80%8b%e1%9e%96%e1%9f%81%e1%9e%94%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%b8%e2%80%8b%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%2fimage16.png",
+      "text": "ទាដើរទៅផ្ទះមាន់។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f49e6d091-49d2-49b5-992e-0f5d84f94444%2f%e1%9f%a2%e1%9f%a4%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e2%80%8b%e1%9e%96%e1%9f%81%e1%9e%94%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%b8%e2%80%8b%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%2fimage.png",
+      "text": "ទាឃើញមាន់អានសៀវភៅ។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f49e6d091-49d2-49b5-992e-0f5d84f94444%2f%e1%9f%a2%e1%9f%a4%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e2%80%8b%e1%9e%96%e1%9f%81%e1%9e%94%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%b8%e2%80%8b%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%2fimage1.png",
+      "text": "ទាបានលួចសៀវភៅមាន់។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f49e6d091-49d2-49b5-992e-0f5d84f94444%2f%e1%9f%a2%e1%9f%a4%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e2%80%8b%e1%9e%96%e1%9f%81%e1%9e%94%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%b8%e2%80%8b%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%2fimage2.png",
+      "text": "មាន់​ដេញ​វាយ​ទា។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f49e6d091-49d2-49b5-992e-0f5d84f94444%2f%e1%9f%a2%e1%9f%a4%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e2%80%8b%e1%9e%96%e1%9f%81%e1%9e%94%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%b8%e2%80%8b%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%2fimage5.png",
+      "text": "មាន់រអិលដួលទាសើច។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f49e6d091-49d2-49b5-992e-0f5d84f94444%2f%e1%9f%a2%e1%9f%a4%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e2%80%8b%e1%9e%96%e1%9f%81%e1%9e%94%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%b8%e2%80%8b%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%2fimage6.png",
+      "text": "ទាប៉ាក់មាន់ឈឺជើង។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f49e6d091-49d2-49b5-992e-0f5d84f94444%2f%e1%9f%a2%e1%9f%a4%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e2%80%8b%e1%9e%96%e1%9f%81%e1%9e%94%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%b8%e2%80%8b%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%2fimage9.png",
+      "text": "ទាប៉ាក់មាន់ដល់ផ្ទះ។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f49e6d091-49d2-49b5-992e-0f5d84f94444%2f%e1%9f%a2%e1%9f%a4%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e2%80%8b%e1%9e%96%e1%9f%81%e1%9e%94%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%b8%e2%80%8b%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%2fimage10.png",
+      "text": "ទារុំជើងមាន់នឹងក្រណាត់សំពត់។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f49e6d091-49d2-49b5-992e-0f5d84f94444%2f%e1%9f%a2%e1%9f%a4%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e2%80%8b%e1%9e%96%e1%9f%81%e1%9e%94%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%b8%e2%80%8b%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%2fimage11.png",
+      "text": "ទាដាំបាយ មាន់នៅដេក។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f49e6d091-49d2-49b5-992e-0f5d84f94444%2f%e1%9f%a2%e1%9f%a4%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e2%80%8b%e1%9e%96%e1%9f%81%e1%9e%94%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%b8%e2%80%8b%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%2fimage12.png",
+      "text": "ទាញ៉ាំបាយជាមួយមាន់។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f49e6d091-49d2-49b5-992e-0f5d84f94444%2f%e1%9f%a2%e1%9f%a4%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e2%80%8b%e1%9e%96%e1%9f%81%e1%9e%94%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%b8%e2%80%8b%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%2fimage13.png",
+      "text": "មាន់បង្រៀនអក្សរដល់ទា។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f49e6d091-49d2-49b5-992e-0f5d84f94444%2f%e1%9f%a2%e1%9f%a4%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e2%80%8b%e1%9e%96%e1%9f%81%e1%9e%94%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%b8%e2%80%8b%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%2fimage17.png",
+      "text": "មាន់អង្គុយមើលទាអានអក្សរ។"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f49e6d091-49d2-49b5-992e-0f5d84f94444%2f%e1%9f%a2%e1%9f%a4%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e2%80%8b%e1%9e%96%e1%9f%81%e1%9e%94%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%b8%e2%80%8b%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%2fimage18.png",
+      "text": "មាន់ហុចសៀវភៅអោយទា។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f49e6d091-49d2-49b5-992e-0f5d84f94444%2f%e1%9f%a2%e1%9f%a4%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e2%80%8b%e1%9e%96%e1%9f%81%e1%9e%94%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%b8%e2%80%8b%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%2fimage21.png",
+      "text": "ទាត្រឡប់មកផ្ទះវិញ។"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f49e6d091-49d2-49b5-992e-0f5d84f94444%2f%e1%9f%a2%e1%9f%a4%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e2%80%8b%e1%9e%96%e1%9f%81%e1%9e%94%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%b8%e2%80%8b%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%2fimage22.png",
+      "text": "ទាស្លៀកពាក់ខោអាវ។"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f49e6d091-49d2-49b5-992e-0f5d84f94444%2f%e1%9f%a2%e1%9f%a4%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e2%80%8b%e1%9e%96%e1%9f%81%e1%9e%94%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9e%b8%e2%80%8b%e1%9e%9a%e1%9e%b6%e1%9e%86%e1%9f%9d%2fimage25.png",
+      "text": "ទាបង្រៀនពួកកុមារ៕"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 17
+  }
+}

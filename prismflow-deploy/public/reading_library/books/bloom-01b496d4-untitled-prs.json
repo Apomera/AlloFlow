@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-01b496d4-untitled-prs",
+  "title": "باغ مادر کلان",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/67r71vxwkQ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f01b496d4-f972-4684-bc90-c5ec1d9c94e4%2f%d8%a8%d8%a7%d8%ba+%d9%85%d8%a7%d8%af%d8%b1+%da%a9%d9%84%d8%a7%d9%86%2f1211.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f01b496d4-f972-4684-bc90-c5ec1d9c94e4%2f%d8%a8%d8%a7%d8%ba+%d9%85%d8%a7%d8%af%d8%b1+%da%a9%d9%84%d8%a7%d9%86%2f2211.jpg",
+      "text": "هر شب بعد از غذا، پیش مادرکلانم می رفتم.\nاو قصه های خوبی از گذشته ها برایم می گفت."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "آن شب مادرکلانم ناراحت بود.\nپرسیدم: مادرکلان جان! چرا ناراحت استی؟\nگفت:مستوره جان! باغ پُر ثَمر قریۀ ما یادم آمد.\nما در قریه یک باغ سرسبز داشتیم.\nحالا سالهاست که خشک شده است."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f01b496d4-f972-4684-bc90-c5ec1d9c94e4%2f%d8%a8%d8%a7%d8%ba+%d9%85%d8%a7%d8%af%d8%b1+%da%a9%d9%84%d8%a7%d9%86%2f3211.jpg",
+      "text": "سخنان مادرکلانم را به پدر گفتم.\nهمه تصمیم گرفتیم تا فردای آن شب به قریه برویم."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "ما به قریه رفتیم.\nدلم می خواست هر چه زودتر به باغ برویم.\nدروازۀ باغ باز بود، باغ خشک بود.\nهمه ناراحت شدیم.\nتصمیم گرفتیم تا باغ را مثل قبل سرسبز کنیم."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f01b496d4-f972-4684-bc90-c5ec1d9c94e4%2f%d8%a8%d8%a7%d8%ba+%d9%85%d8%a7%d8%af%d8%b1+%da%a9%d9%84%d8%a7%d9%86%2f4311.jpg",
+      "text": "همه شروع به کار کردیم، پدر برای خریدن نهال رفت.\nدهقانان هم به ما کمک کردند.\nنهال ها را به کمک دهقانان شاندیم ."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "نهال ها شانده شد، باغ زیبا شده بود.\nمادرکلانم لبخند می زد.\nپدر باغ را به دهقانی سپرد تا آبیاری کند.\nهمه خوشحال به خانه رفتیم."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f01b496d4-f972-4684-bc90-c5ec1d9c94e4%2f%d8%a8%d8%a7%d8%ba+%d9%85%d8%a7%d8%af%d8%b1+%da%a9%d9%84%d8%a7%d9%86%2f5211.jpg",
+      "text": "مادرکلان خوشحال بود که باغ تازه شده است.\nچند ماه بعد تصمیم گرفتیم به باغ برویم.\nوقتی به باغ رسیدیم، همه تعجب کردیم."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "باغ سرسبز و زیبا شده بود.\nمادرکلان گفت:\nمستوره جان! این سرسبزی ها درختان را زیبا کرده است.\nاین درختان در سال های بعدی ثمر می دهند."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 200
+  }
+}

@@ -27,7 +27,9 @@
     "url": "https://bloomlibrary.org/book/li8QuZ14r8"
   },
   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2fIsaha_Ya_Mpeta8.png",
-  "audio": null,
+  "audio": {
+    "mode": "perPage"
+  },
   "pages": [
     {
       "n": 1,
@@ -42,47 +44,101 @@
     {
       "n": 3,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2fIsaha_Ya_Mpeta_Page_05_Image_0001.png",
-      "text": "Nitwa Mpeta. Dutuye muri Rugari."
+      "text": "Nitwa Mpeta. Dutuye muri Rugari.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2faudio%2fc9be0080-95c6-4849-bb0c-171b703411a8.mp3",
+          "dur": 3.83
+        }
+      ]
     },
     {
       "n": 4,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2fIsaha_Ya_Mpeta_Page_06_Image_1.jpg",
-      "text": "Iwacu umunsi utangira mu rukerera, utunyoni turirimba."
+      "text": "Iwacu umunsi utangira mu rukerera, utunyoni turirimba.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2faudio%2fi338f36c7-c414-43cc-8e54-45d2f102d7a8.mp3",
+          "dur": 7.59
+        }
+      ]
     },
     {
       "n": 5,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2fIsaha_Ya_Mpeta_Page_07_Image_3.jpg",
-      "text": "Mu museso, sogokuru arakama."
+      "text": "Mu museso, sogokuru arakama.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2faudio%2fi9c55c6a7-a77c-4cba-9141-765e683aabb4.mp3",
+          "dur": 4.67
+        }
+      ]
     },
     {
       "n": 6,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2fIsaha_Ya_Mpeta_Page_08_Image_1.jpg",
-      "text": "Ku gasusuruko, nyogokuru aboha uduseke."
+      "text": "Ku gasusuruko, nyogokuru aboha uduseke.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2faudio%2fi4c37f716-580a-4922-9748-e1f073d00fef.mp3",
+          "dur": 5.38
+        }
+      ]
     },
     {
       "n": 7,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2fIsaha_Ya_Mpeta_Page_09_Image_1.jpg",
-      "text": "Ku manywa, musaza wange afasha mama gutunganya amafunguro."
+      "text": "Ku manywa, musaza wange afasha mama gutunganya amafunguro.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2faudio%2fi096bf25d-2ca2-4c30-86f5-109b2c86f235.mp3",
+          "dur": 7.51
+        }
+      ]
     },
     {
       "n": 8,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2fIsaha_Ya_Mpeta_Page_10_Image_1.jpg",
-      "text": "Ku gicamunsi, data yasa inkwi."
+      "text": "Ku gicamunsi, data yasa inkwi.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2faudio%2ff441794f-3e40-4112-ac82-d3022b9664a9.mp3",
+          "dur": 4.03
+        }
+      ]
     },
     {
       "n": 9,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2fIsaha_Ya_Mpeta_Page_11_Image_1.jpg",
-      "text": "Ku mugoroba, mukuru wange araturirimbira."
+      "text": "Ku mugoroba, mukuru wange araturirimbira.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2faudio%2fb297ac6d-369c-4bbe-b6c4-8468b3e5840f.mp3",
+          "dur": 5.1
+        }
+      ]
     },
     {
       "n": 10,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2fIsaha_Ya_Mpeta_Page_12_Image_1.jpg",
-      "text": "Iyo ijoro riguye, tumenya ko igihe cyo kuryama kigeze, tugasezeranaho."
+      "text": "Iyo ijoro riguye, tumenya ko igihe cyo kuryama kigeze, tugasezeranaho.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2faudio%2fi4b663de7-4c95-4891-90d6-19ffdc030043.mp3",
+          "dur": 8.1
+        }
+      ]
     },
     {
       "n": 11,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2fIsaha_Ya_Mpeta_Page_13_Image_1.jpg",
-      "text": "Iwacu mu muryango buri wese agira umurimo akora n’igihe awukorera."
+      "text": "Iwacu mu muryango buri wese agira umurimo akora n’igihe awukorera.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f2ab86764-afd9-4d71-8310-1649f9ebd1c2%2fIsaha+Ya+Mpeta%2faudio%2fi07f164f8-5c97-4272-8dfc-6e3d37a6f7bc.mp3",
+          "dur": 6.76
+        }
+      ]
     },
     {
       "n": 12,

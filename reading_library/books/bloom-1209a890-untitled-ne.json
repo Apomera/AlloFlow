@@ -1,0 +1,105 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-1209a890-untitled-ne",
+  "title": "चाडपर्व",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/kOJomKKHDG"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f1209a890-f862-451c-be79-8b8ee64dfa14%2f%e0%a4%9a%e0%a4%be%e0%a4%a1%e0%a4%aa%e0%a4%b0%e0%a5%8d%e0%a4%b5%2fimage4.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f1209a890-f862-451c-be79-8b8ee64dfa14%2f%e0%a4%9a%e0%a4%be%e0%a4%a1%e0%a4%aa%e0%a4%b0%e0%a5%8d%e0%a4%b5%2fimage2.png",
+      "text": "दशैं आयो, दशैं आयो।\nनयाँ नयाँ लुगा किनौँ।\nनिधारभरि टिका लगाई,\nपिङ खेल्न हिडौँ।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f1209a890-f862-451c-be79-8b8ee64dfa14%2f%e0%a4%9a%e0%a4%be%e0%a4%a1%e0%a4%aa%e0%a4%b0%e0%a5%8d%e0%a4%b5%2fimage.png",
+      "text": "साथीभाइ सबै मिली,\nदशैंभरि रमाऊँ।\nखुसी हुँदै टिका लाउन,\nमामाघर जाऔँ।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f1209a890-f862-451c-be79-8b8ee64dfa14%2f%e0%a4%9a%e0%a4%be%e0%a4%a1%e0%a4%aa%e0%a4%b0%e0%a5%8d%e0%a4%b5%2fimage1.png",
+      "text": "आहा! कति रमाइलो छ,\nचाड तिहार हाम्रो।\nदाजुभाइलाई टिका लाउँदा,\nउपहार पाइन्छ राम्रो।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f1209a890-f862-451c-be79-8b8ee64dfa14%2f%e0%a4%9a%e0%a4%be%e0%a4%a1%e0%a4%aa%e0%a4%b0%e0%a5%8d%e0%a4%b5%2fhindu+le+murti+puja+gareko.png",
+      "text": "तीज आयो दिदीबहिनी,\nहुन्छन् सबै खुसी।\nदिनभरि ब्रत बस्छन्,\nभगवानलाई पूजी।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f1209a890-f862-451c-be79-8b8ee64dfa14%2f%e0%a4%9a%e0%a4%be%e0%a4%a1%e0%a4%aa%e0%a4%b0%e0%a5%8d%e0%a4%b5%2fimage31.png",
+      "text": "सारी चोली चट्ट लगाई,\nबन्छन् सबै राम्री।\nगहनामा सजिन्छन्,\nदिदी बहिनी हाम्री।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f1209a890-f862-451c-be79-8b8ee64dfa14%2f%e0%a4%9a%e0%a4%be%e0%a4%a1%e0%a4%aa%e0%a4%b0%e0%a5%8d%e0%a4%b5%2fimage311.png",
+      "text": "गीत गाउने, नाच्ने\nगर्छन दिनभरि।\nतिजको रहर आयो\nलौ है लरीबरी।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f1209a890-f862-451c-be79-8b8ee64dfa14%2f%e0%a4%9a%e0%a4%be%e0%a4%a1%e0%a4%aa%e0%a4%b0%e0%a5%8d%e0%a4%b5%2fimage3.jpg",
+      "text": "ल्होछार चाड मनाउन दाजु बहिनी आए।\nतामाङ्ग, गुरूङ्, राई, शेर्पा सबै रमाए।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f1209a890-f862-451c-be79-8b8ee64dfa14%2f%e0%a4%9a%e0%a4%be%e0%a4%a1%e0%a4%aa%e0%a4%b0%e0%a5%8d%e0%a4%b5%2fAOR_E-1-28.png",
+      "text": "माघ १ मा मनाउँछौ,\nमाघी पर्व हामी।\nनुहाइ, धुहाइ, सफा हुने\nपरिसक्यो बानी।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f1209a890-f862-451c-be79-8b8ee64dfa14%2f%e0%a4%9a%e0%a4%be%e0%a4%a1%e0%a4%aa%e0%a4%b0%e0%a5%8d%e0%a4%b5%2fghee.jpg",
+      "text": "घिउ, चाकु, तिलौरी\nतरूल टन्न खान्छौँ।\nमौका मिले हामी सबै\nमामाघर जान्छौँ।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f1209a890-f862-451c-be79-8b8ee64dfa14%2f%e0%a4%9a%e0%a4%be%e0%a4%a1%e0%a4%aa%e0%a4%b0%e0%a5%8d%e0%a4%b5%2fAOR_IN0006.png",
+      "text": "बैशाख १ मनाउँछौँ\nहामी नयाँ बर्ष।\nघुम्ने, खाने, रमाउने\nमनमा बोकी हर्ष।"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f1209a890-f862-451c-be79-8b8ee64dfa14%2f%e0%a4%9a%e0%a4%be%e0%a4%a1%e0%a4%aa%e0%a4%b0%e0%a5%8d%e0%a4%b5%2fchristmas.jpg",
+      "text": "डिसेम्बर पच्‍चिसमा सधैँ पर्ने,\nखृष्टमस डे।\nमध्यरातमा उपहार बाँड्छन्,\nस्यान्टाक्लसले।"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f1209a890-f862-451c-be79-8b8ee64dfa14%2f%e0%a4%9a%e0%a4%be%e0%a4%a1%e0%a4%aa%e0%a4%b0%e0%a5%8d%e0%a4%b5%2fimage4.jpg",
+      "text": "सूर्यदेवको पूजा गर्ने,\nपर्यो छठ पर्व।\nतराईमा यो चाड आउँछ,\nगर्छन् सबले गर्व।"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f1209a890-f862-451c-be79-8b8ee64dfa14%2f%e0%a4%9a%e0%a4%be%e0%a4%a1%e0%a4%aa%e0%a4%b0%e0%a5%8d%e0%a4%b5%2fimage5.jpg",
+      "text": "पानी भाको ठाउँमा पुग्छन्,\nसबै हुन्छन भेला।\nझिलिमिली, रङ्गीचङ्गी\nबनाउँछन मेला।"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f1209a890-f862-451c-be79-8b8ee64dfa14%2f%e0%a4%9a%e0%a4%be%e0%a4%a1%e0%a4%aa%e0%a4%b0%e0%a5%8d%e0%a4%b5%2fimage41.jpg",
+      "text": "अस्ताउँदो सूर्यलाई गर्छन पूजा साँझ।\nबर्षै पिच्छे मनाउँ चाड,\nसाथीभाई माझ।"
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 166
+  }
+}

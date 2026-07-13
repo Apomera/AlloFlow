@@ -1,0 +1,117 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-d66162f1-untitled-km",
+  "title": "១៤ នអើន ឆ៝ដាសមពីក",
+  "description": "The dog and the civit cat (Easy Reader - Level 1)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/9ABq1Zj8Z3"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd66162f1-827a-4f33-ab61-142e9a97ab40%2f%e1%9f%a1%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%86%e1%9f%9d%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%98%e1%9e%96%e1%9e%b8%e1%9e%80%2fimage2.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd66162f1-827a-4f33-ab61-142e9a97ab40%2f%e1%9f%a1%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%86%e1%9f%9d%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%98%e1%9e%96%e1%9e%b8%e1%9e%80%2fimage3.png",
+      "text": "នេះគឺជាអ្វី?"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd66162f1-827a-4f33-ab61-142e9a97ab40%2f%e1%9f%a1%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%86%e1%9f%9d%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%98%e1%9e%96%e1%9e%b8%e1%9e%80%2fimage4.png",
+      "text": "នេះគឺជាសំពោចមួយក្បាល វាមានត្រចៀកធំ។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd66162f1-827a-4f33-ab61-142e9a97ab40%2f%e1%9f%a1%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%86%e1%9f%9d%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%98%e1%9e%96%e1%9e%b8%e1%9e%80%2fimage5.png",
+      "text": "នេះគឺជាអ្វី?"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd66162f1-827a-4f33-ab61-142e9a97ab40%2f%e1%9f%a1%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%86%e1%9f%9d%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%98%e1%9e%96%e1%9e%b8%e1%9e%80%2fimage6.png",
+      "text": "នេះគឺជាឆ្កែមួយក្បាលវាមានត្រចៀកធំដែរ។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd66162f1-827a-4f33-ab61-142e9a97ab40%2f%e1%9f%a1%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%86%e1%9f%9d%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%98%e1%9e%96%e1%9e%b8%e1%9e%80%2fimage7.png",
+      "text": "មានថ្ងៃមួយសំពោចបាននិយាយនឹងឆ្កែថា៖ “តោះទៅធ្វើចំការជាមួយនឹងខ្ញុំ”។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd66162f1-827a-4f33-ab61-142e9a97ab40%2f%e1%9f%a1%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%86%e1%9f%9d%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%98%e1%9e%96%e1%9e%b8%e1%9e%80%2fimage8.png",
+      "text": "ឆ្កែនិយាយតបទៅវិញថា៖“មិនទៅទេ”។ សំពោចនិយាយទៀតថា៖ “ម៉េចក៏ឯងខ្ជិលម្ល៉េះអាឆ្កែ?”"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd66162f1-827a-4f33-ab61-142e9a97ab40%2f%e1%9f%a1%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%86%e1%9f%9d%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%98%e1%9e%96%e1%9e%b8%e1%9e%80%2fimage9.png",
+      "text": "សំពោចធ្វើការនៅក្នុងចំការនោះយ៉ាងសកម្ម វាដាំដើមចេកនិងដើមល្ហុងជាច្រើន។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd66162f1-827a-4f33-ab61-142e9a97ab40%2f%e1%9f%a1%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%86%e1%9f%9d%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%98%e1%9e%96%e1%9e%b8%e1%9e%80%2fimage10.png",
+      "text": "ចំណែកឆ្កែវិញមិនចង់ធ្វើការទេ វាខ្ជិលណាស់ វាគិតតែពីដេកប៉ុណ្ណោះ។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd66162f1-827a-4f33-ab61-142e9a97ab40%2f%e1%9f%a1%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%86%e1%9f%9d%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%98%e1%9e%96%e1%9e%b8%e1%9e%80%2fimage11.png",
+      "text": "វាក្រោកពីដេកទៅឆ្លុះមើលខ្លួនឯងនៅក្នុងទឹកបឹងបានឃើញត្រចៀកខ្លួនឯងធំ។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd66162f1-827a-4f33-ab61-142e9a97ab40%2f%e1%9f%a1%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%86%e1%9f%9d%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%98%e1%9e%96%e1%9e%b8%e1%9e%80%2fimage12.png",
+      "text": "ដូច្នេះឆ្កែក៏យកខ្សែរចងត្រចៀកខ្លួនឯងទៅខាងក្រោយ។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd66162f1-827a-4f33-ab61-142e9a97ab40%2f%e1%9f%a1%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%86%e1%9f%9d%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%98%e1%9e%96%e1%9e%b8%e1%9e%80%2fimage13.png",
+      "text": "សំពោចរកមើលមិនឃើញត្រចៀកឆ្កែក៏សួរថា៖ “តើត្រចៀកឯងបាត់ទៅណាហើយ?”"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd66162f1-827a-4f33-ab61-142e9a97ab40%2f%e1%9f%a1%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%86%e1%9f%9d%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%98%e1%9e%96%e1%9e%b8%e1%9e%80%2fimage14.png",
+      "text": "ឆ្កែឆ្លើយវិញថា៖ “ត្រចៀករបស់ខ្ញុំបានកាត់ចេញទៅហើយ”។"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd66162f1-827a-4f33-ab61-142e9a97ab40%2f%e1%9f%a1%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%86%e1%9f%9d%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%98%e1%9e%96%e1%9e%b8%e1%9e%80%2fimage15.png",
+      "text": "ដូច្នេះសំពោចក៏និយាយទៀតថា៖ “ត្រចៀករបស់ខ្ញុំធំដែរ សូមឯងជួយកាត់ចេញអោយខ្ញុំផង”។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd66162f1-827a-4f33-ab61-142e9a97ab40%2f%e1%9f%a1%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%86%e1%9f%9d%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%98%e1%9e%96%e1%9e%b8%e1%9e%80%2fimage16.png",
+      "text": "ឆ្កែឆ្លើយថា៖ “បាទ! មិនអីទេ ចាំខ្ញុំកាត់អោយឯងដែរ”។"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd66162f1-827a-4f33-ab61-142e9a97ab40%2f%e1%9f%a1%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%86%e1%9f%9d%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%98%e1%9e%96%e1%9e%b8%e1%9e%80%2fimage17.png",
+      "text": "ក្រោយមកសំពោចបានឃើញក្បាលឆ្កែនៅមានត្រចៀកវែងដដែលឆ្កែសើចចំអកអោយសំពោច។ សំពោចក៏រត់ចេញទៅឆ្ងាយ។"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fd66162f1-827a-4f33-ab61-142e9a97ab40%2f%e1%9f%a1%e1%9f%a4+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%86%e1%9f%9d%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%98%e1%9e%96%e1%9e%b8%e1%9e%80%2fimage18.png",
+      "text": "ហេតុដូចនេះទើបសំពោចមានត្រចៀកតូចមកដល់សព្វថ្ងៃនេះ៕"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 31
+  }
+}

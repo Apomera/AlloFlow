@@ -27,7 +27,9 @@
     "url": "https://bloomlibrary.org/book/kflP2b02kg"
   },
   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fcover3.png",
-  "audio": null,
+  "audio": {
+    "mode": "perPage"
+  },
   "pages": [
     {
       "n": 1,
@@ -42,62 +44,134 @@
     {
       "n": 3,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_05_Image_2.png",
-      "text": "Mimi afite igipupe akunda cyane, kitwa Nono."
+      "text": "Mimi afite igipupe akunda cyane, kitwa Nono.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2faudio%2fi4af426dd-eae2-467d-838e-3fb37bc6b3a6.mp3",
+          "dur": 6.452134
+        }
+      ]
     },
     {
       "n": 4,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_06_Image_2.png",
-      "text": "Iyo agiye kuryama, arakiryamisha."
+      "text": "Iyo agiye kuryama, arakiryamisha.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2faudio%2feb4bdff8-e677-443f-a7f4-71301819eadf.mp3",
+          "dur": 5.264739
+        }
+      ]
     },
     {
       "n": 5,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_07_Image_3.png",
-      "text": "Iyo avuye kwiga, aragiheka."
+      "text": "Iyo avuye kwiga, aragiheka.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2faudio%2fe516a864-c8c3-42e9-879c-b8a5e2dd2928.mp3",
+          "dur": 4.25
+        }
+      ]
     },
     {
       "n": 6,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_08_Image_2.png",
-      "text": "Umunsi umwe, Mimi aragishaka arakibura."
+      "text": "Umunsi umwe, Mimi aragishaka arakibura.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2faudio%2fi91b2902f-1c6c-4edb-a112-c8521ee8d1c1.mp3",
+          "dur": 5.61
+        }
+      ]
     },
     {
       "n": 7,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_09_Image_3.png",
-      "text": "Abaza mukuru we, amubwira ko atazi aho kiri."
+      "text": "Abaza mukuru we, amubwira ko atazi aho kiri.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2faudio%2fi6f13ff82-0416-4d5b-85c2-afd78ccf2338.mp3",
+          "dur": 4.585555
+        }
+      ]
     },
     {
       "n": 8,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_10_Image_2.png",
-      "text": "Ashakira inyuma y’igiti, arakibura."
+      "text": "Ashakira inyuma y’igiti, arakibura.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2faudio%2fe977e3c5-e8cc-47fe-b5d6-2114384ef02e.mp3",
+          "dur": 3.81
+        }
+      ]
     },
     {
       "n": 9,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_11_Image_2.png",
-      "text": "Ashakira mu kabati, arakibura."
+      "text": "Ashakira mu kabati, arakibura.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2faudio%2fi4af20816-2905-4184-9024-3597e93fbd69.mp3",
+          "dur": 3.880249
+        }
+      ]
     },
     {
       "n": 10,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_12_Image_2.png",
-      "text": "Atangira kurira ati: “Ndashaka igipupe cyange.”"
+      "text": "Atangira kurira ati: “Ndashaka igipupe cyange.”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2faudio%2fi1af62c21-7541-4d2d-add5-02543a196513.mp3",
+          "dur": 5.26
+        }
+      ]
     },
     {
       "n": 11,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_13_Image_2.png",
-      "text": "Nyina ati: “Wirira, turaza kukibona.”"
+      "text": "Nyina ati: “Wirira, turaza kukibona.”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2faudio%2fi536814af-d5bb-4fd0-9efe-62251e205b1c.mp3",
+          "dur": 4.951269
+        }
+      ]
     },
     {
       "n": 12,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_14_Image_2.png",
-      "text": "Ababyeyi be bashakira mu tubati, barakibura."
+      "text": "Ababyeyi be bashakira mu tubati, barakibura.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2faudio%2fi054a0385-e6de-4452-9129-d85177b29013.mp3",
+          "dur": 5.55
+        }
+      ]
     },
     {
       "n": 13,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_15_Image_0002.png",
-      "text": "Bagiye kubona babona ipusi yabo irahingutse,\nirakimuzaniye."
+      "text": "Bagiye kubona babona ipusi yabo irahingutse,\nirakimuzaniye.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2faudio%2fi7ccb8ad9-2c6c-451c-b19a-e92bf40713ec.mp3",
+          "dur": 8.503922
+        }
+      ]
     },
     {
       "n": 14,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2fIgipupe_Cya_Mimi_Page_16_Image_2.png",
-      "text": "Mimi arishima, ayiha amata."
+      "text": "Mimi arishima, ayiha amata.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f1271ccda-9f44-4d8f-a93e-13e7fee7dc28%2fIgipupe+Cya+Mimi%2faudio%2fi15d29692-8f4f-42d1-8d6f-7c0d1e0dd935.mp3",
+          "dur": 3.33
+        }
+      ]
     },
     {
       "n": 15,

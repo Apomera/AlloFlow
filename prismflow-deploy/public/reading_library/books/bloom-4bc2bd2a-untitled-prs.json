@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-4bc2bd2a-untitled-prs",
+  "title": "پدر عزیزتر از جان",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/b2gPsU9oge"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f4bc2bd2a-ddf3-4de2-ad4b-8ed1e729e1d6%2f%d9%be%d8%af%d8%b1+%d8%b9%d8%b2%db%8c%d8%b2%d8%aa%d8%b1+%d8%a7%d8%b2+%d8%ac%d8%a7%d9%86%2f1211.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f4bc2bd2a-ddf3-4de2-ad4b-8ed1e729e1d6%2f%d9%be%d8%af%d8%b1+%d8%b9%d8%b2%db%8c%d8%b2%d8%aa%d8%b1+%d8%a7%d8%b2+%d8%ac%d8%a7%d9%86%2f2311.jpg",
+      "text": "پدر رفیق جان است\nبا همه مهربان است\nدسـتان قـُدرتمــندش\nهمه سخــــن و پندش"
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "بـرای مـا گـــرامـی\nاو دوست خوب نامی\nپدر به سان کوه است\nزیبا و با شــکوه اسـت\nپـدر جـان مهـربان\nهـمیشـه با مـا بمان"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f4bc2bd2a-ddf3-4de2-ad4b-8ed1e729e1d6%2f%d9%be%d8%af%d8%b1+%d8%b9%d8%b2%db%8c%d8%b2%d8%aa%d8%b1+%d8%a7%d8%b2+%d8%ac%d8%a7%d9%86%2f3211.jpg",
+      "text": "بمـان همیـشه با مـا\nدر زندگی و هر جا\nما همه دوستت داریم\nتو را عزیز می داریم"
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "تو پر توان و خوبی\nنـزد هـمه مـحبوبی\nزحـمت های فراوان\nمی کشی بر ما آسان\nتو خوبِ خوب ترین ها\nعــزیــز بهــتـرین هــا"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f4bc2bd2a-ddf3-4de2-ad4b-8ed1e729e1d6%2f%d9%be%d8%af%d8%b1+%d8%b9%d8%b2%db%8c%d8%b2%d8%aa%d8%b1+%d8%a7%d8%b2+%d8%ac%d8%a7%d9%86%2f4211.jpg",
+      "text": "یــاور هـــر فـرزنـــدی\nدر غم و اشک می خندی\nغـم و زحمت کشی را\nبر دوش می کشی تـنهـــا"
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "تو قهرمـان و پاکـی\nحَلیم و مثــــل خاکی\nترس از چیزی نداری\nبَذر خوبی می کـاری\nبا مهر و بـا مـحـبت\nبخشی بر ما تو نعمت"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f4bc2bd2a-ddf3-4de2-ad4b-8ed1e729e1d6%2f%d9%be%d8%af%d8%b1+%d8%b9%d8%b2%db%8c%d8%b2%d8%aa%d8%b1+%d8%a7%d8%b2+%d8%ac%d8%a7%d9%86%2f5.jpg",
+      "text": "نعمت خوب دنـیــا\nپدر باشد به هر جا\nبرای خورد و کلان\nپدر عزیزتر از جان"
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "پدر جان مـهربان\nهمیشه با ما بمان\nخدا باشد همراهت\nباشد رفیق راهــت"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 154
+  }
+}

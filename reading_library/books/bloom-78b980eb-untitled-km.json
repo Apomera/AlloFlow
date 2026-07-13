@@ -1,0 +1,115 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-78b980eb-untitled-km",
+  "title": "១៦ ឆាផៅ កើយមឞេងនត្រ៝ង",
+  "description": "Complete the sentence workbook (Easy Reader - Level 1)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/yjG10MMto6"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f78b980eb-1bf1-4d78-af0e-7ca3c1f843f2%2f%e1%9f%a1%e1%9f%a6+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%80%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%9e%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9f%9d%e1%9e%84%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f78b980eb-1bf1-4d78-af0e-7ca3c1f843f2%2f%e1%9f%a1%e1%9f%a6+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%80%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%9e%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9f%9d%e1%9e%84%2fimage1.png",
+      "text": "ភូមិ​ពួក​យើង​មាន​ឈ្មោះ​..................................។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f78b980eb-1bf1-4d78-af0e-7ca3c1f843f2%2f%e1%9f%a1%e1%9f%a6+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%80%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%9e%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9f%9d%e1%9e%84%2fimage2.png",
+      "text": "ភូមិពួកយើងមានឈ្មោះ.................................។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f78b980eb-1bf1-4d78-af0e-7ca3c1f843f2%2f%e1%9f%a1%e1%9f%a6+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%80%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%9e%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9f%9d%e1%9e%84%2fimage3.png",
+      "text": "សិស្សនៅភូមិរបស់ពួកយើងមាន................នាក់។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f78b980eb-1bf1-4d78-af0e-7ca3c1f843f2%2f%e1%9f%a1%e1%9f%a6+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%80%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%9e%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9f%9d%e1%9e%84%2fimage4.png",
+      "text": "សិស្ស​ម្នាក់​ៗ​មាន​ឈ្មោះ​ ...........................។\n...........................។\n...........................។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f78b980eb-1bf1-4d78-af0e-7ca3c1f843f2%2f%e1%9f%a1%e1%9f%a6+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%80%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%9e%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9f%9d%e1%9e%84%2fimage5.png",
+      "text": "គ្រូបង្រៀនមានឈ្មោះ....................................។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f78b980eb-1bf1-4d78-af0e-7ca3c1f843f2%2f%e1%9f%a1%e1%9f%a6+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%80%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%9e%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9f%9d%e1%9e%84%2fimage6.png",
+      "text": "បើយើងទំនេរយើងចូកចិត្ត...................................។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f78b980eb-1bf1-4d78-af0e-7ca3c1f843f2%2f%e1%9f%a1%e1%9f%a6+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%80%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%9e%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9f%9d%e1%9e%84%2fimage7.png",
+      "text": "បើយើងដើរព្រៃយើងចង់បាន...............................។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f78b980eb-1bf1-4d78-af0e-7ca3c1f843f2%2f%e1%9f%a1%e1%9f%a6+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%80%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%9e%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9f%9d%e1%9e%84%2fimage8.png",
+      "text": "បើ​យើង​ចេះ​អក្សរ​ពួក​យើង​ចង់​បាន​.......................................។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f78b980eb-1bf1-4d78-af0e-7ca3c1f843f2%2f%e1%9f%a1%e1%9f%a6+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%80%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%9e%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9f%9d%e1%9e%84%2fimage9.png",
+      "text": "ភូមិយើងចង់បាន..........................................។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f78b980eb-1bf1-4d78-af0e-7ca3c1f843f2%2f%e1%9f%a1%e1%9f%a6+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%80%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%9e%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9f%9d%e1%9e%84%2fimage11.png",
+      "text": "ទឹកជ្រោះជិតភូមិយើងឈ្មោះ................................។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f78b980eb-1bf1-4d78-af0e-7ca3c1f843f2%2f%e1%9f%a1%e1%9f%a6+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%80%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%9e%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9f%9d%e1%9e%84%2fimage12.png",
+      "text": "យើងទៅលេងទឹកជ្រោះយើងបានឃើញ..................។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f78b980eb-1bf1-4d78-af0e-7ca3c1f843f2%2f%e1%9f%a1%e1%9f%a6+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%80%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%9e%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9f%9d%e1%9e%84%2fimage13.png",
+      "text": "ក្នុងភូមិយើងមានមនុស្សចង់ចេះ...........................។"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f78b980eb-1bf1-4d78-af0e-7ca3c1f843f2%2f%e1%9f%a1%e1%9f%a6+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%80%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%9e%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9f%9d%e1%9e%84%2fimage14.png",
+      "text": "ថ្ងៃៗយើងឃ្វាលក្របីនិង....................................។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f78b980eb-1bf1-4d78-af0e-7ca3c1f843f2%2f%e1%9f%a1%e1%9f%a6+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%80%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%9e%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9f%9d%e1%9e%84%2fimage15.png",
+      "text": "យប់ៗយើងទៅ.................................................។"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f78b980eb-1bf1-4d78-af0e-7ca3c1f843f2%2f%e1%9f%a1%e1%9f%a6+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%80%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%9e%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9f%9d%e1%9e%84%2fimage16.png",
+      "text": "កាលពួកយើងរៀនគ្រូគេអោយយើង...................។"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f78b980eb-1bf1-4d78-af0e-7ca3c1f843f2%2f%e1%9f%a1%e1%9f%a6+%e1%9e%86%e1%9e%b6%e1%9e%95%e1%9f%85+%e1%9e%80%e1%9e%be%e1%9e%99%e2%80%8b%e1%9e%98%e1%9e%9e%e1%9f%81%e1%9e%84%e2%80%8b%e1%9e%93%e1%9e%8f%e1%9f%92%e1%9e%9a%e1%9f%9d%e1%9e%84%2fimage17.png",
+      "text": "ពួកយើងសប្បាយចិត្តណាស់នៅពេលយើងចេះ.........៕"
+    }
+  ],
+  "stats": {
+    "pages": 16,
+    "words": 19
+  }
+}

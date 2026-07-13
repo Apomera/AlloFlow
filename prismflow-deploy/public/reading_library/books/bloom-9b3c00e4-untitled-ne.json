@@ -1,0 +1,87 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-9b3c00e4-untitled-ne",
+  "title": "बाँदरको यात्रा",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/o5qEFscJfX"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c00e4-1265-4264-94f1-e5ed37defdd2%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%e0%a4%95%e0%a5%8b+%e0%a4%af%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%b0%e0%a4%be%2fAOR_CMB0612.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c00e4-1265-4264-94f1-e5ed37defdd2%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%e0%a4%95%e0%a5%8b+%e0%a4%af%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%b0%e0%a4%be%2fAOR_CMB0372.png",
+      "text": "स्वयम्भूबाट बाँदर तारैतार हिँड्न थाल्यो। मानिसहरू बाँदरलाई देखेर छक्‍क परे। बाँदर देखेर गाडीहरू पनि रोकिए।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c00e4-1265-4264-94f1-e5ed37defdd2%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%e0%a4%95%e0%a5%8b+%e0%a4%af%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%b0%e0%a4%be%2fAOR_IN0007.png",
+      "text": "बाँदर कहिले छतमा हिँड्यो ।\nकहिले एउटा रूखबाट अर्को गर्दै हिड्यो। बाँदरलाई देखेर\nसडकमा कुकुरहरू भुके।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c00e4-1265-4264-94f1-e5ed37defdd2%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%e0%a4%95%e0%a5%8b+%e0%a4%af%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%b0%e0%a4%be%2fAOR_Monkey13.png",
+      "text": "घुम्दाघुम्दै काठमाडौंको एउटा घरमा पुग्यो। घरको झ्यालबाट भित्र चिहायो। भित्र कोही पनि देखेन।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c00e4-1265-4264-94f1-e5ed37defdd2%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%e0%a4%95%e0%a5%8b+%e0%a4%af%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%b0%e0%a4%be%2fimage1.png",
+      "text": "बाँदर कोठाभित्र पस्यो। कोठाभित्र अरू धेरै कोठाहरू देख्यो। कोठामा कोही नदेखेर जताततै डुल्न थाल्यो।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c00e4-1265-4264-94f1-e5ed37defdd2%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%e0%a4%95%e0%a5%8b+%e0%a4%af%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%b0%e0%a4%be%2fAOR_MONKEY01.png",
+      "text": "एउटा कोठामा केरा र सुन्तलाहरू देख्यो। केरा देखेर बाँदर मख्ख पर्‍यो। उसले टेवलमा बसेर केरा खायो ।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c00e4-1265-4264-94f1-e5ed37defdd2%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%e0%a4%95%e0%a5%8b+%e0%a4%af%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%b0%e0%a4%be%2fAOR_PMI018.png",
+      "text": "अर्को कोठामा बाजाहरू देख्यो। उसले बाजा बजाएन। छेउमा ओछ्यान रहेछ। एकछिन ओछ्यानमा सुत्यो।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c00e4-1265-4264-94f1-e5ed37defdd2%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%e0%a4%95%e0%a5%8b+%e0%a4%af%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%b0%e0%a4%be%2fimage.png",
+      "text": "फेरि अर्को कोठामा गयो। त्यहाँ धेरै कपडाहरू देख्यो। उसले टोपी लगाएर मुसुक्‍क हाँस्यो ।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c00e4-1265-4264-94f1-e5ed37defdd2%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%e0%a4%95%e0%a5%8b+%e0%a4%af%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%b0%e0%a4%be%2fimage2.png",
+      "text": "कोठामा उसले मोबाइल जस्तो चीज देख्यो। उसले जताततै थिच्यो। एक्‍कासी टिभी खुल्यो। टिभी देखेर दङ्ग पर्‍यो।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c00e4-1265-4264-94f1-e5ed37defdd2%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%e0%a4%95%e0%a5%8b+%e0%a4%af%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%b0%e0%a4%be%2fAOR_postoff.png",
+      "text": "केही समयपछि घरका मानिसहरू आइपुगे। मानिसहरू डराएर कराए। मानिसहरू देखेर बाँदर पनि डरायो।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c00e4-1265-4264-94f1-e5ed37defdd2%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0%e0%a4%95%e0%a5%8b+%e0%a4%af%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%b0%e0%a4%be%2fAOR_Monkey10.png",
+      "text": "बाँदर कोठाबाट निस्किएर कौसीमा गयो। कौसी नजिकैको खम्बामा गयो। खम्बाबाट सुरेली खेलेर तल आयो। अनि स्वयम्भूतिर भाग्यो।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 148
+  }
+}

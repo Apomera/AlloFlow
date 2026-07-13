@@ -1,0 +1,97 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-e81f58b7-untitled-km",
+  "title": "២៤ក នអើន ក៝នឆែតុងអុចគែសឆាពៀម",
+  "description": "The child Tung wants a slingshot (Easy Reader - Level 1)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/EuA5ME0pZK"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe81f58b7-c601-42b0-9b0d-253e5d288815%2f%e1%9f%a2%e1%9f%a4%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%8f%e1%9e%bb%e1%9e%84%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%98%2fkoon+chei+toong2.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe81f58b7-c601-42b0-9b0d-253e5d288815%2f%e1%9f%a2%e1%9f%a4%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%8f%e1%9e%bb%e1%9e%84%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%98%2fkoon+chei+toong1.png",
+      "text": "តុងគិតចង់បានជំពៀម។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe81f58b7-c601-42b0-9b0d-253e5d288815%2f%e1%9f%a2%e1%9f%a4%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%8f%e1%9e%bb%e1%9e%84%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%98%2fkoon+chei+toong4.png",
+      "text": "តុងដើរកាន់កាំបិត។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe81f58b7-c601-42b0-9b0d-253e5d288815%2f%e1%9f%a2%e1%9f%a4%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%8f%e1%9e%bb%e1%9e%84%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%98%2fkoon+chei+toong3.png",
+      "text": "តុងកាប់មែកឈើ។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe81f58b7-c601-42b0-9b0d-253e5d288815%2f%e1%9f%a2%e1%9f%a4%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%8f%e1%9e%bb%e1%9e%84%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%98%2fkoon+chei+toong5.png",
+      "text": "តុងអោយបងប្រុសរបស់វាធ្វើជំពៀម។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe81f58b7-c601-42b0-9b0d-253e5d288815%2f%e1%9f%a2%e1%9f%a4%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%8f%e1%9e%bb%e1%9e%84%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%98%2fkoon+chei+toong6.png",
+      "text": "បងប្រុសរបស់តុងបង្រៀនបាញ់ជំពៀម។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe81f58b7-c601-42b0-9b0d-253e5d288815%2f%e1%9f%a2%e1%9f%a4%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%8f%e1%9e%bb%e1%9e%84%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%98%2fkoon+chei+toong7.png",
+      "text": "តុងសាក់ល្បងបាញ់ជំពៀមម្នាក់ឯង។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe81f58b7-c601-42b0-9b0d-253e5d288815%2f%e1%9f%a2%e1%9f%a4%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%8f%e1%9e%bb%e1%9e%84%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%98%2fkoon+chei+toong8.png",
+      "text": "តុងបាញ់សត្វចាបត្រូវពាង។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe81f58b7-c601-42b0-9b0d-253e5d288815%2f%e1%9f%a2%e1%9f%a4%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%8f%e1%9e%bb%e1%9e%84%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%98%2fkoon+chei+toong9.png",
+      "text": "ម្ដាយដេញតាមវាយតុង។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe81f58b7-c601-42b0-9b0d-253e5d288815%2f%e1%9f%a2%e1%9f%a4%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%8f%e1%9e%bb%e1%9e%84%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%98%2fkoon+chei+toong10.png",
+      "text": "តុងរត់ពួននៅគុម្ពស្បៅ។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe81f58b7-c601-42b0-9b0d-253e5d288815%2f%e1%9f%a2%e1%9f%a4%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%8f%e1%9e%bb%e1%9e%84%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%98%2fkoon+chei+toong11.png",
+      "text": "សង្អារតិចតុង។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe81f58b7-c601-42b0-9b0d-253e5d288815%2f%e1%9f%a2%e1%9f%a4%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%8f%e1%9e%bb%e1%9e%84%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%98%2fkoon+chei+toong14.png",
+      "text": "តុងរត់ទៅជួបម្ដាយវា។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe81f58b7-c601-42b0-9b0d-253e5d288815%2f%e1%9f%a2%e1%9f%a4%e1%9e%80+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%93%e2%80%8b%e1%9e%86%e1%9f%82%e2%80%8b%e1%9e%8f%e1%9e%bb%e1%9e%84%e2%80%8b%e1%9e%a2%e1%9e%bb%e1%9e%85%e2%80%8b%e1%9e%82%e1%9f%82%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9e%b6%e1%9e%96%e1%9f%80%e1%9e%98%2fkoon+chei+toong15.png",
+      "text": "ម្ដាយតុងឈប់អោយវាលេង៕"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 12
+  }
+}

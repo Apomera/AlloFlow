@@ -103,6 +103,19 @@ describe('findActiveCue / pageCueRange — playback math', () => {
   });
 });
 
+describe('pageAudioClips — Bloom talking-book clip queue', () => {
+  it('returns clip srcs in order and tolerates malformed entries', () => {
+    expect(RL._pageAudioClips({ audio: [{ src: 'https://a/1.mp3', dur: 2 }, { src: 'https://a/2.mp3' }] }))
+      .toEqual(['https://a/1.mp3', 'https://a/2.mp3']);
+    expect(RL._pageAudioClips({ audio: [{ dur: 2 }, null, { src: 'https://a/3.mp3' }] }))
+      .toEqual(['https://a/3.mp3']);
+  });
+  it('is empty for pages without narration and for null pages', () => {
+    expect(RL._pageAudioClips({ text: 'no audio here' })).toEqual([]);
+    expect(RL._pageAudioClips(null)).toEqual([]);
+  });
+});
+
 describe('bookPlainText / attributionLine', () => {
   const book = {
     title: 'Test Book',
@@ -389,7 +402,15 @@ describe('mirrored data contract (reading_library/)', () => {
         fail(same(entry[key], value), label + ': index field drift: ' + key);
       });
 
-      if (book.audio) {
+      if (book.audio && book.audio.mode === 'perPage') {
+        // Bloom talking books: no whole-book mp3; ordered per-page clips.
+        let clipCount = 0;
+        (book.pages || []).forEach((p, pi) => (p.audio || []).forEach((c, ci) => {
+          clipCount++;
+          fail(/^https:\/\//.test((c && c.src) || ''), label + ': bad page-audio clip ' + (pi + 1) + '/' + ci);
+        }));
+        fail(clipCount > 0, label + ': perPage audio with no clips');
+      } else if (book.audio) {
         fail(/^https:\/\//.test(book.audio.src || ''), label + ': bad audio URL');
         if (book.audio.cues) {
           book.audio.cues.forEach((cue, cueIdx) => {

@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-97ef6876-untitled-prs",
+  "title": "خرگوشک کنجکاو",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/YMZ1mhBxDD"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f97ef6876-53e5-44e7-8563-dc8e5e7a20c6%2f%d8%ae%d8%b1%da%af%d9%88%d8%b4%da%a9+%da%a9%d9%86%d8%ac%da%a9%d8%a7%d9%88%2f12.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f97ef6876-53e5-44e7-8563-dc8e5e7a20c6%2f%d8%ae%d8%b1%da%af%d9%88%d8%b4%da%a9+%da%a9%d9%86%d8%ac%da%a9%d8%a7%d9%88%2f22.jpg",
+      "text": "یک روز آفتابی چوچه خرگوش با صدای پرنده گان از خواب بیدار شد.\nبه مادرش گفت:\nسلام مادر جان! من گرسنه استم."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "مادرش گفت:\nوعلیکم جان مادر! امروز خودت برو و برایت غذا پیدا کن.\nخرگوشک به باغ رفت؛ اما چیزی برای خوردن پیدا نکرد.\nناراحت به خانه برگشت و گفت:\nچیزی برای خوردن پیدا نکردم.\nمادر گفت:\nدرست است، امروز با هم به باغ می رویم.\nخوراکه ها و میوه ها را برایت نشان می دهم."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f97ef6876-53e5-44e7-8563-dc8e5e7a20c6%2f%d8%ae%d8%b1%da%af%d9%88%d8%b4%da%a9+%da%a9%d9%86%d8%ac%da%a9%d8%a7%d9%88%2f32.jpg",
+      "text": "خرگوشک و مادرش به باغ رفتند.\nدر مسیر راه درخت بزرگی را دیدند.\nخرگوشک پرسید:\nاین درختٍ چی است؟"
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "مادرش گفت:\nاین درخت مالته است. مالته میوۀ خوشمزه یی است.\nناگهان چشم خرگوشک به انار روی زمین افتاد.\n- مادر جان! این چیست؟\nمادر گفت: فرزندم! این انار است.\nانار میوۀ بسیار مفید است.\nسپس مادر به درخت روبرو اشاره کرده، گفت:\nاین درخت ناک است."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f97ef6876-53e5-44e7-8563-dc8e5e7a20c6%2f%d8%ae%d8%b1%da%af%d9%88%d8%b4%da%a9+%da%a9%d9%86%d8%ac%da%a9%d8%a7%d9%88%2f42.jpg",
+      "text": "ناک به صحت ما فایده دارد.\nدر این جا درختان میوه دار زیاد است، مانند: کیله، سیب و انار."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "خرگوشک و مادرش در باغ قدم می زدند.\nناگهان چشم خرگوشک به سبزه های روی زمین افتاد.\nاز مادرش پرسید:\nاین ها چیست؟\nمادر لبخندی زد و گفت:\nاین غذایی است که بسیار دوستش داری.\nدر اینجا زردک سبز شده، غذایی که همیشه برایت می آوردم.\nخرگوشک شاد و خندان به سمت کرد زردک دوید.\nخرگوشک به دنبال زردک گشت، اما پیدا نکرد."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2f97ef6876-53e5-44e7-8563-dc8e5e7a20c6%2f%d8%ae%d8%b1%da%af%d9%88%d8%b4%da%a9+%da%a9%d9%86%d8%ac%da%a9%d8%a7%d9%88%2f52.jpg",
+      "text": "خرگوشک گفت:\nدر اینجا زردک معلوم نمی شود.\nمن گرسنه استم.\nمادر گفت: صبر کن تا برایت زردک پیدا کنم."
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "مادر بوتۀ سبزه را محکم گرفته از زیر خاک بیرون کشید.\nخرگوشک از دیدن زردک خوشحال شد.\nزردک را از مادر گرفته و می خواست آن را بخورد.\nمادر گفت:\nنه نه! نباید سبزی ها را ناشسته بخوری!\n\"اول بشوی با دقت\nبعدش بخور با لذت\"\nخرگوشک زردک را شست و خورد.\nاو از مادرش تشکر کرد."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 302
+  }
+}

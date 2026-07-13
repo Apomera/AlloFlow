@@ -505,6 +505,33 @@ describe('reader view (Bloom book)', () => {
     expect(textOf(host)).toContain('Bloom Library');
     expect(textOf(host)).toContain(bloomBook.license);
   });
+
+  it('a talking book offers human narration through the per-page clip queue', async () => {
+    // Fixture: a mirrored Bloom book with perPage audio (skip cleanly if the
+    // catalog has none — narration depends on what Bloom hosts).
+    let entry = null, book = null;
+    for (const b of index.books) {
+      if (b.sourceId !== 'bloom' || /card/.test(b.contentType || '') || !b.hasAudio) continue;
+      const data = JSON.parse(fs.readFileSync(path.join(LIB_DIR, b.file), 'utf8'));
+      if (data.audio && data.audio.mode === 'perPage') { entry = b; book = data; break; }
+    }
+    if (!entry) return; // no talking books in the mirrored set
+    await mount();
+    await chooseStories();
+    selectLang(entry.language); await flush();
+    clickByText(host, 'button', entry.title.slice(0, 12));
+    await flush();
+    // The human-narration button renders (not the TTS "Read this page" one),
+    // with the no-word-sync tooltip, and the clip <audio> element exists.
+    const readBtn = Array.from(host.querySelectorAll('button')).find((b) => textOf(b).includes('Read to me'));
+    expect(readBtn).toBeTruthy();
+    expect(readBtn.getAttribute('title')).toMatch(/no word-by-word/);
+    expect(host.querySelector('audio')).toBeTruthy();
+    // clip queue helper sees the narrated pages the file promises
+    const narratedPages = book.pages.filter((p) => p.audio && p.audio.length);
+    expect(narratedPages.length).toBeGreaterThan(0);
+    expect(window.AlloModules.ReadingLibrary._pageAudioClips(narratedPages[0]).length).toBeGreaterThan(0);
+  });
 });
 
 describe('reader view (RTL original)', () => {

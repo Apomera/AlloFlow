@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-95f695ad-untitled-ne",
+  "title": "झरूको एकदिन",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/JmEeOJ7pYJ"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f95f695ad-cf15-430c-9438-67d3e20473da%2f%e0%a4%9d%e0%a4%b0%e0%a5%82%e0%a4%95%e0%a5%8b+%e0%a4%8f%e0%a4%95%e0%a4%a6%e0%a4%bf%e0%a4%a8%2fAOR_1OO.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f95f695ad-cf15-430c-9438-67d3e20473da%2f%e0%a4%9d%e0%a4%b0%e0%a5%82%e0%a4%95%e0%a5%8b+%e0%a4%8f%e0%a4%95%e0%a4%a6%e0%a4%bf%e0%a4%a8%2fAOR_EAG00608.png",
+      "text": "झरू बाँदर आमाबुबासँग स्वयम्भूमा बस्छ। ऊ आमाबुबासँग सँगसँगै हिँड्छ। उ साह्रै फुर्तिलो छ।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f95f695ad-cf15-430c-9438-67d3e20473da%2f%e0%a4%9d%e0%a4%b0%e0%a5%82%e0%a4%95%e0%a5%8b+%e0%a4%8f%e0%a4%95%e0%a4%a6%e0%a4%bf%e0%a4%a8%2fAOR_E-1-101.png",
+      "text": "झरूका साथीहरू पनि छन्।\nऊ साथीहरूसँग लहरामा पिङ खेल्छ। नजिकै खोलामा पौडी पनि खेल्छ।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f95f695ad-cf15-430c-9438-67d3e20473da%2f%e0%a4%9d%e0%a4%b0%e0%a5%82%e0%a4%95%e0%a5%8b+%e0%a4%8f%e0%a4%95%e0%a4%a6%e0%a4%bf%e0%a4%a8%2fAOR_EAG00680.png",
+      "text": "झरूलाई बाटो हिँड्ने मानिसहरूले खानेकुरा दिन्छन्। ऊ खानेकुरा छिटोछिटो खान्छ। आमाबुबालाई पनि दिन्छ।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f95f695ad-cf15-430c-9438-67d3e20473da%2f%e0%a4%9d%e0%a4%b0%e0%a5%82%e0%a4%95%e0%a5%8b+%e0%a4%8f%e0%a4%95%e0%a4%a6%e0%a4%bf%e0%a4%a8%2fAOR_Monkey11.png",
+      "text": "ऊ उफ्रँदै गुम्बाको गजुरमा चढ्छ। कहिले रूखको हाँगामा झुण्डिन्छ। कहिले सिँढीहरूमा लडिबुडी गर्छ।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f95f695ad-cf15-430c-9438-67d3e20473da%2f%e0%a4%9d%e0%a4%b0%e0%a5%82%e0%a4%95%e0%a5%8b+%e0%a4%8f%e0%a4%95%e0%a4%a6%e0%a4%bf%e0%a4%a8%2fAOR_eag00759.png",
+      "text": "मानिसहरूले उसको फोटो खिच्छन्। त्यति बेला मुसुक्‍क हाँसेर बस्छ। मानिसहरू पनि दङ्ग हुन्छन्।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f95f695ad-cf15-430c-9438-67d3e20473da%2f%e0%a4%9d%e0%a4%b0%e0%a5%82%e0%a4%95%e0%a5%8b+%e0%a4%8f%e0%a4%95%e0%a4%a6%e0%a4%bf%e0%a4%a8%2fimage.png",
+      "text": "एकदिन ठूलो हावाहुरी आयो।\nसबैको भागाभाग भयो। कोही गुम्बाको पेटीमा बसे। कोही रूखको हाँगामा बलियोसँग समाएर बसे।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f95f695ad-cf15-430c-9438-67d3e20473da%2f%e0%a4%9d%e0%a4%b0%e0%a5%82%e0%a4%95%e0%a5%8b+%e0%a4%8f%e0%a4%95%e0%a4%a6%e0%a4%bf%e0%a4%a8%2fimage.jpg",
+      "text": "भागाभाग हुँदा झरू आमाबुबाबाट छुट्टियो।\nऊ निराश भएर रून थाल्यो।\nआमाबुबा पनि चिन्तित भए।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f95f695ad-cf15-430c-9438-67d3e20473da%2f%e0%a4%9d%e0%a4%b0%e0%a5%82%e0%a4%95%e0%a5%8b+%e0%a4%8f%e0%a4%95%e0%a4%a6%e0%a4%bf%e0%a4%a8%2fAOR_EAG00710.png",
+      "text": "झरू रूँदै एउटा घरको कुनामा बस्यो। उसलाई रातभरि निन्द्रा लागेन। आमाबुबा पनि झरू हराएकोमा चिन्तित भए।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f95f695ad-cf15-430c-9438-67d3e20473da%2f%e0%a4%9d%e0%a4%b0%e0%a5%82%e0%a4%95%e0%a5%8b+%e0%a4%8f%e0%a4%95%e0%a4%a6%e0%a4%bf%e0%a4%a8%2fAOR_SUD00131.png",
+      "text": "भोलिपल्ट आमाबुबा झरूलाई खोज्न हिँडे। झरू पनि हिजो छुटेको ठाउँतिर गयो। बीच बाटोमा झरूले आमाबुबालाई देख्यो। झरू खुसीले उफ्रियो ।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f95f695ad-cf15-430c-9438-67d3e20473da%2f%e0%a4%9d%e0%a4%b0%e0%a5%82%e0%a4%95%e0%a5%8b+%e0%a4%8f%e0%a4%95%e0%a4%a6%e0%a4%bf%e0%a4%a8%2fAOR_1OO11.png",
+      "text": "आमाबुबाले झरूलाई काखमा राखे। ऊ खुसीले लडिबुडी गर्न थाल्यो। आमाबुबा पनि खुसीले रमाए।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 146
+  }
+}

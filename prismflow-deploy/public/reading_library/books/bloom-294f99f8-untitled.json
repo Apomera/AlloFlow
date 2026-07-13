@@ -25,57 +25,119 @@
     "url": "https://bloomlibrary.org/book/GwDSIXjTvZ"
   },
   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2f81.jpg",
-  "audio": null,
+  "audio": {
+    "mode": "perPage"
+  },
   "pages": [
     {
       "n": 1,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2f21.jpg",
-      "text": "အရိုက်စီႎဲန်ဇိုည်ႇ....ႎဲန်ဇိုည်ႇ။"
+      "text": "အရိုက်စီႎဲန်ဇိုည်ႇ....ႎဲန်ဇိုည်ႇ။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2faudio%2fi664fd518-fc49-4e2a-8cb8-35b4ab3472b9.mp3",
+          "dur": 3.14882
+        }
+      ]
     },
     {
       "n": 2,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2f31.jpg",
-      "text": "အဘျိူက်မာ် ႎဲန်ဇိုည်ႇ...ႎဲန်ဇိုည်ႇ။"
+      "text": "အဘျိူက်မာ် ႎဲန်ဇိုည်ႇ...ႎဲန်ဇိုည်ႇ။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2faudio%2fbc0c94c7-50e7-4fa7-91d0-c5967be9abef.mp3",
+          "dur": 3.317494
+        }
+      ]
     },
     {
       "n": 3,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2f4.jpg",
-      "text": "အီးမိုႈအကျိူန်းမာ် ႎဲန်ဇိုည်ႇ...ႎဲန်ဇိုည်ႇ။"
+      "text": "အီးမိုႈအကျိူန်းမာ် ႎဲန်ဇိုည်ႇ...ႎဲန်ဇိုည်ႇ။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2faudio%2fi31f0e696-4b94-4ef9-8c1d-31dd03a85a27.mp3",
+          "dur": 4.231764
+        }
+      ]
     },
     {
       "n": 4,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2f8.jpg",
-      "text": "ဆည်း၊ ရေဲန်းတိူဝ်ႈဟံင်း ႎဲန်ဇိုည်ႇ...ႎဲန်ဇိုည်ႇ။"
+      "text": "ဆည်း၊ ရေဲန်းတိူဝ်ႈဟံင်း ႎဲန်ဇိုည်ႇ...ႎဲန်ဇိုည်ႇ။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2faudio%2fdd3e1426-f224-4de8-adcd-dfe5b7215b0d.mp3",
+          "dur": 3.828004
+        }
+      ]
     },
     {
       "n": 5,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2fa+(1).jpg",
-      "text": "ႎဲန်ဇိုည်ႇ ႎဲန်ဇိုည်ႇ ႎဲန်ဇိုည်ႇ ႎဲန်ဇိုည်ႇ။"
+      "text": "ႎဲန်ဇိုည်ႇ ႎဲန်ဇိုည်ႇ ႎဲန်ဇိုည်ႇ ႎဲန်ဇိုည်ႇ။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2faudio%2fi23fa884e-7979-4553-a7f2-7626806e9797.mp3",
+          "dur": 3.645147
+        }
+      ]
     },
     {
       "n": 6,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2fsdsds.jpg",
-      "text": "ဆီမ်းဒဲ့စီ ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း။"
+      "text": "ဆီမ်းဒဲ့စီ ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2faudio%2ffb699244-09a2-40e1-bbfe-82d78c53d7ec.mp3",
+          "dur": 3.030152
+        }
+      ]
     },
     {
       "n": 7,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2f6.jpg",
-      "text": "ကလမာ် ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း။"
+      "text": "ကလမာ် ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2faudio%2fi4d7ac71a-edc7-404b-9088-631b3c87a7d8.mp3",
+          "dur": 2.716688
+        }
+      ]
     },
     {
       "n": 8,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2f7.jpg",
-      "text": "အီးမိုႈဖျိူဝ်းမာ် ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း။"
+      "text": "အီးမိုႈဖျိူဝ်းမာ် ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2faudio%2fi27c405f1-9968-41ef-bacf-85940ed60eab.mp3",
+          "dur": 3.13464
+        }
+      ]
     },
     {
       "n": 9,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2f9.jpg",
-      "text": "ဆည်း၊ ရေဲန်းတိူဝ်ႈဟံင်း ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း။"
+      "text": "ဆည်း၊ ရေဲန်းတိူဝ်ႈဟံင်း ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2faudio%2fi693b6509-5c3e-4e1f-a0e8-537c6bd15c13.mp3",
+          "dur": 3.227188
+        }
+      ]
     },
     {
       "n": 10,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2fa+(3).jpg",
-      "text": "ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း။"
+      "text": "ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း ပီုဝ်ဟာဝ်း။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f294f99f8-e832-49bb-bcc7-a607648e8c5c%2f%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%82%8e%e1%80%b2%e1%80%94%e1%80%ba%e1%80%87%e1%80%ad%e1%80%af%e1%80%8a%e1%80%ba%e1%82%87+%e1%80%80%e1%80%ac%e1%80%8a%e1%80%ba%e1%80%b8+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba+%e1%80%95%e1%80%ae%e1%80%af%e1%80%9d%e1%80%ba%2faudio%2fd6503f98-f86d-4510-ab66-18f111f21f03.mp3",
+          "dur": 3.436167
+        }
+      ]
     }
   ],
   "stats": {

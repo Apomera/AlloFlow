@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-e75b3d89-untitled-prs",
+  "title": "بیایید به تشویش نه بگوییم",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "4",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/fwtJ1rEmbC"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fe75b3d89-1fce-459b-bfbb-5fc2421fc960%2f%d8%a8%db%8c%d8%a7%db%8c%db%8c%d8%af+%d8%a8%d9%87+%d8%aa%d8%b4%d9%88%db%8c%d8%b4+%d9%86%d9%87+%d8%a8%da%af%d9%88%db%8c%db%8c%d9%85%2fimage.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fe75b3d89-1fce-459b-bfbb-5fc2421fc960%2f%d8%a8%db%8c%d8%a7%db%8c%db%8c%d8%af+%d8%a8%d9%87+%d8%aa%d8%b4%d9%88%db%8c%d8%b4+%d9%86%d9%87+%d8%a8%da%af%d9%88%db%8c%db%8c%d9%85%2f1.jpg",
+      "text": "شگوفه با خواهرش مرسل و برادرش خالد بسیار تشویش می کردند.\nآن ها از نشستن درخانه بسیار دلتنگ و خسته شده بودند.\nآن ها بیرون نمی رفتند؛ چرا که یک مرض\nخطرناک به نام کرونا آمده بود."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "خالد گفت: ازشنیدن نام کرونا خسته شده ام.\nمرسل گفت:\nدلم تنگ شده، تا کی درخانه باشیم؟\nهم صنفانم کجا شدند."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fe75b3d89-1fce-459b-bfbb-5fc2421fc960%2f%d8%a8%db%8c%d8%a7%db%8c%db%8c%d8%af+%d8%a8%d9%87+%d8%aa%d8%b4%d9%88%db%8c%d8%b4+%d9%86%d9%87+%d8%a8%da%af%d9%88%db%8c%db%8c%d9%85%2f2.jpg",
+      "text": "پدر ومادر شگوفه بسیار نگران بودند.\nکه این روز های خانه نشینی باعث\nافسرده گی آن ها خواهد شد.\nهمه در فکر فرو رفته بودند که یکبار\nشگوفه صدا کرد، پیدا کردم، پیدا کردم."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "مادرش پرسید:\nچه پیدا کردی؟\nشگوفه گفت:\nمن یک پیشنهاد دارم.\nبیایید به تشویش، نه بگوییم.\nکارهای روزمره را تنظیم کنیم.\nتا از تشویش خلاص شویم."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fe75b3d89-1fce-459b-bfbb-5fc2421fc960%2f%d8%a8%db%8c%d8%a7%db%8c%db%8c%d8%af+%d8%a8%d9%87+%d8%aa%d8%b4%d9%88%db%8c%d8%b4+%d9%86%d9%87+%d8%a8%da%af%d9%88%db%8c%db%8c%d9%85%2f32.jpg",
+      "text": "آن ها کارهای روزانۀ خویش را فهرست کردند.\nنماز خواندن، درس خواندن، غذا خوردن،\nورزش، پاک کاری خانه و حویلی، رسامی، ترانه خوانی ونوشتن."
+    },
+    {
+      "n": 6,
+      "img": null,
+      "text": "آن ها هر روز مطابق به تقسیم اوقات،\nکارهای شان را به پیش می بردند.\nشگوفه با برادر وخواهرش درس می\nخواند و پدر و مادرشان آن ها را کمک\nمی کردند.\nپس از درس خواندن مرسل با بسیار\nخوشحالی گفت: بیایید حالا ریسمان بازی وتوپ بازی کنیم."
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2fe75b3d89-1fce-459b-bfbb-5fc2421fc960%2f%d8%a8%db%8c%d8%a7%db%8c%db%8c%d8%af+%d8%a8%d9%87+%d8%aa%d8%b4%d9%88%db%8c%d8%b4+%d9%86%d9%87+%d8%a8%da%af%d9%88%db%8c%db%8c%d9%85%2f43.jpg",
+      "text": "بعد ازآن شگوفه گفت: حالا یک مسابقۀ\nدیگر را شروع می کنیم که جایزه هم دارد.\nشگوفه گفت: سه کلمه بگویید که حرف اول آن «چ» باشد؟\nمرسل گفت: چتری، چمن، چاینک.\nسپس شگوفه پرسید: سه کلمه بگویید که حرف اول آن «ذ» باشد؟"
+    },
+    {
+      "n": 8,
+      "img": null,
+      "text": "خالد جواب: داد ذاکر، ذکی، ذره بین.\nدرختم مسابقه هر دو برنده شدند.\nپدر شان به هردو قلم جایزه داد.\nاین کارهر روزادامه داشت.\nمرسل وبرادرش بسیارخوش بودند.\nتشویش در خانه ختم شده بود.\nآن ها دانستند که تنظیم کارهای روزمره سبب خوشی می شود.\nهمه ازشگوفه تشکر کرد.\nشگوفه هم از پدر و مادر خود تشکر کرد."
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 292
+  }
+}

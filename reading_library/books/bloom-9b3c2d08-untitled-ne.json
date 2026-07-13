@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-9b3c2d08-untitled-ne",
+  "title": "घले गाउँको कथा",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Rfa17IlXGI"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c2d08-c5b8-436a-bad9-f8f488aa0bf1%2f%e0%a4%98%e0%a4%b2%e0%a5%87+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a4%a5%e0%a4%be%2fAOR_6W-U.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c2d08-c5b8-436a-bad9-f8f488aa0bf1%2f%e0%a4%98%e0%a4%b2%e0%a5%87+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a4%a5%e0%a4%be%2fAOR_HS11.png",
+      "text": "पहाडको मुनि थियो\nसानो घले गाउँ।\nखोलाछेऊ चौरी ठुलो\nबस्तु चर्ने ठाउँ।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c2d08-c5b8-436a-bad9-f8f488aa0bf1%2f%e0%a4%98%e0%a4%b2%e0%a5%87+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a4%a5%e0%a4%be%2fAOR_pc076.png",
+      "text": "वर्ष दिनमा एकचोटि\nसबै भेला हुन्थे।\nदौडमा जित्नेलाई\nत्यहाँ राजा चुन्थे।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c2d08-c5b8-436a-bad9-f8f488aa0bf1%2f%e0%a4%98%e0%a4%b2%e0%a5%87+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a4%a5%e0%a4%be%2fAOR_6W-U1.png",
+      "text": "बालबच्‍चा ठिटाठिटी\nथिए नरनारी।\nदौडिने चाहिँ उभेकाथे\nचिल्‍ला गोडा पारी।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c2d08-c5b8-436a-bad9-f8f488aa0bf1%2f%e0%a4%98%e0%a4%b2%e0%a5%87+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a4%a5%e0%a4%be%2fgroup.png",
+      "text": "ठुलो भीड जम्मा भयो\nलिगलिगको कोटमा।\nठुलो घण्टी झुण्डिएको\nथियो खरी बोटमा।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c2d08-c5b8-436a-bad9-f8f488aa0bf1%2f%e0%a4%98%e0%a4%b2%e0%a5%87+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a4%a5%e0%a4%be%2fAOR_CMB0281.png",
+      "text": "अनौठो थियो त्यो गाउँको\nरीत परम्परा।\nगर्नुपर्थ्यो जित्नलाई\nमेहनत कडा।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c2d08-c5b8-436a-bad9-f8f488aa0bf1%2f%e0%a4%98%e0%a4%b2%e0%a5%87+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a4%a5%e0%a4%be%2fAOR_E-1-182.png",
+      "text": "त्यहीँ थियो दशैं तिहार\nत्यहीँ चाड ठुलो।\nदौड सुरू भएपछि\nउड्थ्यो भुँइको धुलो।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c2d08-c5b8-436a-bad9-f8f488aa0bf1%2f%e0%a4%98%e0%a4%b2%e0%a5%87+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a4%a5%e0%a4%be%2fAOR_pmt043.png",
+      "text": "हाँसो ठट्टा रमाइलो\nड्याङ्ड्याङ् बज्थ्यो बाजा।\nको हुने हो? को हुने हो?\nयसपालीको राजा।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c2d08-c5b8-436a-bad9-f8f488aa0bf1%2f%e0%a4%98%e0%a4%b2%e0%a5%87+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a4%a5%e0%a4%be%2fAOR_CMB0280.png",
+      "text": "हुल बीच थिए एक\nगोरखाली ठिटो।\nयसपालीको दौड उनले\nपुरा गरे छिटो।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c2d08-c5b8-436a-bad9-f8f488aa0bf1%2f%e0%a4%98%e0%a4%b2%e0%a5%87+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a4%a5%e0%a4%be%2fimage2.jpg",
+      "text": "कस्ले जित्यो भन्ने ठुलो\nथियो सबको चाह।\nदौड जिती राजा भए\nत्यहाँ द्रव्य शाह।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f9b3c2d08-c5b8-436a-bad9-f8f488aa0bf1%2f%e0%a4%98%e0%a4%b2%e0%a5%87+%e0%a4%97%e0%a4%be%e0%a4%89%e0%a4%81%e0%a4%95%e0%a5%8b+%e0%a4%95%e0%a4%a5%e0%a4%be%2fimage311.png",
+      "text": "अभिषेक भयो उनका\nनयाँ राजा भए।\nनाच्दै गाउँदै रमाउँदै\nदरबारमा गए।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 119
+  }
+}

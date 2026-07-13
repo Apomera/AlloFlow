@@ -1,0 +1,105 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-96c691b5-untitled-ne",
+  "title": "बाठो किसान",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/g3TU9WQZvp"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f96c691b5-ac2d-4316-8e70-3df101312dc1%2f%e0%a4%ac%e0%a4%be%e0%a4%a0%e0%a5%8b+%e0%a4%95%e0%a4%bf%e0%a4%b8%e0%a4%be%e0%a4%a8%2fimage4.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f96c691b5-ac2d-4316-8e70-3df101312dc1%2f%e0%a4%ac%e0%a4%be%e0%a4%a0%e0%a5%8b+%e0%a4%95%e0%a4%bf%e0%a4%b8%e0%a4%be%e0%a4%a8%2fimage.png",
+      "text": "एउटा किसान खेत जोत्दै थिए। किसानको खेत नजिकै ठुलो जङ्गल थियो। त्यस जङ्गलमा एउटा सिंह बस्थ्यो । सिंहले गोरु जोत्दै गरेको देख्यो।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f96c691b5-ac2d-4316-8e70-3df101312dc1%2f%e0%a4%ac%e0%a4%be%e0%a4%a0%e0%a5%8b+%e0%a4%95%e0%a4%bf%e0%a4%b8%e0%a4%be%e0%a4%a8%2flion.png",
+      "text": "किसानले गोरु कहिले छेउतिर लान्थे। कहिले कुनातिर लान्थे। त्यो देखेर सिंहलाई अचम्म लाग्यो। “कसरी यस्तो हुनसक्छ?” उसले विचार गर्‍यो।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f96c691b5-ac2d-4316-8e70-3df101312dc1%2f%e0%a4%ac%e0%a4%be%e0%a4%a0%e0%a5%8b+%e0%a4%95%e0%a4%bf%e0%a4%b8%e0%a4%be%e0%a4%a8%2flion+2.png",
+      "text": "सिंहलाई जान्न मन लाग्यो। ऊ किसान भएितर आयो। उसले जोत्न रोक्दै किसानलाई सोध्यो। “तिमीले ठुला गोरुलाई कसरी दाउन सकेको?”"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f96c691b5-ac2d-4316-8e70-3df101312dc1%2f%e0%a4%ac%e0%a4%be%e0%a4%a0%e0%a5%8b+%e0%a4%95%e0%a4%bf%e0%a4%b8%e0%a4%be%e0%a4%a8%2fimage2.png",
+      "text": "“तिमी मेरो काममा बाधा नपुर्‍याउ। गोरु खाने जुक्ति नगर।” किसानले भने। सिंहले भन्यो तपाईं बाठो हुनुहुन्छ रे। त्यो कुरा सुनेर किसान मुसुमुसु हाँसिरहे।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f96c691b5-ac2d-4316-8e70-3df101312dc1%2f%e0%a4%ac%e0%a4%be%e0%a4%a0%e0%a5%8b+%e0%a4%95%e0%a4%bf%e0%a4%b8%e0%a4%be%e0%a4%a8%2fox.png",
+      "text": "किसान पानी खान गए। गोरु मात्रै देखेर सिंह नजिकै गयो। \"तिमीहरू मान्छेभन्दा ठुला छौ। बलिया पनि देखिन्छौ। किन मान्छेले भनेको खुरुखरु मान्छौ?\""
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f96c691b5-ac2d-4316-8e70-3df101312dc1%2f%e0%a4%ac%e0%a4%be%e0%a4%a0%e0%a5%8b+%e0%a4%95%e0%a4%bf%e0%a4%b8%e0%a4%be%e0%a4%a8%2fox1.png",
+      "text": "गोरुले रुन्चे स्वरमा भन्यो। \"मान्छे साना भए पनि बाठा छन्। जे गराउन पनि सक्छन्।\" यो कुरा सुनेर सिंह बेस्सरी हाँस्यो। आफूभन्दा सानाले हेपेको सुहाएन नि। सिंहले भन्यो।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f96c691b5-ac2d-4316-8e70-3df101312dc1%2f%e0%a4%ac%e0%a4%be%e0%a4%a0%e0%a5%8b+%e0%a4%95%e0%a4%bf%e0%a4%b8%e0%a4%be%e0%a4%a8%2fox+2.png",
+      "text": "सिंहको कुरा सुनेर गोरुले भन्यो। “मान्छेसँग कुरा गरेर त हेर। आफैँ थाहा पाउँछौ।” यतिकैमा किसान गोरु नजिक आईपुग्यो। किसान देखेर सिंह जङ्गलतिर लाग्यो।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f96c691b5-ac2d-4316-8e70-3df101312dc1%2f%e0%a4%ac%e0%a4%be%e0%a4%a0%e0%a5%8b+%e0%a4%95%e0%a4%bf%e0%a4%b8%e0%a4%be%e0%a4%a8%2flion1.png",
+      "text": "मान्छे गोरुभन्दा सानो छ। ठुलो गोरुलाई कसरी जोत्न सकेको? सिंहको मनमा खुलदुली भयो। ऊ जङ्गलबाट निस्केर खेत नजिक आयो। किसानले जोतेको फेरि हेरिरह्यो।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f96c691b5-ac2d-4316-8e70-3df101312dc1%2f%e0%a4%ac%e0%a4%be%e0%a4%a0%e0%a5%8b+%e0%a4%95%e0%a4%bf%e0%a4%b8%e0%a4%be%e0%a4%a8%2flion2.png",
+      "text": "“तपाईँको बाठो एकपटक देखाउनुहोस् न।” सिंहले किसानलाई भन्यो। “बाठो देखाउन त मिल्थ्यो। घरबाट आउँदा ल्याउन बिर्सेछु।” किसानले हाँस्दै भन्यो।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f96c691b5-ac2d-4316-8e70-3df101312dc1%2f%e0%a4%ac%e0%a4%be%e0%a4%a0%e0%a5%8b+%e0%a4%95%e0%a4%bf%e0%a4%b8%e0%a4%be%e0%a4%a8%2fimage11.png",
+      "text": "सिंहले जान्ने जिद्दी गरिरह्यो। घर गएर ल्याएर देखाउन भनिरह्यो। “कति बाठो रहेछौ। म घर जाँदा गोरु खाउँला सोचेको। तिम्रो कुरा मैले बुझेँ ” किसानले भन्यो।"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f96c691b5-ac2d-4316-8e70-3df101312dc1%2f%e0%a4%ac%e0%a4%be%e0%a4%a0%e0%a5%8b+%e0%a4%95%e0%a4%bf%e0%a4%b8%e0%a4%be%e0%a4%a8%2fimage12.png",
+      "text": "सिंहले देखाउन जिद्दी गरिरह्यो। “मैले भनेको माने म देखाउँछु।” किसानले भन्यो। सिंहले हुन्छ भन्यो। त्यसो भए म नआएसम्म रूखमा बस्नु।"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f96c691b5-ac2d-4316-8e70-3df101312dc1%2f%e0%a4%ac%e0%a4%be%e0%a4%a0%e0%a5%8b+%e0%a4%95%e0%a4%bf%e0%a4%b8%e0%a4%be%e0%a4%a8%2fimage51.png",
+      "text": "किसानले नाम्‍लो झिकेर सिंहलाई बाँध्यो। रुखमा बाँधेर किसान आफ्नो काममा लाग्यो। गोरुले सिंहलाई भन्यो। “देखिस् मान्छे कति बाठो हुन्छ?”"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f96c691b5-ac2d-4316-8e70-3df101312dc1%2f%e0%a4%ac%e0%a4%be%e0%a4%a0%e0%a5%8b+%e0%a4%95%e0%a4%bf%e0%a4%b8%e0%a4%be%e0%a4%a8%2fimage5.png",
+      "text": "साँझ परेपछि किसानले काम सकायो। गोरु फुकाएर घर जान लाग्याो। यत्तिकैमा उसलाई सिंहको याद आयो। सिंह झोक्राएर बसेको थियो।"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f96c691b5-ac2d-4316-8e70-3df101312dc1%2f%e0%a4%ac%e0%a4%be%e0%a4%a0%e0%a5%8b+%e0%a4%95%e0%a4%bf%e0%a4%b8%e0%a4%be%e0%a4%a8%2fimage3.png",
+      "text": "किसानलाई सिंहको माया लाग्यो। उसले बाँधेको नाम्‍लो खोलीदियो। सिंहले किसानसँग माफी माग्यो। अब कहिल्यै मान्छेसँग निहुँ नखोज्ने भन्यो। त्यसदिन देखि सिंह कहिल्यै फर्केर आएन।"
+    }
+  ],
+  "stats": {
+    "pages": 14,
+    "words": 304
+  }
+}

@@ -27,7 +27,9 @@
     "url": "https://bloomlibrary.org/book/WQTZtMpbZf"
   },
   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare3.png",
-  "audio": null,
+  "audio": {
+    "mode": "perPage"
+  },
   "pages": [
     {
       "n": 1,
@@ -42,62 +44,134 @@
     {
       "n": 3,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_05_Image_1.jpg",
-      "text": "Ntashya ajya kugama."
+      "text": "Ntashya ajya kugama.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi0a49d03f-51cc-4e8c-867f-08cb1a26d3b8.mp3",
+          "dur": 3.18
+        }
+      ]
     },
     {
       "n": 4,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_06_Image_1.jpg",
-      "text": "Yugama mu rutare,"
+      "text": "Yugama mu rutare,",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi78482883-ebb8-47d1-9c60-4be56ab1f966.mp3",
+          "dur": 2.84
+        }
+      ]
     },
     {
       "n": 5,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_07_Image_3.jpg",
-      "text": "Imvura irahita."
+      "text": "Imvura irahita.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2ff46a2a25-760b-43cc-ad82-9958b0db46be.mp3",
+          "dur": 2.42
+        }
+      ]
     },
     {
       "n": 6,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_08_Image_3.jpg",
-      "text": "Yahira utwatsi."
+      "text": "Yahira utwatsi.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi7266ce6e-f66c-4a6d-9aa7-6dc1f73c5bd0.mp3",
+          "dur": 2.94
+        }
+      ]
     },
     {
       "n": 7,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_09_Image_1.jpg",
-      "text": "Atora uduti n’akondo."
+      "text": "Atora uduti n’akondo.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi399f0034-7fbc-4248-b5e1-dba78bcfaad5.mp3",
+          "dur": 3.21
+        }
+      ]
     },
     {
       "n": 8,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_10_Image_1.jpg",
-      "text": "Yubaka mu rutare."
+      "text": "Yubaka mu rutare.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi2602be76-2fd5-4dd5-bfd4-90a9e5e929bd.mp3",
+          "dur": 2.45
+        }
+      ]
     },
     {
       "n": 9,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_11_Image_1.jpg",
-      "text": "Yuzuza icyari."
+      "text": "Yuzuza icyari.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi1dd648c6-8607-4dd3-aea9-6b6c2a1544d1.mp3",
+          "dur": 2.71
+        }
+      ]
     },
     {
       "n": 10,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_12_Image_5.jpg",
-      "text": "Umuyaga urahuha."
+      "text": "Umuyaga urahuha.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi95559047-cd56-4d0c-aa74-4e9917612a9b.mp3",
+          "dur": 2.34
+        }
+      ]
     },
     {
       "n": 11,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_13_Image_3.jpg",
-      "text": "Inkende zirakina."
+      "text": "Inkende zirakina.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi38c8094b-3c01-48b3-a2c6-7c7e5356817d.mp3",
+          "dur": 2.46
+        }
+      ]
     },
     {
       "n": 12,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_14_Image_3.jpg",
-      "text": "Imvura iragwa."
+      "text": "Imvura iragwa.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi55132e26-b125-4788-85f5-6acbbd7794fa.mp3",
+          "dur": 1.95
+        }
+      ]
     },
     {
       "n": 13,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_15_Image_5.jpg",
-      "text": "Icyari nticyasenyuka."
+      "text": "Icyari nticyasenyuka.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fi91e71326-a38d-41d5-b9a1-89eb140a0d57.mp3",
+          "dur": 3.94
+        }
+      ]
     },
     {
       "n": 14,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2fIcyari_Cya_Ntashya_-_Urutare_Page_16_Image_1.jpg",
-      "text": "Ntashya arishima."
+      "text": "Ntashya arishima.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f99f0e3bd-36b4-46dc-9081-8e1fd7bb2b88%2fICYARI+CYA+NTASHYA+4+-+Urutare%2faudio%2fbd18a764-e883-4f18-9206-ce9bf9334355.mp3",
+          "dur": 3.09
+        }
+      ]
     },
     {
       "n": 15,

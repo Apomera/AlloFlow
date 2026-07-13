@@ -1,0 +1,90 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-b2f2694b-untitled-ne",
+  "title": "नदी",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/vOD0K9cIFw"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fb2f2694b-b3e2-4249-9d07-4727c1d47e5c%2f%e0%a4%a8%e0%a4%a6%e0%a5%80%2fAOR_Jnglrvr2.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fb2f2694b-b3e2-4249-9d07-4727c1d47e5c%2f%e0%a4%a8%e0%a4%a6%e0%a5%80%2fAOR_E-1-1091.png",
+      "text": "नदी हिमाल वा पहाडबाट निस्कन्छ। पानीको ठुलो प्रवाह तल बग्दछ। आफ्नो बाटो आफैं बनाउँदै अगाडि बढ्छ। नदी समतल भुभागमा बग्दछ।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fb2f2694b-b3e2-4249-9d07-4727c1d47e5c%2f%e0%a4%a8%e0%a4%a6%e0%a5%80%2fAOR_E-1-1093.png",
+      "text": "नदी थरी थरीका हुन्छन्। कोही ठुला त कोही साना हुन्छन्। कोही पूर्वबाट पश्चिम बग्छन्। कोही उत्तरबाट पूर्व बग्दछन्।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fb2f2694b-b3e2-4249-9d07-4727c1d47e5c%2f%e0%a4%a8%e0%a4%a6%e0%a5%80%2fAOR_6w-b.png",
+      "text": "नदीबाट धेरै फाइदा लिन सकिन्छ। नदीको पानीमा लुगा धुन सकिन्छ। चरा तथा जनावरले पानी खान पाउँछन्। वरीपरीका बोट बिरूवा राम्ररी हुर्कन्छन्।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fb2f2694b-b3e2-4249-9d07-4727c1d47e5c%2f%e0%a4%a8%e0%a4%a6%e0%a5%80%2felectricity.jpg",
+      "text": "नदीको पानीबाट बिजुली निकाल्न सकिन्छ। नदीमा डुङ्गा चलाउन सकिन्छ। नदीको पानी सिंचाईमा प्रयोग गर्न सकिन्छ।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fb2f2694b-b3e2-4249-9d07-4727c1d47e5c%2f%e0%a4%a8%e0%a4%a6%e0%a5%80%2fAOR_4Q.png",
+      "text": "नदी आसपासका जमीनको संरक्षण गर्नु पर्छ। नदी आसपास रूख रोप्नु पर्छ। नदीमा तटबन्ध लगाउनु पर्छ। नदीमा बाँध बाध्नु पर्छ।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fb2f2694b-b3e2-4249-9d07-4727c1d47e5c%2f%e0%a4%a8%e0%a4%a6%e0%a5%80%2fAOR_Sud00046.png",
+      "text": "नदी वारपार गर्ने धेरै उपायहरू छन्। नदीमा पुलबाट वारपार गर्न सकिन्छ। साँघुबाट पनि वारपार गर्न सकिन्छ। डुङ्गाबाट नदी वारपार गर्न सकिन्छ।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fb2f2694b-b3e2-4249-9d07-4727c1d47e5c%2f%e0%a4%a8%e0%a4%a6%e0%a5%80%2fAOR_E-1-125.png",
+      "text": "नदीले जमिन कटान गर्न सक्छ। नदीले खेतीयोग्य जमीन नष्ट गर्न सक्छ। नदीले वस्ती डुबान तथा बगाउन सक्छ। नदीले मानिसलाई बगाउन सक्छ।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fb2f2694b-b3e2-4249-9d07-4727c1d47e5c%2f%e0%a4%a8%e0%a4%a6%e0%a5%80%2fAOR_wash-07.png",
+      "text": "नदीमा फोहोर फाल्नु हुँदैन। नदीको किनारामा वस्ती राख्नु हुँदैन। नदीमा लुगा धुनु हुँदैन। नदीमा ढल पठाउनु हुँदैन।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fb2f2694b-b3e2-4249-9d07-4727c1d47e5c%2f%e0%a4%a8%e0%a4%a6%e0%a5%80%2fAOR_SUD00097.png",
+      "text": "नदीमा माछा पाइन्छ। नदी किनारामा मानिस बसोबास गर्दछन्। उनीहरू माछा मारेर जिविकोपार्जन गर्दछन्। माछाबाट आम्दानी पनि गर्न सकिन्छ।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fb2f2694b-b3e2-4249-9d07-4727c1d47e5c%2f%e0%a4%a8%e0%a4%a6%e0%a5%80%2fsand.png",
+      "text": "नदीबाट बालुवा प्राप्त गर्न सकिन्छ। नदीबाट ढुङ्गा, रोडा पाउन सकिन्छ। घर बनाउने सामग्री नदीबाटै पाईन्छ। नदी किनारमा जनावरहरू आराम गर्दछन्।"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2fb2f2694b-b3e2-4249-9d07-4727c1d47e5c%2f%e0%a4%a8%e0%a4%a6%e0%a5%80%2fimage2.jpg",
+      "text": "नदी नाला सबैतिर सफा राख्नुपर्छ। सफा राखे नदीकोपानीले हीत गर्छ। बाँध बाँधी आसपासको जमीनलाई जोगाउँ। हाम्रो गौरव नदी बचाउँ र जोगाउँ।"
+    }
+  ],
+  "stats": {
+    "pages": 11,
+    "words": 211
+  }
+}

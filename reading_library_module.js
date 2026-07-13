@@ -467,6 +467,11 @@
     return /card/.test(String((book && book.contentType) || ''));
   }
 
+  // Bloom talking books: the ordered clip URLs recorded for one page.
+  function pageAudioClips(page) {
+    return ((page && page.audio) || []).map(function (c) { return c && c.src; }).filter(Boolean);
+  }
+
   // Assign narration cue ids to whitespace tokens of the page text by walking
   // both sequences in order (punctuation-insensitive compare). Tokens without
   // a confident match simply get no cue — they still render, just never
@@ -988,6 +993,9 @@
     };
     var audioRef = useRef(null);
     var fbAtRef = useRef(0); // debounce narration→TTS fallback (play-reject + onError can both fire)
+    var clipIdxRef = useRef(0); // per-page clip queue position (Bloom talking books)
+    var clipErrAtRef = useRef(0); // debounce clip-skip (play-reject + onError can both fire)
+    var pageAudioContinueRef = useRef(false); // auto page-turn should resume narration
 
     var pages = book.pages || [];
     var page = pages[pageIdx] || null;
@@ -998,6 +1006,11 @@
     // the whole feature to robotic TTS (the old behavior) threw away real audio.
     var hasAudioTrack = !!(book.audio && book.audio.src);
     var hasCues = !!(book.audio && book.audio.cues && book.audio.cues.length);
+    // Bloom talking books have no whole-book mp3; each page carries an
+    // ordered list of recorded clips (page.audio = [{src,dur}…]) played as a
+    // queue through the same <audio> element, auto-turning at page end. This
+    // is real human narration for languages that often have NO TTS voice.
+    var hasPageAudio = !!(book.audio && book.audio.mode === 'perPage');
 
     // What's on screen: the original book, or its AI translation. Everything
     // downstream (TTS, popups, practice, generate, export) follows the
@@ -1074,6 +1087,14 @@
       setJumpInput(String(pageIdx + 1));
     }, [pageIdx, book.slug]);
 
+    // Per-page narration continues across its own auto page-turn (manual
+    // navigation goes through go() → stopAll, which clears the flag).
+    useEffect(function () {
+      if (!pageAudioContinueRef.current) return;
+      pageAudioContinueRef.current = false;
+      startPageClips(pages[pageIdx] || null);
+    }, [pageIdx]);
+
     var lines = useMemo(function () {
       if (!page) return [];
       // Translated view has no cue timings — tokens render un-highlightable.
@@ -1083,6 +1104,7 @@
 
     var stopAll = useCallback(function () {
       autoReadRef.current = false;
+      pageAudioContinueRef.current = false;
       setAutoRead(false);
       stopSpeech();
       var a = audioRef.current;
@@ -1187,11 +1209,53 @@
       }
     };
 
+    // ---- Per-page clip queue (Bloom talking books) ----
+    var startPageClips = function (targetPage) {
+      var clips = pageAudioClips(targetPage);
+      var a = audioRef.current;
+      if (!a || !clips.length) { setNarrating(false); return; }
+      clipIdxRef.current = 0;
+      a.src = clips[0];
+      try { a.playbackRate = narrationRate; } catch (_) {}
+      a.play().then(function () { setNarrating(true); }).catch(function () { handleClipError(); });
+    };
+    var advanceClip = function () {
+      var clips = pageAudioClips(page);
+      var next = clipIdxRef.current + 1;
+      var a = audioRef.current;
+      if (a && next < clips.length) {
+        clipIdxRef.current = next;
+        a.src = clips[next];
+        try { a.playbackRate = narrationRate; } catch (_) {}
+        a.play().catch(function () { handleClipError(); });
+        return;
+      }
+      // Page finished — continue onto the next page that has narration.
+      for (var i = pageIdx + 1; i < pages.length; i++) {
+        if (pageAudioClips(pages[i]).length) {
+          pageAudioContinueRef.current = true;
+          setPageIdx(i);
+          return;
+        }
+      }
+      setNarrating(false);
+    };
+    // A dead clip URL should skip forward, not kill the reading (these
+    // languages usually have no TTS to fall back to). Debounced because a
+    // failed play() rejects AND fires the element's error event.
+    var handleClipError = function () {
+      var now = Date.now();
+      if (now - clipErrAtRef.current < 400) return;
+      clipErrAtRef.current = now;
+      advanceClip();
+    };
+
     var toggleNarration = function () {
       var a = audioRef.current;
       if (!a) { narrationFallback(); return; }
-      if (narrating) { a.pause(); setNarrating(false); return; }
+      if (narrating) { a.pause(); pageAudioContinueRef.current = false; setNarrating(false); return; }
       stopSpeech();
+      if (hasPageAudio) { startPageClips(page); return; }
       var range = pageCueRange(page);
       if (range && book.audio.cues) {
         for (var i = 0; i < book.audio.cues.length; i++) {
@@ -1513,7 +1577,7 @@
           rel: 'noopener noreferrer',
           title: tr('readinglib_open_original_hint', 'Open the official source page for this text'),
         }, tr('readinglib_open_original', 'Open original')) : null,
-        hasAudioTrack && !txReady ? e('button', {
+        (hasAudioTrack || hasPageAudio) && !txReady ? e('button', {
           className: 'px-3 py-1.5 rounded-lg text-sm font-semibold ' + (narrating ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'),
           onClick: toggleNarration,
           'aria-pressed': narrating,
@@ -1522,7 +1586,7 @@
           className: 'px-3 py-1.5 rounded-lg text-sm font-semibold bg-emerald-100 text-emerald-800 hover:bg-emerald-200',
           onClick: readPageTts,
         }, '🔊 ' + tr('readinglib_read_page', 'Read this page')),
-        hasAudioTrack && !txReady ? e('button', {
+        (hasAudioTrack || hasPageAudio) && !txReady ? e('button', {
           className: 'px-2 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 tabular-nums',
           onClick: function () { setNarrationRate(narrationRate === 1 ? 1.25 : narrationRate === 1.25 ? 0.75 : 1); },
           title: tr('readinglib_narration_speed', 'Narration speed'),
@@ -1531,7 +1595,7 @@
         // Continuous read-aloud with auto page-turn — for text-only books (full
         // texts have no narration mp3) and AI translations (cues can't map). The
         // pre-recorded narration path already auto-advances, so skip it there.
-        (sourcePages.length > 1 && (!hasAudioTrack || txReady)) ? e('button', {
+        (sourcePages.length > 1 && (!(hasAudioTrack || hasPageAudio) || txReady)) ? e('button', {
           className: 'px-2 py-1.5 rounded-lg text-sm font-semibold border ' +
             (autoRead ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-800 border-emerald-200 hover:bg-emerald-50'),
           onClick: toggleAutoRead,
@@ -1807,13 +1871,17 @@
           ) : null
         )
       ),
-      hasAudioTrack && !txReady ? e('audio', {
-        ref: audioRef, src: book.audio.src, preload: 'none',
-        onTimeUpdate: onTimeUpdate,
-        onEnded: function () { setNarrating(false); setActiveCue(null); },
+      (hasAudioTrack || hasPageAudio) && !txReady ? e('audio', {
+        ref: audioRef, src: hasAudioTrack ? book.audio.src : undefined, preload: 'none',
+        onTimeUpdate: hasCues ? onTimeUpdate : undefined,
+        onEnded: function () {
+          if (hasPageAudio && narrating) { advanceClip(); return; }
+          setNarrating(false); setActiveCue(null);
+        },
         // Some browsers resolve play() then fire 'error' on a dead media URL;
-        // fall back to TTS here too (debounced against play()'s own reject).
-        onError: function () { narrationFallback(); },
+        // whole-book narration falls back to TTS, per-page clips skip forward
+        // (both debounced against play()'s own reject).
+        onError: function () { if (hasPageAudio) { handleClipError(); return; } narrationFallback(); },
       }) : null,
       showPractice ? e(PracticePanel, { book: book, refText: displayPlainText, onClose: function () { setShowPractice(false); } }) : null,
       // page spread — the flex column + m-auto child centers short spreads
@@ -3004,6 +3072,7 @@
   ReadingLibrary._tr = tr;
   ReadingLibrary._assignCues = assignCues;
   ReadingLibrary._findActiveCue = findActiveCue;
+  ReadingLibrary._pageAudioClips = pageAudioClips;
   ReadingLibrary._pageCueRange = pageCueRange;
   ReadingLibrary._cleanReadingText = cleanReadingText;
   ReadingLibrary._pageTextForPipeline = pageTextForPipeline;

@@ -1,0 +1,97 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-c01c3746-untitled-km",
+  "title": "២២ខ នអើន ក៝ប រាលាម់ងកើចងកើរ",
+  "description": "The turtle tricks Ngoeut and Ngoeur (Easy Reader - Level 1)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/cH75AIQGmT"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fc01c3746-70c3-4589-9d1a-4c1a4d4325e2%2f%e1%9f%a2%e1%9f%a2%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%9a%e1%9e%b6%e1%9e%9b%e1%9e%b6%e1%9e%98%e1%9f%8b%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%85%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%9a%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fc01c3746-70c3-4589-9d1a-4c1a4d4325e2%2f%e1%9f%a2%e1%9f%a2%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%9a%e1%9e%b6%e1%9e%9b%e1%9e%b6%e1%9e%98%e1%9f%8b%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%85%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%9a%2fimage1.png",
+      "text": "មានកូនក្មេងពីរនាក់ ឈ្មោៈកើច និង កើល។\nថ្ងៃមួយកើចនិងកើល ពួកគេទាំងពីរបានបបួលគ្នាទៅដាក់ទ្រូ។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fc01c3746-70c3-4589-9d1a-4c1a4d4325e2%2f%e1%9f%a2%e1%9f%a2%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%9a%e1%9e%b6%e1%9e%9b%e1%9e%b6%e1%9e%98%e1%9f%8b%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%85%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%9a%2fimage2.png",
+      "text": "ប្អូនវានិយាយថា៖ “តោះ! បងយើងទៅដាក់ទ្រូ” បងឆ្លើយតបមកម្អូនថា៖ “អើ! តោះ! យើងទៅ”។ ពួកគេក៏នាំគ្នាដើរទៅដល់ទឹកអូរមួយមានត្រីច្រើនណាស់។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fc01c3746-70c3-4589-9d1a-4c1a4d4325e2%2f%e1%9f%a2%e1%9f%a2%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%9a%e1%9e%b6%e1%9e%9b%e1%9e%b6%e1%9e%98%e1%9f%8b%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%85%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%9a%2fimage3.png",
+      "text": "បងវានិយាយថា៖ “ហា! អូរនេះត្រីច្រើនណាស់ប្អូន”។ បន្ទាប់មកពួកគេទាំងពីរ មិនបានដាក់ទ្រូទេ បែជានាំគ្នាចាប់ត្រីក្នុងអូរនេះទៅវិញ។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fc01c3746-70c3-4589-9d1a-4c1a4d4325e2%2f%e1%9f%a2%e1%9f%a2%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%9a%e1%9e%b6%e1%9e%9b%e1%9e%b6%e1%9e%98%e1%9f%8b%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%85%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%9a%2fimage4.png",
+      "text": "ពេលនោះកើច និង កើលក៏បានចាប់អណ្ដើកមួយ ហើយនឹងត្រីច្រើន។ បន្ទាប់មកពួកគេក៏នាំគ្នាត្រឡប់មកភូមិវិញ។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fc01c3746-70c3-4589-9d1a-4c1a4d4325e2%2f%e1%9f%a2%e1%9f%a2%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%9a%e1%9e%b6%e1%9e%9b%e1%9e%b6%e1%9e%98%e1%9f%8b%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%85%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%9a%2fimage5.png",
+      "text": "ពេលមកដល់ពាក់កណ្ដាលផ្លូវ ប្អូនវាក៏និយាយថា៖ “ថ្ងៃនេះយើងមានម្ហូបហើយបង គឺត្រីនឹងអណ្ដើកនេះហើយ។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fc01c3746-70c3-4589-9d1a-4c1a4d4325e2%2f%e1%9f%a2%e1%9f%a2%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%9a%e1%9e%b6%e1%9e%9b%e1%9e%b6%e1%9e%98%e1%9f%8b%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%85%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%9a%2fimage6.png",
+      "text": "និយាយរួចពួកគេក៏នាំគ្នាអង្គុយ សំរាកញ៉ាំបាយនៅក្រោមម្លប់ដើមស្វាយព្រៃ ស្រាប់តែអណ្ដើកនិយាយចេញពីក្បែរកាផានោះថា៖ “អូ! នៅខាងលើមានផ្លែស្វាយព្រៃច្រើនណាស់ តើពួកបងអាចបេះវាបានទេ?”"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fc01c3746-70c3-4589-9d1a-4c1a4d4325e2%2f%e1%9f%a2%e1%9f%a2%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%9a%e1%9e%b6%e1%9e%9b%e1%9e%b6%e1%9e%98%e1%9f%8b%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%85%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%9a%2fimage7.png",
+      "text": "ពេលនោះកើចនិយាយថា៖ “បាន!”។ បងវាជាអ្នកឡើងបេះ ឯប្អូនរបស់វាជាអ្នកចាំរើសខាងក្រោម។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fc01c3746-70c3-4589-9d1a-4c1a4d4325e2%2f%e1%9f%a2%e1%9f%a2%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%9a%e1%9e%b6%e1%9e%9b%e1%9e%b6%e1%9e%98%e1%9f%8b%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%85%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%9a%2fimage8.png",
+      "text": "អណ្ដើកនិយាយទៅកាន់កើលជាប្អូនថា៖ “បងអើយ សូមបងលែងខ្ញុំទៅ ចាំខ្ញុំជួយបងរើសផ្លែអោយ ពេលបានច្រើនយើងនិងឆាប់បានទៅផ្ទះផងដែរ”។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fc01c3746-70c3-4589-9d1a-4c1a4d4325e2%2f%e1%9f%a2%e1%9f%a2%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%9a%e1%9e%b6%e1%9e%9b%e1%9e%b6%e1%9e%98%e1%9f%8b%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%85%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%9a%2fimage9.png",
+      "text": "ពេលនោះកើលក៏លែងអណ្ដើកក្បែរកាផានោះ ដើម្បីអោយអណ្ដើកជួយរើសផ្លែជាមួយនិងវាដែរ។ អណ្ដើកគិតក្នុងចិត្តថា៖ “ពួកឯងរវល់តែរើសផ្លែចុះ យើងនិងលួចកាផានិងត្រីពួកឯងសិន”។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fc01c3746-70c3-4589-9d1a-4c1a4d4325e2%2f%e1%9f%a2%e1%9f%a2%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%9a%e1%9e%b6%e1%9e%9b%e1%9e%b6%e1%9e%98%e1%9f%8b%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%85%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%9a%2fimage10.png",
+      "text": "ពេលនោះកើលរវល់តែរើសផ្លែស្វាយព្រៃ ឯអណ្ដើកក៏អាញកាផានិងត្រីចេញទៅបាត់ កើចសួរកើលថា៖ “កើលអ្ហើយ! ឯណាកាផានឹងអណ្ដើកឯងនេះ ម្ដេចក៏មិនឃើញអញ្ចឹង?”"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fc01c3746-70c3-4589-9d1a-4c1a4d4325e2%2f%e1%9f%a2%e1%9f%a2%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%9a%e1%9e%b6%e1%9e%9b%e1%9e%b6%e1%9e%98%e1%9f%8b%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%85%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%9a%2fimage11.png",
+      "text": "កើលឆ្លើយថា៖ “ហឺ! ខ្ញុំមិនដឹងទេ”។ ពួកគេក៏នាំគ្នាដើររកអណ្ដើកកាផានិងត្រី តែរកពុំឃើញសោះ។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fc01c3746-70c3-4589-9d1a-4c1a4d4325e2%2f%e1%9f%a2%e1%9f%a2%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%9a%e1%9e%b6%e1%9e%9b%e1%9e%b6%e1%9e%98%e1%9f%8b%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%85%e2%80%8b%e1%9e%84%e1%9e%80%e1%9e%be%e1%9e%9a%2fimage12.png",
+      "text": "ពេលនោះកើចជាមួយកើលក៏នាំគ្នាត្រឡប់មកផ្ទះវិញដោយគ្មានម្ហូបសំរាប់បរិភោគឡើយ៕"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 61
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-3df987b6-untitled-ne",
+  "title": "भ्रमण",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/aoYjhbWfDX"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f3df987b6-d24d-4610-8920-1c3e286ad5b0%2f%e0%a4%ad%e0%a5%8d%e0%a4%b0%e0%a4%ae%e0%a4%a3%2fAOR_amb007.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f3df987b6-d24d-4610-8920-1c3e286ad5b0%2f%e0%a4%ad%e0%a5%8d%e0%a4%b0%e0%a4%ae%e0%a4%a3%2fimage.png",
+      "text": "मेरो घर चुनिखेल हो। मेरो परिवारमा चार जना छौँ। हिजो शनिवारको दिन थियो। हामी सबै चिडियाखाना घुम्न गयौँ।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f3df987b6-d24d-4610-8920-1c3e286ad5b0%2f%e0%a4%ad%e0%a5%8d%e0%a4%b0%e0%a4%ae%e0%a4%a3%2fAOR_ada017.png",
+      "text": "सर्बप्रथम टिकट लियौँ। हामी सबै लाइन बस्यौँ। अनि भित्र पनि पस्यौँ। बायाँ लाइनबाट गयौँ। सबैभन्दा पहिला हरिण र चित्तल हेर्‍यौँ। जरायो, हरिण गर्दै मयूर पनि देख्यौँ।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f3df987b6-d24d-4610-8920-1c3e286ad5b0%2f%e0%a4%ad%e0%a5%8d%e0%a4%b0%e0%a4%ae%e0%a4%a3%2fAOR_D-1-44.png",
+      "text": "जावलाखेलको चिडियाखाना धेरै ठुलो रहेछ। त्यहाँ हामी सबै रमाएर खेल्यौँ। त्यहाँ एउटा ठुलोपोखरी पनि छ। त्यहाँ मानिसहरू डुङ्गा चलाई रहेका थिए।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f3df987b6-d24d-4610-8920-1c3e286ad5b0%2f%e0%a4%ad%e0%a5%8d%e0%a4%b0%e0%a4%ae%e0%a4%a3%2fimage1.png",
+      "text": "दिनको दुई बजिसकेको थियो। सबैजनालाई भोक लागेको थियो। नजिकै एउटा ठुलो चउरमा सबैजना बस्यौँ। आमाले खाजा खान दिनुभयो।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f3df987b6-d24d-4610-8920-1c3e286ad5b0%2f%e0%a4%ad%e0%a5%8d%e0%a4%b0%e0%a4%ae%e0%a4%a3%2fAOR_alb009.png",
+      "text": "हामी सबैजना बसेर खाजा खायौँ। आमाले हामीलाई भन्नुभयो। अब, हामी जनावर भएको ठाउँमा जाँदैछौँ। त्यहाँ हामी धेरै होशियार हुनुपर्छ।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f3df987b6-d24d-4610-8920-1c3e286ad5b0%2f%e0%a4%ad%e0%a5%8d%e0%a4%b0%e0%a4%ae%e0%a4%a3%2fAOR_alb0091.png",
+      "text": "जनावरहरूलाई जिस्क्याउनु हुँदैन। बाहिरबाट खानेकुरा पनि दिनुहुँदैन भन्नुभयो। हामी सबैजना घुम्न गयौँ। सबैभन्दा पहिला अर्ना भैंसी देख्यौँ। त्यसपछि गैंडा पनि देख्यौँ।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f3df987b6-d24d-4610-8920-1c3e286ad5b0%2f%e0%a4%ad%e0%a5%8d%e0%a4%b0%e0%a4%ae%e0%a4%a3%2fimage2.png",
+      "text": "त्यसको नजिकै जलगैंडा पनि हेर्‍यौँ। त्यसको दायाँपट्टि बाघको खोर थियो। खोरभित्र ठुलो बाघ थियो। बाघलाई हामीले नियाल्यौँ। त्यसले पनि हामीलाई हेरिरहेको थियो।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f3df987b6-d24d-4610-8920-1c3e286ad5b0%2f%e0%a4%ad%e0%a5%8d%e0%a4%b0%e0%a4%ae%e0%a4%a3%2fimage1.jpg",
+      "text": "भाइले बारबाट हातभित्र छिरायो। बाघ नजिक आयो।\nभाइको हातमा टोकिदियो।\nहामी सबैजना डरायौँ। त्यसपछि भाइलाई अस्पताल लग्यौँ।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f3df987b6-d24d-4610-8920-1c3e286ad5b0%2f%e0%a4%ad%e0%a5%8d%e0%a4%b0%e0%a4%ae%e0%a4%a3%2fAOR_doctr-01.png",
+      "text": "डाक्टरले उपचार गरिदिनु भयो। तर सामान्य चोटमात्र लागेको रहेछ। ठुलाले भनेको मान्नुपर्छ। ठुलाले भनेको नमानेमा दु:ख पाईन्छ।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2f3df987b6-d24d-4610-8920-1c3e286ad5b0%2f%e0%a4%ad%e0%a5%8d%e0%a4%b0%e0%a4%ae%e0%a4%a3%2fAOR_CMB0025.png",
+      "text": "त्यसपछि सबै खुसी भएर घर फर्क्यौ। चिडियाखाना घुमघाम रमाइलो भयो। अलिधेरै थकाई पनि लागेको थियो। खाना खाएर सबैजना आराम गर्‍यौँ।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 199
+  }
+}

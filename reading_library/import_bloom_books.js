@@ -244,6 +244,7 @@ function extractPages(html, baseUrl, code) {
     const img = page.querySelector('.bloom-imageContainer img[src]');
     const imgSrc = img && img.getAttribute('src');
     const paras = [];
+    const clips = [];
     for (const ed of page.querySelectorAll('.bloom-editable')) {
       if ((ed.getAttribute('lang') || '') !== code) continue;
       if (ed.closest('.bloom-imageDescription')) continue; // alt text, not story text
@@ -253,13 +254,49 @@ function extractPages(html, baseUrl, code) {
         const t = String(chunk || '').replace(/\s+/g, ' ').trim();
         if (t) paras.push(t);
       }
+      // Talking-book narration: recorded clips live at audio/<element-id>.mp3.
+      // TextBox mode puts audio-sentence + data-duration on the editable
+      // itself; Sentence mode on spans inside it. DOM order = reading order.
+      const audioEls = ed.classList.contains('audio-sentence') && ed.getAttribute('data-duration')
+        ? [ed]
+        : Array.from(ed.querySelectorAll('span.audio-sentence[id]'));
+      for (const el of audioEls) {
+        const id = el.getAttribute('id');
+        const dur = Number(el.getAttribute('data-duration')) || 0;
+        if (id) clips.push({ src: baseUrl + 'audio%2f' + id + '.mp3', dur });
+      }
     }
     const text = paras.join('\n');
     const image = imgSrc && !/placeHolder/i.test(imgSrc) ? abs(imgSrc) : null;
     if (!text && !image) continue; // video/widget/blank pages
-    out.push({ img: image, text });
+    out.push({ img: image, text, clips });
   }
-  return { pages: out.map((p, i) => ({ n: i + 1, img: p.img, text: p.text })), cover };
+  return {
+    pages: out.map((p, i) => {
+      const entry = { n: i + 1, img: p.img, text: p.text };
+      if (p.clips.length) entry.audio = p.clips;
+      return entry;
+    }),
+    cover,
+  };
+}
+
+// One HEAD request against the first clip decides whether the book's audio
+// actually exists on S3 (the StoryWeaver lesson: metadata can promise media
+// that 403s). All-or-nothing per book.
+function verifyFirstClip(pages) {
+  const withAudio = pages.find((p) => p.audio && p.audio.length);
+  if (!withAudio) return false;
+  try {
+    execFileSync('curl', ['-sSI', '--fail', '--max-time', '20', withAudio.audio[0].src], { stdio: 'pipe' });
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+function stripPageAudio(pages) {
+  for (const p of pages) delete p.audio;
 }
 
 function makeBook(record, meta, lang, parsed) {
@@ -268,6 +305,14 @@ function makeBook(record, meta, lang, parsed) {
   const holder = copyrightHolder(meta);
   const author = String(meta.author || '').trim();
   const pages = parsed.pages;
+  // Talking books: keep the per-page clips only when the audio is verified
+  // to exist; book.audio.mode='perPage' is what the reader's clip queue keys
+  // on (hasAudio in the index follows from the truthy audio object).
+  let audio = null;
+  if (pages.some((p) => p.audio && p.audio.length)) {
+    if (verifyFirstClip(pages)) audio = { mode: 'perPage' };
+    else stripPageAudio(pages);
+  }
   // Non-Latin titles slugify to 'untitled'; a multilingual record (one
   // instanceId, several language editions) would then collide with itself —
   // suffix the language so each edition gets its own slug.
@@ -299,7 +344,7 @@ function makeBook(record, meta, lang, parsed) {
       url: 'https://bloomlibrary.org/book/' + record.id,
     },
     cover: parsed.cover || (pages[0] && pages[0].img) || null,
-    audio: null,
+    audio,
     pages,
     stats: {
       pages: pages.length,
@@ -446,9 +491,27 @@ async function main() {
           continue;
         }
         const book = makeBook(row.record, row.meta, lang, parsed);
+        // Books imported before the language-suffix slug fix live on disk as
+        // '…-untitled' (no suffix); recognize them so upgrades reach them
+        // instead of bouncing off the duplicate-title guard.
+        const legacySlug = book.slug.replace(/-untitled-[a-z]{2,4}$/, '-untitled');
+        if (legacySlug !== book.slug && existing.has(legacySlug) && !existing.has(book.slug)) {
+          book.slug = legacySlug;
+        }
         const file = 'books/' + book.slug + '.json';
         if (existing.has(book.slug)) {
-          console.log('   already imported: ' + book.title);
+          // Upgrade-in-place: a book imported before talking-book support
+          // gets its narration on re-run (fresh makeBook output replaces the
+          // file — same slug, deterministic content).
+          const diskPath = path.join(ROOT, file);
+          let disk = null;
+          try { disk = JSON.parse(fs.readFileSync(diskPath, 'utf8')); } catch (_) {}
+          if (disk && !disk.audio && book.audio) {
+            if (!dryRun) fs.writeFileSync(diskPath, JSON.stringify(book, null, 2) + '\n');
+            console.log('   AUDIO ADDED: ' + book.title + ' (' + book.pages.filter((p) => p.audio).length + ' narrated pages)');
+          } else {
+            console.log('   already imported: ' + book.title);
+          }
           count++;
           continue;
         }

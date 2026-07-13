@@ -1,12 +1,12 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "bloom-9b66843b-untitled-my",
-  "title": "လှပတဲ့နေ့လေးတစ်နေ့",
-  "description": "A Burmese picture book from Bloom Library.",
+  "title": "ဆငည်းချှီႇတခိူည်း",
+  "description": "ဆငည်းအီးချှီႇတခိူည်း စာနီကိုလဲတ် ကာည်း ဘံဝ်ဖီုင်းတိုဆံတ် ပံင်ကမေဲႈအန်းကဲ။",
   "language": "Burmese",
   "langCode": "my",
   "isRtl": false,
-  "level": "3",
+  "level": "2",
   "orientation": "portrait",
   "sourceId": "bloom",
   "contentType": "story",
@@ -14,84 +14,146 @@
     "Story Book"
   ],
   "authors": [
-    "Book Dash"
+    "2021, RBTT & NTC"
   ],
   "illustrators": [],
   "originalAuthors": [],
-  "publisher": "Book Dash",
+  "publisher": "2021, RBTT & NTC",
   "license": "CC BY",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
   "source": {
     "id": "bloom",
     "name": "Bloom Library",
-    "url": "https://bloomlibrary.org/book/sMEpwxPHkw"
+    "url": "https://bloomlibrary.org/book/b4mbT8tcyp"
   },
-  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_01_Image_0001.png",
-  "audio": null,
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_01_Image_0001.png",
+  "audio": {
+    "mode": "perPage"
+  },
   "pages": [
     {
       "n": 1,
-      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_05_Image_0001.jpg",
-      "text": "“လှပလိုက်တဲ့ နေ့လေးတစ်နေ့ပါလာ” လို့မေမေကပြောလိုက်တယ်။\n“နီကိုးလတ်(စ်) သားရေ ထတော့ကွယ်။”"
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_05_Image_0001.jpg",
+      "text": "မာစီဒါ်ႈလာ် “ဆငည်းချှီႇတခိူည်းနာ်ႏ၊ နီကိုလဲတ်အိူည် ယာ်ည်ႇလာ့်။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fbcedabd8-b436-448f-8fba-125dd9efcb14.mp3",
+          "dur": 5.839433
+        }
+      ]
     },
     {
       "n": 2,
-      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_06_Image_0001.jpg",
-      "text": "“ဒီနေ့ဟာ အတော်လေးသာယာတဲ့နေ့လေးတစ်နေ့ပါလာ” လို့ဖေဖေကပြောလိုက်တယ်။ “ချောင်းနံဘေးမှာ ပျော်ပွဲစားထွက်ကြရအောင်။”\n“သားရဲ့သူငယ်ချင်း ဂျေးကော့ကိုလည်း ခေါ်သွားလို့ရမလာ” လို့ နီကိုးလတ်(စ်)ကမေးလိုက်တယ်။"
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_06_Image_0001.jpg",
+      "text": "ကူန်စီဒါ်ႈလာ် “အီုန်ဒီႈနီး၊ မိုႈဆငည်းမှေဲမ်ခိုည်းတခိူည်းပေါႇအခည်းဟာ့်။ ဟာႈ၊ အဲဟာဝ်းဟိုမ်းပ္လေါ်ည်း ပျော် ပါ့်ရီမ်းပါင်းအေဲမ်း။” နီကိုလဲတ်စီမှောႇဒါ်ႈ “နံင်ဘိူန်းလာ့်၊ တေဲႇဟာဝ်းစံမ့်ဘံဝ်ဖီုင်း အံဝ်း\nဇေးကော်က်။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi1d7a2cd8-dca1-4729-bf69-d54974824685.mp3",
+          "dur": 14.747188
+        }
+      ]
     },
     {
       "n": 3,
-      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_07_Image_0001.jpg",
-      "text": "“ကျွန်တော် ပျော်ပွဲစားထွက်ရတာကြိုက်တယ်ဆိုတာကို မေ့မသွားကြနဲ့နော်” ဆိုပြီး လားလေးကပြောတယ်။\n“ကျွန်တော်လည်းအတူတူပဲ…ကျွန်တော်လည်း ပျော်ပွဲစားထွက်ရတာကြိုက်တယ်” လို့ခွေးလေးကထပ်ပြောလိုက်တယ်။\n“ငါတို့နောက်လိုက်ခဲ့ပါ” ဆိုပြီး ငှက်လေးတွေပြောလိုက်တယ်။"
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_07_Image_0001.jpg",
+      "text": "လော်စီဒါ်ႈ “ပဲခူဘီးနာ်ႏ၊ အံဝ်းမာ် ယလည်လေႈဟိုမ်းပ္လေါ်ည်းပျော်။”ဆံဝ်းမာ် ဟည်ဒါ်ႈပေါႇ “တံန်နှေးလိူည် ဘာည်းဇေဲန်း၊ အံဝ်းမာ် ယအိူဝ်လည်လေႈဟိုမ်းပ္လေါ်ည်းပျော်။” ဆီမ်းစီဒါ်ႈ တာ့်ကဲ “ဒေဲႈ၊ တောႇဒေဲႈလဘာ်န်းယေးနာ်ႏ။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi9be32c34-2d49-4a01-a78b-ea123fdfc183.mp3",
+          "dur": 15.530861
+        }
+      ]
     },
     {
       "n": 4,
-      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_08_Image_0001.jpg",
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_08_Image_0001.jpg",
       "text": ""
     },
     {
       "n": 5,
-      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_09_Image_0001.jpg",
-      "text": "“ဟော.... ဟိုးက သစ်ပင်အထိ အပြေးပြိုင်ကြရအောင်” ဆိုပြီး နီကိုးလပ်(စ်) ကပြောလိုက်တယ်။"
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_09_Image_0001.jpg",
+      "text": "နီကိုလဲတ် စီဒါ်ႈ “ဟာႈ၊ အဲကချဲင်တဘုဟံင်း နှာင်းကံပ်ဟာဝ်းစာ်မ်း ပါ့်တင်းဟာ်ည်းတော်ည်း။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi311389e2-f986-4fa4-9ddf-1ab98587e152.mp3",
+          "dur": 6.231269
+        }
+      ]
     },
     {
       "n": 6,
-      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_10_Image_0001.jpg",
-      "text": "“ငါနိုင်တယ်….. ငါနိုင်တယ်” ဆိုပြီး လားကပြောတယ်။\n“ဒါမတရားဘူး မင်းမှာက ခြေထောက်လေးချောင်းတောင် ရှိတာကိုး” လို့ နီကိုးလပ်(စ်)က ပြောလိုက်တယ်။"
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_10_Image_0001.jpg",
+      "text": "လော်စီကနာည်းလာ်ဒါ်ႈ “အံဝ်းဟည်ဘယ် အံဝ်းဟည်ဘယ်။” နီကိုလဲတ် စီဟည်ဒါ်ႈလာ်ပေါႇ “အန်းအာဝ်တြားယေဝ်း၊ မည်းစီမေဲႈလာ်ဒါးဇာ်န်းဖိုန်းကဒ။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi71b7073a-aa93-4459-ab97-e4917b2f059c.mp3",
+          "dur": 9.731678
+        }
+      ]
     },
     {
       "n": 7,
-      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_11_Image_0001.jpg",
-      "text": "“ငါဘာလုပ်တတ်လဲဆိုတာကြည့်လိုက်ပါ” လို့ နီကိုးလပ်စ်ကပြောလိုက်တယ်။\n“မင်း ဒါလုပ်တတ်မှာမဟုတ်ပါဘူး” လို့ ဂျေးကော့က ပြောလိုက်တယ်။"
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_11_Image_0001.jpg",
+      "text": "နီကိုလဲတ်စီဒါ်ႈဘိုး “တိူဝ်ႈနာ်ႏ၊ ဆီ အံဝ်းဆမားရေဲန်း။”ဇေးကော်က်စီဒါ်ႈ တာ့်အန်း “ဆီ မည်းနံင်ဆမားလာ် ရေဲန်း။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi0e86de68-9d05-43c3-96fc-00731abe0b04.mp3",
+          "dur": 7.641882
+        }
+      ]
     },
     {
       "n": 8,
-      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_12_Image_0001.jpg",
-      "text": "“ဒီနေရာလေးမှာ ပျော်ပွဲစားထွက်ကြရအောင်ဟေး” လို့ ဖေဖေကပြောတယ်။"
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_12_Image_0001.jpg",
+      "text": "ကူန်စီဒါ်ႈ “နှေး၊ အဲရေဲန်းဟိုမ်းပ္လေါ်ည်းပျော် ကဆီုဝ်နီးနာ်ႏ။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fe9e9f11c-9762-425d-8145-41d4b0cd9fad.mp3",
+          "dur": 5.2244
+        }
+      ]
     },
     {
       "n": 9,
-      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_13_Image_0001.jpg",
-      "text": "“ရေထဲမှာ အပြေးပြိုင်ရအောင်” လို့ ဂျေးကော့က ပြောလိုက်တယ်။"
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_13_Image_0001.jpg",
+      "text": "ဇေးကော်က်စီဒါ်ႈ “ဟာႈ၊ အဲကချဲင်တဘုခေဲင်းအေဲမ်း။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi879f7cd5-97d9-48e2-8ed9-d231639d78b5.mp3",
+          "dur": 4.336252
+        }
+      ]
     },
     {
       "n": 10,
-      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_14_Image_0001.jpg",
-      "text": "“လာ…ဒီမှာလာစားကြအုန်း သားတို့ သမီးတို့။” လို့ မေမေကပြောလိုက်တယ်။"
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_14_Image_0001.jpg",
+      "text": "မာစီဒါ်ႈလာ် “ကော်န်းပဲအိူည် ဒေဲႈ၊ ဒေဲႈဟိုမ်း ပါ့်နီး။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi1a1cbabc-a3ad-4b9d-948c-2af78fdb6880.mp3",
+          "dur": 4.84678
+        }
+      ]
     },
     {
       "n": 11,
-      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_15_Image_0001.jpg",
-      "text": "“အိမ်ပြန်ဖို့အချိန်ရောက်ပြီ” လို့မေမေကပြောတယ်။ “ဂျေးကော့ကို နူတ်ဆက်လိုက်ကြအုန်း။”"
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_15_Image_0001.jpg",
+      "text": "မာစီဒါ်ႈဘိုး “အန်းဟည်စာ်မ်းဒေဲႈ အချီုင်ႎီးအဲတာ် ပါ့်ခလေဲပ် ကော်။ ကလာင်းဒါ်ႈလာ်ကျောႈ တာ်မ်း တာ့်ဇေးကော်က်။”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2faudio%2fi8c4aec37-2840-441c-bfed-132b7141a14f.mp3",
+          "dur": 7.929229
+        }
+      ]
     },
     {
       "n": 12,
-      "img": "https://s3.amazonaws.com/BloomLibraryBooks/kham.bkh%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2fYam+hiaxvax+ranaic+v%c3%a4x!%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_16_Image_0001.jpg",
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f9b66843b-756b-458b-b764-e31c620a839a%2f%e1%80%86%e1%80%84%e1%80%8a%e1%80%ba%e1%80%b8%e1%80%81%e1%80%bb%e1%80%be%e1%80%ae%e1%82%87%e1%80%90%e1%80%81%e1%80%ad%e1%80%b0%e1%80%8a%e1%80%ba%e1%80%b8%2fBD_1_a-beautiful-day_pdf-ebook_20160127_Page_16_Image_0001.jpg",
       "text": ""
     }
   ],
   "stats": {
     "pages": 12,
-    "words": 71
+    "words": 70
   }
 }

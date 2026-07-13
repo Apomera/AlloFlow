@@ -1,0 +1,82 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-00944521-untitled-km",
+  "title": "១៨ នអើន ក៝ប ដាសកៅ",
+  "description": "A story of the turtle and the bear (Easy Reader - Level 2)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/Tsq9e3jFmH"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f00944521-856e-4ace-a978-dc6d374d8d63%2f%e1%9f%a1%e1%9f%a8+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%85%2fimage9.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f00944521-856e-4ace-a978-dc6d374d8d63%2f%e1%9f%a1%e1%9f%a8+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%85%2fimage.png",
+      "text": "កាលពីព្រេងនាយមានអណ្ដើកមួយចេញដំណើរពីព្រឹក ដើម្បីទៅរកជីកដំឡូងក្នុងព្រៃ។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f00944521-856e-4ace-a978-dc6d374d8d63%2f%e1%9f%a1%e1%9f%a8+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%85%2fimage1.png",
+      "text": "លុះទៅដល់កន្លែងមួយមានដំឡូងច្រើនណាស់។ នៅពេលអណ្ដើកកំពុងជីកដំឡូង ខ្លាឃ្មុំក៏នៅទីនោះដែរ។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f00944521-856e-4ace-a978-dc6d374d8d63%2f%e1%9f%a1%e1%9f%a8+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%85%2fimage2.png",
+      "text": "ឃើញដូចនោះខ្លាឃ្មុំក៏សួរ៖ “អេ! អណ្ដើកឯងជីកអីហ្នឹង?” អណ្ដើកឆ្លើយ៖ “ខ្ញុំកំពុងជីកដំឡូងដើម្បីស្ងោរហូប”។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f00944521-856e-4ace-a978-dc6d374d8d63%2f%e1%9f%a1%e1%9f%a8+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%85%2fimage3.png",
+      "text": "ខ្លាឃ្មុំនិយាយទៅអណ្ដើកថា៖ “ខ្ញុំមិនដែលហូបដំឡូងទេ ខ្ញុំហូបតែឃ្មុំ និង ពង្រួត ពីព្រោះវាមានទឹកផ្អែមឆ្ងាញ់ជាងដំឡូង”។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f00944521-856e-4ace-a978-dc6d374d8d63%2f%e1%9f%a1%e1%9f%a8+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%85%2fimage4.png",
+      "text": "អណ្ដើកឮដូច្នេះក៏សួរថា៖ “ឯងចេះឡើងដើមឈើមែនទេ?” “បាទ!” ខ្លាឃ្មុំឆ្លើយ។ អណ្ដើកក៏និយាយទៀតថា៖ “បើអញ្ចឹង ឯងជូនខ្ញុំទៅយកទឹកឃ្មុំបានទេ?” ខ្លាឃ្មុំឆ្លើយថា៖ “បាន! មិនអីទេ”។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f00944521-856e-4ace-a978-dc6d374d8d63%2f%e1%9f%a1%e1%9f%a8+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%85%2fimage5.png",
+      "text": "ទៅតាមផ្លូវ អណ្ដើកក៍និយាយថា៖ “ខ្ញុំធ្លាប់ហូបដំឡូងច្រលក់ជាមួយនឹងទឹកឃ្មុំ គឺឆ្ងាញ់មែនទែន”។ “ខ្ញុំចង់សាកល្បងដែរ” ខ្លាឃ្មុំឆ្លើយ។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f00944521-856e-4ace-a978-dc6d374d8d63%2f%e1%9f%a1%e1%9f%a8+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%85%2fimage6.png",
+      "text": "នៅពេលដែលកំពុងតែនិយាយគ្នា ស្រាប់តែពួកគេបានឃើញឃ្មុំនៅលើដើមព្រីង។ ខ្លាឃ្មុំឡើងយកឃ្មុំ ហើយអណ្ដើកចាំពូតទឹកខាងក្រោម។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f00944521-856e-4ace-a978-dc6d374d8d63%2f%e1%9f%a1%e1%9f%a8+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%85%2fimage7.png",
+      "text": "រួចរាល់ហើយ ពួកគេនាំគ្នាទៅផ្ទះ ដើម្បីស្ងោរដំឡូង។ ពេលឆ្អិនដំឡូងហើយ ពួកគេបបួលគ្នាហូបច្រលក់នឹងទឹកឃ្មុំ។ នៅពេលដែលកំពុងហូបដំឡូង ខ្លាឃ្មុំលាន់មាត់ថា៖ “យីឆ្ងាញ់មែន” “បើឆ្ងាញ់សូមហូបអោយបានច្រើនទៅសម្លាញ់”។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f00944521-856e-4ace-a978-dc6d374d8d63%2f%e1%9f%a1%e1%9f%a8+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%9d%e1%9e%94%e2%80%8b+%e1%9e%8a%e1%9e%b6%e1%9e%9f%e1%9e%80%e1%9f%85%2fimage8.png",
+      "text": "ពួកគេសប្បាយចិត្តណាស់ ដោយបានហូបឆ្ងាញ់ហើយឆ្អែតដូចនេះ។ ក្រោយមកអណ្ដើកនិងខ្លាឃ្មុំក្លាយជាមិត្តសម្លាញ់នឹងគ្នាក្នុងព្រៃនោះ៕"
+    }
+  ],
+  "stats": {
+    "pages": 9,
+    "words": 48
+  }
+}

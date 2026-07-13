@@ -1,0 +1,112 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-77f55328-untitled-km",
+  "title": "២១ខ នអើន ក្រាយ្សកើលបេល",
+  "description": "The story of a squirrel helping Beil (Easy Reader - Level 2)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "3",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/neiLpgXrko"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f77f55328-43f0-4e3c-be63-f44aa5441ba5%2f%e1%9f%a2%e1%9f%a1%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%80%e1%9e%be%e1%9e%9b%e2%80%8b%e1%9e%94%e1%9f%81%e1%9e%9b%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f77f55328-43f0-4e3c-be63-f44aa5441ba5%2f%e1%9f%a2%e1%9f%a1%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%80%e1%9e%be%e1%9e%9b%e2%80%8b%e1%9e%94%e1%9f%81%e1%9e%9b%2fimage1.png",
+      "text": "កង្ហែន “ថ្ងៃនេះខ្ញុំទៅរកពោតនៅក្នុងចំការគេនោះមកស៊ីសិន ខ្ញុំឃ្លានណាស់”។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f77f55328-43f0-4e3c-be63-f44aa5441ba5%2f%e1%9f%a2%e1%9f%a1%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%80%e1%9e%be%e1%9e%9b%e2%80%8b%e1%9e%94%e1%9f%81%e1%9e%9b%2fimage2.png",
+      "text": "កង្ហែនដើរទៅដល់ចំការមួយហើយគិតថា៖“ថ្ងៃនេះខ្ញុំរកចំណីស៊ីនៅចំការគេនេះសិនហើយ”។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f77f55328-43f0-4e3c-be63-f44aa5441ba5%2f%e1%9f%a2%e1%9f%a1%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%80%e1%9e%be%e1%9e%9b%e2%80%8b%e1%9e%94%e1%9f%81%e1%9e%9b%2fimage3.png",
+      "text": "រំពេចនោះស្រាប់តែកង្ហែនឃើញពោតមួយជ្រុះនៅលើដី វាលាន់មាត់និយាយថា៖ “ អូ! ពោតមួយនេះទុំល្អណាស់"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f77f55328-43f0-4e3c-be63-f44aa5441ba5%2f%e1%9f%a2%e1%9f%a1%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%80%e1%9e%be%e1%9e%9b%e2%80%8b%e1%9e%94%e1%9f%81%e1%9e%9b%2fimage4.png",
+      "text": "កង្ហែនថា៖ ​“យកវាមកស៊ីសិន ថ្ងៃនេះខ្ញុំហេងណាស់បានចំណីស៊ី”។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f77f55328-43f0-4e3c-be63-f44aa5441ba5%2f%e1%9f%a2%e1%9f%a1%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%80%e1%9e%be%e1%9e%9b%e2%80%8b%e1%9e%94%e1%9f%81%e1%9e%9b%2fimage5.png",
+      "text": "ថ្ងៃនោះជាថ្ងៃបេលចាំមើលចំការ បេលគិតថា៖ “ខ្ញុំទៅមើលចំការពោតសិន ក្រែងមានសត្វអីស៊ី”។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f77f55328-43f0-4e3c-be63-f44aa5441ba5%2f%e1%9f%a2%e1%9f%a1%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%80%e1%9e%be%e1%9e%9b%e2%80%8b%e1%9e%94%e1%9f%81%e1%9e%9b%2fimage6.png",
+      "text": "មកដល់កៀនចំការពោត បេលប្រទះឃើញកង្ហែនមួយដែលកំពុងតែស៊ីពោតនៅនឹងដី បេលនិយាយ៖ “អូ! គឺឯងទេដែលលួចស៊ីពោតយើង តាំងពីថ្ងៃមុនមកថ្ងៃនេះ”។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f77f55328-43f0-4e3c-be63-f44aa5441ba5%2f%e1%9f%a2%e1%9f%a1%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%80%e1%9e%be%e1%9e%9b%e2%80%8b%e1%9e%94%e1%9f%81%e1%9e%9b%2fimage7.png",
+      "text": "បេលខឹងក៏ដេញវាយកង្ហែននោះ។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f77f55328-43f0-4e3c-be63-f44aa5441ba5%2f%e1%9f%a2%e1%9f%a1%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%80%e1%9e%be%e1%9e%9b%e2%80%8b%e1%9e%94%e1%9f%81%e1%9e%9b%2fimage8.png",
+      "text": "កង្ហែនរត់គេចពីបេលចូលក្នុងព្រៃ ដោយនិយាយថា៖ “ឯងមិនបាច់ដេញវាយអញទេ ឯងដេញអញមិនទាន់ដែរ”។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f77f55328-43f0-4e3c-be63-f44aa5441ba5%2f%e1%9f%a2%e1%9f%a1%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%80%e1%9e%be%e1%9e%9b%e2%80%8b%e1%9e%94%e1%9f%81%e1%9e%9b%2fimage9.png",
+      "text": "បេលនៅតែដេញ រំពេចនោះស្រាប់តែបេលបានជាន់អន្ទាក់តារបស់គាត់នៅក្បែរចំការ ជើងព្យួឡើងលើចុងឈើ។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f77f55328-43f0-4e3c-be63-f44aa5441ba5%2f%e1%9f%a2%e1%9f%a1%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%80%e1%9e%be%e1%9e%9b%e2%80%8b%e1%9e%94%e1%9f%81%e1%9e%9b%2fimage10.png",
+      "text": "ធ្វើអោយបេលស្រាយចំណងដោយខ្លួនឯងមិនបាន ក៏អង្វស្រែកហៅកង្ហែនថា៖ “ខ្ញុំត្រូវជាប់អន្ទាក់ហើយ ជើងខ្ញុំឈឺណាស់ សូមកង្ហែនឯងជួយដល់ខ្ញុំផង ខ្ញុំសូមអង្វរ!”។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f77f55328-43f0-4e3c-be63-f44aa5441ba5%2f%e1%9f%a2%e1%9f%a1%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%80%e1%9e%be%e1%9e%9b%e2%80%8b%e1%9e%94%e1%9f%81%e1%9e%9b%2fimage11.png",
+      "text": "កង្ហែនស្ទុះមកដល់ឃើញបេលជាប់អន្ទាក់ក៏សើចចំអកថា៖ “ហាសហា! សមមុខឯងហើយ នេះមកពីឯងដេញវាយអញបានជាឯងជាប់អន្ទាក់ដូចនេះ”។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f77f55328-43f0-4e3c-be63-f44aa5441ba5%2f%e1%9f%a2%e1%9f%a1%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%80%e1%9e%be%e1%9e%9b%e2%80%8b%e1%9e%94%e1%9f%81%e1%9e%9b%2fimage12.png",
+      "text": "បេលអង្វរអោយកង្ហែនជួយទៀតថា៖ “កង្ហែនអើយ! សូមឯងមេត្តាជូយខ្ញុំផង! ចាំខ្ញុំអោយរង្វាន់ដល់ឯង”។"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f77f55328-43f0-4e3c-be63-f44aa5441ba5%2f%e1%9f%a2%e1%9f%a1%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%80%e1%9e%be%e1%9e%9b%e2%80%8b%e1%9e%94%e1%9f%81%e1%9e%9b%2fimage13.png",
+      "text": "ដូច្នេះកង្ហែនក៏ជួយខាំផ្ដាច់ខ្សែអន្ទាក់អោយបេល។ បេលនិយាយថា៖ “ខ្ញុំអរគុណឯងហើយកង្ហែន”។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f77f55328-43f0-4e3c-be63-f44aa5441ba5%2f%e1%9f%a2%e1%9f%a1%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%80%e1%9e%be%e1%9e%9b%e2%80%8b%e1%9e%94%e1%9f%81%e1%9e%9b%2fimage14.png",
+      "text": "បន្ទាប់មកបេលកាច់ពោតមួយអោយទៅកង្ហែននោះហើយនិយាយថា៖ “ពោតនេះជារង្វាន់ខ្ញុំអោយទៅឯង ចាប់ពីថ្ងៃនេះតទៅឯងឈប់លួចស៊ីពោតខ្ញុំទៀតណា៎ បើឯងឃ្លានឯងស៊ីបន្តិចបន្តួចបានហើយ”។"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f77f55328-43f0-4e3c-be63-f44aa5441ba5%2f%e1%9f%a2%e1%9f%a1%e1%9e%81+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%80%e1%9f%92%e1%9e%9a%e1%9e%b6%e1%9e%99%e1%9f%92%e1%9e%9f%e2%80%8b%e1%9e%80%e1%9e%be%e1%9e%9b%e2%80%8b%e1%9e%94%e1%9f%81%e1%9e%9b%2fimage15.png",
+      "text": "បេលគិតថាកង្ហែនជាសត្វមួយវៃឆ្លាត ហើយមានតម្លៃចំពោះគាត់។ ទោះបីកង្ហែនលួចស៊ីពោតយ៉ាងណាក៏ដោយ បេលមានគំនិតចង់ប្រៀនប្រដៅ? និងគំរាមសត្វកង្ហែនអោយរាងជាលតែប៉ុណោះ។ គាត់មិនមានគំនិតចង់សម្លាប់សត្វកង្ហែនទេ៕"
+    }
+  ],
+  "stats": {
+    "pages": 15,
+    "words": 57
+  }
+}

@@ -27,7 +27,9 @@
     "url": "https://bloomlibrary.org/book/rhhqcPp5Cz"
   },
   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fcover3.png",
-  "audio": null,
+  "audio": {
+    "mode": "perPage"
+  },
   "pages": [
     {
       "n": 1,
@@ -42,52 +44,112 @@
     {
       "n": 3,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_07_Image_1.jpg",
-      "text": "Ntashya yarazindutse."
+      "text": "Ntashya yarazindutse.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2faudio%2ff24a4cd7-bf1d-447a-84da-83de24de43c3.mp3",
+          "dur": 3.54
+        }
+      ]
     },
     {
       "n": 4,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_08_Image_1.jpg",
-      "text": "Atora utwondo."
+      "text": "Atora utwondo.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2faudio%2fi68e56968-a8b2-49d6-a0b5-4434aacf8fdb.mp3",
+          "dur": 2.42
+        }
+      ]
     },
     {
       "n": 5,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_09_Image_3.jpg",
-      "text": "Atwomeka ku cyari."
+      "text": "Atwomeka ku cyari.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2faudio%2fi724f3f44-85dd-452e-839f-9069a21fd4f3.mp3",
+          "dur": 3.33
+        }
+      ]
     },
     {
       "n": 6,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_10_Image_1.jpg",
-      "text": "Yubaka vubavuba."
+      "text": "Yubaka vubavuba.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2faudio%2fea8c55fe-acc8-4a13-a257-ff089736230a.mp3",
+          "dur": 2.96
+        }
+      ]
     },
     {
       "n": 7,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_11_Image_1.jpg",
-      "text": "Yuzuza icyari."
+      "text": "Yuzuza icyari.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2faudio%2fi81c822d4-6644-4b09-89cc-d17ab21cfefa.mp3",
+          "dur": 2.74
+        }
+      ]
     },
     {
       "n": 8,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_12_Image_3.jpg",
-      "text": "Imvura iragwa."
+      "text": "Imvura iragwa.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2faudio%2ff79e9ba2-83d2-44fd-9d6c-b552bae1e35e.mp3",
+          "dur": 1.96
+        }
+      ]
     },
     {
       "n": 9,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_13_Image_1.jpg",
-      "text": "Iragisenya."
+      "text": "Iragisenya.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2faudio%2fi5bf5a569-d634-4760-82f6-c11cc2f65c10.mp3",
+          "dur": 2.38
+        }
+      ]
     },
     {
       "n": 10,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_14_Image_1.jpg",
-      "text": "Ntashya agira ubwoba."
+      "text": "Ntashya agira ubwoba.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2faudio%2fc333efa2-afbf-4f9e-a4ea-4f5033dad42a.mp3",
+          "dur": 2.79
+        }
+      ]
     },
     {
       "n": 11,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_15_Image_1.jpg",
-      "text": "Yitegereza hakurya."
+      "text": "Yitegereza hakurya.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2faudio%2fi10d4a4ed-5c20-487f-b4d1-3c8d84533c15.mp3",
+          "dur": 3.13
+        }
+      ]
     },
     {
       "n": 12,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2fIcyari_Cya_Ntashya_-_Utwondo_Page_16_Image_3.jpg",
-      "text": "Araguruka."
+      "text": "Araguruka.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f934c7348-dd5d-4129-abbc-2ce0d997b795%2fIcyari+Cya+Ntashya+3+Utwondo%2faudio%2fi1c63f14b-ae62-432c-826c-c749bfd3f613.mp3",
+          "dur": 2.63
+        }
+      ]
     },
     {
       "n": 13,

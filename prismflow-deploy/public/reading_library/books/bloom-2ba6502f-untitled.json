@@ -25,47 +25,101 @@
     "url": "https://bloomlibrary.org/book/evdHO8ORCE"
   },
   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f8.jpg",
-  "audio": null,
+  "audio": {
+    "mode": "perPage"
+  },
   "pages": [
     {
       "n": 1,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f1.jpg",
-      "text": "အဲနံင်ကနိုက်ဆီ နံင်ချဲမ်းအီုန်ဒီႈနီး။ ဟာႈ၊ အဲကနိုက် ကတားကလိူည်း။"
+      "text": "အဲနံင်ကနိုက်ဆီ နံင်ချဲမ်းအီုန်ဒီႈနီး။ ဟာႈ၊ အဲကနိုက် ကတားကလိူည်း။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2faudio%2ffff4fdf4-a354-4deb-9a3a-48a76def604b.mp3",
+          "dur": 5.943922
+        }
+      ]
     },
     {
       "n": 2,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f3.jpg",
-      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊အဲကနိုက် အျိူဝ်းကိုင်ကပူည်း။"
+      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊အဲကနိုက် အျိူဝ်းကိုင်ကပူည်း။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2faudio%2fddfe80b4-6be5-4056-992b-aa9b76271f2c.mp3",
+          "dur": 3.735446
+        }
+      ]
     },
     {
       "n": 3,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f22.jpg",
-      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊ အဲကနိုက် ကတော်ဂျဲတ်။"
+      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊ အဲကနိုက် ကတော်ဂျဲတ်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2faudio%2ff76dbd87-eaec-4053-94bf-f70c65156f20.mp3",
+          "dur": 1.842698
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2faudio%2fi091e3e76-56ec-4cbb-a00e-62988e83597e.mp3",
+          "dur": 2.130045
+        }
+      ]
     },
     {
       "n": 4,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f4.jpg",
-      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊အဲကနိုက် ႎဲန်ႎည်း။"
+      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊အဲကနိုက် ႎဲန်ႎည်း။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2faudio%2ff541d610-196b-4f2d-bbd1-2589a2bbdbc5.mp3",
+          "dur": 3.227188
+        }
+      ]
     },
     {
       "n": 5,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f5.jpg",
-      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊ အဲကနိုက် ကဖာႇႎါးကော်ည်။"
+      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊ အဲကနိုက် ကဖာႇႎါးကော်ည်။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2faudio%2fi56feda5f-5ce7-4462-8bd2-508c73a963ef.mp3",
+          "dur": 3.436167
+        }
+      ]
     },
     {
       "n": 6,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f62.jpg",
-      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊အဲကနိုက် ကလိုက်ဆလေႇ။"
+      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊အဲကနိုက် ကလိုက်ဆလေႇ။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2faudio%2fi6a8e42ac-18e0-40fb-9a99-d34a6ead4b93.mp3",
+          "dur": 3.227188
+        }
+      ]
     },
     {
       "n": 7,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f7.jpg",
-      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊ အဲကနိုက် ကတော်ချိုင်းနာ်ႏ။"
+      "text": "အာဝ်မိုႈ အာဝ်မိုႈ၊ အဲကနိုက် ကတော်ချိုင်းနာ်ႏ။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2faudio%2fi1a1f1b5e-ce52-4ebf-818a-12ad5ef0540f.mp3",
+          "dur": 3.421982
+        }
+      ]
     },
     {
       "n": 8,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2f81.jpg",
-      "text": "ဆည်းလိူည်း၊ အချီုင်နံင်ကနိုက်အဲအီုန်ဒီႈနီး၊ အန်းဂေါ်ည်းခည်နာင့်။ အဲကနိုက်ပေါႇ အူမျိုးဟော်ည်ႇအူမျိုးနာ်ႏ။ ႎေး.. ႎေး..။"
+      "text": "ဆည်းလိူည်း၊ အချီုင်နံင်ကနိုက်အဲအီုန်ဒီႈနီး၊ အန်းဂေါ်ည်းခည်နာင့်။ အဲကနိုက်ပေါႇ အူမျိုးဟော်ည်ႇအူမျိုးနာ်ႏ။ ႎေး.. ႎေး..။",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/luja01552%40gmail.com%2f2ba6502f-7a76-47d3-953f-dcf8c472dc88%2f%e1%80%86%e1%80%ae%e1%80%a1%e1%80%b2%e1%80%94%e1%80%b6%e1%80%84%e1%80%ba%e1%80%80%e1%80%94%e1%80%ad%e1%80%af%e1%80%80%e1%80%ba%e1%80%a1%e1%80%ae%e1%80%af%e1%80%94%e1%80%ba%e1%80%92%e1%80%ae%e1%82%88%2faudio%2fi6ab9b296-59e8-496b-9b2d-9aaad057a482.mp3",
+          "dur": 8.437406
+        }
+      ]
     }
   ],
   "stats": {

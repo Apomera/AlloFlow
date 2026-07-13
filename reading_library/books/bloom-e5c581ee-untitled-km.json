@@ -1,0 +1,142 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-e5c581ee-untitled-km",
+  "title": "រឿង ឆ្កែធ្វើតម្រាប់តាមជ្រូក",
+  "description": "A story about the dog mimicking the pig (Level 1 Easy Reader)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "1",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/AXFOLobnuF"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage4.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage1.png",
+      "text": "ឆ្កែស៊ីត្រីនៅក្នុងចាន។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage2.png",
+      "text": "គាត់ដេញវាយឆ្កែ។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage3.png",
+      "text": "ឆ្កែស៊ីកង្កែបនៅក្នុងសាស។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage5.png",
+      "text": "គាត់ដេញវាយឆ្កែ។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage6.png",
+      "text": "ឆ្កែស៊ីពងទា។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage7.png",
+      "text": "គាត់ដេញវាយឆ្កែ។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage8.png",
+      "text": "ឆ្កែស៊ីបាយជ្រូកក្នុងស្នូក។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage9.png",
+      "text": "គាត់ដេញវាយឆ្កែ។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage10.png",
+      "text": "ជ្រូកអាញកង្កែបនឹងសាស។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage11.png",
+      "text": "ឆ្កែឃើញគាត់អោយចំណីទៅជ្រូក។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage12.png",
+      "text": "ឆ្កែឃើញជ្រូកអាញសាស។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage13.png",
+      "text": "ឆ្កែធ្វើតម្រាបតាមអាញសាស។"
+    },
+    {
+      "n": 13,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage14.png",
+      "text": "ឆ្កែឃើញជ្រូកអាញត្រីនឹងសាស។"
+    },
+    {
+      "n": 14,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage15.png",
+      "text": "ឆ្កែនិងជ្រូកអាញត្រីនឹងសាស។"
+    },
+    {
+      "n": 15,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage16.png",
+      "text": "ឆ្កែឃើញជ្រូកអាញទា។"
+    },
+    {
+      "n": 16,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage17.png",
+      "text": "ឆ្កែនិងជ្រូកអាញពងទានឹងសាស។"
+    },
+    {
+      "n": 17,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage18.png",
+      "text": "ឆ្កែឃើញជ្រូកអាញទន្សាយ។"
+    },
+    {
+      "n": 18,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage19.png",
+      "text": "ឆ្កែអាញទន្សាយដែរ។"
+    },
+    {
+      "n": 19,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage20.png",
+      "text": "ឆ្កែឃើញជ្រូកអាញកូនឆ្កែ។"
+    },
+    {
+      "n": 20,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage21.png",
+      "text": "ឆ្កែអាញស្នូកជ្រូកនឹងសាស។"
+    },
+    {
+      "n": 21,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe5c581ee-87dc-4295-aa41-18848d1c44cc%2f%e1%9f%a0%e1%9f%a6+%e1%9e%84%e1%9e%80%e1%9f%9d%e1%9e%85%e1%9e%93%e1%9e%b6%e1%9e%9c+%e1%9e%86%e1%9f%9d%e1%9e%8f%e1%9e%b9%e1%9e%84%e1%9e%93%e1%9e%8f%e1%9e%bc%e1%9e%8f%e1%9e%86%e1%9e%bb%e1%9e%9a%2fimage22.png",
+      "text": "បន្ទាប់មកគាត់ក៏អោយចំណីទៅជ្រូកទៅឆ្កែដែរ៕"
+    }
+  ],
+  "stats": {
+    "pages": 21,
+    "words": 21
+  }
+}

@@ -27,67 +27,153 @@
     "url": "https://bloomlibrary.org/book/DFWg4nlPZE"
   },
   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+13.jpg",
-  "audio": null,
+  "audio": {
+    "mode": "perPage"
+  },
   "pages": [
     {
       "n": 1,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+1.jpg",
-      "text": "Nelli na Mattu walikuwa wakicheza katika shamba dogo. ​‟Nelli”, mama aliita. ‟Mchukue ndugu yako na mwelekee kuchota maji. Nahitaji kumwosha mtoto”"
+      "text": "Nelli na Mattu walikuwa wakicheza katika shamba dogo. ​‟Nelli”, mama aliita. ‟Mchukue ndugu yako na mwelekee kuchota maji. Nahitaji kumwosha mtoto”",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2faudio%2fi7dd6310f-37fe-43d4-936a-fe75763f73b8.mp3",
+          "dur": 13.191837
+        }
+      ]
     },
     {
       "n": 2,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+2.jpg",
-      "text": "Nelli na nduguye walichukua vibuyu na kuelekea kuyachota maji kidimbwini. Huko walimwona mwanadada wasiyemjua. Alikuwa akiwazungumzia waliokuwa wakichota maji."
+      "text": "Nelli na nduguye walichukua vibuyu na kuelekea kuyachota maji kidimbwini. Huko walimwona mwanadada wasiyemjua. Alikuwa akiwazungumzia waliokuwa wakichota maji.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2faudio%2fbb3135ff-a67d-4921-889d-bc2615b231d8.mp3",
+          "dur": 13.897143
+        }
+      ]
     },
     {
       "n": 3,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+3.jpg",
-      "text": "Nelli alianza kuvijaza vibuyu maji. Wakati huo, mwanadada huyo akamwambia, \"Hujambo, Mimi ni nesi Kerol kutoka kwenye kliniki. Waitwa nani?\""
+      "text": "Nelli alianza kuvijaza vibuyu maji. Wakati huo, mwanadada huyo akamwambia, \"Hujambo, Mimi ni nesi Kerol kutoka kwenye kliniki. Waitwa nani?\"",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2faudio%2fca45212c-7d72-483a-8339-933845b2bb79.mp3",
+          "dur": 13.400816
+        }
+      ]
     },
     {
       "n": 4,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+4.jpg",
-      "text": "Nelli akamjibu, \"Naitwa Nelli na huyu ni Mattu. Tunamchotea mama yetu maji ili akamwoshe dada yetu mdogo\".\n\"Nyinyi ni wasaidiza wema. Naweza wasaidia kuyabeba maji nyumbani? Ningependa kuzungumza na mama yenu?\""
+      "text": "Nelli akamjibu, \"Naitwa Nelli na huyu ni Mattu. Tunamchotea mama yetu maji ili akamwoshe dada yetu mdogo\".\n\"Nyinyi ni wasaidiza wema. Naweza wasaidia kuyabeba maji nyumbani? Ningependa kuzungumza na mama yenu?\"",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2faudio%2fi4cfb116d-2298-4c90-a053-261bd81eed10.mp3",
+          "dur": 19.487347
+        }
+      ]
     },
     {
       "n": 5,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+7.jpg",
-      "text": "Wote walitembea pamoja wakielekea kwa nyumba. Walipokuwa karibu kufika nyumbani, Nelli aliita kwa sauti, \"Mama, mama! Kuna mtu hapa anayetaka kukuona.\""
+      "text": "Wote walitembea pamoja wakielekea kwa nyumba. Walipokuwa karibu kufika nyumbani, Nelli aliita kwa sauti, \"Mama, mama! Kuna mtu hapa anayetaka kukuona.\"",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2faudio%2fi899b8465-a63f-4cfe-9d40-b2656ac02d28.mp3",
+          "dur": 15.595102
+        }
+      ]
     },
     {
       "n": 6,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+8.jpg",
-      "text": "Mama alikuja mlangoni huku akibeba mtoto.\n\"Hujambo Nelli, namjua rafiki yako mgeni. Alikulia kijiji jirani na chetu. Karibu nyumbani mwetu, Kerol.\""
+      "text": "Mama alikuja mlangoni huku akibeba mtoto.\n\"Hujambo Nelli, namjua rafiki yako mgeni. Alikulia kijiji jirani na chetu. Karibu nyumbani mwetu, Kerol.\"",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2faudio%2faef01171-389c-47f8-894e-eb71be0958f2.mp3",
+          "dur": 4.205714
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2faudio%2fa7b447d4-90f3-4bad-ac82-bf9eccf08521.mp3",
+          "dur": 3.787755
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2faudio%2fbb52f153-fb99-48bf-a1b6-27602da90fdf.mp3",
+          "dur": 3.500408
+        },
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2faudio%2fe3f04896-6058-411b-967d-95a40971a530.mp3",
+          "dur": 3.108571
+        }
+      ]
     },
     {
       "n": 7,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+9.jpg",
-      "text": "Walikunywa chai na kuzungumza. Kerol alisema, \"Kama muuguzi, ninasikitika juu ya watoto vijijini mwetu. Wanahitaji chanjo za watoto ili kuzuia magonjwa.\" \"Lakini wakiwa wagonjwa, twaweza kuwapeleka kwenye kliniki wapate chanjo. Hata hivyo, watalia.\" Mama alisema."
+      "text": "Walikunywa chai na kuzungumza. Kerol alisema, \"Kama muuguzi, ninasikitika juu ya watoto vijijini mwetu. Wanahitaji chanjo za watoto ili kuzuia magonjwa.\" \"Lakini wakiwa wagonjwa, twaweza kuwapeleka kwenye kliniki wapate chanjo. Hata hivyo, watalia.\" Mama alisema.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2faudio%2fd626da07-9b34-4c6a-ae71-33d4ee3b6b6c.mp3",
+          "dur": 25.49551
+        }
+      ]
     },
     {
       "n": 8,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+10.jpg",
-      "text": "\"Hizi sio chanjo zinazowafanya watoto wapate nafuu,\" Kerol alijibu. \"Hizi ni chanjo za kuwakinga dhidi ya magonjwa ya siku za usoni.\n\"Itakuaje chanjo itampa mtu kinga dhidi ya magonjwa ya siku za usoni? Nilidhani kuwa chanjo hizi zinamfanya mtu awe na uwezo wa kukabiliana na ugonjwa sasa?\""
+      "text": "\"Hizi sio chanjo zinazowafanya watoto wapate nafuu,\" Kerol alijibu. \"Hizi ni chanjo za kuwakinga dhidi ya magonjwa ya siku za usoni.\n\"Itakuaje chanjo itampa mtu kinga dhidi ya magonjwa ya siku za usoni? Nilidhani kuwa chanjo hizi zinamfanya mtu awe na uwezo wa kukabiliana na ugonjwa sasa?\"",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2faudio%2fb3274c7d-bbe3-4817-8f5a-9c644bbc93c7.mp3",
+          "dur": 24.790204
+        }
+      ]
     },
     {
       "n": 9,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fnew+papua+10.jpg",
-      "text": "\"Kweli\", Kerol alisema, \"chanjo yafanya kazi kama fensi. Mtu hueka fensi shambani kwake ili mimea iwe salama. Na sasa una mimea nyingi tena bora inayomea huko - viazi vitamu, maharage, malenge na mimea nyingi zaidi.\""
+      "text": "\"Kweli\", Kerol alisema, \"chanjo yafanya kazi kama fensi. Mtu hueka fensi shambani kwake ili mimea iwe salama. Na sasa una mimea nyingi tena bora inayomea huko - viazi vitamu, maharage, malenge na mimea nyingi zaidi.\"",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2faudio%2fa04fca09-fb52-4602-819c-a9843ba17ea7.mp3",
+          "dur": 21.394286
+        }
+      ]
     },
     {
       "n": 10,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+12.jpg",
-      "text": "Mama alikubali. \"Kweli, sisi hujenga fensi dhabiti ili kuilinda mimea ili imee vizuri. Bila fensi nzuri, nguruwe na wanyama wengine wataharibu shamba letu.\n\"Kweli, kama fensi, chanjo hukinga watoto dhidi ya mashambulio ya magonjwa fulani,\" Kerol alijibu."
+      "text": "Mama alikubali. \"Kweli, sisi hujenga fensi dhabiti ili kuilinda mimea ili imee vizuri. Bila fensi nzuri, nguruwe na wanyama wengine wataharibu shamba letu.\n\"Kweli, kama fensi, chanjo hukinga watoto dhidi ya mashambulio ya magonjwa fulani,\" Kerol alijibu.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2faudio%2fi56052b99-5436-4fb5-94bc-209809577446.mp3",
+          "dur": 22.987755
+        }
+      ]
     },
     {
       "n": 11,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+14.jpg",
-      "text": "\"Bila chanjo, watoto wako hawana kinga. Wanaweza pata magonjwa sugu kama kifuakikuu, pepopunda na kiharusi."
+      "text": "\"Bila chanjo, watoto wako hawana kinga. Wanaweza pata magonjwa sugu kama kifuakikuu, pepopunda na kiharusi.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2faudio%2fi4e855cec-48e4-4c61-aa70-de659e78a1af.mp3",
+          "dur": 9.508571
+        }
+      ]
     },
     {
       "n": 12,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2fpage+15.jpg",
-      "text": "\"Wamaanisha kuwa naeza zuia watoto wangu kupata magonjwa haya?\" aliuliza mama. \"Wapate chanjo hizi lini?\" Kerol alijibu. \"Tutakuja kijijini baada ya wiki tatu kuwapa watoto chanjo. Lakini waweza kuja kwenye kliniki kupata chanjo.\n\"Nafikiri kuwaleta kwenye kliniki kesho.\" Mama alisema. \"Wanahitaji fensi hiyo ya kinga sasa hivi!\""
+      "text": "\"Wamaanisha kuwa naeza zuia watoto wangu kupata magonjwa haya?\" aliuliza mama. \"Wapate chanjo hizi lini?\" Kerol alijibu. \"Tutakuja kijijini baada ya wiki tatu kuwapa watoto chanjo. Lakini waweza kuja kwenye kliniki kupata chanjo.\n\"Nafikiri kuwaleta kwenye kliniki kesho.\" Mama alisema. \"Wanahitaji fensi hiyo ya kinga sasa hivi!\"",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/michaelshuji101%40gmail.com%2f9c44bcde-d201-4b08-8821-20e3b1f712df%2fFamilia+Yajifunza+Chanjo%2faudio%2fa8399ebe-1c89-4e66-b3c8-adbc33945105.mp3",
+          "dur": 30.693878
+        }
+      ]
     }
   ],
   "stats": {

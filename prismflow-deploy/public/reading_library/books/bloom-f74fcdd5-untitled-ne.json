@@ -1,0 +1,85 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-f74fcdd5-untitled-ne",
+  "title": "बाँदर र हात्ती",
+  "description": "A Nepali picture book from Bloom Library.",
+  "language": "Nepali",
+  "langCode": "ne",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Enabling Writers Project - World Education-Nepal"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Enabling Writers Project - World Education-Nepal",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/tNXIp6zMHX"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff74fcdd5-47e8-495a-8ba7-e1deec5afa48%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%b0+%e0%a4%b9%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%a4%e0%a5%80%2fAOR_CMB01521.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff74fcdd5-47e8-495a-8ba7-e1deec5afa48%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%b0+%e0%a4%b9%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%a4%e0%a5%80%2fAOR_CMB0152.png",
+      "text": "एउटा जङ्गल थियो। जङ्गलमा हात्ती र बाँदर बस्थे। त्यहाँ अन्य जनावर पनि बस्थे। एक दिनको कुरो हो। उनीहरुबीच को ठुलो भन्‍नेमा झगडा भयो।"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff74fcdd5-47e8-495a-8ba7-e1deec5afa48%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%b0+%e0%a4%b9%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%a4%e0%a5%80%2fAOR_eag00759.png",
+      "text": "झगडा बढ्दै गयो। उनीहरू मिल्न सकेनन्। अन्य जनावरले पनि झगडा मिलाउन सकेनन्। अन्त्यमा उनीहरु स्याल दाइकोमा पुगे।"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff74fcdd5-47e8-495a-8ba7-e1deec5afa48%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%b0+%e0%a4%b9%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%a4%e0%a5%80%2fAOR_CMB0513.png",
+      "text": "स्याल दाइले झगडाका कारण सोधे। उनीहरुले सबै कुरा स्याल दाइलाई बताए। स्याल दाइले कुरा बुझे।"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff74fcdd5-47e8-495a-8ba7-e1deec5afa48%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%b0+%e0%a4%b9%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%a4%e0%a5%80%2fAOR_5-1-2k.png",
+      "text": "स्याल दाइले दुवैलाई एउटा काम दिए। उनीहरुलाई खोलापारिबाट नरिवल टिपेर ल्याउन लगाए। नरिवल ल्याउन सक्नेनै ठुलो हो भने।"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff74fcdd5-47e8-495a-8ba7-e1deec5afa48%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%b0+%e0%a4%b9%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%a4%e0%a5%80%2fAOR_OVT042.png",
+      "text": "दुवै नरिवल टिप्न गए। बाँदर खोला तर्न सकेन। हात्तीले बाँदरलाई खोला तारी दियो।\nदुवै नरीवलको रुखमुनि पुगे।"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff74fcdd5-47e8-495a-8ba7-e1deec5afa48%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%b0+%e0%a4%b9%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%a4%e0%a5%80%2fAOR_Elefant31.png",
+      "text": "नरिवलको रुख अग्लो थियो।\nहात्ती रूख चढ्न सकेन। बाँदर सजिलै रूख चढ्यो। बाँदरले नरिवल टिपेर सहयोग गर्‍यो।"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff74fcdd5-47e8-495a-8ba7-e1deec5afa48%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%b0+%e0%a4%b9%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%a4%e0%a5%80%2fAOR_ORV002.png",
+      "text": "फर्कँदा फेरि बाँदरले खोला तर्न सकेन। सबै नरिवल हात्तीले आफैले बोक्यो। बाँदरलाई खोला तर्न सहयोग गर्‍यो।"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff74fcdd5-47e8-495a-8ba7-e1deec5afa48%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%b0+%e0%a4%b9%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%a4%e0%a5%80%2fAOR_CMB0153.png",
+      "text": "हात्ती र बाँदर स्याल दाइकोमा\nपुगे। स्याल दाइले नरिवल कसरी ल्यायौ भने। दुवैको सहयोगमा नरिवल टिप्न सकेको बताए।"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff74fcdd5-47e8-495a-8ba7-e1deec5afa48%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%b0+%e0%a4%b9%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%a4%e0%a5%80%2fAOR_CMB01531.png",
+      "text": "स्याल दाइले उनीहरूको कुरो\nसजिलै बुझे। दुवैको सहयोगमा काम सजिलै सकेको हो। अिन हात्ती र बाँदरलाई सम्झाए।"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/worldeducationnepal%40np.worlded.org%2ff74fcdd5-47e8-495a-8ba7-e1deec5afa48%2f%e0%a4%ac%e0%a4%be%e0%a4%81%e0%a4%a6%e0%a4%b0+%e0%a4%b0+%e0%a4%b9%e0%a4%be%e0%a4%a4%e0%a5%8d%e0%a4%a4%e0%a5%80%2fAOR_acg001.png",
+      "text": "तिमीहरु कामका आधारमा दुवै बराबर छौ। बाँदरले नरिवल टिप्यो। हात्तीले खोला तार्‍यो। स्याल दाइको कुराले दुवैको चित्त बुझ्यो। त्यस दिनदेखि उनीहरू मिलेर बस्‍न थाले।"
+    }
+  ],
+  "stats": {
+    "pages": 10,
+    "words": 182
+  }
+}

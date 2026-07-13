@@ -1,0 +1,75 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-acb3abad-untitled-prs",
+  "title": "من ناتوان نیستم",
+  "description": "A Dari picture book from Bloom Library.",
+  "language": "Dari",
+  "langCode": "prs",
+  "isRtl": true,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [],
+  "authors": [
+    "Bloom Library community"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Bloom Library",
+  "license": "CC0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/louCOv7w1Y"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2facb3abad-48e4-4438-be02-e8170b39f762%2f%d9%85%d9%86+%d9%86%d8%a7%d8%aa%d9%88%d8%a7%d9%86+%d9%86%db%8c%d8%b3%d8%aa%d9%85%2f1.jpg",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2facb3abad-48e4-4438-be02-e8170b39f762%2f%d9%85%d9%86+%d9%86%d8%a7%d8%aa%d9%88%d8%a7%d9%86+%d9%86%db%8c%d8%b3%d8%aa%d9%85%2f2.jpg",
+      "text": "زهرا شاگرد مکتب بود.\nدست زهرا فلج بود."
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2facb3abad-48e4-4438-be02-e8170b39f762%2f%d9%85%d9%86+%d9%86%d8%a7%d8%aa%d9%88%d8%a7%d9%86+%d9%86%db%8c%d8%b3%d8%aa%d9%85%2f3.jpg",
+      "text": "یک روز استاد گفت:\nشاگردان! مسابقۀ نقاشی داریم."
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2facb3abad-48e4-4438-be02-e8170b39f762%2f%d9%85%d9%86+%d9%86%d8%a7%d8%aa%d9%88%d8%a7%d9%86+%d9%86%db%8c%d8%b3%d8%aa%d9%85%2f4.jpg",
+      "text": "نقاشی اول جایزه دارد."
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2facb3abad-48e4-4438-be02-e8170b39f762%2f%d9%85%d9%86+%d9%86%d8%a7%d8%aa%d9%88%d8%a7%d9%86+%d9%86%db%8c%d8%b3%d8%aa%d9%85%2f5.jpg",
+      "text": "زهرا با خود گفت:\nشاید نقاشی من اول نشود."
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2facb3abad-48e4-4438-be02-e8170b39f762%2f%d9%85%d9%86+%d9%86%d8%a7%d8%aa%d9%88%d8%a7%d9%86+%d9%86%db%8c%d8%b3%d8%aa%d9%85%2f6.jpg",
+      "text": "زهرا نقاشی خود را کشید."
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2facb3abad-48e4-4438-be02-e8170b39f762%2f%d9%85%d9%86+%d9%86%d8%a7%d8%aa%d9%88%d8%a7%d9%86+%d9%86%db%8c%d8%b3%d8%aa%d9%85%2f7.jpg",
+      "text": "استاد نقاشی ها را دیده، گفت:\nمی دانید نقاشی کی اول شده؟"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2facb3abad-48e4-4438-be02-e8170b39f762%2f%d9%85%d9%86+%d9%86%d8%a7%d8%aa%d9%88%d8%a7%d9%86+%d9%86%db%8c%d8%b3%d8%aa%d9%85%2f8.jpg",
+      "text": "شاگردان هیجانی شدند.\nاستاد گفت: نقاشی زهرا اول شده!"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/fraser_bennett%40sil-lead.org%2facb3abad-48e4-4438-be02-e8170b39f762%2f%d9%85%d9%86+%d9%86%d8%a7%d8%aa%d9%88%d8%a7%d9%86+%d9%86%db%8c%d8%b3%d8%aa%d9%85%2f9.jpg",
+      "text": "زهرا هیجانی شده، گفت: من ناتوان نیستم،بلکه می توانم!"
+    }
+  ],
+  "stats": {
+    "pages": 8,
+    "words": 64
+  }
+}

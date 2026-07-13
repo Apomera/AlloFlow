@@ -1,0 +1,97 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-e1ad5d48-untitled-km",
+  "title": "១៥ គ៝ប់ងអាងពឹល",
+  "description": "I Shone a Torch (Easy Reader - Level 1)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Story Book"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/EsriLan6pA"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe1ad5d48-3e47-4b04-af0b-32a86f9bd326%2f%e1%9f%a1%e1%9f%a5+%e1%9e%82%e1%9f%9d%e1%9e%94%e1%9f%8b%e1%9e%84%e1%9e%a2%e1%9e%b6%e1%9e%84%e1%9e%96%e1%9e%b9%e1%9e%9b%2fimage.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe1ad5d48-3e47-4b04-af0b-32a86f9bd326%2f%e1%9f%a1%e1%9f%a5+%e1%9e%82%e1%9f%9d%e1%9e%94%e1%9f%8b%e1%9e%84%e1%9e%a2%e1%9e%b6%e1%9e%84%e1%9e%96%e1%9e%b9%e1%9e%9b%2fimage1.png",
+      "text": "ពេលខ្ញុំកំពុងតែគេង ខ្ញុំបានឮសូរសំឡេងរបស់ធ្លាក់ក្នុងទឹក។ ខ្ញុំក្រោកទៅឆ្លុះមើល។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe1ad5d48-3e47-4b04-af0b-32a86f9bd326%2f%e1%9f%a1%e1%9f%a5+%e1%9e%82%e1%9f%9d%e1%9e%94%e1%9f%8b%e1%9e%84%e1%9e%a2%e1%9e%b6%e1%9e%84%e1%9e%96%e1%9e%b9%e1%9e%9b%2fimage2.png",
+      "text": "ខ្ញុំបានឃើញសត្វកង្កែបមួយក្បាល។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe1ad5d48-3e47-4b04-af0b-32a86f9bd326%2f%e1%9f%a1%e1%9f%a5+%e1%9e%82%e1%9f%9d%e1%9e%94%e1%9f%8b%e1%9e%84%e1%9e%a2%e1%9e%b6%e1%9e%84%e1%9e%96%e1%9e%b9%e1%9e%9b%2fimage3.png",
+      "text": "ខ្ញុំដើរបន្តខ្ញុំបានឮសូរសំឡេងសត្វហើរ ខ្ញុំឆ្លុះមើល។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe1ad5d48-3e47-4b04-af0b-32a86f9bd326%2f%e1%9f%a1%e1%9f%a5+%e1%9e%82%e1%9f%9d%e1%9e%94%e1%9f%8b%e1%9e%84%e1%9e%a2%e1%9e%b6%e1%9e%84%e1%9e%96%e1%9e%b9%e1%9e%9b%2fimage4.png",
+      "text": "ខ្ញុំក៏បានឃើញសត្វប្រចៀវមួយក្បាល។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe1ad5d48-3e47-4b04-af0b-32a86f9bd326%2f%e1%9f%a1%e1%9f%a5+%e1%9e%82%e1%9f%9d%e1%9e%94%e1%9f%8b%e1%9e%84%e1%9e%a2%e1%9e%b6%e1%9e%84%e1%9e%96%e1%9e%b9%e1%9e%9b%2fimage5.png",
+      "text": "ខ្ញុំដើរបន្តទៀតខ្ញុំបានស្តាប់ឮសូរសំឡេងសត្វហិតក្លិនខ្ញុំឆ្លុះមើល។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe1ad5d48-3e47-4b04-af0b-32a86f9bd326%2f%e1%9f%a1%e1%9f%a5+%e1%9e%82%e1%9f%9d%e1%9e%94%e1%9f%8b%e1%9e%84%e1%9e%a2%e1%9e%b6%e1%9e%84%e1%9e%96%e1%9e%b9%e1%9e%9b%2fimage6.png",
+      "text": "ខ្ញុំក៏បានឃើញសត្វឆ្កែមួយក្បាល។"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe1ad5d48-3e47-4b04-af0b-32a86f9bd326%2f%e1%9f%a1%e1%9f%a5+%e1%9e%82%e1%9f%9d%e1%9e%94%e1%9f%8b%e1%9e%84%e1%9e%a2%e1%9e%b6%e1%9e%84%e1%9e%96%e1%9e%b9%e1%9e%9b%2fimage7.png",
+      "text": "ខ្ញុំដើរបន្តទៀតខ្ញុំបានស្តាប់ឮសូរសំឡេងសត្វវារស្រេបៗ! ខ្ញុំឆ្លុះមើល។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe1ad5d48-3e47-4b04-af0b-32a86f9bd326%2f%e1%9f%a1%e1%9f%a5+%e1%9e%82%e1%9f%9d%e1%9e%94%e1%9f%8b%e1%9e%84%e1%9e%a2%e1%9e%b6%e1%9e%84%e1%9e%96%e1%9e%b9%e1%9e%9b%2fimage8.png",
+      "text": "ខ្ញុំក៏បានឃើញសត្វក្អែបមួយ។"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe1ad5d48-3e47-4b04-af0b-32a86f9bd326%2f%e1%9f%a1%e1%9f%a5+%e1%9e%82%e1%9f%9d%e1%9e%94%e1%9f%8b%e1%9e%84%e1%9e%a2%e1%9e%b6%e1%9e%84%e1%9e%96%e1%9e%b9%e1%9e%9b%2fimage9.png",
+      "text": "ខ្ញុំដើរបន្តទៀតខ្ញុំបានស្តាប់ឮសូរសំឡេងសត្វឈ្មូលដីខ្ញុំឆ្លុះមើល។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe1ad5d48-3e47-4b04-af0b-32a86f9bd326%2f%e1%9f%a1%e1%9f%a5+%e1%9e%82%e1%9f%9d%e1%9e%94%e1%9f%8b%e1%9e%84%e1%9e%a2%e1%9e%b6%e1%9e%84%e1%9e%96%e1%9e%b9%e1%9e%9b%2fimage10.png",
+      "text": "​ខ្ញុំ​ក៏​បាន​ឃើញ​សត្វ​ជ្រូក​មួយ​ក្បាល។"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe1ad5d48-3e47-4b04-af0b-32a86f9bd326%2f%e1%9f%a1%e1%9f%a5+%e1%9e%82%e1%9f%9d%e1%9e%94%e1%9f%8b%e1%9e%84%e1%9e%a2%e1%9e%b6%e1%9e%84%e1%9e%96%e1%9e%b9%e1%9e%9b%2fimage11.png",
+      "text": "ខ្ញុំដើរបន្តទៅទៀតខ្ញុំបានស្តាប់ឮសូរសំឡេងសត្វលូន ខ្ញុំឆ្លុះមើល។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2fe1ad5d48-3e47-4b04-af0b-32a86f9bd326%2f%e1%9f%a1%e1%9f%a5+%e1%9e%82%e1%9f%9d%e1%9e%94%e1%9f%8b%e1%9e%84%e1%9e%a2%e1%9e%b6%e1%9e%84%e1%9e%96%e1%9e%b9%e1%9e%9b%2fimage12.png",
+      "text": "ស្រាប់តែ ខ្ញុំបានឃើញសត្វក្រពើមួយក្បាលអីយ៉ា.....! ខ្ញុំក៏រត់ត្រឡប់ថយក្រោយវិញ៕"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 19
+  }
+}

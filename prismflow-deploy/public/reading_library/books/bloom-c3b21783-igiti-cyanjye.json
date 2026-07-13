@@ -27,7 +27,9 @@
     "url": "https://bloomlibrary.org/book/kvMUkmQzDi"
   },
   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_12_Image_3.png",
-  "audio": null,
+  "audio": {
+    "mode": "perPage"
+  },
   "pages": [
     {
       "n": 1,
@@ -42,42 +44,90 @@
     {
       "n": 3,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_05_Image_2.png",
-      "text": "Umunsi umwe, Isimbi yariye umwembe uramuryohera. Abaza nyina uko bahinga imyembe."
+      "text": "Umunsi umwe, Isimbi yariye umwembe uramuryohera. Abaza nyina uko bahinga imyembe.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2faudio%2fi914aa0bc-2cdf-46fc-be7e-9ae3455232f2.mp3",
+          "dur": 9.55
+        }
+      ]
     },
     {
       "n": 4,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_06_Image_4.png",
-      "text": "Nyina amubwira ko batera ingemwe zayo."
+      "text": "Nyina amubwira ko batera ingemwe zayo.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2faudio%2fi0775644b-2f8e-4ad8-817f-c33a42dbe7e9.mp3",
+          "dur": 4.48
+        }
+      ]
     },
     {
       "n": 5,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_07_Image_2.png",
-      "text": "Bukeye, nyina amuzanira urugemwe."
+      "text": "Bukeye, nyina amuzanira urugemwe.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2faudio%2faed2398c-2a04-4b9f-9395-7603e3ec9f88.mp3",
+          "dur": 4.86
+        }
+      ]
     },
     {
       "n": 6,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_08_Image_2.png",
-      "text": "Nyina amubwira ko imyembe iterwa ahantu hagera izuba."
+      "text": "Nyina amubwira ko imyembe iterwa ahantu hagera izuba.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2faudio%2fi68e07621-c57b-43f7-8686-4a0d6b3b0bcf.mp3",
+          "dur": 5.64
+        }
+      ]
     },
     {
       "n": 7,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_09_Image_2.png",
-      "text": "Isimbi na nyina batera urugemwe rw’umwembe munsi y’urugo."
+      "text": "Isimbi na nyina batera urugemwe rw’umwembe munsi y’urugo.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2faudio%2fi88078571-b275-4539-a54e-56ff9e0791fb.mp3",
+          "dur": 7.27
+        }
+      ]
     },
     {
       "n": 8,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_10_Image_2.png",
-      "text": "Nuko barahazitira ngo hatazagira urukandagira."
+      "text": "Nuko barahazitira ngo hatazagira urukandagira.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2faudio%2fi98473a36-4a67-4204-bfd1-a2676171cf26.mp3",
+          "dur": 5.57
+        }
+      ]
     },
     {
       "n": 9,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_11_Image_2.png",
-      "text": "Buri gihe Isimbi yasuraga igiti ke, akacyuhira."
+      "text": "Buri gihe Isimbi yasuraga igiti ke, akacyuhira.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2faudio%2fi200a63f0-40c4-4313-8743-57ae71c42c28.mp3",
+          "dur": 6.38
+        }
+      ]
     },
     {
       "n": 10,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2fIGITI_CYANJYE_Page_12_Image_2.png",
-      "text": "Igihe kigeze umwembe urera. Isimbi akajya asoroma imyembe agaha abandi bana."
+      "text": "Igihe kigeze umwembe urera. Isimbi akajya asoroma imyembe agaha abandi bana.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2fc3b21783-3d2c-483b-92d6-45f8dc8398a9%2fIgiti+Cyanjye%2faudio%2fe3c40332-2eaa-4a51-86b1-49067489e5c8.mp3",
+          "dur": 8.47
+        }
+      ]
     },
     {
       "n": 11,

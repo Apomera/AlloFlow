@@ -27,7 +27,9 @@
     "url": "https://bloomlibrary.org/book/ke0PM8txF5"
   },
   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2fImvura---Cover1.jpg",
-  "audio": null,
+  "audio": {
+    "mode": "perPage"
+  },
   "pages": [
     {
       "n": 1,
@@ -42,72 +44,156 @@
     {
       "n": 3,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2fIMVURA_IVA_HE_Page_05_Image_3.jpg",
-      "text": "Mama, imvura iva he?"
+      "text": "Mama, imvura iva he?",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2faudio%2fi649689ae-09af-4b8c-a853-a2be716adeba.mp3",
+          "dur": 3.46229
+        }
+      ]
     },
     {
       "n": 4,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2fIMVURA_IVA_HE_Page_06_Image_4.png",
-      "text": "Ngwino nge kukwereka."
+      "text": "Ngwino nge kukwereka.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2faudio%2fi38edb6ca-ed26-422b-8fdc-cab5ad8074ef.mp3",
+          "dur": 2.835351
+        }
+      ]
     },
     {
       "n": 5,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2fIMVURA_IVA_HE_Page_07_Image_4.png",
-      "text": "Mama, ikiyaga kiri gucumba umwotsi!"
+      "text": "Mama, ikiyaga kiri gucumba umwotsi!",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2faudio%2ff5dda9a8-e0d7-42bf-989a-e498c9124571.mp3",
+          "dur": 5.108004
+        }
+      ]
     },
     {
       "n": 6,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2fIMVURA_IVA_HE_Page_08_Image_2.png",
-      "text": "Cibiri, uriya si umwotsi nk’uwo mu ziko."
+      "text": "Cibiri, uriya si umwotsi nk’uwo mu ziko.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2faudio%2fb6c4a993-ceb8-45ea-baee-cc529c2a1435.mp3",
+          "dur": 6.414126
+        }
+      ]
     },
     {
       "n": 7,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2fIMVURA_IVA_HE_Page_09_Image_2.png",
-      "text": "Izuba rirava, rigatanga ubushyuhe."
+      "text": "Izuba rirava, rigatanga ubushyuhe.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2faudio%2fi8741191c-21af-43cf-98e1-6c4e41d50813.mp3",
+          "dur": 4.84678
+        }
+      ]
     },
     {
       "n": 8,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2fIMVURA_IVA_HE_Page_10_Image_4.png",
-      "text": "Iyo amazi ashyushye rero ahinduka umwuka."
+      "text": "Iyo amazi ashyushye rero ahinduka umwuka.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2faudio%2fi8dbdf40f-df35-42a0-80ec-b8fc39fc4bed.mp3",
+          "dur": 6.12678
+        }
+      ]
     },
     {
       "n": 9,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2fIMVURA_IVA_HE_Page_11_Image_4.png",
-      "text": "Uwo mwuka ugera mu kirere ukaba ibicu."
+      "text": "Uwo mwuka ugera mu kirere ukaba ibicu.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2faudio%2fi0313e499-9fc7-4f79-b238-602d5d0c14eb.mp3",
+          "dur": 5.35
+        }
+      ]
     },
     {
       "n": 10,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2fIMVURA_IVA_HE_Page_12_Image_3.jpg",
-      "text": "Umuyaga mama!"
+      "text": "Umuyaga mama!",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2faudio%2fi8607a44e-ee3c-4810-98af-3f151b34b8ae.mp3",
+          "dur": 3.436167
+        }
+      ]
     },
     {
       "n": 11,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2fIMVURA_IVA_HE_Page_13_Image_1.jpg",
-      "text": "Uriya muyaga ukonje urahura n’ibicu."
+      "text": "Uriya muyaga ukonje urahura n’ibicu.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2faudio%2fi3f38ac31-3cd4-46a6-a3b6-293274cd2d6b.mp3",
+          "dur": 4.93
+        }
+      ]
     },
     {
       "n": 12,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2fIMVURA_IVA_HE_Page_14_Image_4.png",
-      "text": "Maze na byo bikonje."
+      "text": "Maze na byo bikonje.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2faudio%2fi60b7173d-842e-4ae9-986c-58a997b8d624.mp3",
+          "dur": 3.070453
+        }
+      ]
     },
     {
       "n": 13,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2fIMVURA_IVA_HE_Page_15_Image_2.png",
-      "text": "Byongere bihinduke imvura."
+      "text": "Byongere bihinduke imvura.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2faudio%2fi84098753-33c9-43ae-a169-c7f10bbf46a3.mp3",
+          "dur": 3.92
+        }
+      ]
     },
     {
       "n": 14,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2fIMVURA_IVA_HE_Page_16_Image_2.png",
-      "text": "None se ayo mazi afatwa n’iki mu kirere mama?"
+      "text": "None se ayo mazi afatwa n’iki mu kirere mama?",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2faudio%2fi56411fe6-9dc2-4f88-817c-52ae92c18af6.mp3",
+          "dur": 5.682698
+        }
+      ]
     },
     {
       "n": 15,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2fIMVURA_IVA_HE_Page_17_Image_1.jpg",
-      "text": "Nta cyo. Arongera agahanuka."
+      "text": "Nta cyo. Arongera agahanuka.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2faudio%2fi59dc4805-e525-423f-abc3-48a97d880a42.mp3",
+          "dur": 4.78
+        }
+      ]
     },
     {
       "n": 16,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2fIMVURA_IVA_HE_Page_18_Image_1.jpg",
-      "text": "Ibyo bikitwa ko imvura iguye."
+      "text": "Ibyo bikitwa ko imvura iguye.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/mmalecki%40worldvision.org%2f85a93192-3600-42ed-95ae-763e47b0f9be%2fImvura+Iva+He%2faudio%2fi9c4f898d-05a4-4ce8-a0f7-7d5d7fbcf3c9.mp3",
+          "dur": 4.376575
+        }
+      ]
     },
     {
       "n": 17,

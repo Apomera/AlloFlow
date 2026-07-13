@@ -25,52 +25,108 @@
     "url": "https://bloomlibrary.org/book/AhXAfoMwCD"
   },
   "cover": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2fPic6.jpg",
-  "audio": null,
+  "audio": {
+    "mode": "perPage"
+  },
   "pages": [
     {
       "n": 1,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2fPic1.jpg",
-      "text": "Harabaye umuserebanyi, ukaba wari umuhigi. Umusi umwe, urahiga umusi wose ariko ntihagira ico ufata."
+      "text": "Harabaye umuserebanyi, ukaba wari umuhigi. Umusi umwe, urahiga umusi wose ariko ntihagira ico ufata.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2faudio%2fd8d231ff-3dcd-4e1d-9bac-ddd5b607518e.mp3",
+          "dur": 12.030453
+        }
+      ]
     },
     {
       "n": 2,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2fPic2.jpg",
-      "text": "Ntibitevye, wa muserebanyi ufata ubunyegeri uca utangura kuburya. Uraburya gushika naho uhaga"
+      "text": "Ntibitevye, wa muserebanyi ufata ubunyegeri uca utangura kuburya. Uraburya gushika naho uhaga",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2faudio%2fi441e9321-ebbd-4445-a2a2-00ee77767be6.mp3",
+          "dur": 8.451678
+        }
+      ]
     },
     {
       "n": 3,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2fpic3.jpg",
-      "text": "Uhejeje kurya bwa bunyegeri bwose,wa muserebanyi uranyoterwa niko guca uja ku mugezi guhiga icunywa."
+      "text": "Uhejeje kurya bwa bunyegeri bwose,wa muserebanyi uranyoterwa niko guca uja ku mugezi guhiga icunywa.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2faudio%2fd9081e6d-fc45-4cad-9fda-826c7feab952.mp3",
+          "dur": 10.436984
+        }
+      ]
     },
     {
       "n": 4,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2fPic4.jpg",
-      "text": "Ubwo nyene wumva ijwi. Wa muserebanyi ngo uhindukire ubona imfyisi ije iwugana. Utangura kwibaza ico wokora ngo iyo mfyisi ntiwurye"
+      "text": "Ubwo nyene wumva ijwi. Wa muserebanyi ngo uhindukire ubona imfyisi ije iwugana. Utangura kwibaza ico wokora ngo iyo mfyisi ntiwurye",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2faudio%2fi0ea324da-9540-4db4-96aa-ac06bdf101a0.mp3",
+          "dur": 17.934126
+        }
+      ]
     },
     {
       "n": 5,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2fPic5.jpg",
-      "text": "Wa muserebanyi wumva iciyumviro kiraje. Uca ufata ningoga inkoni ndende utangura kwijiginyura."
+      "text": "Wa muserebanyi wumva iciyumviro kiraje. Uca ufata ningoga inkoni ndende utangura kwijiginyura.",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2faudio%2fi9a09259b-addf-4523-9e82-9587240eae48.mp3",
+          "dur": 7.8366
+        }
+      ]
     },
     {
       "n": 6,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2fPic7.jpg",
-      "text": "Ya mfyisi ibonye wa mu serebanyi iwubaza iti: \"Mushinganta, wariye iki kugira urinde wihaganyuza ikintu kingana uko kwose?"
+      "text": "Ya mfyisi ibonye wa mu serebanyi iwubaza iti: \"Mushinganta, wariye iki kugira urinde wihaganyuza ikintu kingana uko kwose?",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2faudio%2fi70c96b48-436b-4d4a-bd40-15efabbd295b.mp3",
+          "dur": 13.832902
+        }
+      ]
     },
     {
       "n": 7,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2fPic8.jpg",
-      "text": "Wa muserebanyi urayishura uti: \"Nariko ndarya inyama z'imfyisi zokeje, none rero mbonye uje, niko kwihaganyura kugira ndye iziwawe zo zikiri nshasha§"
+      "text": "Wa muserebanyi urayishura uti: \"Nariko ndarya inyama z'imfyisi zokeje, none rero mbonye uje, niko kwihaganyura kugira ndye iziwawe zo zikiri nshasha§",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2faudio%2fi90a747cd-ec93-441b-9614-567d89d0b052.mp3",
+          "dur": 8.515772
+        }
+      ]
     },
     {
       "n": 8,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2fPic9.jpg",
-      "text": "Imaze kuvyumva, ya mfyisi iratangara cane ica itungwa nayo yameze"
+      "text": "Imaze kuvyumva, ya mfyisi iratangara cane ica itungwa nayo yameze",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2faudio%2fc86b3e7c-adbd-49c7-9ce9-2cfe1fdc4dcd.mp3",
+          "dur": 6.713354
+        }
+      ]
     },
     {
       "n": 9,
       "img": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2fPic10.jpg",
-      "text": "Ico uwu mugani utwigisha: Uruyeri ni uburyo bwiza bwo kwirwanira"
+      "text": "Ico uwu mugani utwigisha: Uruyeri ni uburyo bwiza bwo kwirwanira",
+      "audio": [
+        {
+          "src": "https://s3.amazonaws.com/BloomLibraryBooks/vianneymanirambona2%40gmail.com%2f705de33b-4747-4d4c-9ce0-a09fd82d9170%2fThe+Lizard+and+the+Hyena%2faudio%2fbb73dd7d-0c73-455f-9ae2-b583645dcc26.mp3",
+          "dur": 8.739024
+        }
+      ]
     }
   ],
   "stats": {

@@ -1,0 +1,97 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "bloom-0f8fcbe0-untitled-km",
+  "title": "១៧ នអើន អែវដាសឆ៝",
+  "description": "A story of a cat and a dog (Easy Reader - Level 1)",
+  "language": "Khmer",
+  "langCode": "km",
+  "isRtl": false,
+  "level": "2",
+  "orientation": "portrait",
+  "sourceId": "bloom",
+  "contentType": "story",
+  "subjects": [
+    "Animal Stories"
+  ],
+  "authors": [
+    "International Cooperation Cambodia (ICC)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "International Cooperation Cambodia (ICC)",
+  "license": "CC BY",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": {
+    "id": "bloom",
+    "name": "Bloom Library",
+    "url": "https://bloomlibrary.org/book/wSxYvUnaHj"
+  },
+  "cover": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0f8fcbe0-3021-4f67-ac1c-5e1b6c304e87%2f%e1%9f%a1%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%a2%e1%9f%82%e1%9e%9c%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9f%9d%2fcat+dog.png",
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0f8fcbe0-3021-4f67-ac1c-5e1b6c304e87%2f%e1%9f%a1%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%a2%e1%9f%82%e1%9e%9c%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9f%9d%2fimage.png",
+      "text": "នេះជាឆ្មា។"
+    },
+    {
+      "n": 2,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0f8fcbe0-3021-4f67-ac1c-5e1b6c304e87%2f%e1%9f%a1%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%a2%e1%9f%82%e1%9e%9c%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9f%9d%2fimage1.png",
+      "text": "ឆ្មានេះឡើងដើមឈើ។"
+    },
+    {
+      "n": 3,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0f8fcbe0-3021-4f67-ac1c-5e1b6c304e87%2f%e1%9f%a1%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%a2%e1%9f%82%e1%9e%9c%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9f%9d%2fimage2.png",
+      "text": "បន្ទាប់​មក​វា​ឃើញ​ឆ្កែ​កំពុង​អង្គុយ​មើល​វា។"
+    },
+    {
+      "n": 4,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0f8fcbe0-3021-4f67-ac1c-5e1b6c304e87%2f%e1%9f%a1%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%a2%e1%9f%82%e1%9e%9c%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9f%9d%2fimage3.png",
+      "text": "វាលោតចុះពីលើដើមឈើហើយរត់ទៅ។\nបន្ទាប់មក៖ ឆ្កែដេញតាមឆ្មាជិតទាន់។"
+    },
+    {
+      "n": 5,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0f8fcbe0-3021-4f67-ac1c-5e1b6c304e87%2f%e1%9f%a1%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%a2%e1%9f%82%e1%9e%9c%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9f%9d%2fimage4.png",
+      "text": "មកដល់ផ្ទះមួយឆ្មារត់លោតឡើងដំបូលផ្ទះ។"
+    },
+    {
+      "n": 6,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0f8fcbe0-3021-4f67-ac1c-5e1b6c304e87%2f%e1%9f%a1%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%a2%e1%9f%82%e1%9e%9c%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9f%9d%2fimage5.png",
+      "text": "បន្ទាប់មកឆ្កែសួរថា៖ “ហេតុអ្វីបានជាឯងរត់? ឯងខ្លាចខ្ញុំឬ?”"
+    },
+    {
+      "n": 7,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0f8fcbe0-3021-4f67-ac1c-5e1b6c304e87%2f%e1%9f%a1%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%a2%e1%9f%82%e1%9e%9c%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9f%9d%2fimage6.png",
+      "text": "ឆ្មាឆ្លើយថា៖ “ខ្ញុំមិនខ្លាចឯងទេ”។"
+    },
+    {
+      "n": 8,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0f8fcbe0-3021-4f67-ac1c-5e1b6c304e87%2f%e1%9f%a1%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%a2%e1%9f%82%e1%9e%9c%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9f%9d%2fimage8.png",
+      "text": "បន្ទាប់មកឆ្មាក៏ចុះមកជួបនិងឆ្កែ ហើយនិយាយថា៖ “ខ្ញុំរត់ល្បងកំលាំងទេតើ”។ “ឆ្កែឆ្លើយថា៖ “មែនឬ?”"
+    },
+    {
+      "n": 9,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0f8fcbe0-3021-4f67-ac1c-5e1b6c304e87%2f%e1%9f%a1%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%a2%e1%9f%82%e1%9e%9c%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9f%9d%2fimage9.png",
+      "text": "ឆ្មានិយាយថា៖ “អើ! ខ្ញុំធាត់ណាស់ ចឹងបានខ្ញុំរត់”។"
+    },
+    {
+      "n": 10,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0f8fcbe0-3021-4f67-ac1c-5e1b6c304e87%2f%e1%9f%a1%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%a2%e1%9f%82%e1%9e%9c%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9f%9d%2fimage10.png",
+      "text": "តើឯងទៅរកកណ្ដុរជាមួយខ្ញុំទេ? ឆ្កែឆ្លើយ៖ តោះ! ទៅចឹង!"
+    },
+    {
+      "n": 11,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0f8fcbe0-3021-4f67-ac1c-5e1b6c304e87%2f%e1%9f%a1%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%a2%e1%9f%82%e1%9e%9c%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9f%9d%2fimage11.png",
+      "text": "ពួកវាឃើញកណ្ដុរពីរ តែឆ្មាចង់ខាំកណ្ដុរនោះ។ ឃើញដូច្នេះឆ្កែនឹកអាណិតកណ្ដុរជាខ្លាំង ក៏និយាយជាមួយឆ្មាថា៖ “មើលកណ្ដុរទៅ វាឃ្លានខ្លាំងណាស់”។"
+    },
+    {
+      "n": 12,
+      "img": "https://s3.amazonaws.com/BloomLibraryBooks/todd_bequette%40sil.org%2f0f8fcbe0-3021-4f67-ac1c-5e1b6c304e87%2f%e1%9f%a1%e1%9f%a7+%e1%9e%93%e1%9e%a2%e1%9e%be%e1%9e%93+%e1%9e%a2%e1%9f%82%e1%9e%9c%e2%80%8b%e1%9e%8a%e1%9e%b6%e1%9e%9f%e2%80%8b%e1%9e%86%e1%9f%9d%2fimage12.png",
+      "text": "បន្ទាប់មកឆ្មានិងឆ្កែបបួលកណ្ដុរទៅផ្ទះដាំបាយធ្វើសម្លរហូប៕"
+    }
+  ],
+  "stats": {
+    "pages": 12,
+    "words": 32
+  }
+}
