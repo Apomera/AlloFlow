@@ -65,12 +65,12 @@ const GameThemeToggle = () => {
   return (
     <button
       onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }}
-      className="p-2 hover:bg-white/20 rounded-full transition-colors flex items-center gap-1 text-white"
+      className="min-w-11 min-h-11 p-2 hover:bg-white/20 rounded-full transition-colors flex items-center justify-center gap-1 text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-700"
       aria-label={(typeof window !== 'undefined' && window.__alloT) ? window.__alloT("a11y.toggle_theme_full") : "Toggle theme"}
       title={isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode'}
       type="button"
     >
-      <span>{isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F'}</span>
+      <span aria-hidden="true">{isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F'}</span>
       <span className="text-[11px] font-bold">{isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light'}</span>
     </button>
   );
@@ -119,25 +119,26 @@ const SpeakButton = ({ text, size = 13, className = "" }) => {
   return (
     <button
       onClick={handleClick}
-      className={`inline-flex items-center justify-center w-7 h-7 rounded-full shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors ${isThisPlaying ? 'bg-rose-100 hover:bg-rose-200 text-rose-600 animate-pulse' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-600'} ${className}`}
+      className={`inline-flex items-center justify-center w-11 h-11 rounded-full shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors ${isThisPlaying ? 'bg-rose-100 hover:bg-rose-200 text-rose-600 motion-safe:animate-pulse' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-600'} ${className}`}
       aria-label={ariaLabel}
       aria-pressed={isThisPlaying}
       title={title}
       type="button"
     >
-      {isThisPlaying ? <StopCircle size={size} /> : <Volume2 size={size} />}
+      {isThisPlaying ? <StopCircle size={size} aria-hidden="true" /> : <Volume2 size={size} aria-hidden="true" />}
     </button>
   );
 };
 
 // ── Post-game review screen ──
 const GameReviewScreen = ({ score, title, items, onPlayAgain, onClose, t }) => {
+  const reviewTitleId = React.useId();
   const correct = items.filter(i => i.status === 'correct').length;
   const total = items.length;
   return (
-    <div className={`mt-4 bg-white rounded-2xl border-2 border-indigo-100 shadow-lg overflow-hidden${useReducedMotion() ? '' : ' animate-in fade-in slide-in-from-bottom-2 duration-300'}`}>
+    <div role="region" aria-labelledby={reviewTitleId} className={`mt-4 bg-white rounded-2xl border-2 border-indigo-100 shadow-lg overflow-hidden${useReducedMotion() ? '' : ' animate-in fade-in slide-in-from-bottom-2 duration-300'}`}>
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 text-white text-center">
-        <h3 className="text-xl font-black">{title || "Review"}</h3>
+        <h3 id={reviewTitleId} className="text-xl font-black">{title || "Review"}</h3>
         <div className="flex items-center justify-center gap-4 mt-2">
           <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-bold">{score} pts</span>
           <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-bold">{correct}/{total} {t('common.correct') || 'correct'}</span>
@@ -149,11 +150,12 @@ const GameReviewScreen = ({ score, title, items, onPlayAgain, onClose, t }) => {
             <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
               item.status === 'correct' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
             }`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black ${
+              <div aria-hidden="true" className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black ${
                 item.status === 'correct' ? 'bg-green-700 text-white' : 'bg-red-700 text-white'
               }`}>
                 {item.status === 'correct' ? '\u2713' : '\u2717'}
               </div>
+              <span className="sr-only">{item.status === 'correct' ? (t('common.correct') || 'Correct') : (t('common.incorrect') || 'Incorrect')}</span>
               <div className="flex-1 min-w-0">
                 <div className="font-bold text-sm text-slate-800 truncate">{item.label}</div>
                 {item.detail && <div className="text-xs text-slate-600 truncate">{item.detail}</div>}
@@ -164,10 +166,10 @@ const GameReviewScreen = ({ score, title, items, onPlayAgain, onClose, t }) => {
         </div>
       </div>
       <div className="p-3 border-t border-slate-200 flex gap-2 justify-center">
-        <button onClick={onPlayAgain} className="px-5 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center gap-2">
-          <RefreshCw size={14} /> {t('memory.play_again') || 'Play Again'}
+        <button type="button" onClick={onPlayAgain} className="min-h-11 px-5 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+          <RefreshCw size={14} aria-hidden="true" /> {t('memory.play_again') || 'Play Again'}
         </button>
-        <button onClick={onClose} className="px-5 py-2 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+        <button type="button" onClick={onClose} className="min-h-11 px-5 py-2 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
           {t('common.close') || 'Close'}
         </button>
       </div>

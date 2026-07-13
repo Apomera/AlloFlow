@@ -131,6 +131,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Extended the shared MultiBucket sorter used by Concept Map, Problem/Solution, Fishbone, and Outline: completion, reset, and reset-cancellation changes are announced; item clicks no longer bubble into actionable parent buckets; placed/bank items, Reset, destination, return, cancel, and dialog actions meet larger target sizes with visible focus; the destination chooser is accurately nonmodal and Escape cancels selection without closing the game; timers are cleaned up; decorative hint/back icons are hidden; and dialog, win, hint, chooser, item-entry, active-drop, selection-scale, and press motion honors reduced-motion preferences (WCAG 1.1.1, 2.1.1, 2.1.2, 2.3.3, 2.4.3, 2.4.7, 2.5.7, 2.5.8, 4.1.2, 4.1.3).
 
+- Upgraded reusable game controls across the module: theme and speech buttons now provide 44 CSS-pixel targets and strong keyboard focus, their visual-only emoji/icons are hidden, speech retains programmatic pressed state, and its playing pulse honors reduced motion. Shared post-game reviews are named regions with explicit screen-reader text for correct/incorrect status instead of color/glyph-only communication; Play again and Close meet 44 CSS pixels with visible focus and the replay icon is decorative (WCAG 1.1.1, 1.3.1, 1.4.1, 2.3.3, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
