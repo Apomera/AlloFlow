@@ -1374,9 +1374,12 @@ window.StemLab = window.StemLab || {
             fontSize: 10, fontFamily: 'monospace', fill: '#334155'
           }, String(mark)));
         }
+        var partialImmersion = showObject && dispCondition === 'partial';
+        var objectY = partialImmersion ? waterY + 3 : 286;
+        var immersionText = partialImmersion ? ' only partly submerged.' : ' fully submerged.';
         var cylinderAria = waiting
-          ? label + '. Final reading is hidden until the object is submerged.'
-          : label + '. Bottom of the water meniscus reads ' + safeReading + ' milliliters' + (showObject ? ', with the ' + dispObject.label + ' fully submerged.' : '.');
+          ? label + '. Final reading is hidden until the object is lowered into the water.'
+          : label + '. Bottom of the water meniscus reads ' + safeReading + ' milliliters' + (showObject ? ', with the ' + dispObject.label + immersionText : '.');
         return h('figure', { className: 'm-0 min-w-0 text-center' },
           h('svg', {
             viewBox: '0 0 220 350',
@@ -1395,9 +1398,9 @@ window.StemLab = window.StemLab || {
               fill: 'none', stroke: waiting ? '#93c5fd' : '#0284c7', strokeWidth: 3
             }),
             ticks,
-            showObject && h('g', { 'aria-hidden': 'true' },
-              h('ellipse', { cx: 110, cy: 286, rx: 24, ry: 16, fill: '#475569', stroke: '#0f172a', strokeWidth: 2 }),
-              h('text', { x: 110, y: 291, textAnchor: 'middle', fontSize: 20 }, dispObject.icon)
+            showObject && h('g', { 'aria-hidden': 'true', 'data-immersion': partialImmersion ? 'partial' : 'full' },
+              h('ellipse', { cx: 110, cy: objectY, rx: 24, ry: 16, fill: '#475569', stroke: '#0f172a', strokeWidth: 2 }),
+              h('text', { x: 110, y: objectY + 5, textAnchor: 'middle', fontSize: 20 }, dispObject.icon)
             ),
             !waiting && h('line', { x1: 174, y1: waterY, x2: 204, y2: waterY, stroke: '#0369a1', strokeWidth: 2 }),
             !waiting && h('text', { x: 207, y: waterY + 4, textAnchor: 'end', fontSize: 12, fontWeight: 900, fill: '#075985' }, safeReading + ' mL'),
@@ -1430,7 +1433,7 @@ window.StemLab = window.StemLab || {
         function lowerSpecimen() {
           upd({ dispSubmerged: true, dispAnswer: '', dispFeedback: null });
           playSound('place');
-          announceToSR(dispObject.label + ' fully submerged. Final reading ' + dispTrial.final + ' milliliters. Subtract the initial reading of ' + dispTrial.initial + ' milliliters.');
+          announceToSR(dispObject.label + (dispCondition === 'partial' ? ' partly submerged. ' : ' fully submerged. ') + 'Final reading ' + dispTrial.final + ' milliliters. Subtract the initial reading of ' + dispTrial.initial + ' milliliters.');
         }
 
         function checkDisplacementAnswer() {
@@ -1445,7 +1448,7 @@ window.StemLab = window.StemLab || {
           var newStreak = ok ? streak + 1 : 0;
           var patch = {
             dispFeedback: ok
-              ? { correct: true, msg: 'Correct: ' + dispTrial.final + ' - ' + dispTrial.initial + ' = ' + dispTrial.measuredVolume + ' mL, so the measured object volume is ' + dispTrial.measuredVolume + ' cm\u00B3.' }
+              ? { correct: true, msg: 'Correct: ' + dispTrial.final + ' - ' + dispTrial.initial + ' = ' + dispTrial.measuredVolume + ' mL, so the observed displaced volume is ' + dispTrial.measuredVolume + ' cm\u00B3.' }
               : { correct: false, msg: 'Use the change in water level: final (' + dispTrial.final + ' mL) - initial (' + dispTrial.initial + ' mL). Do not use the final reading by itself.' },
             score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
             streak: newStreak,
@@ -1466,7 +1469,7 @@ window.StemLab = window.StemLab || {
             playSound('correct');
             if (typeof awardStemXP === 'function') awardStemXP('volume', 5, 'water displacement');
             checkBadges({ firstVolume: true, displacementScientist: nextSolved >= 3, streak5: newStreak >= 5, streak10: newStreak >= 10 });
-            announceToSR('Correct. Measured volume ' + dispTrial.measuredVolume + ' cubic centimeters.');
+            announceToSR('Correct. Observed displaced volume ' + dispTrial.measuredVolume + ' cubic centimeters.');
           } else {
             playSound('wrong');
             announceToSR('Try again. Subtract the initial reading from the final reading.');
@@ -1492,7 +1495,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex flex-col gap-3 rounded-xl border border-sky-200 bg-white p-3 lg:flex-row lg:items-end lg:justify-between' },
             h('div', { className: 'min-w-0 flex-1' },
               h('h3', { id: 'volume-displacement-heading', className: 'text-lg font-black text-sky-900' }, '\uD83E\uDDEA Water Displacement Lab'),
-              h('p', { className: 'mt-1 text-sm leading-relaxed text-slate-700' }, 'Measure an object that is hard to describe with a formula. The rise in water level equals the volume of the submerged object.'),
+              h('p', { className: 'mt-1 text-sm leading-relaxed text-slate-700' }, 'Measure an object that is hard to describe with a formula. With careful setup and full submersion, the rise in water level equals the object volume.'),
               h('p', { className: 'mt-2 inline-flex rounded-full border border-teal-300 bg-teal-50 px-3 py-1 text-xs font-black text-teal-900' }, '1 milliliter (mL) = 1 cubic centimeter (cm\u00B3)')
             ),
             h('div', { className: 'grid gap-2 sm:grid-cols-2 lg:w-[28rem]' },
@@ -1562,7 +1565,7 @@ window.StemLab = window.StemLab || {
                   h('p', { className: 'text-base font-black text-slate-900' }, dispObject.icon + ' ' + dispObject.label),
                   h('p', { className: 'mt-0.5 text-xs text-slate-600' }, dispObject.note)
                 ),
-                h('span', { className: 'rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-700' }, dispSubmerged ? 'Fully submerged' : 'Ready to measure')
+                h('span', { className: 'rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-700' }, dispSubmerged ? (dispCondition === 'partial' ? 'Partly submerged' : 'Fully submerged') : 'Ready to measure')
               ),
               h('div', { className: 'grid grid-cols-2 gap-2' },
                 renderDisplacementCylinder('Initial reading', dispTrial.initial, false, false),
@@ -1570,7 +1573,7 @@ window.StemLab = window.StemLab || {
               ),
               dispSubmerged && h('div', { className: 'mt-3 rounded-xl border border-sky-300 bg-sky-50 p-3 text-center', role: 'status', 'aria-live': 'polite' },
                 h('div', { className: 'font-mono text-lg font-black text-sky-950' }, dispTrial.final + ' mL - ' + dispTrial.initial + ' mL = ?'),
-                h('p', { className: 'mt-1 text-xs text-sky-800' }, 'The change in liquid volume is the object volume.')
+                h('p', { className: 'mt-1 text-xs text-sky-800' }, dispTrial.error === 0 ? 'With careful setup, the change in liquid volume is the object volume.' : 'This setup changes the reading. Calculate the observed change, then compare it with the accepted volume.')
               )
             ),
 
@@ -1599,7 +1602,7 @@ window.StemLab = window.StemLab || {
                   onClick: lowerSpecimen,
                   disabled: dispSubmerged,
                   className: 'mt-2 min-h-[2.75rem] w-full rounded-lg bg-sky-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-sky-800 disabled:cursor-default disabled:bg-sky-200 disabled:text-sky-700'
-                }, dispSubmerged ? '\u2713 Object submerged' : '\u2193 Lower object into water'),
+                }, dispSubmerged ? (dispCondition === 'partial' ? '\u2713 Object partly submerged' : '\u2713 Object submerged') : (dispCondition === 'partial' ? '\u2193 Lower object partway into water' : '\u2193 Lower object into water')),
                 dispSubmerged && predictionReady && h('p', { className: 'mt-2 text-xs text-slate-700' },
                   'Your prediction: ', h('strong', null, predictionNumber + ' cm\u00B3'), '. Difference from this reading: ', h('strong', null, predictionDifference + ' cm\u00B3'), '.'
                 )
@@ -1632,7 +1635,12 @@ window.StemLab = window.StemLab || {
                   role: 'status', 'aria-live': 'polite'
                 }, dispFeedback.msg),
                 dispFeedback && dispFeedback.correct && dispObject.formula && h('p', { className: 'mt-2 rounded-lg bg-indigo-50 p-2 text-xs text-indigo-900' },
-                  h('strong', null, 'Formula check: '), dispObject.formula, '. Both methods agree.'
+                  h('strong', null, 'Formula check: '), dispObject.formula, '. ',
+                  dispTrial.error === 0
+                    ? 'Both methods agree.'
+                    : 'The displacement result is ' + dispTrial.measuredVolume + ' cm\u00B3 (difference: ' +
+                      (dispTrial.error > 0 ? '+' : '') + dispTrial.error + ' cm\u00B3). ' +
+                      'This condition introduced measurement error.'
                 )
               ),
 
@@ -1715,7 +1723,7 @@ window.StemLab = window.StemLab || {
       var bgClass = isDisplacement ? 'allo-vol-bg-displacement' : (isWord ? 'allo-vol-bg-word' : (isFreeform ? 'allo-vol-bg-freeform' : 'allo-vol-bg-slider'));
       var volumeModeLabel = isDisplacement ? 'Displacement' : (isWord ? 'Word problem' : (isFreeform ? 'Freeform' : 'Dimensions'));
       var volumeNext = isDisplacement
-        ? (dispSubmerged ? 'Subtract the initial reading from the final reading, then explain what the change represents.' : 'Predict the specimen volume, then lower it fully into the water.')
+        ? (dispSubmerged ? 'Subtract the initial reading from the final reading, then explain what the change represents.' : (dispCondition === 'partial' ? 'Predict the specimen volume, then lower it only partway to observe the resulting error.' : 'Predict the specimen volume, then lower it fully into the water.'))
         : isFreeform && positions.length === 0
         ? 'Place unit cubes, count one layer, then predict the total before finishing.'
         : isWord

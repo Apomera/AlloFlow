@@ -1878,6 +1878,28 @@ describe('Demo Autopilot preflight and quality analysis', () => {
     expect(bad.score).toBeLessThan(50);
   });
 });
+describe('vsDemoContinuationPlan', () => {
+  it('keeps the exact unfinished sequence after an ordinary stop', () => {
+    const steps = [
+      { commandId: 'one' },
+      { commandId: 'two' },
+      { commandId: 'three' },
+    ];
+    const stopped = VS.vsDemoContinuationPlan(steps, { ok: false, stopped: true, completed: 1 });
+    expect(stopped.completed).toBe(1);
+    expect(stopped.nextIndex).toBe(1);
+    expect(stopped.remainingSteps).toEqual(steps.slice(1));
+  });
+
+  it('never retries a timed-out command that is still running in the background', () => {
+    const steps = [{ commandId: 'one' }, { commandId: 'two' }, { commandId: 'three' }];
+    const timedOut = VS.vsDemoContinuationPlan(steps, { ok: false, timedOut: true, completed: 1 });
+    expect(timedOut.nextIndex).toBe(2);
+    expect(timedOut.remainingSteps).toEqual([steps[2]]);
+    expect(VS.vsDemoContinuationPlan(steps, { ok: true }).remainingSteps).toEqual([]);
+  });
+});
+
 describe('vsScheduleDemoNarrationClip', () => {
   it('uses PCM duration and shifts later clips so narration never overlaps', () => {
     const first = VS.vsScheduleDemoNarrationClip({ start: 1 }, 48000, 24000, 0, 10, 0.12);
@@ -2142,6 +2164,9 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('Command readiness');
     expect(moduleText()).toContain("type === 'allostudio-demovalidate-request'");
     expect(html).toContain('id="demoRepairBtn"');
+    expect(html).toContain('id="demoContinueBtn"');
+    expect(html).toContain('id="demoContinueEditBtn"');
+    expect(html).toContain('function offerDemoContinuation(steps, response)');
     expect(html).toContain('id="demoDraftClearBtn"');
     expect(html).toContain('id="demoScriptReviewBtn"');
     expect(html).toContain('id="demoScriptCopyBtn"');
@@ -2187,6 +2212,7 @@ describe('take persistence + export hardening wiring', () => {
     expect(m).toContain("demoRunRef.current.kind === 'official'");
     expect(m).toContain('cleanupAfterStop = true');
     expect(m).toContain('{ rehearsal: !!drReq.rehearsal }');
+    expect(m).toContain('timedOut: !!(result && result.timedOut)');
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
     expect(m).toContain('pauseAfter: Math.round(Math.max(0.5, Math.min(8');
     expect(m).toContain("script: String((s && s.script) || '').slice(0, 400)");
@@ -2198,6 +2224,7 @@ describe('take persistence + export hardening wiring', () => {
     expect(anti).toContain('onRunDemoPlan: async (steps, hooks, options) => {');
     expect(anti).toContain('const rehearsal = !!(options && options.rehearsal)');
     expect(anti).toContain('return { ok: true, completed: previewCompleted, rehearsal: true }');
+    expect(anti).toContain('timedOut: !!(r && r.timedOut)');
     expect(anti).toContain('Number(step.pauseAfter) || 2.2');
     expect(anti).toContain('Number(list[i].pauseAfter) || 2.2');
     expect(anti).toContain('let completionEvent = null;');

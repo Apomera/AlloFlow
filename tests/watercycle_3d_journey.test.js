@@ -28,6 +28,7 @@ describe('Water Cycle 3D Droplet Journey', () => {
 
       expect(source).toContain("var journeyView = d.journeyView || '2d';");
       expect(source).toContain("opacity: journeyView === '2d' ? 1 : 0");
+      expect(source).toContain('"data-render-mode": journeyView === \'2d\' ? \'visual\' : \'state-only\'');
       expect(source).toContain('"data-journey-state": d.journeyActive ? (d.journeyState || \'ocean\') : \'idle\'');
       expect(source).toContain('"data-watercycle-journey-3d": "true"');
       expect(source).toContain('ref: journey3dRef');
@@ -40,6 +41,10 @@ describe('Water Cycle 3D Droplet Journey', () => {
 
       expect(source).toContain('new THREE.WebGLRenderer');
       expect(source).toContain('new THREE.CatmullRomCurve3');
+      expect(source).toContain('var stateCurves3d = {');
+      expect(source).toContain('activeCurve3d.getPointAt(journeyProgress3d)');
+      expect(source).toContain('syncJourneyRoute3d(state3d);');
+      expect(source).toContain('canvasEl.dataset.journeyProgress = String(journeyProgress3d);');
       expect(source).toContain('new THREE.MeshPhysicalMaterial');
       expect(source).toContain('var stageTargets3d = {');
       expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
@@ -55,6 +60,10 @@ describe('Water Cycle 3D Droplet Journey', () => {
       expect(source).toContain('canvasEl._wc3dResetCamera = function()');
       expect(source).toContain('canvasEl._wc3dResetCamera = null;');
       expect(source).toContain('"aria-label": "Resume guided camera"');
+      expect(source).toContain('canvasEl._wc3dAdjustCamera = function(action)');
+      expect(source).toContain('canvasEl._wc3dAdjustCamera = null;');
+      expect(source).toMatch(/function cleanupJourney3d\(\) \{[\s\S]*?canvasEl\._wc3dAdjustCamera = null;\r?\n\s+\}/);
+      expect(source).toContain('onKeyDown: handleJourney3dKey');
     });
   });
 
@@ -73,6 +82,18 @@ describe('Water Cycle 3D Droplet Journey', () => {
       expect(source).toContain("driver: 'Hydraulic gradient'");
       expect(source).toContain("driver: 'Water-potential gradient'");
       expect(source).toContain("pace: 'Path dependent'");
+      expect(source).toContain('className: "wc-viewport-dock"');
+      expect(source).toContain('className: "wc-viewport-choice"');
+      expect(source).toContain("chooseJourneyPath('runoff')");
+      expect(source).toContain("chooseJourneyPath('infiltrate')");
+      expect(source).toContain("chooseJourneyPath('plant')");
+      expect(source).toContain('"data-clim-solar": String(currentSolar)');
+      expect(source).toContain('"data-clim-temp": String(currentTemp)');
+      expect(source).toContain('"data-clim-wind": String(currentWind)');
+      expect(source).toContain('scene.background.setHSL');
+      expect(source).toContain('vapor3d.material.opacity = Math.min');
+      expect(source).toContain('rain3d.material.color.setHex');
+      expect(source).toContain('cloudGroup3d.position.x =');
     });
   });
 });

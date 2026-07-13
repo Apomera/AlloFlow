@@ -107,6 +107,33 @@ describe('curriculum audit audio, language, scope, and standards', () => {
     expect(harvest.multimodal.audio).toBe(true);
   });
 
+  it('credits the global page reader without letting audio-only artifacts inflate readable coverage', () => {
+    const artifacts = [{
+      id: 'lesson-1',
+      type: 'lesson-plan',
+      data: {
+        directInstruction: 'Teach evaporation with a short demonstration.',
+        karaokeAudio: { sentences: [{ audioUrl: 'blob:prepared-sentence' }] }
+      }
+    }, {
+      id: 'audio-only',
+      type: 'audio',
+      data: { audioUrl: 'blob:standalone-audio' }
+    }];
+    const result = helpers.computeAudioCoverage(artifacts, 'en');
+    expect(result.readableArtifacts).toBe(1);
+    expect(result.readAloudCapableArtifacts).toBe(1);
+    expect(result.readAloudCapabilityPct).toBe(100);
+    expect(result.pageReaderEligibleArtifacts).toBe(1);
+    expect(result.dedicatedReadAloudArtifacts).toBe(0);
+    expect(result.dedicatedReadAloudPct).toBe(0);
+    expect(result.embeddedAudioArtifacts).toBe(0);
+    expect(result.embeddedAudioPct).toBe(0);
+    expect(result.totalEmbeddedAudioArtifacts).toBe(1);
+    expect(result.unscopedEmbeddedAudioArtifacts).toBe(1);
+    expect(result.preparedSentences).toBe(1);
+  });
+
   it('uses Unicode word segmentation but withholds the English-only tier rubric', () => {
     const result = helpers.computeVocabularyFit([
       { type: 'analysis', data: { originalText: 'La fotosíntesis transforma energía para las plantas.' } }
@@ -154,7 +181,20 @@ describe('curriculum audit report WCAG regressions', () => {
     expect(reportSource).toContain('Provisional curriculum readiness score:');
     expect(reportSource).toContain('role="img" aria-label={\'Quiz DOK distribution:');
     expect(reportSource).toContain('not a WCAG conformance assessment');
-    expect(reportSource).toContain('Read-aloud capable');
+    expect(reportSource).toContain('function AudioCoverageSummary');
+    expect(reportSource).toContain('App-wide read aloud');
+    expect(reportSource).toContain('Dedicated read-aloud controls');
+    expect(reportSource).toContain('How scoring works');
+    expect(reportSource).toContain('aria-label={label + \': \' + status');
+    expect(reportSource).toContain('Selection: ');
+    expect(reportSource).toContain('print:h-auto');
+    expect(reportSource).toContain('var seenRecommendations = new Set()');
+    expect(dispatcherSource).toContain('schemaVersion: 3');
+    expect(reportSource).toContain('function NotEvaluatedCard');
+    expect(reportSource).toContain('function MissingDimensionCard');
+    expect(reportSource).toContain('saved audit. Regenerate the audit');
+    expect(reportSource).toContain('c.vocabulary.notEvaluated');
+    expect(reportSource).toContain('c.accuracy.notEvaluated');
     expect(reportSource).not.toContain('of 5 comprehensive');
     expect(reportSource).not.toMatch(/opacity:\s*0\.(?:65|7|8)/);
   });
@@ -162,6 +202,8 @@ describe('curriculum audit report WCAG regressions', () => {
   it('keeps source and generated report localization plumbing aligned', () => {
     expect(reportSource).toContain('<ExecutiveSummary t={t}');
     expect(reportSource).toContain('lang={comprehensive && comprehensive.auditLanguage');
-    expect(reportSource).toContain('role="region" aria-label="Curriculum audit report"');
+    expect(reportSource).toContain('role="region" aria-labelledby="curriculum-audit-report-heading"');
+    expect(reportSource).toContain('<h1 id="curriculum-audit-report-heading"');
+    expect(reportSource).toContain('<time dateTime={generatedAt}>');
   });
 });

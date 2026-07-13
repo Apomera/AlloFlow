@@ -49,7 +49,7 @@ describe('3D Volume Explorer water displacement mode', () => {
     expect(waiting).toContain('data-displacement-lab="true"');
     expect(waiting).toContain('Water Displacement Lab');
     expect(waiting).toContain('1 milliliter (mL) = 1 cubic centimeter (cm\u00B3)');
-    expect(waiting).toContain('Final reading is hidden until the object is submerged');
+    expect(waiting).toContain('Final reading is hidden until the object is lowered into the water');
     expect(waiting).toContain('Grades 3-5');
     expect(waiting).not.toContain('Measurement conditions');
     expect(waiting).not.toContain('Interactive 3D viewport');
@@ -91,6 +91,51 @@ describe('3D Volume Explorer water displacement mode', () => {
     expect(html).toContain('Accepted volume');
     expect(html).toContain('+3 cm\u00B3');
     expect(html).toContain('47 g / 18 cm\u00B3 = 2.61 g/cm\u00B3');
+  });
+
+  it('represents partial immersion honestly in visuals and accessible text', () => {
+    const html = renderTool('volume', {
+      _volume: {
+        mode: 'displacement',
+        dispLevel: 'middle',
+        dispCondition: 'partial',
+        dispObjectId: 'stone',
+        dispSubmerged: true,
+      },
+    });
+
+    expect(html).toContain('Only partly submerged');
+    expect(html).toContain('data-immersion="partial"');
+    expect(html).toContain('Partly submerged');
+    expect(html).toContain('with the River stone only partly submerged.');
+    expect(html).toContain('\u2713 Object partly submerged');
+    expect(html).toContain('This setup changes the reading');
+    expect(html).not.toContain('Fully submerged');
+  });
+
+  it('distinguishes formula agreement from measurement bias', () => {
+    const renderBlock = (condition, answer) => renderTool('volume', {
+      _volume: {
+        mode: 'displacement',
+        dispLevel: 'middle',
+        dispCondition: condition,
+        dispObjectId: 'block',
+        dispSubmerged: true,
+        dispAnswer: String(answer),
+        dispFeedback: { correct: true, msg: 'Correct measurement.' },
+      },
+    });
+
+    const careful = renderBlock('careful', 24);
+    expect(careful).toContain('Formula check:');
+    expect(careful).toContain('4 x 3 x 2 = 24 cm\u00B3. Both methods agree.');
+
+    const bubble = renderBlock('bubble', 27);
+    expect(bubble).toContain('4 x 3 x 2 = 24 cm\u00B3');
+    expect(bubble).toContain(
+      'The displacement result is 27 cm\u00B3 (difference: +3 cm\u00B3). This condition introduced measurement error.',
+    );
+    expect(bubble).not.toContain('Both methods agree.');
   });
 
   it('exposes a three-trial quest hook', () => {
@@ -144,7 +189,7 @@ describe('3D Volume Explorer water displacement mode', () => {
       await React.act(async () => buttonWithText('Check').click());
 
       expect(container.textContent).toContain(
-        'the measured object volume is 18 cm\u00B3',
+        'the observed displaced volume is 18 cm\u00B3',
       );
       expect(container.textContent).toContain('Trial record');
       expect(container.textContent).toContain('1 completed');

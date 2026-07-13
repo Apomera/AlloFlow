@@ -28108,6 +28108,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     // chip says exactly what it restores.
     if (_rawUtter === '__allo_plan_undo') {
       setUdlInput('');
+      _pendingBotPlanRef.current = null;
       const _snap = _planUndoRef.current;
       if (!_snap) {
         setUdlMessages(prev => [...prev, { role: 'model', text: (t('chat_guide.plan_undo_none') || 'There’s nothing from a plan to undo right now.') }]);
@@ -28181,11 +28182,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         if (_isRun && _AC && typeof _AC.runPlan === 'function') {
           const _steps = _pendingPlan.steps;
           _planRunRef.current = { running: true, stop: false };
-          // Undo restore point: content refs + the settings intent snapshot.
-          try {
-            captureIntentSnapshot('plan');
-            _planUndoRef.current = { generatedContent, history, activeView, settings: lastIntentSnapshotRef.current };
-          } catch (_) { _planUndoRef.current = null; }
+          // A resumed remainder is still the same plan. Preserve the original
+          // restore point so Undo returns to the state before step one, not
+          // merely to the state before the continuation.
+          if (!_pendingPlan.resume || !_planUndoRef.current) {
+            try {
+              captureIntentSnapshot('plan');
+              _planUndoRef.current = { generatedContent, history, activeView, settings: lastIntentSnapshotRef.current };
+            } catch (_) { _planUndoRef.current = null; }
+          }
           setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '▶ ' + (t('chat_guide.plan_running') || 'Running the plan — I’ll report each step here.'), choices: [
             { label: '🛑 ' + (t('chat_guide.plan_stop') || 'Stop after current step'), value: '__allo_plan_stop' }
           ] }]);
@@ -28205,13 +28210,25 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                 { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
               ] }]);
               try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.plan_done') || 'All steps finished.'); } catch (_) {}
-            } else if (_pr && Array.isArray(_pr.results) && _pr.results.length) {
-              // Partial run: some steps landed — offer the same restore point.
-              setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '⚠️ ' + (_pr.reason || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + ' ' + (t('chat_guide.plan_resume_hint') || 'The finished steps are kept. To do the rest, just ask again for what’s left — for example “make a glossary, then translate it to Spanish”.'), choices: [
-                { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
-              ] }]);
             } else {
-              setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + ' ' + (t('chat_guide.plan_resume_hint') || 'The finished steps are kept. To do the rest, just ask again for what’s left — for example “make a glossary, then translate it to Spanish”.') }]);
+              const _remaining = (_pr && Array.isArray(_pr.remainingSteps)) ? _pr.remainingSteps : [];
+              const _hasFinished = !!(_pr && Array.isArray(_pr.results) && _pr.results.length);
+              const _canResume = _remaining.length > 0 && !(_pr && _pr.timedOut);
+              if (_canResume) {
+                _pendingBotPlanRef.current = { steps: _remaining, originalText: _pendingPlan.originalText, resume: true };
+                const _countLabel = _remaining.length + ' remaining step' + (_remaining.length === 1 ? '' : 's');
+                setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + ' ' + (t('chat_guide.plan_resume_exact') || 'The finished steps are kept. You can resume the exact remaining sequence without re-entering it.'), choices: [
+                  { label: '▶ ' + (t('chat_guide.plan_resume') || 'Resume') + ' (' + _countLabel + ')', value: '__allo_plan_run' },
+                  { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
+                ] }]);
+              } else if (_hasFinished) {
+                const _held = _remaining.length ? (' ' + _remaining.length + ' later step' + (_remaining.length === 1 ? ' is' : 's are') + ' still held.') : '';
+                setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '⚠️ ' + (_pr.reason || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + _held + ' ' + ((_pr && _pr.timedOut) ? (t('chat_guide.plan_timeout_wait') || 'Wait for the current background task to finish before starting another command.') : (t('chat_guide.plan_resume_hint') || 'The finished steps are kept.')), choices: [
+                  { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
+                ] }]);
+              } else {
+                setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + (_remaining.length ? ' The remaining sequence is preserved; resolve the blocker and ask to run it again.' : '') }]);
+              }
             }
           } catch (_) {
             setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + (t('chat_guide.plan_failed') || 'The plan stopped early.') }]);
@@ -37789,7 +37806,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                     else try { if (hooks && hooks.onStep) hooks.onStep(i, phase, label, narr || ''); } catch (_) {}
                                 }
                             });
-                            if (!r || !r.ok) return { ok: false, completed, stopped: !!(r && r.stopped), reason: (r && r.reason) || ('Step ' + (i + 1) + ' did not finish.') };
+                            if (!r || !r.ok) return { ok: false, completed, stopped: !!(r && r.stopped), timedOut: !!(r && r.timedOut), reason: (r && r.reason) || ('Step ' + (i + 1) + ' did not finish.') };
                             const resultHoldMs = Math.round(Math.max(0.5, Math.min(8, Number(list[i].pauseAfter) || 2.2)) * 1000);
                             for (let held = 0; held < resultHoldMs && !stopWanted(); held += 100) await new Promise(resolve => setTimeout(resolve, Math.min(100, resultHoldMs - held)));
                             const done = completionEvent || { label: list[i].commandId, narration: 'Step complete.' };

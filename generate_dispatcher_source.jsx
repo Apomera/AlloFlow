@@ -1,5 +1,5 @@
 // generate_dispatcher_source.jsx - Phase J of CDN modularization.
-// handleGenerate (2,286 lines) — the resource-generation dispatcher.
+// handleGenerate and curriculum-audit helpers — the resource-generation dispatcher.
 // Switch-on-type router for simplified/glossary/quiz/outline/image/etc.
 
 // ─── Plan O Step 1: Vocabulary fit (deterministic) ──────────────────────
@@ -68,7 +68,7 @@ function _collectAuditStrings(value, out, seen, depth) {
   if (value === null || value === undefined || depth > 7) return;
   if (typeof value === 'string') {
     const clean = value.trim();
-    if (!clean || /^data:[^,]+;base64,/i.test(clean) || /^https?:\/\/\S+$/i.test(clean)) return;
+    if (!clean || /^(?:data:|blob:|file:\/\/)/i.test(clean) || /^https?:\/\/\S+$/i.test(clean)) return;
     out.push(clean);
     return;
   }
@@ -92,7 +92,7 @@ function extractAuditArtifactText(artifact) {
   return chunks.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 
-const READ_ALOUD_CAPABLE_TYPES = new Set(['adventure', 'dbq', 'faq', 'glossary', 'image', 'persona', 'quiz', 'simplified']);
+const DEDICATED_READ_ALOUD_TYPES = new Set(['adventure', 'dbq', 'faq', 'glossary', 'image', 'persona', 'quiz', 'simplified']);
 const AUDIT_EXCLUDED_TYPES = new Set(['alignment-report', 'remediated', 'audit-remediation']);
 
 function _splitAuditSentences(text, language) {
@@ -109,13 +109,20 @@ function _splitAuditSentences(text, language) {
 
 function _artifactAudioEvidence(artifact, language) {
   const d = artifact && artifact.data && typeof artifact.data === 'object' ? artifact.data : {};
-  const manifest = artifact && artifact.karaokeAudio && typeof artifact.karaokeAudio === 'object' ? artifact.karaokeAudio : null;
+  const manifestCandidate = artifact && (artifact.karaokeAudio || d.karaokeAudio);
+  const manifest = manifestCandidate && typeof manifestCandidate === 'object' ? manifestCandidate : null;
   const embedded = !!(d.audioUrl || d.ttsAudio || d.audioPath || (d.audio && (d.audio.url || d.audio.path)) || (artifact && (artifact.audioUrl || artifact.audioPath)));
   const preparedSentences = manifest && Array.isArray(manifest.sentences) ? manifest.sentences.filter(Boolean).length : 0;
   const readableText = extractAuditArtifactText(artifact);
   const expectedSentences = _splitAuditSentences(readableText, language).length;
   return {
-    readAloudCapable: !!(artifact && READ_ALOUD_CAPABLE_TYPES.has(artifact.type) && readableText),
+    readable: !!readableText,
+    // The app-wide Read This Page reader can synthesize any readable resource.
+    // Dedicated controls are tracked separately because they are more discoverable
+    // and may provide sentence-level highlighting or resource-specific playback.
+    readAloudCapable: !!readableText,
+    pageReaderEligible: !!readableText,
+    dedicatedReadAloudCapable: !!(artifact && DEDICATED_READ_ALOUD_TYPES.has(artifact.type) && readableText),
     embedded: embedded,
     preparedSentences: preparedSentences,
     expectedSentences: expectedSentences,
@@ -125,30 +132,50 @@ function _artifactAudioEvidence(artifact, language) {
 
 function computeAudioCoverage(artifacts, language) {
   const safe = Array.isArray(artifacts) ? artifacts : [];
-  let readableArtifacts = 0, readAloudCapableArtifacts = 0, embeddedAudioArtifacts = 0;
+  let readableArtifacts = 0, readAloudCapableArtifacts = 0, dedicatedReadAloudArtifacts = 0;
+  let pageReaderEligibleArtifacts = 0, embeddedAudioArtifacts = 0, totalEmbeddedAudioArtifacts = 0;
   let preparedAudioArtifacts = 0, expectedSentences = 0, preparedSentences = 0;
+  let unscopedEmbeddedAudioArtifacts = 0, unscopedPreparedAudioArtifacts = 0, unscopedPreparedSentences = 0;
   safe.forEach(function (artifact) {
-    const text = extractAuditArtifactText(artifact);
-    if (text) readableArtifacts++;
     const evidence = _artifactAudioEvidence(artifact, language);
+    if (evidence.readable) readableArtifacts++;
     if (evidence.readAloudCapable) readAloudCapableArtifacts++;
-    if (evidence.embedded) embeddedAudioArtifacts++;
-    if (evidence.preparedSentences > 0) preparedAudioArtifacts++;
-    expectedSentences += evidence.expectedSentences;
-    preparedSentences += evidence.preparedSentences;
+    if (evidence.pageReaderEligible) pageReaderEligibleArtifacts++;
+    if (evidence.dedicatedReadAloudCapable) dedicatedReadAloudArtifacts++;
+    if (evidence.embedded) {
+      totalEmbeddedAudioArtifacts++;
+      if (evidence.readable) embeddedAudioArtifacts++;
+      else unscopedEmbeddedAudioArtifacts++;
+    }
+    if (evidence.readable) {
+      if (evidence.preparedSentences > 0) preparedAudioArtifacts++;
+      expectedSentences += evidence.expectedSentences;
+      preparedSentences += evidence.preparedSentences;
+    } else if (evidence.preparedSentences > 0) {
+      unscopedPreparedAudioArtifacts++;
+      unscopedPreparedSentences += evidence.preparedSentences;
+    }
   });
   return {
+    totalArtifacts: safe.length,
     readableArtifacts: readableArtifacts,
     readAloudCapableArtifacts: readAloudCapableArtifacts,
     readAloudCapabilityPct: readableArtifacts ? Math.round((readAloudCapableArtifacts / readableArtifacts) * 100) : null,
+    pageReaderEligibleArtifacts: pageReaderEligibleArtifacts,
+    dedicatedReadAloudArtifacts: dedicatedReadAloudArtifacts,
+    dedicatedReadAloudPct: readableArtifacts ? Math.round((dedicatedReadAloudArtifacts / readableArtifacts) * 100) : null,
     embeddedAudioArtifacts: embeddedAudioArtifacts,
     embeddedAudioPct: readableArtifacts ? Math.round((embeddedAudioArtifacts / readableArtifacts) * 100) : null,
+    totalEmbeddedAudioArtifacts: totalEmbeddedAudioArtifacts,
+    unscopedEmbeddedAudioArtifacts: unscopedEmbeddedAudioArtifacts,
     preparedAudioArtifacts: preparedAudioArtifacts,
     preparedSentences: preparedSentences,
     expectedSentences: expectedSentences,
     preparedSentenceCoveragePct: expectedSentences ? Math.min(100, Math.round((preparedSentences / expectedSentences) * 100)) : null,
+    unscopedPreparedAudioArtifacts: unscopedPreparedAudioArtifacts,
+    unscopedPreparedSentences: unscopedPreparedSentences,
     runtimeFallbackAvailable: readAloudCapableArtifacts > preparedAudioArtifacts,
-    notes: 'Capability means the artifact view exposes read-aloud/TTS. Embedded audio and prepared synchronized sentence audio are reported separately and are not treated as equivalent evidence.',
+    notes: 'Read-aloud capability includes the app-wide Read This Page TTS reader for every readable resource. Dedicated in-resource controls, embedded audio files, and prepared synchronized sentence audio are reported separately and are not treated as equivalent evidence.',
   };
 }
 
@@ -755,84 +782,6 @@ const DIMENSION_LABELS = {
   culturalResponsiveness: 'Cultural responsiveness',
 };
 
-function computeReadinessScoreLegacy(comprehensive) {
-  if (!comprehensive) return null;
-  let totalScore = 0;
-  let dimensionsEvaluated = 0;
-  const dimensionScores = {};
-  const blockingIssues = [];
-
-  ALL_DIMENSIONS.forEach(dim => {
-    const data = comprehensive[dim];
-    if (!data) return;
-    // Skip placeholder failures and N/A dimensions from the readiness math
-    // but still surface them in the per-dimension list so the teacher can see them.
-    if (data.computeFailed) {
-      dimensionScores[dim] = { status: 'Compute failed', points: 0, computeFailed: true };
-      return;
-    }
-    if (data.notApplicable) {
-      dimensionScores[dim] = { status: 'Not applicable', points: 0, notApplicable: true };
-      return;
-    }
-    dimensionsEvaluated++;
-    const status = data.status || 'Partially Aligned';
-    const points = (typeof STATUS_POINTS[status] === 'number') ? STATUS_POINTS[status] : 12;
-    totalScore += points;
-    dimensionScores[dim] = { status, points };
-    if (status === 'Not Aligned') {
-      // Pull a representative issue per blocked dimension
-      let issue = '';
-      if (dim === 'standards' && Array.isArray(data.perStandard) && data.perStandard[0]) {
-        issue = data.perStandard[0].adminRecommendation || ('Standard ' + (data.perStandard[0].standard || 'unknown') + ' did not pass.');
-      }
-      else if (dim === 'vocabulary' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
-      else if (dim === 'engagement' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
-      else if (dim === 'accessibility' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
-      else if (dim === 'udl' && data.overallNarrative) issue = data.overallNarrative;
-      else if (dim === 'accuracy' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
-      blockingIssues.push({ dimension: DIMENSION_LABELS[dim], issue });
-    }
-  });
-
-  // Normalize to 0-100. If only some dimensions evaluated, scale by what's there.
-  const maxPossible = dimensionsEvaluated * 20;
-  const normalizedScore = maxPossible > 0 ? Math.round((totalScore / maxPossible) * 100) : 0;
-
-  // Overall status thresholds
-  let overallStatus, overallLabel;
-  if (blockingIssues.length > 0) {
-    overallStatus = 'Revise';
-    overallLabel = 'Revise — critical issues';
-  } else if (normalizedScore >= 90) {
-    overallStatus = 'Pass';
-    overallLabel = 'Pass — ready to deploy';
-  } else if (normalizedScore >= 70) {
-    overallStatus = 'Pass with notes';
-    overallLabel = 'Pass with notes — minor improvements suggested';
-  } else if (normalizedScore >= 50) {
-    overallStatus = 'Revise';
-    overallLabel = 'Revise — multiple dimensions need work';
-  } else {
-    overallStatus = 'Revise';
-    overallLabel = 'Revise — significant gaps across dimensions';
-  }
-
-  return {
-    score: normalizedScore,
-    status: overallStatus,
-    label: overallLabel,
-    dimensionsEvaluated,
-    dimensionScores,
-    blockingIssues,
-    perDimensionPercent: Object.keys(dimensionScores).reduce((acc, dim) => {
-      acc[dim] = Math.round((dimensionScores[dim].points / 20) * 100);
-      return acc;
-    }, {}),
-    notes: 'Equal weighting across 5 comprehensive dimensions. Score is a guide; review the per-dimension findings for context. Any "Not Aligned" dimension blocks an automatic Pass regardless of overall score.',
-  };
-}
-
 function computeReadinessScore(comprehensive) {
   if (!comprehensive) return null;
   let totalScore = 0;
@@ -934,64 +883,6 @@ function computeReadinessScore(comprehensive) {
     scoreBasis: 'Equal weighting across all applicable dimensions. Missing, failed, or unevaluated evidence prevents certification and produces only a provisional score.',
     notes: 'A Not Aligned dimension blocks Pass. Not evaluated or Compute failed dimensions make the report Incomplete; they are never silently excluded from certification.',
   };
-}
-
-function collectAuditTextLegacy(artifacts) {
-  // sourceText  = primary lesson text only (analysis.originalText, falls back to simplified).
-  //               Used for the teacher-facing "word count" so it matches their intuition.
-  // text        = bundle of EVERY artifact's content, used for tier classification across
-  //               the whole curriculum (so we catch academic vocab in glossary defs, quiz, etc.).
-  // glossaryTerms = explicit glossary entries (always Tier 3).
-  const out = { text: '', sourceText: '', glossaryTerms: [] };
-  let analysisText = '';
-  let simplifiedText = '';
-  artifacts.forEach(item => {
-    const d = item.data;
-    if (!d) return;
-    if (item.type === 'analysis') {
-      if (d.originalText) {
-        analysisText = String(d.originalText);
-        out.text += analysisText + ' ';
-      }
-      if (Array.isArray(d.concepts)) out.text += d.concepts.join(' ') + ' ';
-    } else if (item.type === 'glossary' && Array.isArray(d)) {
-      d.forEach(g => {
-        if (g.term)       out.glossaryTerms.push(String(g.term).toLowerCase());
-        if (g.def)        out.text += String(g.def) + ' ';
-        if (g.definition) out.text += String(g.definition) + ' ';
-      });
-    } else if (item.type === 'lesson-plan') {
-      ['directInstruction','guidedPractice','independentPractice','closure','essentialQuestion'].forEach(k => {
-        if (d[k]) out.text += String(d[k]) + ' ';
-      });
-      if (Array.isArray(d.objectives)) out.text += d.objectives.join(' ') + ' ';
-    } else if (item.type === 'quiz' && d.questions) {
-      d.questions.forEach(q => {
-        if (q.question) out.text += String(q.question) + ' ';
-        if (q.text)     out.text += String(q.text) + ' ';
-        if (Array.isArray(q.options)) out.text += q.options.join(' ') + ' ';
-      });
-    } else if (item.type === 'sentence-frames') {
-      if (Array.isArray(d.items)) d.items.forEach(i => i && i.text && (out.text += i.text + ' '));
-      if (typeof d === 'string') out.text += d + ' ';
-      if (d.text) out.text += String(d.text) + ' ';
-    } else if (item.type === 'outline') {
-      if (d.main) out.text += String(d.main) + ' ';
-      if (Array.isArray(d.branches)) d.branches.forEach(b => {
-        if (b && b.title) out.text += String(b.title) + ' ';
-        if (b && Array.isArray(b.items)) out.text += b.items.join(' ') + ' ';
-      });
-    } else if (item.type === 'simplified' && typeof d === 'string') {
-      simplifiedText = d;
-      out.text += d + ' ';
-    } else if (item.type === 'simplified' && d && d.text) {
-      simplifiedText = String(d.text);
-      out.text += simplifiedText + ' ';
-    }
-  });
-  // Resolve sourceText: prefer the analysis.originalText (true source), else simplified.
-  out.sourceText = analysisText || simplifiedText || '';
-  return out;
 }
 
 function collectAuditText(artifacts) {
@@ -3438,60 +3329,31 @@ ${_itemsBlock}`;
              metaInfo = `Comprehensive audit (no target standards)`;
          }
 
-         // ---- Plan O Steps 1-5: Comprehensive dimensions (PARALLEL) ---------
-         // Deterministic computations run synchronously first (microseconds).
-         // The 5 LLM review calls then run in parallel via Promise.all, cutting
-         // wall-clock from ~30-60s sequential to ~10s.
+         // ---- Comprehensive audit dimensions (parallel where possible) ------
+         // Deterministic computations run synchronously first. Optional AI
+         // reviews for the remaining dimensions are launched together below so
+         // one slow review does not serialize the rest of the audit.
          const auditHarvest = harvestExistingAuditSignals(artifactsToAudit);
          content.comprehensive = content.comprehensive || {};
          auditScopeSelection.metadata.contextTruncated = contextOverflowed;
          auditScopeSelection.metadata.serializationFailures = Array.from(new Set(failedTypes));
          content.comprehensive.auditScope = auditScopeSelection.metadata;
          content.comprehensive.auditLanguage = String(effectiveLanguage || currentUiLanguage || 'en');
+         content.comprehensive.auditMetadata = {
+             schemaVersion: 3,
+             generatedAt: new Date().toISOString(),
+             gradeLevel: String(effectiveGrade || gradeLevel || ''),
+         };
 
-         // ---- Plan R+: Standards alignment as 6th dimension -----------------
+         // ---- Standards alignment normalization -----------------------------
          // Fold the standards-alignment data (already produced by the LLM call
          // above when targetStandards exist) into comprehensive.standards so it
          // counts toward the readiness score and renders in the same dimension
          // framework as the others. content.reports is kept as a back-compat
          // alias but the canonical shape going forward is comprehensive.standards.
-         (function buildStandardsDimension() {
-             const normalizedStandards = normalizeStandardsDimension(content.reports, targetStandards);
-             content.reports = normalizedStandards.reports;
-             content.comprehensive.standards = normalizedStandards.dimension;
-             return;
-             const reports = Array.isArray(content.reports) ? content.reports : [];
-             if (reports.length === 0) {
-                 // No standards entered → not applicable, exclude from score math.
-                 content.comprehensive.standards = {
-                     status: 'Not applicable',
-                     notApplicable: true,
-                     reason: 'No target standards entered. Add a standard in the settings panel to include standards alignment in the audit.',
-                     perStandard: [],
-                 };
-                 return;
-             }
-             let passCount = 0; let reviseCount = 0;
-             const recs = [];
-             reports.forEach(function (r) {
-                 if (r && r.overallDetermination === 'Pass') passCount++;
-                 else reviseCount++;
-                 if (r && r.adminRecommendation) recs.push(r.adminRecommendation);
-             });
-             let status;
-             if (reviseCount === 0) status = 'Aligned';
-             else if (passCount === 0) status = 'Not Aligned';
-             else status = 'Partially Aligned';
-             content.comprehensive.standards = {
-                 status,
-                 perStandard: reports,
-                 totalStandards: reports.length,
-                 passCount,
-                 reviseCount,
-                 recommendations: recs.slice(0, 5),
-                 notes: reports.length + ' standard' + (reports.length === 1 ? '' : 's') + ' audited via Holistic Lesson Plan Audit. Each standard evaluated for text-, activity-, and assessment-alignment + cognitive demand.',
-             };
-         })();
+         const normalizedStandards = normalizeStandardsDimension(content.reports, targetStandards);
+         content.reports = normalizedStandards.reports;
+         content.comprehensive.standards = normalizedStandards.dimension;
 
          // ---- Sync deterministic compute (Steps 1, 2, 3, 5 stats) -----------
          // On compute failure, write a placeholder marker so the teacher sees

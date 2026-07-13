@@ -14,8 +14,8 @@ beforeEach(() => {
 describe('Anatomy Lab progression and quiz logic', () => {
   it('requires all 10 systems for the all-systems quest', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain("length >= 10; }, progress: function(d) { return Object.keys(d._systemsExplored || {}).length + '/10 systems'");
-    expect(source).not.toContain("length >= 8; }, progress: function(d) { return Object.keys(d._systemsExplored || {}).length + '/8 systems'");
+    expect(source).toContain('countStoredTrueFlags(d._systemsExplored, ANATOMY_SYSTEM_IDS) >= ANATOMY_SYSTEM_IDS.length');
+    expect(source).not.toContain('Object.keys(d._systemsExplored || {}).length');
   });
 
   it('excludes every valid system from System ID distractors', () => {
@@ -52,7 +52,7 @@ describe('Anatomy Lab clinical-case integrity', () => {
     expect(html).not.toContain('The Runner\'s Knee');
 
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain("var activeCaseId = d._activeCaseId || null;");
+    expect(source).toContain("clinicalCaseIds.indexOf(d._activeCaseId) !== -1 ? d._activeCaseId : null");
     expect(source).toContain("activeCaseId === cs.id");
     expect(source).toContain('Review explanation');
   });
@@ -103,7 +103,8 @@ describe('Anatomy Lab interaction performance', () => {
 
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain('quizPool[quizRoundIdx % quizPool.length]');
-    expect(source).toContain("upd('_quizAttempts', (d._quizAttempts || 0) + 1)");
+    expect(source).toContain('_quizAttempts: quizAttempts + 1');
+    expect(source).not.toContain("upd('_quizAttempts', (d._quizAttempts || 0) + 1)");
   });
 
   it('offers a recovery action when a search has no results', () => {
@@ -212,7 +213,7 @@ describe('Anatomy Lab saved-state recovery', () => {
 
   it('resets quiz attempts atomically and clears ended Spotter rounds', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain("updMulti({ quizMode: !d.quizMode, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0 })");
+    expect(source).toContain("updMulti({ quizMode: !quizMode, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0 })");
     expect(source).toContain("_spotterOpts: [], _spotterStartTime: 0, _spotterElapsed: 0");
   });
 
@@ -395,5 +396,168 @@ describe('Anatomy Lab AI Tutor resilience', () => {
     expect(source).toContain("updMulti({ _aiMessages: newMsgs, _aiLoading: true, _aiInput: '', _aiQuestions: newAiQ })");
     expect(source).toContain("window.__alloAnatomyAiPending = null; updMulti({ _aiMessages: [], _aiLoading: false, _aiInput: '' })");
     expect(source).not.toContain("upd('_aiLoading', true)");
+  });
+});
+
+describe('Anatomy Lab progress-state integrity', () => {
+  it('renders safely when persisted progress collections have invalid shapes', () => {
+    const state = {
+      completedChallenges: { forged: true },
+      vocabLookedUp: { forged: true },
+      researchPoints: -10,
+      totalRP: 'not-a-number',
+      _badges: ['firstStructure'],
+      _systemsExplored: { forged: true },
+      _structuresViewed: { forged: true },
+      _layersToggled: { forged: true },
+      _viewsUsed: { forged: true },
+      _connectionsViewed: { forged: true },
+      _pathwaysCompleted: { forged: true },
+      _mnemonicsViewed: { forged: true },
+      _clinicalSolvedIds: { forged: true },
+      _clinicalSolved: 999
+    };
+    expect(() => renderAnatomy(state)).not.toThrow();
+    const html = renderAnatomy(state);
+    expect(html).toContain('0 RP - 0/6');
+    expect(html).toContain('0/20 badges');
+    expect(html).toContain('<strong>0/10</strong>');
+  });
+
+  it('deduplicates allow-listed progress and ignores forged catalog ids', () => {
+    const html = renderAnatomy({
+      completedChallenges: ['explore_systems', 'explore_systems', 'forged'],
+      researchPoints: '15',
+      _badges: { firstStructure: true, forged: true },
+      _systemsExplored: { skeletal: true, forged: true },
+      _structuresViewed: { skull: true, heart: true, forged: true }
+    });
+    expect(html).toContain('15 RP - 1/6');
+    expect(html).toContain('1/20 badges');
+    expect(html).toContain('<strong>1/10</strong>');
+    expect(html).toContain('<strong>2</strong><span>Structures viewed</span>');
+  });
+
+  it('normalizes every restored achievement domain against its catalog', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('function safeFlagMap(value, allowedIds)');
+    expect(source).toContain('safeFlagMap(d._badges, BADGE_DEFS.map');
+    expect(source).toContain('safeFlagMap(d._systemsExplored, ANATOMY_SYSTEM_IDS)');
+    expect(source).toContain('safeFlagMap(d._structuresViewed, knownStructureIds');
+    expect(source).toContain('safeFlagMap(d._connectionsViewed, connectionIds)');
+    expect(source).toContain('safeFlagMap(d._pathwaysCompleted, pathwayIds)');
+    expect(source).toContain('safeFlagMap(d._mnemonicsViewed, mnemonicIds)');
+    expect(source).toContain('Array.isArray(d.completedChallenges)');
+    expect(source).toContain('Array.isArray(d.vocabLookedUp)');
+  });
+
+  it('applies connection and clinical-case interactions atomically', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('var connectionPatch = { _expandedConn:');
+    expect(source).toContain('updMulti(connectionPatch);');
+    expect(source).toContain("_activeCaseFeedback: 'reveal',");
+    expect(source).not.toContain("upd('_activeCaseFeedback', 'reveal')");
+  });
+});
+describe('Anatomy Lab layer and quiz-state resilience', () => {
+  it('preserves explicit hidden layers while discarding invalid layer entries', () => {
+    const html = renderAnatomy({
+      system: 'skeletal',
+      visibleLayers: { skin: 'yes', skeletal: false, forged: true }
+    });
+    expect(html).toContain('aria-label="Show Skin layer"');
+    expect(html).toContain('aria-label="Show Skeletal layer"');
+    expect(html).toContain('0 layers visible');
+  });
+
+  it('recovers invalid layer and confetti collection shapes without crashing', () => {
+    expect(() => renderAnatomy({ visibleLayers: ['skeletal'], _confettiParticles: { forged: true } })).not.toThrow();
+    const html = renderAnatomy({ visibleLayers: ['skeletal'], _confettiParticles: { forged: true } });
+    expect(html).toContain('aria-label="Hide Skin layer"');
+    expect(html).toContain('aria-label="Hide Skeletal layer"');
+  });
+
+  it('does not activate quiz mode from truthy strings or lock answers with forged feedback', () => {
+    const inactive = renderAnatomy({ quizMode: 'true', quizScore: 'bad', quizFeedback: { chosen: 'skull', correct: true } });
+    expect(inactive).not.toContain('Anatomy Quiz');
+
+    const active = renderAnatomy({ quizMode: true, quizScore: 'bad', quizFeedback: { chosen: 'forged', correct: true } });
+    expect(active).toContain('Score 0 - Question 1/19');
+    expect(active).not.toContain('aria-label="Next Question"');
+  });
+
+  it('recomputes restored quiz correctness from the current answer', () => {
+    const html = renderAnatomy({
+      system: 'skeletal', complexity: 3, quizMode: true, quizIdx: 0,
+      quizFeedback: { chosen: 'skull', correct: false }
+    });
+    expect(html).toContain('Correct!');
+    expect(html).toContain('aria-label="Next Question"');
+  });
+
+  it('uses canonical counters and atomic patches for interactive rewards', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('function safeBooleanMap(value, allowedIds)');
+    expect(source).toContain('countStoredTrueFlags(d.visibleLayers, ANATOMY_LAYER_IDS.slice(1))');
+    expect(source).toContain('updMulti({ visibleLayers: newLayers, _layersToggled: newLayersToggled })');
+    expect(source).toContain('var searchPatch = { selectedStructure: firstMatch.id };');
+    expect(source).toContain('var quizPatch = {');
+    expect(source).toContain('_totalCorrect = totalCorrect + 1');
+    expect(source).not.toContain('(d._searchFinds || 0) + 1');
+    expect(source).not.toContain('(d.quizScore || 0) + 1');
+  });
+});
+describe('Anatomy Lab guided diagram synchronization', () => {
+  it('offers a live recovery action when a restored pathway and diagram disagree', () => {
+    const html = renderAnatomy({
+      _activeTab: 'pathways', system: 'skeletal', view: 'anterior',
+      _activePathway: 'path_air', _pathwayStep: 0
+    });
+    expect(html).toContain('Diagram: Skeletal - Anterior');
+    expect(html).toContain('Focus diagram');
+    expect(html).toContain('role="status" aria-live="polite" aria-atomic="true"');
+  });
+
+  it('does not offer pathway recovery when the diagram already matches the step', () => {
+    const html = renderAnatomy({
+      _activeTab: 'pathways', system: 'circulatory', view: 'anterior',
+      _activePathway: 'path_blood', _pathwayStep: 0, selectedStructure: 'sup_vena'
+    });
+    expect(html).toContain('Diagram: Circulatory - Anterior');
+    expect(html).not.toContain('Focus diagram');
+  });
+
+  it('normalizes malformed search, selection, disclosures, and Spotter booleans', () => {
+    const explore = renderAnatomy({
+      search: { forged: true }, selectedStructure: { forged: true },
+      _showMnemonics: 'true', _showClinical: 'true'
+    });
+    expect(explore).not.toContain('[object Object]');
+    expect(explore).toContain('maxLength="200"');
+    expect(explore).toContain('aria-expanded="false" aria-controls="anatomy-mnemonics-panel"');
+    expect(explore).toContain('aria-expanded="false" aria-controls="anatomy-clinical-cases"');
+    expect(explore).toContain('Show Cases');
+
+    const spotter = renderAnatomy({ _activeTab: 'spotter', _spotterActive: 'true' });
+    expect(spotter).toContain('Start Spotter Test');
+  });
+
+  it('uses the shared focus patch for tour, pathway, and flashcard transitions', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain("'nervous', 'organs', 'respiratory'");
+    expect(source).not.toContain("'nervous', 'digestive', 'respiratory'");
+    expect(source).toContain('function findStructureContext(structureId, preferredSystemId)');
+    expect(source).toContain('function structureFocusPatch(structureId, extraPatch)');
+    expect(source).toContain("updMulti(structureFocusPatch(pw.steps[0].structure, { _activePathway: pw.id, _pathwayStep: 0 }))");
+    expect(source).toContain("updMulti(structureFocusPatch(tourSteps[next].structureId, { _tourStepIdx: next }))");
+    expect(source).toContain("updMulti(structureFocusPatch(flashcardPool[ni].id, { _flashcardIdx: ni, _flashcardFlipped: false }))");
+    expect(source).not.toContain("upd('_pathwayStep', next); upd('selectedStructure'");
+    expect(source).not.toContain("upd('_flashcardIdx', ni); upd('_flashcardFlipped'");
+  });
+
+  it('consolidates comparison-target progress into one update', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain("updMulti({ _compareStructure: sel.id, _comparisons: comparisons + 1 })");
+    expect(source).not.toContain("upd('_comparisons', comparisons + 1)");
   });
 });

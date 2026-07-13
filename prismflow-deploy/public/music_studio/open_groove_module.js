@@ -348,6 +348,7 @@
     var synthTrack = project.tracks.find(function (track) { return track.type === 'synth'; });
     var selectedPad = drumTrack && drumTrack.pads.find(function (pad) { return pad.id === selectedPadId; });
     var selectedAsset = selectedPad && selectedPad.assetId && C.ogFindAsset ? C.ogFindAsset(project, selectedPad.assetId) : null;
+    var selectedPadVoice = selectedPad && selectedPad.proceduralVoice || selectedAsset && selectedAsset.proceduralVoice || null;
     var stepsPerBar = 16;
     var synthPitches = ['C4', 'Bb3', 'G3', 'Eb3', 'C3', 'Bb2', 'G2', 'C2'];
     var keyboardLayout = C.ogBuildKeyboardLayout ? C.ogBuildKeyboardLayout(project, { octave: keyboardOctave, octaves: 2 }) : { keys: [] };
@@ -1600,6 +1601,71 @@
       var reused = installed.reusedCount ? ' Reused ' + installed.reusedCount + '.' : '';
       addToast(installed.name + ' assigned to ' + installed.assignedCount + ' pads.' + reused, 'success');
       ogAnnounce(installed.name + ' installed');
+    }
+    function selectedVoiceValue(key, fallback) {
+      var raw = selectedPadVoice && selectedPadVoice[key];
+      var value = Number(raw == null ? fallback : raw);
+      return isFinite(value) ? value : fallback;
+    }
+
+    function formatVoiceValue(value) {
+      return String(Math.round(value * 100) / 100).replace(/\.00$/, '');
+    }
+
+    function setSelectedPadVoiceParam(key, value) {
+      if (!selectedPad || !drumTrack || !C.ogSetPadProceduralVoice) {
+        addToast('Select a procedural pad before shaping voice.', 'info');
+        return;
+      }
+      var updates = {};
+      updates[key] = Number(value);
+      mutate(function (next) {
+        var nextDrums = next.tracks.find(function (track) { return track.type === 'drumRack'; });
+        C.ogSetPadProceduralVoice(next, nextDrums.id, selectedPadId, updates);
+      });
+    }
+
+    function resetSelectedPadVoice() {
+      if (!selectedPad || !drumTrack || !C.ogResetPadProceduralVoice) {
+        addToast('Select a procedural pad before resetting voice.', 'info');
+        return;
+      }
+      mutate(function (next) {
+        var nextDrums = next.tracks.find(function (track) { return track.type === 'drumRack'; });
+        if (nextDrums) C.ogResetPadProceduralVoice(next, nextDrums.id, selectedPadId);
+      });
+      addToast('Pad voice reset to its factory shape.', 'success');
+      ogAnnounce('Pad voice reset');
+    }
+
+    function randomizeSelectedPadVoice() {
+      if (!selectedPad || !drumTrack || !C.ogRandomizePadProceduralVoice) {
+        addToast('Select a procedural pad before randomizing voice.', 'info');
+        return;
+      }
+      var seed = (project.title || 'Open Groove') + ':' + selectedPadId + ':' + Date.now();
+      mutate(function (next) {
+        var nextDrums = next.tracks.find(function (track) { return track.type === 'drumRack'; });
+        if (nextDrums) C.ogRandomizePadProceduralVoice(next, nextDrums.id, selectedPadId, { seed: seed, amount: 0.36 });
+      });
+      addToast('Pad voice randomized.', 'success');
+      ogAnnounce('Pad voice randomized');
+    }
+
+    function renderVoiceSlider(label, key, min, max, step, fallback) {
+      var value = selectedVoiceValue(key, fallback);
+      return h('label', { key: key, style: styles.voiceField }, label,
+        h('input', {
+          style: styles.mixerSlider,
+          type: 'range',
+          min: min,
+          max: max,
+          step: step,
+          value: value,
+          onChange: function (ev) { setSelectedPadVoiceParam(key, ev.target.value); },
+          'aria-label': 'Selected pad ' + label.toLowerCase()
+        }),
+        h('span', { style: styles.mixerValue }, formatVoiceValue(value)));
     }
     function prepareStemSlots() {
       if (!C.ogPrepareStemSlots) {
@@ -3198,6 +3264,28 @@
               h('button', { style: styles.smallButton, onClick: function () { trimSelectedPadStart(0.05); } }, 'Trim In'),
               h('button', { style: styles.smallButton, onClick: resetSelectedPadRegion }, 'Full'),
               h('button', { style: styles.smallButton, onClick: function () { chopSelectedPad(4); } }, 'Chop 4')),
+            selectedPadVoice ? h('div', { style: styles.voicePanel, 'aria-label': 'Selected pad synthesis voice' },
+              h('div', { style: styles.voiceHeader },
+                h('strong', null, 'Voice ' + (selectedPadVoice.character || 'Custom')),
+                h('span', { style: styles.meta }, selectedPadVoice.kitName || 'Custom')),
+              h('div', { style: styles.voiceGrid },
+                renderVoiceSlider('Pitch', 'pitch', 0.5, 2, 0.01, 1),
+                renderVoiceSlider('Bright', 'brightness', 0.35, 2.4, 0.01, 1),
+                renderVoiceSlider('Decay', 'decay', 0.25, 2.5, 0.01, 1),
+                renderVoiceSlider('Noise', 'noise', 0, 2, 0.01, 1),
+                renderVoiceSlider('Click', 'click', 0, 2, 0.01, 1),
+                renderVoiceSlider('Body', 'body', 0, 2, 0.01, 1)),
+              h('div', { style: styles.voiceActions, role: 'toolbar', 'aria-label': 'Pad voice actions' },
+                h('button', {
+                  style: Object.assign({}, styles.smallButton, !C.ogRandomizePadProceduralVoice ? styles.disabledButton : null),
+                  onClick: randomizeSelectedPadVoice,
+                  disabled: !C.ogRandomizePadProceduralVoice
+                }, 'Random Voice'),
+                h('button', {
+                  style: Object.assign({}, styles.smallButton, !C.ogResetPadProceduralVoice ? styles.disabledButton : null),
+                  onClick: resetSelectedPadVoice,
+                  disabled: !C.ogResetPadProceduralVoice
+                }, 'Reset Voice'))) : null,
             h('div', { style: styles.sampleRegion },
               selectedAsset
                 ? (selectedPad.name + ' - ' + (selectedPad.sampleRegion ? selectedPad.sampleRegion.startSec + 's to ' + selectedPad.sampleRegion.endSec + 's' : 'full sample'))
@@ -3500,6 +3588,11 @@
     recordingButton: { background: '#7f1d1d', color: '#ffffff' },
     hiddenInput: { position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', opacity: 0, pointerEvents: 'none' },
     sampleEditControls: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(82px, 1fr))', gap: '6px', marginBottom: '8px' },
+    voicePanel: { border: '1px solid #cbd5e1', background: '#f8fafc', color: '#0f172a', padding: '8px', marginBottom: '8px', display: 'grid', gap: '8px', minWidth: 0 },
+    voiceHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', minWidth: 0, overflowWrap: 'anywhere' },
+    voiceGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(116px, 1fr))', gap: '8px', alignItems: 'end' },
+    voiceActions: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '6px', alignItems: 'stretch' },
+    voiceField: { display: 'grid', gap: '4px', fontSize: '12px', fontWeight: 850, minWidth: 0 },
     sampleRegion: { minHeight: '30px', display: 'flex', alignItems: 'center', border: '1px solid #cbd5e1', background: '#eef2ff', color: '#1e293b', padding: '6px 8px', fontSize: '12px', fontWeight: 800, marginBottom: '8px', overflowWrap: 'anywhere' },
     assetList: { display: 'grid', gap: '6px', minHeight: '54px' },
     assetRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(86px, 1fr))', gap: '6px', alignItems: 'center', border: '1px solid #cbd5e1', background: '#f8fafc', padding: '7px', fontSize: '12px', minWidth: 0, overflowWrap: 'anywhere' },
@@ -3627,6 +3720,7 @@
       smallButton: { border: '1px solid #94a3b8', background: '#1f2937', color: '#f8fafc' },
       wideButton: { border: '1px solid #5eead4', background: '#115e59', color: '#ecfeff' },
       sampleRegion: { border: '1px solid #64748b', background: '#1e293b', color: '#f8fafc' },
+      voicePanel: { border: '1px solid #64748b', background: '#1f2937', color: '#f8fafc' },
       assetRow: { border: '1px solid #64748b', background: '#1f2937', color: '#f8fafc' },
       stemChip: { border: '1px solid #5eead4', background: '#115e59', color: '#ecfeff' },
       readinessBadge: { border: '1px solid #94a3b8' },
@@ -3740,6 +3834,7 @@
       wideButton: { border: '2px solid #ffffff', background: '#ffff00', color: '#000000' },
       disabledButton: { opacity: 0.7 },
       sampleRegion: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      voicePanel: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       assetRow: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       stemChip: { border: '2px solid #ffffff', background: '#00ffff', color: '#000000' },
       readinessBadge: { border: '2px solid #ffffff' },

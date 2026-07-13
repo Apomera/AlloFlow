@@ -1,12 +1,12 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-13T20:02:05.578Z
+Generated: 2026-07-13T22:49:45.140Z
 
 ## Scope
 
-- Registered STEM tools audited: 122
+- Registered STEM tools audited: 121
 - Plugin files loaded: 119
-- Shared shell coverage: 122/122 tools
+- Shared shell coverage: 121/121 tools
 - Light-background opt-outs: 0
 
 ## Summary
@@ -19,7 +19,11 @@ Generated: 2026-07-13T20:02:05.578Z
 | Review notices | 22 |
 | Tools with any finding | 33 |
 | Tools with high-confidence errors | 0 |
-| Tools with canvas surfaces | 36 |
+| Tools with canvas surfaces | 35 |
+
+## Load/Render Errors
+
+- Load: `stem_tool_watercycle.js` - Invalid left-hand side in assignment
 
 ## Top Findings
 
@@ -161,7 +165,6 @@ Generated: 2026-07-13T20:02:05.578Z
 | `unitConvert` Unit Converter | math | standard | 21 | 3 | 1 | 0 | 1 | 0 | tiny-text x1 |
 | `universe` Universe Explorer | science | standard | 78 | 4 | 1 | 0 | 1 | 0 | tiny-text x1 |
 | `volume` 3D Volume Explorer | math | standard | 27 | 11 | 1 | 0 | 1 | 0 | tiny-text x1 |
-| `waterCycle` Water Cycle | science | standard | 30 | 6 | 1 | 0 | 0 | 0 |  |
 | `wave` Wave Simulator | science | standard | 0 | 0 | 0 | 0 | 0 | 0 |  |
 | `weldLab` WeldLab — Welding & Metal Joining | general | standard | 26 | 0 | 0 | 0 | 0 | 1 | metadata x1 |
 | `worldBuilder` WriteCraft | creative | standard | 14 | 10 | 0 | 0 | 0 | 0 |  |

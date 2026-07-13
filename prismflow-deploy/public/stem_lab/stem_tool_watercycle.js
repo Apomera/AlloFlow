@@ -198,6 +198,10 @@
       '.wc-3d-status{font-size:11px;font-weight:800;color:#0369a1}',
       '.wc-view-status{display:flex;align-items:center;gap:6px}',
       '.wc-camera-reset{width:32px;height:32px;display:grid;place-items:center;border-radius:6px;background:#0369a1;color:#fff;font-size:18px;font-weight:900}',
+      '.wc-viewport-dock{position:absolute;z-index:5;left:10px;right:10px;bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 9px;border:1px solid rgba(125,211,252,.34);border-radius:12px;background:rgba(4,26,43,.88);box-shadow:0 10px 28px rgba(2,6,23,.34);backdrop-filter:blur(10px);color:#e0f2fe}',
+      '.wc-viewport-state{min-width:0}.wc-viewport-state span{display:block;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#7dd3fc}.wc-viewport-state strong{display:block;max-width:260px;margin-top:1px;font-size:12px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.wc-viewport-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap}.wc-viewport-btn{min-width:44px;min-height:44px;padding:6px 10px;border:1px solid rgba(125,211,252,.36);border-radius:8px;background:#075985;color:#fff;font-size:11px;font-weight:900}.wc-viewport-btn[aria-pressed="true"]{background:#0ea5e9;color:#082f49}.wc-viewport-btn:disabled{opacity:.48;cursor:not-allowed}.wc-viewport-start{min-height:44px;padding:8px 14px;border-radius:9px;background:linear-gradient(135deg,#06b6d4,#2563eb);color:#fff;font-size:12px;font-weight:900;box-shadow:0 8px 20px rgba(14,165,233,.3)}',
+      '.wc-viewport-choice{position:absolute;z-index:7;left:50%;bottom:76px;width:min(620px,calc(100% - 20px));transform:translateX(-50%);padding:12px;border:1px solid rgba(186,230,253,.5);border-radius:14px;background:rgba(4,26,43,.94);box-shadow:0 18px 42px rgba(2,6,23,.5);backdrop-filter:blur(12px);color:#e0f2fe}.wc-viewport-choice h5{margin:0;font-size:14px;font-weight:900}.wc-viewport-choice p{margin:3px 0 9px;font-size:10px;color:#bae6fd}.wc-viewport-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.wc-viewport-choice-grid button{min-height:52px;padding:7px;border:1px solid rgba(125,211,252,.4);border-radius:9px;background:rgba(8,47,73,.9);color:#fff;text-align:left}.wc-viewport-choice-grid strong,.wc-viewport-choice-grid span{display:block}.wc-viewport-choice-grid strong{font-size:11px}.wc-viewport-choice-grid span{margin-top:2px;font-size:9px;color:#bae6fd}',
       '.wc-journey-lens{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin:-2px 0 10px;border-left:3px solid #0ea5e9;background:rgba(14,165,233,.16)}',
       '.wc-journey-lens div{padding:8px 10px;background:rgba(255,255,255,.88)}',
       '.wc-journey-lens span{display:block;font-size:10px;font-weight:800;text-transform:uppercase;color:#64748b}',
@@ -250,7 +254,7 @@
       '@media(max-width:640px){.wc-land-grid,.wc-land-results{grid-template-columns:1fr}}',
       '.wc-control-panel .grid.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}',
       '@media(max-width:840px){.wc-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-canvas-shell{height:360px!important}.wc-canvas-topbar{position:absolute;align-items:flex-start}.wc-chip-row{max-width:50%;justify-content:flex-end}.wc-control-panel .grid.grid-cols-3{grid-template-columns:1fr!important}}',
-      '@media(max-width:560px){.wc-metric-grid{grid-template-columns:1fr}.wc-canvas-shell{height:320px!important}.wc-canvas-topbar{left:8px;right:8px;top:8px}.wc-canvas-title{padding:7px 8px}.wc-chip{font-size:10px;padding:5px 7px}.wc-chip-row{max-width:48%}}',
+      '@media(max-width:560px){.wc-metric-grid{grid-template-columns:1fr}.wc-canvas-shell{height:380px!important}.wc-canvas-topbar{left:8px;right:8px;top:8px}.wc-canvas-title{padding:7px 8px}.wc-chip{font-size:10px;padding:5px 7px}.wc-chip-row{max-width:48%}.wc-viewport-dock{left:8px;right:8px;bottom:8px}.wc-viewport-state{width:100%}.wc-viewport-actions{width:100%;justify-content:flex-start}.wc-viewport-choice{bottom:128px}.wc-viewport-choice-grid{grid-template-columns:1fr}.wc-viewport-choice-grid button{min-height:44px}}',
       '.dark .wc-cycle-brief{background:linear-gradient(135deg,rgba(14,165,233,.14),rgba(16,185,129,.10) 58%,rgba(30,41,59,.76));border-color:rgba(56,189,248,.24)}',
       '.dark .wc-brief-title{color:#f8fafc}.dark .wc-brief-copy{color:#cbd5e1}.dark .wc-metric{background:rgba(15,23,42,.72);border-color:rgba(56,189,248,.22)}.dark .wc-metric strong{color:#f8fafc}.dark .wc-metric span{color:#94a3b8}'
     ].join('');
@@ -2705,6 +2709,41 @@ const d = labToolData.waterCycle || {};
             }
             canvasEl.addEventListener('click', onWaterCycleCanvasClick);
 
+            function advanceJourneyFrame() {
+              var jState = canvasEl.dataset.journeyState || 'idle';
+              var journeyPaused2 = canvasEl.dataset.journeyPaused === 'true';
+              var journeySpeed2 = parseFloat(canvasEl.dataset.journeySpeed || '1');
+              if (!isFinite(journeySpeed2) || journeySpeed2 <= 0) journeySpeed2 = 1;
+              if (jState !== 'idle') {
+                journey.state = jState;
+                var speed2 = (jState === 'aquifer_flow' || jState === 'infiltrating') ? 0.003 :
+                            (jState === 'precipitating') ? 0.012 : 0.006;
+                if (!journeyPaused2 && jState !== 'ground_choice' && jState !== 'complete') {
+                  journey.progress += speed2 * journeySpeed2;
+                  if (journey.progress >= 1) {
+                    journey.progress = 0;
+                    journey.particleTrail = [];
+                    var next = JOURNEY_NEXT[jState];
+                    if (next === 'ocean' && jState !== 'ocean') {
+                      canvasEl.dataset.journeyState = 'complete';
+                      if (canvasEl._onJourneyComplete) canvasEl._onJourneyComplete(jState);
+                    } else if (next === 'ground_choice') {
+                      canvasEl.dataset.journeyState = 'ground_choice';
+                      if (canvasEl._onJourneyTransition) canvasEl._onJourneyTransition('ground_choice');
+                    } else {
+                      canvasEl.dataset.journeyState = next || 'idle';
+                      if (canvasEl._onJourneyTransition) canvasEl._onJourneyTransition(next);
+                    }
+                    jState = canvasEl.dataset.journeyState;
+                  }
+                }
+              } else {
+                journey.progress = 0;
+              }
+              canvasEl.dataset.journeyProgress = String(Math.max(0, Math.min(1, journey.progress || 0)));
+              return jState;
+            }
+
             function draw() {
               if (!wcAlive) return;
               canvasEl._wcAnim = null;
@@ -2713,6 +2752,11 @@ const d = labToolData.waterCycle || {};
 
               tick += wcMotionReduced ? 0.2 : 1;
 
+              if (canvasEl.dataset.renderMode === 'state-only') {
+                advanceJourneyFrame();
+                scheduleWaterCycleFrame();
+                return;
+              }
               ctx.clearRect(0, 0, cW, cH);
 
               var isDark = canvasEl.dataset.darkMode === 'true';
@@ -3992,11 +4036,20 @@ const d = labToolData.waterCycle || {};
               else sfxWcClick();
               setLabToolData(function(prev) {
                 var current = prev.waterCycle || {};
-                var nextWaterCycle = Object.assign({}, current, { journeyState: nextState });
+                var journeyStageMap = { ocean: 'collection', evaporating: 'evaporation', condensing: 'condensation',
+                  precipitating: 'precipitation', ground_choice: 'precipitation', river_runoff: 'collection',
+                  infiltrating: 'infiltration', aquifer_flow: 'infiltration', plant_absorb: 'transpiration', transpiring: 'transpiration' };
+                var nextStage = journeyStageMap[nextState];
+                var nextWaterCycle = Object.assign({}, current, { journeyState: nextState }, nextStage ? { activeStage: nextStage } : {});
                 if (pathKey) {
                   var paths = Object.assign({ runoff: 0, infiltrate: 0, plant: 0 }, current.journeyPaths || {});
                   paths[pathKey] = (paths[pathKey] || 0) + 1;
                   nextWaterCycle.journeyPaths = paths;
+                  if (current.journeyView === '3d') {
+                    var paths3d = Object.assign({ runoff: 0, infiltrate: 0, plant: 0 }, current.journey3dPaths || {});
+                    paths3d[pathKey] = (paths3d[pathKey] || 0) + 1;
+                    nextWaterCycle.journey3dPaths = paths3d;
+                  }
                 }
                 if (current.journeyView === '3d') {
                   var visited3d = Object.assign({}, current.journey3dStatesVisited || {});
@@ -4065,31 +4118,87 @@ const d = labToolData.waterCycle || {};
             scene.background = new THREE.Color(0x041a2b);
             scene.fog = new THREE.FogExp2(0x08283b, 0.035);
 
+            var skyUniforms3d = {
+              topColor: { value: new THREE.Color(0x082f49) },
+              horizonColor: { value: new THREE.Color(0x155e75) }
+            };
+            var sky3d = new THREE.Mesh(
+              new THREE.SphereGeometry(46, 32, 18),
+              new THREE.ShaderMaterial({
+                side: THREE.BackSide,
+                depthWrite: false,
+                fog: false,
+                uniforms: skyUniforms3d,
+                vertexShader: 'varying vec3 vWorldPosition;\nvoid main(){ vec4 worldPosition=modelMatrix*vec4(position,1.0); vWorldPosition=worldPosition.xyz; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+                fragmentShader: 'uniform vec3 topColor; uniform vec3 horizonColor; varying vec3 vWorldPosition;\nvoid main(){ float h=normalize(vWorldPosition+vec3(0.0,4.0,0.0)).y; float blend=pow(max(h,0.0),0.58); gl_FragColor=vec4(mix(horizonColor,topColor,blend),1.0); }'
+              })
+            );
+            scene.add(sky3d);
+
             var camera = new THREE.PerspectiveCamera(48, width / height, 0.1, 80);
             camera.position.set(8.5, 4.6, 11.5);
             camera.lookAt(0, 0, 0);
 
-            scene.add(new THREE.HemisphereLight(0xbde9ff, 0x183225, 1.25));
+            var hemi3d = new THREE.HemisphereLight(0xbde9ff, 0x183225, 1.25);
+            scene.add(hemi3d);
             var sun3d = new THREE.DirectionalLight(0xfff2c7, 1.8);
             sun3d.position.set(-5, 9, 6);
             sun3d.castShadow = true;
             scene.add(sun3d);
+            sun3d.shadow.mapSize.set(1024, 1024);
+            sun3d.shadow.camera.left = -13; sun3d.shadow.camera.right = 13;
+            sun3d.shadow.camera.top = 13; sun3d.shadow.camera.bottom = -13;
+            sun3d.shadow.camera.near = 0.5; sun3d.shadow.camera.far = 32;
+            sun3d.shadow.bias = -0.0004;
             var fill3d = new THREE.PointLight(0x38bdf8, 1.6, 22);
             fill3d.position.set(0, 2, 5);
             scene.add(fill3d);
 
             var world3d = new THREE.Group();
+
+            var sunOrb3d = new THREE.Group();
+            var sunDiscMat3d = new THREE.MeshBasicMaterial({ color: 0xfff4ba, transparent: true, opacity: 0.95, fog: false });
+            var sunHaloMat3d = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.16, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+            sunOrb3d.add(new THREE.Mesh(new THREE.SphereGeometry(0.7, 20, 14), sunDiscMat3d));
+            sunOrb3d.add(new THREE.Mesh(new THREE.SphereGeometry(1.75, 20, 14), sunHaloMat3d));
+            sunOrb3d.position.set(-13, 9, -20);
+            scene.add(sunOrb3d);
+            var moonMat3d = new THREE.MeshBasicMaterial({ color: 0xdbeafe, transparent: true, opacity: 0, fog: false });
+            var moon3d = new THREE.Mesh(new THREE.SphereGeometry(0.55, 18, 14), moonMat3d);
+            moon3d.position.set(12, 8, -22);
+            scene.add(moon3d);
             scene.add(world3d);
 
             var oceanMat = new THREE.MeshPhysicalMaterial({
               color: 0x087aa5, roughness: 0.18, metalness: 0.05,
               transparent: true, opacity: 0.9, clearcoat: 0.75, clearcoatRoughness: 0.16
             });
-            var ocean3d = new THREE.Mesh(new THREE.PlaneGeometry(18, 10, 28, 18), oceanMat);
+            var oceanGeometry3d = new THREE.PlaneGeometry(18, 10, 28, 18);
+            var oceanBasePositions3d = new Float32Array(oceanGeometry3d.attributes.position.array);
+            var ocean3d = new THREE.Mesh(oceanGeometry3d, oceanMat);
             ocean3d.rotation.x = -Math.PI / 2;
             ocean3d.position.set(-2.5, -1.25, 1.6);
             ocean3d.receiveShadow = true;
             world3d.add(ocean3d);
+
+            var shore3d = new THREE.Mesh(
+              new THREE.PlaneGeometry(1.45, 7.2, 1, 8),
+              new THREE.MeshStandardMaterial({ color: 0xd5b47a, roughness: 0.96 })
+            );
+            shore3d.rotation.x = -Math.PI / 2;
+            shore3d.position.set(0.25, -1.11, -0.6);
+            shore3d.receiveShadow = true;
+            world3d.add(shore3d);
+            var foamCurve3d = new THREE.CatmullRomCurve3([
+              new THREE.Vector3(-0.12, -1.04, -4.1), new THREE.Vector3(0.08, -1.04, -2.8),
+              new THREE.Vector3(-0.04, -1.04, -1.4), new THREE.Vector3(0.12, -1.04, 0),
+              new THREE.Vector3(-0.1, -1.04, 1.4), new THREE.Vector3(0.08, -1.04, 2.9)
+            ]);
+            var foam3d = new THREE.Mesh(
+              new THREE.TubeGeometry(foamCurve3d, 56, 0.055, 6, false),
+              new THREE.MeshBasicMaterial({ color: 0xdff8ff, transparent: true, opacity: 0.62, depthWrite: false })
+            );
+            world3d.add(foam3d);
 
             var land3d = new THREE.Mesh(
               new THREE.BoxGeometry(9, 1.5, 7),
@@ -4111,10 +4220,22 @@ const d = labToolData.waterCycle || {};
 
             var aquifer3d = new THREE.Mesh(
               new THREE.BoxGeometry(8.6, 0.38, 6.6),
-              new THREE.MeshPhysicalMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.58, roughness: 0.2, clearcoat: 0.8 })
+              new THREE.MeshPhysicalMaterial({ color: 0x0ea5e9, emissive: 0x075985, emissiveIntensity: 0.22, transparent: true, opacity: 0.58, roughness: 0.2, clearcoat: 0.8 })
             );
             aquifer3d.position.set(4.8, -2.22, -0.6);
             world3d.add(aquifer3d);
+
+            var strataGroup3d = new THREE.Group();
+            var strataColors3d = [0x8a5a36, 0x6f4932, 0x574137];
+            for (var stratumIndex3d = 0; stratumIndex3d < strataColors3d.length; stratumIndex3d++) {
+              var stratum3d = new THREE.Mesh(
+                new THREE.BoxGeometry(9.08, 0.16, 7.08),
+                new THREE.MeshStandardMaterial({ color: strataColors3d[stratumIndex3d], roughness: 1 })
+              );
+              stratum3d.position.set(4.8, -1.32 - stratumIndex3d * 0.36, -0.6);
+              strataGroup3d.add(stratum3d);
+            }
+            world3d.add(strataGroup3d);
 
             var riverCurve = new THREE.CatmullRomCurve3([
               new THREE.Vector3(7.8, -0.88, -2.5),
@@ -4125,30 +4246,53 @@ const d = labToolData.waterCycle || {};
             ]);
             var river3d = new THREE.Mesh(
               new THREE.TubeGeometry(riverCurve, 64, 0.24, 12, false),
-              new THREE.MeshPhysicalMaterial({ color: 0x22b8e6, roughness: 0.16, clearcoat: 0.75, transparent: true, opacity: 0.7 })
+              new THREE.MeshPhysicalMaterial({ color: 0x22b8e6, emissive: 0x075985, emissiveIntensity: 0.16, roughness: 0.16, clearcoat: 0.75, transparent: true, opacity: 0.7 })
             );
             world3d.add(river3d);
 
             var mountainMat = new THREE.MeshStandardMaterial({ color: 0x52636b, roughness: 0.9 });
+            var snowMat3d = new THREE.MeshStandardMaterial({ color: 0xeaf7ff, roughness: 0.7 });
             for (var mi3 = 0; mi3 < 4; mi3++) {
-              var mountain = new THREE.Mesh(new THREE.ConeGeometry(1.6 + mi3 * 0.22, 3.3 + mi3 * 0.5, 7), mountainMat);
+              var mountainHeight3d = 3.3 + mi3 * 0.5;
+              var mountain = new THREE.Mesh(new THREE.ConeGeometry(1.6 + mi3 * 0.22, mountainHeight3d, 7), mountainMat);
               mountain.position.set(3.5 + mi3 * 1.7, 0.35 + mi3 * 0.12, -3.1 - (mi3 % 2) * 0.6);
               mountain.castShadow = true;
               world3d.add(mountain);
+              var snowCap3d = new THREE.Mesh(
+                new THREE.ConeGeometry((1.6 + mi3 * 0.22) * 0.48, mountainHeight3d * 0.24, 7),
+                snowMat3d
+              );
+              snowCap3d.position.set(3.5 + mi3 * 1.7, 0.35 + mi3 * 0.12 + mountainHeight3d * 0.39, -3.1 - (mi3 % 2) * 0.6);
+              snowCap3d.castShadow = true;
+              world3d.add(snowCap3d);
             }
 
             var cloudGroup3d = new THREE.Group();
             var cloudMat3d = new THREE.MeshPhysicalMaterial({
-              color: 0xe8f5ff, transparent: true, opacity: 0.76,
+              color: 0xe8f5ff, transparent: true, opacity: 0.8,
               roughness: 0.72, depthWrite: false
             });
+            var cloudShadeMat3d = new THREE.MeshPhysicalMaterial({
+              color: 0x9eb7c8, transparent: true, opacity: 0.48,
+              roughness: 0.88, depthWrite: false
+            });
             for (var ci3 = 0; ci3 < 18; ci3++) {
-              var puff = new THREE.Mesh(new THREE.SphereGeometry(0.52 + (ci3 % 4) * 0.12, 18, 14), cloudMat3d);
+              var puff = new THREE.Mesh(new THREE.SphereGeometry(0.52 + (ci3 % 4) * 0.12, 18, 14), Math.floor(ci3 / 6) === 0 ? cloudShadeMat3d : cloudMat3d);
               puff.position.set((ci3 % 6) * 0.72 - 1.8, Math.floor(ci3 / 6) * 0.34, (ci3 % 3) * 0.4 - 0.4);
+              puff.castShadow = true;
               cloudGroup3d.add(puff);
             }
             cloudGroup3d.position.set(0.5, 3.15, -1.7);
             world3d.add(cloudGroup3d);
+            var distantClouds3d = new THREE.Group();
+            var distantCloudMat3d = new THREE.MeshLambertMaterial({ color: 0xb8d6e5, transparent: true, opacity: 0.28, depthWrite: false });
+            for (var distantCloudIndex3d = 0; distantCloudIndex3d < 12; distantCloudIndex3d++) {
+              var distantPuff3d = new THREE.Mesh(new THREE.SphereGeometry(0.7 + (distantCloudIndex3d % 3) * 0.16, 10, 8), distantCloudMat3d);
+              distantPuff3d.position.set((distantCloudIndex3d % 6) * 1.05, Math.floor(distantCloudIndex3d / 6) * 0.34, (distantCloudIndex3d % 2) * 0.45);
+              distantClouds3d.add(distantPuff3d);
+            }
+            distantClouds3d.position.set(-8.5, 5.1, -9.5);
+            world3d.add(distantClouds3d);
 
             var plant3d = new THREE.Group();
             var trunk3d = new THREE.Mesh(
@@ -4168,6 +4312,58 @@ const d = labToolData.waterCycle || {};
             }
             plant3d.position.set(5.9, -1.0, 1.25);
             world3d.add(plant3d);
+
+            var forestGroup3d = new THREE.Group();
+            var miniTrunkGeometry3d = new THREE.CylinderGeometry(0.07, 0.1, 0.55, 7);
+            var miniCrownGeometry3d = new THREE.ConeGeometry(0.34, 0.9, 8);
+            var miniTrunkMat3d = new THREE.MeshStandardMaterial({ color: 0x69452d, roughness: 1 });
+            var miniCrownMat3d = new THREE.MeshStandardMaterial({ color: 0x1f7a4d, roughness: 0.82 });
+            for (var treeIndex3d = 0; treeIndex3d < 8; treeIndex3d++) {
+              var miniTree3d = new THREE.Group();
+              var miniTrunk3d = new THREE.Mesh(miniTrunkGeometry3d, miniTrunkMat3d);
+              miniTrunk3d.position.y = 0.27;
+              var miniCrown3d = new THREE.Mesh(miniCrownGeometry3d, miniCrownMat3d);
+              miniCrown3d.position.y = 0.92;
+              miniCrown3d.castShadow = true;
+              miniTree3d.add(miniTrunk3d, miniCrown3d);
+              miniTree3d.position.set(2.0 + (treeIndex3d % 4) * 1.45, 0, -1.8 + Math.floor(treeIndex3d / 4) * 2.45);
+              miniTree3d.scale.setScalar(0.82 + (treeIndex3d % 3) * 0.12);
+              forestGroup3d.add(miniTree3d);
+            }
+            forestGroup3d.position.y = -1.01;
+            forestGroup3d.visible = false;
+            world3d.add(forestGroup3d);
+
+            var urbanGroup3d = new THREE.Group();
+            var buildingMat3d = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.72, metalness: 0.08 });
+            var roofMat3d = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.8 });
+            for (var buildingIndex3d = 0; buildingIndex3d < 7; buildingIndex3d++) {
+              var buildingHeight3d = 0.7 + (buildingIndex3d % 4) * 0.28;
+              var building3d = new THREE.Mesh(new THREE.BoxGeometry(0.72, buildingHeight3d, 0.72), buildingMat3d);
+              building3d.position.set(2.05 + (buildingIndex3d % 4) * 1.5, buildingHeight3d / 2, -1.85 + Math.floor(buildingIndex3d / 4) * 2.55);
+              building3d.castShadow = true;
+              building3d.receiveShadow = true;
+              urbanGroup3d.add(building3d);
+              var roof3d = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.08, 0.82), roofMat3d);
+              roof3d.position.copy(building3d.position);
+              roof3d.position.y = buildingHeight3d + 0.04;
+              urbanGroup3d.add(roof3d);
+            }
+            urbanGroup3d.position.y = -1.0;
+            urbanGroup3d.visible = false;
+            world3d.add(urbanGroup3d);
+
+            var meadowGroup3d = new THREE.Group();
+            var meadowMat3d = new THREE.MeshStandardMaterial({ color: 0x6da94d, roughness: 0.9 });
+            var meadowGeometry3d = new THREE.ConeGeometry(0.07, 0.34, 5);
+            for (var meadowIndex3d = 0; meadowIndex3d < 18; meadowIndex3d++) {
+              var meadowTuft3d = new THREE.Mesh(meadowGeometry3d, meadowMat3d);
+              meadowTuft3d.position.set(1.35 + (meadowIndex3d % 6) * 1.14, 0.17, -2.2 + Math.floor(meadowIndex3d / 6) * 1.72);
+              meadowTuft3d.rotation.z = ((meadowIndex3d % 3) - 1) * 0.12;
+              meadowGroup3d.add(meadowTuft3d);
+            }
+            meadowGroup3d.position.y = -1.0;
+            world3d.add(meadowGroup3d);
 
             function makePoints3d(count, color, size, spreadX, spreadY, spreadZ) {
               var positions = new Float32Array(count * 3);
@@ -4190,6 +4386,7 @@ const d = labToolData.waterCycle || {};
             var rain3d = makePoints3d(120, 0x69d7ff, 0.075, 5.2, 5.5, 2.6);
             rain3d.position.set(1.2, 0.75, -0.8);
             world3d.add(rain3d);
+            var rainBasePositions3d = new Float32Array(rain3d.geometry.attributes.position.array);
 
             var starPositions = new Float32Array(240 * 3);
             for (var si3 = 0; si3 < 240; si3++) {
@@ -4199,35 +4396,77 @@ const d = labToolData.waterCycle || {};
             }
             var starGeo = new THREE.BufferGeometry();
             starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-            world3d.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xa5dfff, size: 0.07, transparent: true, opacity: 0.65 })));
+            var stars3d = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xa5dfff, size: 0.07, transparent: true, opacity: 0.65, depthWrite: false }));
+            world3d.add(stars3d);
 
             var routePoints = [
-              new THREE.Vector3(-3.0, -0.72, 1.7),
-              new THREE.Vector3(-2.3, 1.0, 0.9),
-              new THREE.Vector3(0.2, 3.25, -1.5),
-              new THREE.Vector3(2.5, 0.2, -0.4),
-              new THREE.Vector3(4.3, -0.9, -0.1),
-              new THREE.Vector3(4.5, -2.2, -0.4),
-              new THREE.Vector3(5.8, -0.4, 1.2),
-              new THREE.Vector3(5.9, 2.0, 1.2)
+              new THREE.Vector3(-3.0, -0.72, 1.7), new THREE.Vector3(-2.3, 1.0, 0.9),
+              new THREE.Vector3(0.2, 3.25, -1.5), new THREE.Vector3(2.5, 0.2, -0.4),
+              new THREE.Vector3(4.3, -0.9, -0.1), new THREE.Vector3(4.5, -2.2, -0.4),
+              new THREE.Vector3(5.8, -0.4, 1.2), new THREE.Vector3(5.9, 2.0, 1.2)
             ];
+            var routeOverviewCurve3d = new THREE.CatmullRomCurve3(routePoints);
             var route3d = new THREE.Line(
-              new THREE.BufferGeometry().setFromPoints(new THREE.CatmullRomCurve3(routePoints).getPoints(100)),
-              new THREE.LineBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.18 })
+              new THREE.BufferGeometry().setFromPoints(routeOverviewCurve3d.getPoints(100)),
+              new THREE.LineBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.28, depthWrite: false })
             );
             world3d.add(route3d);
+            var routeGlow3d = new THREE.Mesh(
+              new THREE.TubeGeometry(routeOverviewCurve3d, 100, 0.045, 6, false),
+              new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.13, depthWrite: false, blending: THREE.AdditiveBlending })
+            );
+            world3d.add(routeGlow3d);
+            var routeMarkerCount3d = 18;
+            var routeMarkerPositions3d = new Float32Array(routeMarkerCount3d * 3);
+            for (var routeMarkerIndex3d = 0; routeMarkerIndex3d < routeMarkerCount3d; routeMarkerIndex3d++) {
+              var routeMarkerPoint3d = routeOverviewCurve3d.getPointAt(routeMarkerIndex3d / (routeMarkerCount3d - 1));
+              routeMarkerPoint3d.toArray(routeMarkerPositions3d, routeMarkerIndex3d * 3);
+            }
+            var routeMarkerGeometry3d = new THREE.BufferGeometry();
+            routeMarkerGeometry3d.setAttribute('position', new THREE.BufferAttribute(routeMarkerPositions3d, 3));
+            var routeMarkers3d = new THREE.Points(
+              routeMarkerGeometry3d,
+              new THREE.PointsMaterial({ color: 0xbae6fd, size: 0.09, transparent: true, opacity: 0.68, depthWrite: false, blending: THREE.AdditiveBlending })
+            );
+            world3d.add(routeMarkers3d);
+
+            var dropletTrailPositions3d = new Float32Array(14 * 3);
+            var dropletTrailGeometry3d = new THREE.BufferGeometry();
+            dropletTrailGeometry3d.setAttribute('position', new THREE.BufferAttribute(dropletTrailPositions3d, 3));
+            var dropletTrail3d = new THREE.Points(
+              dropletTrailGeometry3d,
+              new THREE.PointsMaterial({ color: 0x7dd3fc, size: 0.085, transparent: true, opacity: 0.48, depthWrite: false, blending: THREE.AdditiveBlending })
+            );
+            world3d.add(dropletTrail3d);
 
             var dropletGroup3d = new THREE.Group();
             var dropletMat3d = new THREE.MeshPhysicalMaterial({
               color: 0x38bdf8, emissive: 0x075985, emissiveIntensity: 0.65,
-              roughness: 0.08, metalness: 0.02, clearcoat: 1, clearcoatRoughness: 0.06,
+              roughness: 0.06, metalness: 0.02, clearcoat: 1, clearcoatRoughness: 0.04,
               transparent: true, opacity: 0.96
             });
-            var droplet3d = new THREE.Mesh(new THREE.SphereGeometry(0.31, 28, 22), dropletMat3d);
+            var dropletProfile3d = [
+              new THREE.Vector2(0, -0.36), new THREE.Vector2(0.2, -0.3),
+              new THREE.Vector2(0.31, -0.08), new THREE.Vector2(0.27, 0.14),
+              new THREE.Vector2(0.14, 0.31), new THREE.Vector2(0, 0.52)
+            ];
+            var droplet3d = new THREE.Mesh(new THREE.LatheGeometry(dropletProfile3d, 32), dropletMat3d);
             droplet3d.castShadow = true;
             dropletGroup3d.add(droplet3d);
+            var dropletCore3d = new THREE.Mesh(
+              new THREE.SphereGeometry(0.17, 18, 14),
+              new THREE.MeshBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.18, depthWrite: false })
+            );
+            dropletCore3d.position.y = -0.02;
+            dropletGroup3d.add(dropletCore3d);
+            var dropletHighlight3d = new THREE.Mesh(
+              new THREE.SphereGeometry(0.065, 12, 10),
+              new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8, depthWrite: false })
+            );
+            dropletHighlight3d.position.set(-0.11, 0.1, 0.2);
+            dropletGroup3d.add(dropletHighlight3d);
             var halo3d = new THREE.Mesh(
-              new THREE.SphereGeometry(0.48, 20, 16),
+              new THREE.SphereGeometry(0.52, 20, 16),
               new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.12, depthWrite: false, blending: THREE.AdditiveBlending })
             );
             dropletGroup3d.add(halo3d);
@@ -4248,6 +4487,40 @@ const d = labToolData.waterCycle || {};
               transpiring: [5.9, 2.0, 1.2], transpiration: [5.9, 2.0, 1.2],
               complete: [-3.0, -0.72, 1.7], idle: [-3.0, -0.72, 1.7]
             };
+            function makeJourneyCurve3d(points, closed) {
+              return new THREE.CatmullRomCurve3(points.map(function(point) {
+                return new THREE.Vector3(point[0], point[1], point[2]);
+              }), !!closed, 'catmullrom', 0.35);
+            }
+            var stateCurves3d = {
+              ocean: makeJourneyCurve3d([[-3.4,-0.72,1.45],[-2.8,-0.67,1.9],[-2.4,-0.76,1.55],[-3.0,-0.72,1.25]], true),
+              evaporating: makeJourneyCurve3d([[-3.0,-0.72,1.7],[-2.7,0.15,1.35],[-2.1,1.15,0.75],[-1.2,2.15,-0.1],[-0.35,2.82,-0.95]], false),
+              condensing: makeJourneyCurve3d([[-0.35,2.82,-0.95],[-0.1,3.18,-1.25],[0.25,3.3,-1.55],[0.72,3.16,-1.72]], false),
+              precipitating: makeJourneyCurve3d([[0.72,3.16,-1.72],[1.2,2.35,-1.3],[2.25,0.75,-0.65],[3.35,-0.35,-0.25],[4.3,-0.82,-0.1]], false),
+              ground_choice: makeJourneyCurve3d([[4.1,-0.78,-0.25],[4.3,-0.82,-0.1],[4.45,-0.8,0.08]], false),
+              river_runoff: makeJourneyCurve3d([[4.3,-0.82,-0.1],[3.3,-0.88,0.35],[2.0,-0.9,0.95],[0.6,-1.0,1.45],[-1.2,-1.08,1.65],[-3.0,-0.72,1.7]], false),
+              infiltrating: makeJourneyCurve3d([[4.3,-0.82,-0.1],[4.38,-1.18,-0.18],[4.46,-1.5,-0.28],[4.5,-1.78,-0.35]], false),
+              aquifer_flow: makeJourneyCurve3d([[4.5,-1.78,-0.35],[5.25,-2.18,-0.35],[3.2,-2.12,0.1],[1.0,-1.95,0.75],[-1.1,-1.45,1.35],[-3.0,-0.72,1.7]], false),
+              plant_absorb: makeJourneyCurve3d([[4.3,-0.82,-0.1],[4.95,-1.0,0.45],[5.55,-0.72,0.95],[5.8,-0.35,1.2]], false),
+              transpiring: makeJourneyCurve3d([[5.8,-0.35,1.2],[5.9,0.75,1.2],[5.9,2.0,1.2],[4.1,2.65,0.4],[2.0,3.0,-0.55],[0.25,3.3,-1.55]], false),
+              complete: makeJourneyCurve3d([[-3.4,-0.72,1.45],[-2.8,-0.67,1.9],[-2.4,-0.76,1.55],[-3.0,-0.72,1.25]], true)
+            };
+            var activeRouteKey3d = '';
+            function syncJourneyRoute3d(stateKey) {
+              var routeKey = stateCurves3d[stateKey] ? stateKey : 'ocean';
+              if (routeKey === activeRouteKey3d) return;
+              activeRouteKey3d = routeKey;
+              var activeRouteCurve3d = stateCurves3d[routeKey];
+              if (route3d.geometry && route3d.geometry.dispose) route3d.geometry.dispose();
+              if (routeGlow3d.geometry && routeGlow3d.geometry.dispose) routeGlow3d.geometry.dispose();
+              route3d.geometry = new THREE.BufferGeometry().setFromPoints(activeRouteCurve3d.getPoints(72));
+              routeGlow3d.geometry = new THREE.TubeGeometry(activeRouteCurve3d, 72, 0.045, 6, !!activeRouteCurve3d.closed);
+              var routeColor3d = (stateColors3d && stateColors3d[stateKey]) || 0x38bdf8;
+              route3d.material.color.setHex(routeColor3d);
+              routeGlow3d.material.color.setHex(routeColor3d);
+              routeMarkers3d.material.color.setHex(routeColor3d);
+              dropletTrail3d.material.color.setHex(routeColor3d);
+            }
             var cameraTargets3d = {
               ocean: [3.2, 2.6, 9.5], collection: [3.2, 2.6, 9.5],
               evaporating: [3.8, 3.2, 9.0], evaporation: [3.8, 3.2, 9.0],
@@ -4262,9 +4535,11 @@ const d = labToolData.waterCycle || {};
               complete: [3.2, 2.6, 9.5], idle: [8.5, 4.6, 11.5]
             };
             var stateColors3d = {
+              ocean: 0x38bdf8, collection: 0x38bdf8, complete: 0x67e8f9,
               evaporating: 0xfbbf24, evaporation: 0xfbbf24,
               condensing: 0xe0f2fe, condensation: 0xe0f2fe,
               precipitating: 0x60a5fa, precipitation: 0x60a5fa,
+              ground_choice: 0xf59e0b, river_runoff: 0x3b82f6,
               infiltrating: 0x22d3ee, infiltration: 0x22d3ee, aquifer_flow: 0x22d3ee,
               plant_absorb: 0x4ade80, transpiring: 0x86efac, transpiration: 0x86efac
             };
@@ -4300,6 +4575,23 @@ const d = labToolData.waterCycle || {};
               camera.updateProjectionMatrix();
               renderer.setSize(width, height, false);
             }
+            canvasEl._wc3dAdjustCamera = function(action) {
+              var focus3d = controls3d ? controls3d.target.clone() : dropletGroup3d.position.clone();
+              var offset3d = camera.position.clone().sub(focus3d);
+              if (action === 'left' || action === 'right') {
+                offset3d.applyAxisAngle(new THREE.Vector3(0, 1, 0), action === 'left' ? -0.18 : 0.18);
+              } else if (action === 'in' || action === 'out') {
+                var zoomFactor3d = action === 'in' ? 0.84 : 1.18;
+                var nextDistance3d = Math.max(4.5, Math.min(18, offset3d.length() * zoomFactor3d));
+                offset3d.setLength(nextDistance3d);
+              }
+              camera.position.copy(focus3d).add(offset3d);
+              userOrbit3d = true;
+              if (controls3d) controls3d.update();
+              else camera.lookAt(focus3d);
+              return true;
+            };
+
             if (typeof ResizeObserver !== 'undefined') {
               resizeObserver3d = new ResizeObserver(resizeJourney3d);
               resizeObserver3d.observe(canvasEl);
@@ -4309,19 +4601,34 @@ const d = labToolData.waterCycle || {};
               if (!alive3d || !canvasEl.isConnected) return;
               resizeJourney3d();
               var elapsed3d = clock3d.getElapsedTime();
-              var rawState3d = canvasEl.dataset.journeyState || 'idle';
+              var engineCanvas3d = document.getElementById('wcCanvas');
+              var rawState3d = engineCanvas3d ? (engineCanvas3d.dataset.journeyState || 'idle') : (canvasEl.dataset.journeyState || 'idle');
+              var journeyProgress3d = parseFloat(engineCanvas3d ? (engineCanvas3d.dataset.journeyProgress || '0') : (canvasEl.dataset.journeyProgress || '0'));
+              if (!isFinite(journeyProgress3d)) journeyProgress3d = 0;
+              journeyProgress3d = Math.max(0, Math.min(1, journeyProgress3d));
               var stage3d = canvasEl.dataset.activeStage || 'collection';
               var runoffVisual3d = parseFloat(canvasEl.dataset.runoffIndex || '50');
               var infiltrationVisual3d = parseFloat(canvasEl.dataset.infiltrationIndex || '50');
               var rainVisual3d = parseFloat(canvasEl.dataset.rainIntensity || '55');
               var coverVisual3d = canvasEl.dataset.landCover || 'grass';
+              var solarVisual3d = Math.max(0, Math.min(2, parseFloat(canvasEl.dataset.climSolar || '1')));
+              var tempVisual3d = parseFloat(canvasEl.dataset.climTemp || '15');
+              var windVisual3d = Math.max(0, Math.min(3, parseFloat(canvasEl.dataset.climWind || '1')));
               var journeyPaused3d = canvasEl.dataset.journeyPaused === 'true';
               var hydroPoints3d = Math.max(0, Math.min(120, parseFloat(canvasEl.dataset.hydroPoints || '0')));
               var state3d = rawState3d === 'idle' ? (stageMap3d[stage3d] || stage3d) : rawState3d;
               var targetArray3d = stageTargets3d[state3d] || stageTargets3d.ocean;
               var cameraArray3d = cameraTargets3d[state3d] || cameraTargets3d.idle;
-              var target3d = new THREE.Vector3(targetArray3d[0], targetArray3d[1], targetArray3d[2]);
+              var activeCurve3d = stateCurves3d[state3d];
+              var target3d = (!motionReduced3d && rawState3d !== 'idle' && activeCurve3d)
+                ? activeCurve3d.getPointAt(journeyProgress3d)
+                : new THREE.Vector3(targetArray3d[0], targetArray3d[1], targetArray3d[2]);
               var cameraGoal3d = new THREE.Vector3(cameraArray3d[0], cameraArray3d[1], cameraArray3d[2]);
+              syncJourneyRoute3d(state3d);
+              canvasEl.dataset.journeyProgress = String(journeyProgress3d);
+              var daylight3d = Math.max(0, Math.min(1, solarVisual3d / 1.35));
+              scene.background.setHSL(0.56, 0.56, 0.07 + daylight3d * 0.09);
+              scene.fog.color.copy(scene.background);
               var lerp3d = motionReduced3d ? 1 : 0.045;
               dropletGroup3d.position.lerp(target3d, lerp3d);
               if (!userOrbit3d) camera.position.lerp(cameraGoal3d, motionReduced3d ? 1 : 0.025);
@@ -4333,11 +4640,11 @@ const d = labToolData.waterCycle || {};
               if (!motionReduced3d && !journeyPaused3d) {
                 dropletGroup3d.position.y += Math.sin(elapsed3d * 2.8) * 0.0025;
                 halo3d.scale.setScalar(1 + Math.sin(elapsed3d * 3.2) * 0.12);
-                cloudGroup3d.position.x = 0.5 + Math.sin(elapsed3d * 0.18) * 0.35;
-                vapor3d.rotation.y += 0.0015;
+                cloudGroup3d.position.x = 0.5 + Math.sin(elapsed3d * (0.12 + windVisual3d * 0.09)) * (0.18 + windVisual3d * 0.18);
+                vapor3d.rotation.y += 0.0008 + windVisual3d * 0.0007;
                 var rainPos3d = rain3d.geometry.attributes.position;
                 for (var ri3 = 0; ri3 < rainPos3d.count; ri3++) {
-                  var rainY3d = rainPos3d.getY(ri3) - 0.028;
+                  var rainY3d = rainPos3d.getY(ri3) - (0.018 + rainVisual3d / 5000);
                   if (rainY3d < -2.6) rainY3d = 2.7;
                   rainPos3d.setY(ri3, rainY3d);
                 }
@@ -4349,6 +4656,9 @@ const d = labToolData.waterCycle || {};
               river3d.material.opacity = 0.3 + runoffVisual3d / 145;
               aquifer3d.material.opacity = Math.min(0.92, 0.28 + infiltrationVisual3d / 180 +
                 ((state3d === 'infiltrating' || state3d === 'infiltration' || state3d === 'aquifer_flow') ? 0.2 : 0));
+              vapor3d.material.opacity = Math.min(0.92, 0.28 + solarVisual3d * 0.2 + Math.max(0, tempVisual3d) / 180);
+              rain3d.material.color.setHex(tempVisual3d < -2 ? 0xe0f2fe : tempVisual3d <= 3 ? 0x93c5fd : 0x69d7ff);
+              rain3d.material.size = tempVisual3d < -2 ? 0.105 : 0.075;
               grass3d.material.color.setHex(coverVisual3d === 'forest' ? 0x245c3a : coverVisual3d === 'urban' ? 0x68737d : 0x5d8f3b);
               if (controls3d) {
                 if (!userOrbit3d) controls3d.target.lerp(target3d, motionReduced3d ? 1 : 0.035);
@@ -4377,8 +4687,8 @@ const d = labToolData.waterCycle || {};
               renderer.dispose();
               canvasEl._wc3dCleanup = null;
               canvasEl._wc3dResetCamera = null;
+              canvasEl._wc3dAdjustCamera = null;
             }
-
             canvasEl._wc3dCleanup = cleanupJourney3d;
             animateJourney3d();
           };
@@ -4403,6 +4713,7 @@ const d = labToolData.waterCycle || {};
                 if (typeof announceToSR === 'function') announceToSR('Journey ended.');
               } else {
                 upd('journeyActive', true); upd('journeyState', 'ocean'); upd('journeyPaused', false);
+                upd('activeStage', 'collection');
                 upd('journeyLoops', d.journeyLoops || 0);
                 upd('journeyPaths', d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 });
                 var cvOn = document.getElementById('wcCanvas'); if (cvOn) cvOn.dataset.journeyState = 'ocean';
@@ -4411,14 +4722,7 @@ const d = labToolData.waterCycle || {};
             } else if (d.journeyActive && d.journeyState === 'ground_choice' && (k === 'r' || k === 'R' || k === 'u' || k === 'U' || k === 'p' || k === 'P')) {
               e.preventDefault();
               var choice = (k === 'r' || k === 'R') ? 'runoff' : (k === 'u' || k === 'U') ? 'infiltrate' : 'plant';
-              var stateMap = { runoff: 'river_runoff', infiltrate: 'infiltrating', plant: 'plant_absorb' };
-              var nextState = stateMap[choice];
-              upd('journeyState', nextState);
-              var newPaths = Object.assign({}, d.journeyPaths || {}, {}); newPaths[choice] = (newPaths[choice] || 0) + 1;
-              upd('journeyPaths', newPaths);
-              var cv2 = document.getElementById('wcCanvas');
-              if (cv2) { cv2.dataset.journeyState = nextState; if (cv2._onJourneyTransition) cv2._onJourneyTransition(nextState); }
-              if (typeof announceToSR === 'function') announceToSR('Path chosen: ' + choice + '.');
+              chooseJourneyPath(choice);
             }
           }
 
@@ -4426,12 +4730,20 @@ const d = labToolData.waterCycle || {};
           var currentTemp = d.climTemp != null ? d.climTemp : 15;
           var currentWind = d.climWind != null ? d.climWind : 1.0;
           var journeyView = d.journeyView || '2d';
-          var currentStageLabel = sel ? sel.label : 'Evaporation';
+          var journeyActiveStageMap = { ocean: 'collection', evaporating: 'evaporation', condensing: 'condensation',
+            precipitating: 'precipitation', ground_choice: 'precipitation', river_runoff: 'collection',
+            infiltrating: 'infiltration', aquifer_flow: 'infiltration', plant_absorb: 'transpiration', transpiring: 'transpiration' };
+          var resolvedStageId = d.journeyActive
+            ? (journeyActiveStageMap[d.journeyState || 'ocean'] || d.activeStage || 'collection')
+            : (d.activeStage || 'evaporation');
+          var resolvedStage = STAGES.find(function(stage) { return stage.id === resolvedStageId; });
+          var currentStageLabel = resolvedStage ? resolvedStage.label : (sel ? sel.label : 'Evaporation');
           var completedChallengeCount = (d.completedChallenges || []).length;
           var viewedStageCount = Object.keys(d.stagesViewed || {}).length;
           var journeyLabel = d.journeyActive
             ? ((d.journeyState || 'ocean').replace(/_/g, ' '))
             : 'Ready to start';
+          var immersiveStageLabel = d.journeyActive ? journeyLabel : currentStageLabel + ' preview';
           var journeyPaused = !!d.journeyPaused;
           var journeySpeed = d.journeySpeed || 1;
           var journeyTimelineSteps = ['Ocean', 'Vapor', 'Cloud', 'Precipitation', 'Land pathway', 'Return'];
@@ -4469,13 +4781,14 @@ const d = labToolData.waterCycle || {};
           };
           var journeyLens = journeyLensMap[lensState] || journeyLensMap.ocean;
           var journeyPaths = Object.assign({ runoff: 0, infiltrate: 0, plant: 0 }, d.journeyPaths || {});
+          var journey3dPaths = Object.assign({ runoff: 0, infiltrate: 0, plant: 0 }, d.journey3dPaths || {});
           var journey3dVisited = d.journey3dStatesVisited || {};
           var hydroMissions = [
             { id: 'cloud', name: 'Cloud Chaser', detail: 'Reach condensation in 3D', complete: !!journey3dVisited.condensing },
-            { id: 'river', name: 'River Runner', detail: 'Travel by surface runoff', complete: journeyPaths.runoff > 0 },
-            { id: 'deep', name: 'Deep Current', detail: 'Enter soil or an aquifer', complete: journeyPaths.infiltrate > 0 },
-            { id: 'green', name: 'Green Return', detail: 'Travel through a plant', complete: journeyPaths.plant > 0 },
-            { id: 'routes', name: 'Route Master', detail: 'Explore all three land paths', complete: journeyPaths.runoff > 0 && journeyPaths.infiltrate > 0 && journeyPaths.plant > 0 },
+            { id: 'river', name: 'River Runner', detail: 'Travel by surface runoff in 3D', complete: journey3dPaths.runoff > 0 },
+            { id: 'deep', name: 'Deep Current', detail: 'Enter soil or an aquifer in 3D', complete: journey3dPaths.infiltrate > 0 },
+            { id: 'green', name: 'Green Return', detail: 'Travel through a plant in 3D', complete: journey3dPaths.plant > 0 },
+            { id: 'routes', name: 'Route Master', detail: 'Explore all three land paths in 3D', complete: journey3dPaths.runoff > 0 && journey3dPaths.infiltrate > 0 && journey3dPaths.plant > 0 },
             { id: 'cycle', name: 'Cycle Keeper', detail: 'Complete a full 3D cycle', complete: !!journey3dVisited.complete }
           ];
           var hydroCompleted = hydroMissions.filter(function(mission) { return mission.complete; }).length;
@@ -4522,6 +4835,61 @@ const d = labToolData.waterCycle || {};
           function landIndexBand(value) {
             return value < 35 ? 'Low' : value < 65 ? 'Moderate' : 'High';
           }
+          function chooseJourneyPath(pathKey) {
+            var stateMap = { runoff: 'river_runoff', infiltrate: 'infiltrating', plant: 'plant_absorb' };
+            var stageMap = { runoff: 'collection', infiltrate: 'infiltration', plant: 'transpiration' };
+            var spokenMap = { runoff: 'River Runoff', infiltrate: 'Underground infiltration', plant: 'Plant absorption' };
+            var nextState = stateMap[pathKey];
+            if (!nextState) return;
+            var nextPaths = Object.assign({}, journeyPaths);
+            nextPaths[pathKey] = (nextPaths[pathKey] || 0) + 1;
+            var nextData = {
+              journeyState: nextState,
+              activeStage: stageMap[pathKey],
+              journeyPaths: nextPaths
+            };
+            if (journeyView === '3d') {
+              var next3dPaths = Object.assign({}, journey3dPaths);
+              next3dPaths[pathKey] = (next3dPaths[pathKey] || 0) + 1;
+              nextData.journey3dPaths = next3dPaths;
+            }
+            updMulti(nextData);
+            var journeyCanvas = document.getElementById('wcCanvas');
+            if (journeyCanvas) {
+              journeyCanvas.dataset.journeyState = nextState;
+              journeyCanvas.dataset.activeStage = stageMap[pathKey];
+              journeyCanvas.dataset.journeyProgress = '0';
+              if (journeyCanvas._onJourneyTransition) journeyCanvas._onJourneyTransition(nextState);
+            }
+            if (typeof announceToSR === 'function') announceToSR('Path chosen: ' + spokenMap[pathKey] + '.');
+          }
+
+          function controlJourneyCamera(action) {
+            var journeyCanvas = document.getElementById('wcJourney3d');
+            if (!journeyCanvas) return;
+            if (action === 'follow') {
+              if (journeyCanvas._wc3dResetCamera) journeyCanvas._wc3dResetCamera();
+              if (typeof announceToSR === 'function') announceToSR('Guided 3D camera resumed.');
+              return;
+            }
+            if (journeyCanvas._wc3dAdjustCamera && journeyCanvas._wc3dAdjustCamera(action)) {
+              var cameraActionCopy = { left: 'Rotated left.', right: 'Rotated right.', in: 'Zoomed in.', out: 'Zoomed out.' };
+              if (typeof announceToSR === 'function') announceToSR(cameraActionCopy[action] || 'Camera adjusted.');
+            }
+          }
+          function handleJourney3dKey(e) {
+            var cameraKeyMap = {
+              ArrowLeft: 'left', ArrowRight: 'right',
+              ArrowUp: 'in', ArrowDown: 'out',
+              '+': 'in', '=': 'in', '-': 'out', '_': 'out'
+            };
+            var action = (e.key === 'f' || e.key === 'F') ? 'follow' : cameraKeyMap[e.key];
+            if (!action) return;
+            e.preventDefault();
+            e.stopPropagation();
+            controlJourneyCamera(action);
+          }
+
           function renderLandSegments(label, stateKey, options, selected) {
             return React.createElement("fieldset", { className: "wc-land-control" },
               React.createElement("legend", null, label),
@@ -4669,12 +5037,12 @@ const d = labToolData.waterCycle || {};
                   type: "button",
                   "aria-pressed": journeyView === '2d',
                   onClick: function() { upd('journeyView', '2d'); }
-                }, "2D Cycle"),
+                }, "System Map"),
                 React.createElement("button", {
                   type: "button",
                   "aria-pressed": journeyView === '3d',
                   onClick: function() { upd('journeyView', '3d'); }
-                }, "3D Journey")
+                }, "Droplet Journey")
               ),
               React.createElement("div", { className: "wc-view-status" },
                 React.createElement("div", {
@@ -4683,7 +5051,7 @@ const d = labToolData.waterCycle || {};
                   "aria-live": "polite",
                   "aria-atomic": "true"
                 }, journeyView === '3d'
-                  ? "Immersive stage: " + journeyLabel + " | illustrative scale"
+                  ? "Droplet view: " + immersiveStageLabel + " | illustrative scale"
                   : "Systems view: six connected water-cycle processes"),
                 journeyView === '3d' && React.createElement("button", {
                   type: "button",
@@ -4776,12 +5144,13 @@ const d = labToolData.waterCycle || {};
                 role: "img",
                 tabIndex: journeyView === '2d' ? 0 : -1,
                 "aria-hidden": journeyView === '3d' ? "true" : undefined,
-                "aria-label": "Water cycle animation showing the " + (d.activeStage || 'evaporation') + " stage.",
+                "aria-label": "Water cycle animation showing the " + resolvedStageId + " stage.",
                 ref: canvasRef,
                 id: "wcCanvas",
                 className: "wc-canvas-element",
                 "data-watercycle-canvas": "true",
-                "data-active-stage": d.activeStage || 'evaporation',
+                "data-render-mode": journeyView === '2d' ? 'visual' : 'state-only',
+                "data-active-stage": resolvedStageId,
                 "data-journey-state": d.journeyActive ? (d.journeyState || 'ocean') : 'idle',
                 "data-journey-paused": String(!!d.journeyPaused),
                 "data-journey-speed": String(d.journeySpeed || 1),
@@ -4795,15 +5164,20 @@ const d = labToolData.waterCycle || {};
                   transition: "opacity 240ms ease"
                 }
               }),
+              journeyView === '3d' && React.createElement("p", { id: "wcJourney3dInstructions", className: "sr-only" },
+                "Use left and right arrows to rotate, up and down arrows to zoom, and F to resume the guided droplet camera."
+              ),
               journeyView === '3d' && React.createElement("canvas", {
                 role: "img",
                 tabIndex: 0,
-                "aria-label": "Three-dimensional tracked water parcel in the " + journeyLabel + " stage. Drag to rotate the scene.",
+                "aria-label": "Three-dimensional tracked water parcel in the " + immersiveStageLabel + " stage. Drag or use arrow keys to explore the scene.",
+                "aria-describedby": "wcJourney3dInstructions",
+                onKeyDown: handleJourney3dKey,
                 ref: journey3dRef,
                 id: "wcJourney3d",
                 className: "wc-journey-3d",
                 "data-watercycle-journey-3d": "true",
-                "data-active-stage": d.activeStage || 'evaporation',
+                "data-active-stage": resolvedStageId,
                 "data-journey-state": d.journeyActive ? (d.journeyState || 'ocean') : 'idle',
                 "data-journey-paused": String(!!d.journeyPaused),
                 "data-journey-speed": String(d.journeySpeed || 1),
@@ -4811,6 +5185,9 @@ const d = labToolData.waterCycle || {};
                 "data-runoff-index": String(runoffTendency),
                 "data-infiltration-index": String(infiltrationOpportunity),
                 "data-rain-intensity": String(landRainIntensity),
+                "data-clim-solar": String(currentSolar),
+                "data-clim-temp": String(currentTemp),
+                "data-clim-wind": String(currentWind),
                 "data-land-cover": landCover
               }),
               journeyView === '3d' && (!labToolData._threeLoaded || labToolData._threeLoadError || d.journey3dError) && React.createElement("div", {
@@ -4831,9 +5208,120 @@ const d = labToolData.waterCycle || {};
               ),
 
               // Weather badge overlay
-              (d.climTemp != null && d.climTemp < 0) && React.createElement("div", { className: "absolute bottom-2 left-2 px-2 py-1 bg-blue-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.snow', "\u2744\uFE0F SNOW")),
-              (d.climTemp != null && d.climTemp > 30) && React.createElement("div", { className: "absolute bottom-2 left-2 px-2 py-1 bg-amber-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, "HOT SURFACE"),
-              (d.climSolar != null && d.climSolar < 0.3) && React.createElement("div", { className: "absolute bottom-2 right-2 px-2 py-1 bg-indigo-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.night', "\uD83C\uDF19 NIGHT"))
+              (d.climTemp != null && d.climTemp < 0) && React.createElement("div", { className: "absolute top-16 left-2 px-2 py-1 bg-blue-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.snow', "\u2744\uFE0F SNOW")),
+              (d.climTemp != null && d.climTemp > 30) && React.createElement("div", { className: "absolute top-16 left-2 px-2 py-1 bg-amber-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, "HOT SURFACE"),
+              (d.climSolar != null && d.climSolar < 0.3) && React.createElement("div", { className: "absolute top-16 right-2 px-2 py-1 bg-indigo-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.night', "\uD83C\uDF19 NIGHT")),
+
+              journeyView === '3d' && d.journeyActive && d.journeyState === 'ground_choice' && React.createElement("section", {
+                className: "wc-viewport-choice",
+                role: "group",
+                "aria-labelledby": "wcViewportChoiceTitle"
+              },
+                React.createElement("h5", { id: "wcViewportChoiceTitle" }, "Choose where the droplet travels next"),
+                React.createElement("p", null, "The land scenario changes each pathway's tendency, but you remain in control."),
+                React.createElement("div", { className: "wc-viewport-choice-grid" },
+                  React.createElement("button", {
+                    type: "button",
+                    "aria-label": "Choose River Runoff path. Runoff tendency " + landIndexBand(runoffTendency),
+                    onClick: function() { chooseJourneyPath('runoff'); }
+                  },
+                    React.createElement("strong", null, "\uD83C\uDF0A River Runoff"),
+                    React.createElement("span", null, "Runoff tendency: " + landIndexBand(runoffTendency))
+                  ),
+                  React.createElement("button", {
+                    type: "button",
+                    "aria-label": "Choose Underground infiltration path. Infiltration opportunity " + landIndexBand(infiltrationOpportunity),
+                    onClick: function() { chooseJourneyPath('infiltrate'); }
+                  },
+                    React.createElement("strong", null, "\uD83E\uDEB4 Underground"),
+                    React.createElement("span", null, "Infiltration opportunity: " + landIndexBand(infiltrationOpportunity))
+                  ),
+                  React.createElement("button", {
+                    type: "button",
+                    "aria-label": "Choose Plant absorption path",
+                    onClick: function() { chooseJourneyPath('plant'); }
+                  },
+                    React.createElement("strong", null, "\uD83C\uDF3F Enter Plant"),
+                    React.createElement("span", null, "Return through transpiration")
+                  )
+                )
+              ),
+
+              journeyView === '3d' && React.createElement("div", {
+                className: "wc-viewport-dock",
+                role: "group",
+                "aria-label": "Droplet journey and 3D camera controls"
+              },
+                React.createElement("div", { className: "wc-viewport-state" },
+                  React.createElement("span", null, d.journeyActive ? "Current parcel state" : "Ready"),
+                  React.createElement("strong", null, immersiveStageLabel)
+                ),
+                React.createElement("div", { className: "wc-viewport-actions" },
+                  !d.journeyActive ? React.createElement("button", {
+                    type: "button",
+                    className: "wc-viewport-start",
+                    "aria-label": "Start droplet journey in the ocean",
+                    onClick: function() {
+                      updMulti({
+                        journeyActive: true, journeyState: 'ocean', activeStage: 'collection', journeyPaused: false,
+                        journeyLoops: d.journeyLoops || 0,
+                        journeyPaths: d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 }
+                      });
+                      var startCanvas = document.getElementById('wcCanvas');
+                      if (startCanvas) {
+                        startCanvas.dataset.journeyState = 'ocean';
+                        startCanvas.dataset.activeStage = 'collection';
+                        startCanvas.dataset.journeyPaused = 'false';
+                        startCanvas.dataset.journeyProgress = '0';
+                      }
+                      if (typeof announceToSR === 'function') announceToSR('Droplet journey started in the ocean.');
+                    }
+                  }, "\uD83D\uDCA7 Begin as a droplet") : React.createElement(React.Fragment, null,
+                    React.createElement("button", {
+                      type: "button", className: "wc-viewport-btn",
+                      disabled: d.journeyState === 'ground_choice' || d.journeyState === 'complete',
+                      "aria-label": journeyPaused ? "Resume water journey" : "Pause water journey",
+                      onClick: function() {
+                        var nextPaused = !journeyPaused;
+                        upd('journeyPaused', nextPaused);
+                        var pauseCanvas = document.getElementById('wcCanvas');
+                        if (pauseCanvas) pauseCanvas.dataset.journeyPaused = String(nextPaused);
+                      }
+                    }, journeyPaused ? "\u25B6" : "\u23F8"),
+                    React.createElement("button", {
+                      type: "button", className: "wc-viewport-btn", "aria-label": "Restart water journey from the ocean",
+                      onClick: function() {
+                        updMulti({ journeyState: 'ocean', activeStage: 'collection', journeyPaused: false });
+                        var restartCanvas = document.getElementById('wcCanvas');
+                        if (restartCanvas && restartCanvas._wcRestartJourney) restartCanvas._wcRestartJourney();
+                      }
+                    }, "\u21BA"),
+                    [0.5, 1, 2].map(function(speedOption) {
+                      return React.createElement("button", {
+                        key: 'viewport-speed-' + speedOption,
+                        type: "button", className: "wc-viewport-btn",
+                        "aria-label": "Journey speed " + speedOption + " times",
+                        "aria-pressed": journeySpeed === speedOption,
+                        onClick: function() {
+                          upd('journeySpeed', speedOption);
+                          var speedCanvas = document.getElementById('wcCanvas');
+                          if (speedCanvas) speedCanvas.dataset.journeySpeed = String(speedOption);
+                        }
+                      }, speedOption + "\u00D7");
+                    })
+                  ),
+                  [{ action: 'left', label: 'Rotate scene left', icon: '\u2190' }, { action: 'right', label: 'Rotate scene right', icon: '\u2192' },
+                   { action: 'in', label: 'Zoom in', icon: '+' }, { action: 'out', label: 'Zoom out', icon: '\u2212' },
+                   { action: 'follow', label: 'Follow the droplet with the guided camera', icon: '\u25CE' }].map(function(cameraControl) {
+                    return React.createElement("button", {
+                      key: cameraControl.action,
+                      type: "button", className: "wc-viewport-btn",
+                      "aria-label": cameraControl.label,
+                      onClick: function() { controlJourneyCamera(cameraControl.action); }
+                    }, cameraControl.icon);
+                  })
+                )
+              )
 
             ),
 
@@ -5044,11 +5532,12 @@ const d = labToolData.waterCycle || {};
                       onClick: function() {
                         upd('journeyActive', true);
                         upd('journeyState', 'ocean');
+                        upd('activeStage', 'collection');
                         upd('journeyPaused', false);
                         upd('journeyLoops', d.journeyLoops || 0);
                         upd('journeyPaths', d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 });
                         var cv = document.getElementById('wcCanvas');
-                        if (cv) { cv.dataset.journeyState = 'ocean'; }
+                        if (cv) { cv.dataset.journeyState = 'ocean'; cv.dataset.activeStage = 'collection'; cv.dataset.journeyProgress = '0'; }
                         if (typeof announceToSR === 'function') announceToSR('Journey started. You are now a water droplet in the ocean.');
                         addToast('\uD83D\uDCA7 You are now a water droplet in the ocean! Watch and learn as you travel through the water cycle.', 'info');
                       },
@@ -5110,6 +5599,7 @@ const d = labToolData.waterCycle || {};
                       title: "Restart from ocean",
                       onClick: function() {
                         updMulti({ journeyState: 'ocean', journeyPaused: false });
+                        upd('activeStage', 'collection');
                         var journeyCanvas = document.getElementById('wcCanvas');
                         if (journeyCanvas && journeyCanvas._wcRestartJourney) journeyCanvas._wcRestartJourney();
                         if (typeof announceToSR === 'function') announceToSR('Water journey restarted in the ocean.');
@@ -5150,20 +5640,15 @@ const d = labToolData.waterCycle || {};
                 // Current state card
                 React.createElement("div", { className: "rounded-lg p-3 border " + (isDark ? "bg-slate-900/60 border-cyan-950/50 text-slate-350" : "bg-white border-cyan-100 text-slate-800") },
                   React.createElement("p", { className: "text-xs font-bold mb-1 " + (isDark ? "text-cyan-400" : "text-cyan-700") },
-                    (d.journeyState === 'ground_choice') ? "\uD83E\uDEA8 Choose your path! Click one of the 3 glowing zones on the canvas:" : 
+                    (d.journeyState === 'ground_choice') ? (journeyView === '3d'
+                      ? "\uD83E\uDEA8 Choose your path in the viewport above or use the buttons here:" : "\uD83E\uDEA8 Choose your path on the map or use the buttons here:") :
                     (d.journeyState === 'complete') ? "\u2705 You completed the water cycle! +25 XP" :
                     "\uD83D\uDCA7 Current: " + (d.journeyState || 'ocean').replace(/_/g, ' ')
                   ),
                   d.journeyState === 'complete' && React.createElement("p", { className: "text-[11px] leading-snug mt-1 " + (isDark ? "text-emerald-300" : "text-emerald-700") }, t('stem.watercycle.you_rode_the_same_water_molecule_the_w', "You rode the SAME water molecule the whole way around \u2014 it changed form (liquid \u2192 vapor \u2192 liquid) but was never created or destroyed. Every drop you drink has been cycling for billions of years.")),
                   d.journeyState === 'ground_choice' && React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2", role: "group", },
                     React.createElement("button", { "aria-label": t('stem.watercycle.choose_river_runoff_path_shortcut_r', "Choose River Runoff path (shortcut: R)"),
-                      onClick: function() {
-                        upd('journeyState', 'river_runoff');
-                        upd('journeyPaths', Object.assign({}, d.journeyPaths, { runoff: (d.journeyPaths.runoff || 0) + 1 }));
-                        var cv = document.getElementById('wcCanvas');
-                        if (cv) { cv.dataset.journeyState = 'river_runoff'; if (cv._onJourneyTransition) cv._onJourneyTransition('river_runoff'); }
-                        if (typeof announceToSR === 'function') announceToSR('Path chosen: River Runoff.');
-                      },
+                      onClick: function() { chooseJourneyPath('runoff'); },
                       className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-blue-950/40 border-blue-800 hover:bg-blue-900/40 text-blue-300 active:scale-[0.97]" : "transition-colors bg-blue-50 border-blue-600 hover:bg-blue-100 text-blue-700 active:scale-[0.97]")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF0A"),
@@ -5171,13 +5656,7 @@ const d = labToolData.waterCycle || {};
                       React.createElement("p", { className: "text-[11px] opacity-70" }, "Runoff tendency: " + landIndexBand(runoffTendency))
                     ),
                     React.createElement("button", { "aria-label": t('stem.watercycle.choose_underground_infiltration_path_s', "Choose Underground infiltration path (shortcut: U)"),
-                      onClick: function() {
-                        upd('journeyState', 'infiltrating');
-                        upd('journeyPaths', Object.assign({}, d.journeyPaths, { infiltrate: (d.journeyPaths.infiltrate || 0) + 1 }));
-                        var cv = document.getElementById('wcCanvas');
-                        if (cv) { cv.dataset.journeyState = 'infiltrating'; if (cv._onJourneyTransition) cv._onJourneyTransition('infiltrating'); }
-                        if (typeof announceToSR === 'function') announceToSR('Path chosen: Underground infiltration.');
-                      },
+                      onClick: function() { chooseJourneyPath('infiltrate'); },
                       className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-amber-950/40 border-amber-800 hover:bg-amber-900/40 text-amber-300 active:scale-[0.97]" : "transition-colors bg-amber-50 border-amber-600 hover:bg-amber-100 text-amber-700 active:scale-[0.97]")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83E\uDEB4"),
@@ -5185,13 +5664,7 @@ const d = labToolData.waterCycle || {};
                       React.createElement("p", { className: "text-[11px] opacity-70" }, "Infiltration opportunity: " + landIndexBand(infiltrationOpportunity))
                     ),
                     React.createElement("button", { "aria-label": t('stem.watercycle.choose_plant_absorption_path_shortcut_', "Choose Plant absorption path (shortcut: P)"),
-                      onClick: function() {
-                        upd('journeyState', 'plant_absorb');
-                        upd('journeyPaths', Object.assign({}, d.journeyPaths, { plant: (d.journeyPaths.plant || 0) + 1 }));
-                        var cv = document.getElementById('wcCanvas');
-                        if (cv) { cv.dataset.journeyState = 'plant_absorb'; if (cv._onJourneyTransition) cv._onJourneyTransition('plant_absorb'); }
-                        if (typeof announceToSR === 'function') announceToSR('Path chosen: Plant absorption.');
-                      },
+                      onClick: function() { chooseJourneyPath('plant'); },
                       className: "p-2 rounded-lg text-center border-2 transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors bg-emerald-950/40 border-emerald-800 hover:bg-emerald-900/40 text-emerald-300 active:scale-[0.97]" : "transition-colors bg-emerald-50 border-emerald-600 hover:bg-emerald-100 text-emerald-700 active:scale-[0.97]")
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF3F"),
@@ -5203,9 +5676,10 @@ const d = labToolData.waterCycle || {};
                     onClick: function() {
                       upd('journeyState', 'ocean');
                       upd('journeyPaused', false);
+                      upd('activeStage', 'collection');
                       upd('journeyLoops', (d.journeyLoops || 0) + 1);
                       var cv = document.getElementById('wcCanvas');
-                      if (cv) { cv.dataset.journeyState = 'ocean'; }
+                      if (cv) { cv.dataset.journeyState = 'ocean'; cv.dataset.activeStage = 'collection'; cv.dataset.journeyProgress = '0'; }
                       awardStemXP('waterCycle', 25, 'Water Cycle journey loop');
                       stemCelebrate();
                       if (typeof announceToSR === 'function') {

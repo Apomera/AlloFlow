@@ -313,13 +313,18 @@
     var CA_COLS = 81, CA_ROWS = 60, CA_PX = 6;
     var sRule = useState(30); var rule = sRule[0], setRule = sRule[1];
     var sCaSeed = useState('single'); var caSeed = sCaSeed[0], setCaSeed = sCaSeed[1];
+    var sCaWrap = useState(false); var caWrap = sCaWrap[0], setCaWrap = sCaWrap[1];
+    var sCustomSeed = useState(function () { var row = []; for (var i = 0; i < CA_COLS; i++) row.push(i === Math.floor(CA_COLS / 2) ? 1 : 0); return row; }); var customSeed = sCustomSeed[0], setCustomSeed = sCustomSeed[1];
+    var sSeedCursor = useState(Math.floor(CA_COLS / 2)); var seedCursor = sSeedCursor[0], setSeedCursor = sSeedCursor[1];
     var sCaInspect = useState(CA_ROWS - 1); var caInspectRow = sCaInspect[0], setCaInspectRow = sCaInspect[1];
+    var sCaInspectCol = useState(Math.floor(CA_COLS / 2)); var caInspectCol = sCaInspectCol[0], setCaInspectCol = sCaInspectCol[1];
     var bits = ruleToBits(rule);
-    // Elementary CA uses a fixed 0-padded boundary (textbook default) so the
-    // diagram is NOT silently coupled to the Life-tab wrap toggle.
-    var caRows = React.useMemo(function () { return buildCaRows(rule, caSeed, CA_ROWS, CA_COLS, false); }, [rule, caSeed]);
-    var caAnalysis = React.useMemo(function () { return analyzeCaRows(caRows); }, [caRows]);
-    var caSvgRef = useRef(null);
+    // Elementary CA owns its boundary topology independently from the Life grid:
+    // fixed zero-padding is the textbook default; wrap joins both ends as a ring.
+    var caRows = React.useMemo(function () { return buildCaRows(rule, caSeed === 'custom' ? customSeed : caSeed, CA_ROWS, CA_COLS, caWrap); }, [rule, caSeed, customSeed, caWrap]);
+    var caAnalysis = React.useMemo(function () { return analyzeCaRows(caRows, caWrap); }, [caRows, caWrap]);
+    var caCause = caCellCause(caRows, caInspectRow, caInspectCol, caWrap);
+    var caSvgRef = useRef(null), seedSvgRef = useRef(null);
 
     var paintingRef = useRef(false);
     var gridSvgRef = useRef(null);
@@ -496,21 +501,47 @@
       var nb = bits.slice(); nb[i] = nb[i] ? 0 : 1;
       setRuleSafe(bitsToRule(nb));
     }
+    function toggleCustomSeedCell(index, forcedValue) {
+      if (index < 0 || index >= CA_COLS) return;
+      setCustomSeed(function (row) { var next = row.slice(); next[index] = forcedValue == null ? (next[index] ? 0 : 1) : forcedValue; return next; });
+      setCaSeed('custom'); markQuest('exploredRule');
+    }
+    function seedCellFromEvent(e) {
+      var svg = seedSvgRef.current; if (!svg || !svg.getBoundingClientRect) return null;
+      var rect = svg.getBoundingClientRect(); if (!rect.width) return null;
+      return Math.max(0, Math.min(CA_COLS - 1, Math.floor((e.clientX - rect.left) / rect.width * CA_COLS)));
+    }
+    function onSeedPointer(e) { var index = seedCellFromEvent(e); if (index == null) return; setSeedCursor(index); toggleCustomSeedCell(index); }
+    function onSeedKeyDown(e) {
+      var next = seedCursor, handled = true;
+      if (e.key === 'ArrowLeft') next--;
+      else if (e.key === 'ArrowRight') next++;
+      else if (e.key === 'Home') next = 0;
+      else if (e.key === 'End') next = CA_COLS - 1;
+      else if (e.key === ' ' || e.key === 'Enter') toggleCustomSeedCell(seedCursor);
+      else if (e.key === 'Delete' || e.key === 'Backspace') toggleCustomSeedCell(seedCursor, 0);
+      else handled = false;
+      if (handled) { if (e.preventDefault) e.preventDefault(); setSeedCursor(Math.max(0, Math.min(CA_COLS - 1, next))); }
+    }
+    function clearCustomSeed() { var row = []; for (var i = 0; i < CA_COLS; i++) row.push(0); setCustomSeed(row); setCaSeed('custom'); announce('Custom seed cleared.'); }
     function inspectCaFromEvent(e) {
       var svg = caSvgRef.current; if (!svg || !svg.getBoundingClientRect) return;
-      var rect = svg.getBoundingClientRect(); if (!rect.height) return;
+      var rect = svg.getBoundingClientRect(); if (!rect.height || !rect.width) return;
       setCaInspectRow(Math.max(0, Math.min(CA_ROWS - 1, Math.floor((e.clientY - rect.top) / rect.height * CA_ROWS))));
+      setCaInspectCol(Math.max(0, Math.min(CA_COLS - 1, Math.floor((e.clientX - rect.left) / rect.width * CA_COLS))));
     }
     function onCaDiagramKeyDown(e) {
-      var next = caInspectRow, handled = true;
-      if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') next--;
-      else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') next++;
-      else if (e.key === 'PageUp') next -= 10;
-      else if (e.key === 'PageDown') next += 10;
-      else if (e.key === 'Home') next = 0;
-      else if (e.key === 'End') next = CA_ROWS - 1;
+      var nextRow = caInspectRow, nextCol = caInspectCol, handled = true;
+      if (e.key === 'ArrowUp') nextRow--;
+      else if (e.key === 'ArrowDown') nextRow++;
+      else if (e.key === 'ArrowLeft') nextCol--;
+      else if (e.key === 'ArrowRight') nextCol++;
+      else if (e.key === 'PageUp') nextRow -= 10;
+      else if (e.key === 'PageDown') nextRow += 10;
+      else if (e.key === 'Home') nextRow = 0;
+      else if (e.key === 'End') nextRow = CA_ROWS - 1;
       else handled = false;
-      if (handled) { if (e.preventDefault) e.preventDefault(); setCaInspectRow(Math.max(0, Math.min(CA_ROWS - 1, next))); }
+      if (handled) { if (e.preventDefault) e.preventDefault(); setCaInspectRow(Math.max(0, Math.min(CA_ROWS - 1, nextRow))); setCaInspectCol(Math.max(0, Math.min(CA_COLS - 1, nextCol))); }
     }
 
     // ════════════════════ SUB-RENDERERS ════════════════════
@@ -635,54 +666,92 @@
     }
 
     // Elementary CA tab
+    function renderSeedEditor() {
+      var W = CA_COLS * CA_PX, H = 24, live = customSeed.reduce(function (sum, value) { return sum + value; }, 0), cells = [h('rect', { key: 'seedBg', x: 0, y: 0, width: W, height: H, rx: 6, fill: C.dead })];
+      if (caWrap) cells.push(h('path', { key: 'seedTopology', d: 'M3 3C' + (W * 0.22) + ' -2 ' + (W * 0.78) + ' -2 ' + (W - 3) + ' 3', fill: 'none', stroke: '#c4b5fd', strokeWidth: 1.4, vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 3px rgba(196,181,253,0.85))', pointerEvents: 'none' } }));
+      else cells.push(h('path', { key: 'seedTopology', d: 'M1 2V22M' + (W - 1) + ' 2V22', stroke: '#fb7185', strokeWidth: 1.4, vectorEffect: 'non-scaling-stroke', style: { pointerEvents: 'none' } }));
+      customSeed.forEach(function (value, i) { cells.push(h('rect', { key: i, id: 'ca-seed-cell-' + i, role: 'gridcell', 'aria-label': 'Seed cell ' + (i + 1) + ', ' + (value ? 'alive' : 'empty'), 'aria-selected': seedCursor === i ? 'true' : 'false', x: i * CA_PX + 0.6, y: 3, width: CA_PX - 1.2, height: H - 6, rx: 1.2, fill: value ? '#22d3ee' : (dark ? '#111827' : '#e2e8f0'), stroke: (caWrap && (i === 0 || i === CA_COLS - 1)) ? '#c4b5fd' : value ? '#67e8f9' : 'rgba(148,163,184,0.18)', strokeWidth: (caWrap && (i === 0 || i === CA_COLS - 1)) ? 1.2 : 0.7, style: { filter: value ? 'drop-shadow(0 0 3px rgba(34,211,238,0.8))' : 'none', pointerEvents: 'none' } })); });
+      cells.push(h('rect', { key: 'seedCursor', x: seedCursor * CA_PX + 0.25, y: 1.5, width: CA_PX - 0.5, height: H - 3, rx: 1.5, fill: 'none', stroke: '#fde047', strokeWidth: 1.5, vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 4px rgba(253,224,71,0.9))', pointerEvents: 'none' } }));
+      return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px', maxWidth: '560px' } },
+        h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } }, h('span', { style: { color: C.sub, fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.07em' } }, 'Custom seed · ' + live + ' alive · ' + (caWrap ? 'wrap ring' : 'fixed edges')), h('span', { style: { color: C.sub, fontSize: '10px' } }, 'Click cells or use arrows + Space'), h('span', { style: { flex: 1 } }), btn('Clear seed', clearCustomSeed, { key: 'clearSeed', title: 'Clear all custom seed cells' })),
+        h('svg', { ref: seedSvgRef, viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'grid', tabIndex: 0, 'aria-rowcount': 1, 'aria-colcount': CA_COLS, 'aria-activedescendant': 'ca-seed-cell-' + seedCursor, 'aria-label': 'Custom initial row with ' + live + ' live cells and ' + (caWrap ? 'wrapped ring boundaries.' : 'fixed empty boundaries.') + ' Left and right arrows move the cursor. Space toggles a cell. Delete clears it.', onClick: onSeedPointer, onKeyDown: onSeedKeyDown, style: { width: '100%', maxWidth: '560px', height: 'auto', display: 'block', cursor: 'crosshair', borderRadius: '7px', border: '1px solid ' + C.border, background: C.dead } }, cells)
+      );
+    }
     function renderRuleTable() {
-      // 8 neighbourhood columns, each a mini 3-cell pattern over an output cell
-      var cells = [];
+      // 8 neighbourhood columns: output mapping, observed usage, and the mapping
+      // currently responsible for the selected space-time cell.
+      var cells = [], usageCounts = caAnalysis.neighborhoodCounts || [], usageTotal = caAnalysis.neighborhoodTotal || 0;
+      var maxUsage = Math.max.apply(Math, usageCounts.concat([1]));
       for (var i = 7; i >= 0; i--) {
         var l = (i >> 2) & 1, m = (i >> 1) & 1, rt = i & 1, out = bits[i];
-        var x = (7 - i) * 64;
-        var col = [];
+        var x = (7 - i) * 64, usage = usageCounts[i] || 0, share = usageTotal ? usage / usageTotal : 0;
+        var activeCause = !!(caCause && caCause.index === i), col = [];
+        col.push(h('rect', { key: 'heat' + i, x: x + 3, y: 2, width: 58, height: 62, rx: 6, fill: C.live2, opacity: 0.04 + share * 0.38, stroke: activeCause ? '#fde047' : 'none', strokeWidth: activeCause ? 2.2 : 0, style: { pointerEvents: 'none', filter: activeCause ? 'drop-shadow(0 0 6px rgba(253,224,71,0.9))' : 'none' } }));
         [l, m, rt].forEach(function (v, j) {
-          col.push(h('rect', { key: 'n' + i + '_' + j, x: x + 8 + j * 16, y: 6, width: 14, height: 14, rx: 2, fill: v ? C.live : C.dead, stroke: C.border, strokeWidth: 1 }));
+          col.push(h('rect', { key: 'n' + i + '_' + j, x: x + 8 + j * 16, y: 6, width: 14, height: 14, rx: 2, fill: v ? C.live : C.dead, stroke: activeCause ? '#fde047' : C.border, strokeWidth: activeCause ? 1.6 : 1 }));
         });
-        col.push(h('rect', { key: 'o' + i, x: x + 24, y: 30, width: 14, height: 14, rx: 2, fill: out ? C.live2 : C.dead, stroke: out ? C.live2 : C.border, strokeWidth: out ? 2 : 1 }));
-        col.push(h('path', { key: 'a' + i, d: 'M' + (x + 31) + ' 22V28', stroke: C.sub, strokeWidth: 1.5 }));
+        col.push(h('rect', { key: 'o' + i, x: x + 24, y: 30, width: 14, height: 14, rx: 2, fill: out ? C.live2 : C.dead, stroke: activeCause ? '#fde047' : (out ? C.live2 : C.border), strokeWidth: activeCause ? 2.2 : (out ? 2 : 1) }));
+        col.push(h('path', { key: 'a' + i, d: 'M' + (x + 31) + ' 22V28', stroke: activeCause ? '#fde047' : C.sub, strokeWidth: activeCause ? 2 : 1.5 }));
+        col.push(h('rect', { key: 'track' + i, x: x + 8, y: 49, width: 48, height: 4, rx: 2, fill: C.border, opacity: 0.48, style: { pointerEvents: 'none' } }));
+        col.push(h('rect', { key: 'evidence' + i, 'data-neighborhood-evidence': String(i), 'data-count': String(usage), x: x + 8, y: 49, width: 48 * usage / maxUsage, height: 4, rx: 2, fill: '#fbbf24', style: { pointerEvents: 'none', filter: usage ? 'drop-shadow(0 0 3px rgba(251,191,36,0.55))' : 'none' } }));
+        col.push(h('text', { key: 'pct' + i, x: x + 32, y: 63, textAnchor: 'middle', fill: activeCause ? '#fde047' : C.sub, fontSize: 8, fontWeight: 800, style: { pointerEvents: 'none' } }, (share * 100).toFixed(share >= 0.1 ? 0 : 1) + '%'));
         cells.push(h('g', {
-          key: 'col' + i, role: 'button', tabIndex: 0,
-          'aria-label': 'Neighbourhood ' + l + m + rt + ' produces ' + out + '. Activate to flip.',
+          key: 'col' + i, role: 'button', tabIndex: 0, 'data-active-cause': activeCause ? 'true' : undefined,
+          'aria-current': activeCause ? 'true' : undefined,
+          'aria-label': 'Neighbourhood ' + l + m + rt + ' produces ' + out + '. Observed ' + usage + ' times, ' + (share * 100).toFixed(1) + ' percent of transitions.' + (activeCause ? ' This mapping produced the selected cell.' : '') + ' Activate to flip.',
           onClick: (function (idx) { return function () { toggleRuleBit(idx); }; })(i),
           onKeyDown: (function (idx) { return function (e) { if (e.key === ' ' || e.key === 'Enter') { if (e.preventDefault) e.preventDefault(); toggleRuleBit(idx); } }; })(i),
           style: { cursor: 'pointer' }
         }, col));
       }
-      return h('svg', { viewBox: '0 0 512 52', width: '100%', role: 'group', 'aria-label': 'Rule table for rule ' + rule + '. Each column maps a 3-cell neighbourhood to the next cell. Click a column to flip its output.', style: { maxWidth: '520px', display: 'block' } }, cells);
+      return h('div', { style: { maxWidth: '520px' } },
+        h('svg', { viewBox: '0 0 512 68', width: '100%', role: 'group', 'aria-label': 'Rule table for rule ' + rule + ' with ' + usageTotal + ' neighborhood observations. Each column maps a 3-cell neighbourhood to the next cell. Gold bars and percentages show observed frequency. A gold outline marks the mapping responsible for the selected cell. Click a column to flip its output.', style: { display: 'block' } }, cells),
+        h('div', { style: { marginTop: '2px', color: C.sub, fontSize: '10px', fontWeight: 800, textAlign: 'center' } }, 'Neighborhood evidence | ' + usageTotal.toLocaleString() + ' observations | gold outline = selected cell cause')
+      );
     }
 
     function renderCaDiagram() {
-      var W = CA_COLS * CA_PX, H = CA_ROWS * CA_PX;
-      var rects = [h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: C.dead })];
+      var W = CA_COLS * CA_PX, H = CA_ROWS * CA_PX, selectedX = (caInspectCol + 0.5) * CA_PX, selectedY = (caInspectRow + 0.5) * CA_PX;
+      var causeText = caCause && caCause.pattern ? 'Generation ' + caInspectRow + ', column ' + (caInspectCol + 1) + ': parents ' + caCause.pattern + ' produced ' + caCause.output + '.' : 'Generation zero seed cell at column ' + (caInspectCol + 1) + ' has no parent neighborhood.';
+      var rects = [h('desc', { key: 'desc', id: 'ca-diagram-desc' }, causeText + ' Use arrow keys to inspect adjacent cells, Page Up and Page Down to jump ten generations, and Home or End to move through time.'), h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: C.dead })];
       for (var r = 0; r < caRows.length; r++) {
         if (r > 0 && r % 10 === 0) rects.push(h('line', { key: 'guide' + r, x1: 0, x2: W, y1: r * CA_PX, y2: r * CA_PX, stroke: dark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.2)', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }));
         var timeColor = contrast ? C.live : 'hsl(' + Math.round(158 + r / Math.max(1, caRows.length - 1) * 92) + ',82%,56%)';
         for (var c = 0; c < CA_COLS; c++) if (caRows[r][c]) rects.push(h('rect', { key: r + '_' + c, x: c * CA_PX, y: r * CA_PX, width: CA_PX, height: CA_PX, rx: 0.6, fill: timeColor }));
       }
-      rects.push(h('rect', { key: 'inspectRow', x: 0.7, y: caInspectRow * CA_PX + 0.7, width: W - 1.4, height: CA_PX - 1.4, fill: 'rgba(253,224,71,0.08)', stroke: '#fde047', strokeWidth: 1.5, vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 4px rgba(253,224,71,0.9))', pointerEvents: 'none' } }));
-      return h('svg', { ref: caSvgRef, viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'slider', tabIndex: 0,
-        'aria-label': 'Interactive space-time diagram for rule ' + rule, 'aria-roledescription': 'generation scanner', 'aria-orientation': 'vertical', 'aria-valuemin': 0, 'aria-valuemax': CA_ROWS - 1, 'aria-valuenow': caInspectRow,
-        'aria-valuetext': 'Generation ' + caInspectRow + ', ' + Math.round(caAnalysis.densities[caInspectRow] * CA_COLS) + ' live cells, density ' + Math.round(caAnalysis.densities[caInspectRow] * 100) + ' percent, entropy ' + caAnalysis.entropies[caInspectRow].toFixed(2) + ' bits, activity ' + Math.round(caAnalysis.activities[caInspectRow] * 100) + ' percent.',
+      if (caWrap) rects.push(h('path', { key: 'boundaryRails', d: 'M1 0V' + H + 'M' + (W - 1) + ' 0V' + H, fill: 'none', stroke: '#c4b5fd', strokeWidth: 1.5, strokeDasharray: '5 3', vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 4px rgba(196,181,253,0.75))', pointerEvents: 'none' } }));
+      else rects.push(h('path', { key: 'boundaryRails', d: 'M1 0V' + H + 'M' + (W - 1) + ' 0V' + H, fill: 'none', stroke: '#fb7185', strokeWidth: 1.3, vectorEffect: 'non-scaling-stroke', opacity: 0.75, style: { pointerEvents: 'none' } }));
+      rects.push(h('rect', { key: 'inspectRow', x: 0.7, y: caInspectRow * CA_PX + 0.7, width: W - 1.4, height: CA_PX - 1.4, fill: 'rgba(253,224,71,0.055)', stroke: 'none', style: { pointerEvents: 'none' } }));
+      if (caCause && caCause.parents.length) {
+        caCause.parents.forEach(function (parent, parentIndex) {
+          var parentX = parent.col == null ? (parentIndex === 0 ? 0 : W) : (parent.col + 0.5) * CA_PX;
+          var parentY = (caInspectRow - 0.5) * CA_PX;
+          rects.push(h('path', { key: 'causeLine' + parentIndex, d: 'M' + parentX + ' ' + parentY + ' L' + selectedX + ' ' + selectedY, fill: 'none', stroke: parent.wrapped ? '#c4b5fd' : '#67e8f9', strokeWidth: parent.wrapped ? 1.8 : 1.35, strokeDasharray: parent.wrapped ? '4 3' : undefined, vectorEffect: 'non-scaling-stroke', opacity: 0.9, style: { filter: 'drop-shadow(0 0 3px rgba(103,232,249,0.75))', pointerEvents: 'none' } }));
+          if (parent.col != null) rects.push(h('rect', { key: 'causeParent' + parentIndex, 'data-ca-parent': String(parentIndex), x: parent.col * CA_PX + 0.45, y: (caInspectRow - 1) * CA_PX + 0.45, width: CA_PX - 0.9, height: CA_PX - 0.9, rx: 1, fill: parent.value ? 'rgba(103,232,249,0.28)' : 'rgba(103,232,249,0.08)', stroke: '#67e8f9', strokeWidth: 1.5, vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 4px rgba(103,232,249,0.9))', pointerEvents: 'none' } }));
+        });
+      }
+      rects.push(h('g', { key: 'selectedCellRow', role: 'row' },
+        h('g', { id: 'ca-diagram-cell-' + caInspectRow + '-' + caInspectCol, role: 'gridcell', 'aria-selected': 'true', 'aria-label': causeText, 'data-ca-selected-row': String(caInspectRow), 'data-ca-selected-col': String(caInspectCol) },
+          h('circle', { cx: selectedX, cy: selectedY, r: CA_PX * 1.18, fill: 'rgba(253,224,71,0.12)', stroke: '#fde047', strokeWidth: 1.7, vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 6px rgba(253,224,71,0.95))', pointerEvents: 'none' } }),
+          h('rect', { x: caInspectCol * CA_PX + 0.55, y: caInspectRow * CA_PX + 0.55, width: CA_PX - 1.1, height: CA_PX - 1.1, rx: 1, fill: caCause && caCause.output ? 'rgba(253,224,71,0.38)' : 'rgba(253,224,71,0.08)', stroke: '#fde047', strokeWidth: 1.6, vectorEffect: 'non-scaling-stroke', style: { pointerEvents: 'none' } })
+        )
+      ));
+      return h('svg', { ref: caSvgRef, viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'grid', tabIndex: 0,
+        'aria-label': 'Interactive space-time causal inspector for rule ' + rule + ' with ' + (caWrap ? 'wrapped ring boundaries' : 'fixed empty boundaries') + '. Click a cell or use arrow keys to move.',
+        'aria-describedby': 'ca-diagram-desc', 'aria-rowcount': CA_ROWS, 'aria-colcount': CA_COLS, 'aria-activedescendant': 'ca-diagram-cell-' + caInspectRow + '-' + caInspectCol,
         onClick: inspectCaFromEvent, onKeyDown: onCaDiagramKeyDown,
         style: { maxWidth: '560px', width: '100%', height: 'auto', borderRadius: '10px', border: '1px solid ' + C.border, display: 'block', background: C.dead, boxShadow: '0 18px 42px rgba(2,6,23,0.22)', cursor: 'crosshair' } }, rects);
     }
-
     function renderCaAnalysis() {
       var W = 520, H = 92, px = 10, top = 7, bottom = 17, n = caAnalysis.densities.length;
       var x = function (i) { return px + i / Math.max(1, n - 1) * (W - px * 2); }, y = function (v) { return top + (1 - v) * (H - top - bottom); };
       var points = function (values) { return values.map(function (v, i) { return x(i).toFixed(1) + ',' + y(v).toFixed(1); }).join(' '); };
       var selectedDensity = caAnalysis.densities[caInspectRow] || 0, selectedEntropy = caAnalysis.entropies[caInspectRow] || 0, selectedActivity = caAnalysis.activities[caInspectRow] || 0, selectedLive = Math.round(selectedDensity * CA_COLS);
       var legend = [{ key:'density', label:'Density', value:Math.round(selectedDensity * 100) + '%', color:'#22d3ee' }, { key:'entropy', label:'Entropy', value:selectedEntropy.toFixed(2) + ' bits', color:'#a78bfa' }, { key:'activity', label:'Activity', value:Math.round(selectedActivity * 100) + '%', color:'#fbbf24' }];
+      var causeSummary = caCause && caCause.pattern ? 'Cell ' + (caInspectCol + 1) + ': ' + caCause.pattern + ' -> ' + caCause.output + ' via rule mapping ' + caCause.index : 'Cell ' + (caInspectCol + 1) + ': seed value ' + (caCause ? caCause.output : 0) + ' (no parents)';
       return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px', maxWidth: '560px' } },
-        h('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' } }, h('span', { style: { color: C.sub, fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em' } }, 'Generation ' + caInspectRow + ' · ' + selectedLive + ' live'), legend.map(function (item) { return h('span', { key: item.key, style: { display: 'inline-flex', alignItems: 'center', gap: '4px', color: C.text, fontSize: '10px', fontWeight: 800 } }, h('span', { 'aria-hidden': 'true', style: { width: item.key === 'entropy' ? '7px' : '10px', height: item.key === 'activity' ? '7px' : '3px', transform: item.key === 'activity' ? 'rotate(45deg)' : 'none', borderRadius: item.key === 'density' ? '999px' : '1px', background: item.color } }), item.label + ' ' + item.value); })),
-        h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': 'Rule ' + rule + ' signal profile across ' + n + ' generations. Selected generation ' + caInspectRow + ': density ' + Math.round(selectedDensity * 100) + ' percent, entropy ' + selectedEntropy.toFixed(2) + ' bits per cell, activity ' + Math.round(selectedActivity * 100) + ' percent. Mean entropy across all generations ' + caAnalysis.meanEntropy.toFixed(2) + ' bits.', style: { width: '100%', height: H + 'px', display: 'block' } },
+        h('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' } }, h('span', { style: { color: C.sub, fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em' } }, 'Generation ' + caInspectRow + ' | ' + selectedLive + ' live'), h('span', { 'data-ca-cause-detail': 'true', style: { color: dark ? '#fde68a' : '#92400e', fontSize: '10px', fontWeight: 900 } }, causeSummary), legend.map(function (item) { return h('span', { key: item.key, style: { display: 'inline-flex', alignItems: 'center', gap: '4px', color: C.text, fontSize: '10px', fontWeight: 800 } }, h('span', { 'aria-hidden': 'true', style: { width: item.key === 'entropy' ? '7px' : '10px', height: item.key === 'activity' ? '7px' : '3px', transform: item.key === 'activity' ? 'rotate(45deg)' : 'none', borderRadius: item.key === 'density' ? '999px' : '1px', background: item.color } }), item.label + ' ' + item.value); })),
+        h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': 'Rule ' + rule + ' signal profile with ' + (caWrap ? 'wrapped ring boundaries' : 'fixed empty boundaries') + ' across ' + n + ' generations. Selected generation ' + caInspectRow + ': density ' + Math.round(selectedDensity * 100) + ' percent, entropy ' + selectedEntropy.toFixed(2) + ' bits per cell, activity ' + Math.round(selectedActivity * 100) + ' percent. Mean entropy across all generations ' + caAnalysis.meanEntropy.toFixed(2) + ' bits.', style: { width: '100%', height: H + 'px', display: 'block' } },
           [0,0.5,1].map(function (level) { return h('line', { key: level, x1: px, x2: W - px, y1: y(level), y2: y(level), stroke: dark ? 'rgba(148,163,184,0.18)' : 'rgba(100,116,139,0.2)', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }); }),
           h('line', { x1: x(caInspectRow), x2: x(caInspectRow), y1: top, y2: H - bottom, stroke: '#fde047', strokeWidth: 1.3, vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 3px rgba(253,224,71,0.8))' } }),
           h('polyline', { points: points(caAnalysis.densities), fill: 'none', stroke: '#22d3ee', strokeWidth: 2.1, vectorEffect: 'non-scaling-stroke' }),
@@ -700,21 +769,25 @@
     function renderRulesTab() {
       return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
         h('p', { style: { margin: 0, fontSize: '12px', color: C.sub, lineHeight: 1.5 } },
-          'A 1-D world: every cell looks at itself and its two neighbours, then a rule decides if it lives next. There are exactly 256 such rules.'),
+          'A 1-D world: every cell looks at itself and its two neighbours, then a rule decides if it lives next. There are exactly 256 rules; fixed edges and wrapped-ring boundaries reveal different edge behavior. Select any result cell to trace its three parents and exact rule mapping.'),
         h('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' } },
           h('label', { style: { fontSize: '13px', fontWeight: 800, color: C.text, display: 'flex', alignItems: 'center', gap: '8px' } },
             'Rule',
             h('input', { type: 'number', min: 0, max: 255, value: rule, 'aria-label': 'Wolfram rule number 0 to 255',
               onChange: function (e) { setRuleSafe(e.target.value); },
               style: { width: '74px', padding: '6px 8px', borderRadius: '8px', border: '1px solid ' + C.border, background: C.panel, color: C.text, fontSize: '15px', fontWeight: 800 } })),
-          btn(caSeed === 'single' ? '● Single seed' : '▦ Random seed', function () { setCaSeed(function (s) { return s === 'single' ? 'random' : 'single'; }); }, { title: 'Toggle the starting row' }),
+          btn('Single seed', function () { setCaSeed('single'); }, { pressed: caSeed === 'single', key: 'singleSeed' }),
+          btn('Random seed', function () { setCaSeed('random'); }, { pressed: caSeed === 'random', key: 'randomSeed' }),
+          btn('Custom seed', function () { setCaSeed('custom'); }, { pressed: caSeed === 'custom', key: 'customSeed' }),
+          btn(caWrap ? 'Wrap ring' : 'Fixed edges', function () { setCaWrap(function (value) { return !value; }); }, { pressed: caWrap, key: 'caBoundary', title: caWrap ? 'Join the first and last cells' : 'Cells beyond each edge stay empty' }),
           h('div', { style: { fontSize: '12px', color: C.sub } }, 'binary ', h('code', { style: { color: C.text, fontWeight: 800 } }, ('00000000' + rule.toString(2)).slice(-8)))
         ),
+        caSeed === 'custom' && renderSeedEditor(),
         renderRuleTable(),
         renderCaDiagram(),
         renderCaAnalysis(),
         h('div', { style: { fontSize: '11px', color: C.sub, marginTop: '-4px', textAlign: 'center' } },
-          'Rule ' + rule + ' · ' + CA_ROWS + ' generations · click a row or use arrow keys to inspect time'),
+          'Rule ' + rule + ' · ' + CA_ROWS + ' generations · ' + (caWrap ? 'wrapped ring' : 'fixed edges') + ' · click any cell | arrow keys move | Page Up/Down jumps through time'),
         h('div', null,
           h('div', { style: { fontSize: '12px', color: C.sub, fontWeight: 700, marginBottom: '6px' } }, 'Try a famous rule:'),
           h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
@@ -888,7 +961,8 @@
   function buildCaRows(rule, seed, rows, cols, wrap) {
     var bits = ruleToBits(rule);
     var first = [];
-    for (var c = 0; c < cols; c++) {
+    if (Array.isArray(seed)) { for (var ci = 0; ci < cols; ci++) first.push(seed[ci] ? 1 : 0); }
+    else for (var c = 0; c < cols; c++) {
       if (seed === 'single') first.push(c === Math.floor(cols / 2) ? 1 : 0);
       else first.push(pseudo(c * 7.13 + rule * 0.7) < 0.5 ? 1 : 0);
     }
@@ -896,23 +970,44 @@
     for (var r = 1; r < rows; r++) out.push(stepRuleRow(out[r - 1], bits, !!wrap));
     return out;
   }
-  function analyzeCaRows(rows) {
-    var densities = [], entropies = [], activities = [];
-    (rows || []).forEach(function (row) {
+  function caCellCause(rows, rowIndex, colIndex, wrap) {
+    rows = rows || [];
+    if (!rows.length || rowIndex < 0 || rowIndex >= rows.length || colIndex < 0 || colIndex >= rows[rowIndex].length) return null;
+    var cause = { row: rowIndex, col: colIndex, output: rows[rowIndex][colIndex] ? 1 : 0, index: null, pattern: null, parents: [] };
+    if (rowIndex === 0) return cause;
+    var parentRow = rows[rowIndex - 1], cols = parentRow.length;
+    [-1,0,1].forEach(function (offset) {
+      var rawCol = colIndex + offset, actualCol = rawCol;
+      if (wrap) actualCol = (rawCol + cols) % cols;
+      else if (rawCol < 0 || rawCol >= cols) actualCol = null;
+      cause.parents.push({ col: actualCol, value: actualCol == null ? 0 : (parentRow[actualCol] ? 1 : 0), outside: actualCol == null, wrapped: !!wrap && actualCol !== rawCol });
+    });
+    cause.index = (cause.parents[0].value << 2) | (cause.parents[1].value << 1) | cause.parents[2].value;
+    cause.pattern = '' + cause.parents[0].value + cause.parents[1].value + cause.parents[2].value;
+    return cause;
+  }
+  function analyzeCaRows(rows, wrap) {
+    var densities = [], entropies = [], activities = [], neighborhoodCounts = [0,0,0,0,0,0,0,0];
+    (rows || []).forEach(function (row, rowIndex) {
       var live = 0, changes = 0; for (var i = 0; i < row.length; i++) { live += row[i]; if (i > 0 && row[i] !== row[i - 1]) changes++; }
       var p = row.length ? live / row.length : 0;
       densities.push(p);
       entropies.push(p <= 0 || p >= 1 ? 0 : -(p * Math.log(p) / Math.log(2) + (1 - p) * Math.log(1 - p) / Math.log(2)));
       activities.push(row.length > 1 ? changes / (row.length - 1) : 0);
+      if (rowIndex < rows.length - 1) for (var c = 0; c < row.length; c++) {
+        var left = wrap ? row[(c - 1 + row.length) % row.length] : (c > 0 ? row[c - 1] : 0);
+        var right = wrap ? row[(c + 1) % row.length] : (c < row.length - 1 ? row[c + 1] : 0);
+        neighborhoodCounts[(left << 2) | (row[c] << 1) | right]++;
+      }
     });
     var mean = function (values) { return values.length ? values.reduce(function (sum, value) { return sum + value; }, 0) / values.length : 0; };
-    return { densities: densities, entropies: entropies, activities: activities, finalDensity: densities.length ? densities[densities.length - 1] : 0, meanDensity: mean(densities), meanEntropy: mean(entropies), meanActivity: mean(activities) };
+    return { densities: densities, entropies: entropies, activities: activities, neighborhoodCounts: neighborhoodCounts, neighborhoodTotal: neighborhoodCounts.reduce(function (sum, count) { return sum + count; }, 0), finalDensity: densities.length ? densities[densities.length - 1] : 0, meanDensity: mean(densities), meanEntropy: mean(entropies), meanActivity: mean(activities) };
   }
 
   // ═══════════════════════════════════════════════════════════════════════
   //  REGISTER
   // ═══════════════════════════════════════════════════════════════════════
-  window.__alloCellularPure = { emptyGrid: emptyGrid, randomGrid: randomGrid, countPop: countPop, populationBounds: populationBounds, shapeFingerprint: shapeFingerprint, detectDynamics: detectDynamics, neighborCount: neighborCount, stepLife: stepLife, stepLifeDetailed: stepLifeDetailed, parseLifeRule: parseLifeRule, gridSignature: gridSignature, stampPattern: stampPattern, ruleToBits: ruleToBits, bitsToRule: bitsToRule, stepRuleRow: stepRuleRow, buildCaRows: buildCaRows, analyzeCaRows: analyzeCaRows, patterns: LIFE_PATTERNS };
+  window.__alloCellularPure = { emptyGrid: emptyGrid, randomGrid: randomGrid, countPop: countPop, populationBounds: populationBounds, shapeFingerprint: shapeFingerprint, detectDynamics: detectDynamics, neighborCount: neighborCount, stepLife: stepLife, stepLifeDetailed: stepLifeDetailed, parseLifeRule: parseLifeRule, gridSignature: gridSignature, stampPattern: stampPattern, ruleToBits: ruleToBits, bitsToRule: bitsToRule, stepRuleRow: stepRuleRow, buildCaRows: buildCaRows, caCellCause: caCellCause, analyzeCaRows: analyzeCaRows, patterns: LIFE_PATTERNS };
 
   window.StemLab.registerTool('cellularLab', {
     icon: '🧫',

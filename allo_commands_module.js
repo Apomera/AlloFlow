@@ -1018,13 +1018,13 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
   const t = _mkT((getCtx() || {}).t);
   const list = (Array.isArray(steps) ? steps : []).slice(0, 6);
   const results = [];
-  if (!list.length) return { ok: false, failedStep: 0, results, reason: t("plan.empty", "There were no steps to run.") };
+  if (!list.length) return { ok: false, failedStep: 0, results, remainingSteps: [], reason: t("plan.empty", "There were no steps to run.") };
   for (let i = 0; i < list.length; i++) {
-    if (opts.shouldStop && opts.shouldStop()) return { ok: false, stopped: true, failedStep: i, results, reason: t("plan.stopped", "Stopped before step ") + (i + 1) + "." };
+    if (opts.shouldStop && opts.shouldStop()) return { ok: false, stopped: true, failedStep: i, results, remainingSteps: list.slice(i), reason: t("plan.stopped", "Stopped before step ") + (i + 1) + "." };
     const s = list[i] || {};
     const ctx = getCtx();
     const cmd = buildAlloCommands(ctx).find((c) => c.id === s.commandId);
-    if (!cmd) return { ok: false, failedStep: i, results, reason: t("plan.unavailable", "Step ") + (i + 1) + " (" + (s.commandId || "?") + ")" + t("plan.unavailable2", " isn\u2019t available right now \u2014 it may need something an earlier step didn\u2019t produce.") };
+    if (!cmd) return { ok: false, failedStep: i, results, remainingSteps: list.slice(i), reason: t("plan.unavailable", "Step ") + (i + 1) + " (" + (s.commandId || "?") + ")" + t("plan.unavailable2", " isn\u2019t available right now \u2014 it may need something an earlier step didn\u2019t produce.") };
     if (cmd.destructive) {
       let allowed = false;
       if (typeof opts.confirmDestructive === "function") {
@@ -1034,7 +1034,7 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
           allowed = false;
         }
       }
-      if (!allowed) return { ok: false, failedStep: i, results, reason: (cmd.label || s.commandId) + t("plan.needs_confirm", " needs its own confirmation \u2014 run it from the Ctrl+K menu.") };
+      if (!allowed) return { ok: false, failedStep: i, results, remainingSteps: list.slice(i), reason: (cmd.label || s.commandId) + t("plan.needs_confirm", " needs its own confirmation \u2014 run it from the Ctrl+K menu.") };
     }
     if (typeof opts.onStep === "function") {
       try {
@@ -1049,8 +1049,8 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
       r = { handled: false, narration: e && e.message || "unknown" };
     }
     results.push(r);
-    if (!r || !r.handled || r.ok === false) return { ok: false, failedStep: i, results, reason: r && r.narration || t("plan.step_failed", "That step didn\u2019t work.") };
-    if (r.timedOut) return { ok: false, timedOut: true, failedStep: i, results, reason: (cmd.label || s.commandId) + t("plan.step_timeout", " is taking a while and is still working in the background. I\u2019ve held the remaining steps \u2014 once it finishes, ask me again for the rest.") };
+    if (!r || !r.handled || r.ok === false) return { ok: false, failedStep: i, results, remainingSteps: list.slice(i), reason: r && r.narration || t("plan.step_failed", "That step didn\u2019t work.") };
+    if (r.timedOut) return { ok: false, timedOut: true, failedStep: i, results, remainingSteps: list.slice(i + 1), reason: (cmd.label || s.commandId) + t("plan.step_timeout", " is taking a while and is still working in the background. I\u2019ve held the remaining steps \u2014 once it finishes, ask me again for the rest.") };
     if (typeof opts.onStep === "function") {
       try {
         opts.onStep(i, "done", cmd, r.narration);
@@ -1058,7 +1058,7 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
       }
     }
   }
-  return { ok: true, results };
+  return { ok: true, results, remainingSteps: [] };
 }
 function createVoiceLoop(getCtx) {
   let rec = null, active = false, errStreak = 0;

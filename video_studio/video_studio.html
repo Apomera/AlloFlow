@@ -367,6 +367,7 @@
         <button class="quiet" id="demoScriptCopyBtn" disabled>Copy script</button>
         <button class="quiet" id="demoPacingFitBtn" disabled title="Increase result holds to fit the estimated spoken narration time.">Fit pacing to narration</button>
         <button class="quiet" id="demoRepairBtn" hidden title="Ask the planner for a new safe sequence using the current AlloFlow state.">Repair plan from current state</button>
+        <button class="quiet" id="demoContinueBtn" hidden title="Load only the unfinished steps and check them again before recording a separate continuation take.">Continue unfinished steps</button>
         <button class="quiet" id="demoPlanResetBtn" hidden>Reset step order</button>
         <button class="quiet" id="demoDraftClearBtn" hidden>Forget saved draft</button>
       </div>
@@ -414,6 +415,7 @@
           <option value="family">Family/share version</option>
         </select>
         <label><input type="checkbox" id="editorShowAll"> Show all</label>
+        <button class="action" id="demoContinueEditBtn" hidden title="Load the unfinished steps in Record and check them again before recording a separate continuation take.">Continue unfinished steps</button>
       </div>
     </div>
     <div class="grid2">
@@ -686,6 +688,7 @@
           <div class="status" id="aiNarrStatus"></div>
           <div id="demoQualityCard" hidden style="border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:10px" aria-live="polite">
             <div class="row" style="justify-content:space-between"><strong>Demo quality report</strong><button class="quiet" id="demoQualityRerunBtn">Run checks again</button></div>
+
             <div class="status" id="demoQualityStatus"></div>
             <div id="demoQualityList" class="scene-readiness"></div>
           </div>
@@ -3591,6 +3594,26 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return { ok: blockingCount === 0, blockingCount: blockingCount, warningCount: warningCount, items: items };
   }
 
+  // Build an exact continuation after a confirmed partial run. A timed-out
+  // step is excluded because it is still running in AlloFlow's background;
+  // ordinary failures/stops keep the first unfinished step for a safe retry.
+  function vsDemoContinuationPlan(steps, response) {
+    var list = (Array.isArray(steps) ? steps : []).slice(0, 8);
+    var r = response || {};
+    var rawCompleted = Number(r.completed);
+    var completed = isFinite(rawCompleted) ? Math.floor(rawCompleted) : 0;
+    completed = Math.max(0, Math.min(list.length, completed));
+    if (r.ok) completed = list.length;
+    var nextIndex = completed;
+    if (r.timedOut && nextIndex < list.length) nextIndex += 1;
+    return {
+      completed: completed,
+      nextIndex: nextIndex,
+      total: list.length,
+      timedOut: !!r.timedOut,
+      remainingSteps: list.slice(nextIndex)
+    };
+  }
   function vsAnalyzeDemoTakeQuality(take) {
     var t = take || {};
     var captions = Array.isArray(t.captions) ? t.captions : [];
@@ -10412,7 +10435,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // bridge stamped with the recording clock and become caption cues.
   var DEMO_DRAFT_KEY = 'vs_demo_draft_v1';
   var DEMO_DRAFT_MAX_AGE = 12 * 60 * 60 * 1000;
-  var demoState = { steps: null, originalSteps: null, activeSteps: [], active: false, events: [], running: false, rehearsing: false, abandoned: false, voice: '', previousMicOn: null, officialId: null, preflightOk: false, commandReport: null, preflightVersion: 0, restoringDraft: false };
+  var demoState = { steps: null, originalSteps: null, activeSteps: [], active: false, events: [], running: false, rehearsing: false, abandoned: false, voice: '', previousMicOn: null, officialId: null, preflightOk: false, commandReport: null, preflightVersion: 0, restoringDraft: false, continuation: null };
   function cleanDemoResultHold(value) {
     if (value == null || value === '') return 2.2;
     var seconds = Number(value);
@@ -10496,6 +10519,50 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     try { sessionStorage.removeItem(DEMO_DRAFT_KEY); } catch (_) {}
     $('demoDraftClearBtn').hidden = true;
     if (showMessage) setStatus($('demoStatus'), 'Saved demo draft forgotten. The current on-screen plan is unchanged.', 'ok');
+  }
+  var demoContinuationEnableTimer = null;
+  function demoContinuationButtons() {
+    return ['demoContinueBtn', 'demoContinueEditBtn'].map(function (id) { return $(id); }).filter(Boolean);
+  }
+  function clearDemoContinuation() {
+    demoState.continuation = null;
+    if (demoContinuationEnableTimer) clearTimeout(demoContinuationEnableTimer);
+    demoContinuationEnableTimer = null;
+    demoContinuationButtons().forEach(function (btn) {
+      btn.hidden = true;
+      btn.disabled = false;
+      btn.textContent = 'Continue unfinished steps';
+    });
+  }
+  function enableDemoContinuationWhenReady() {
+    if (demoContinuationEnableTimer) clearTimeout(demoContinuationEnableTimer);
+    demoContinuationEnableTimer = null;
+    var buttons = demoContinuationButtons().filter(function (btn) { return !btn.hidden; });
+    if (!buttons.length) return;
+    var busy = !!demoState.running || !!(rec && rec.state !== 'inactive');
+    buttons.forEach(function (btn) { btn.disabled = busy; });
+    if (busy) demoContinuationEnableTimer = setTimeout(enableDemoContinuationWhenReady, 250);
+  }
+  function offerDemoContinuation(steps, response) {
+    var plan = vsDemoContinuationPlan(steps, response);
+    clearDemoContinuation();
+    // A timeout means one command still owns the app in the background. Keep
+    // the later-step count visible in status, but do not expose a control that
+    // could start another plan before that command has actually released it.
+    if (!plan.remainingSteps.length || plan.timedOut) return plan;
+    demoState.continuation = {
+      steps: plan.remainingSteps.map(cleanDemoDraftStep),
+      completed: plan.completed,
+      total: plan.total
+    };
+    var count = plan.remainingSteps.length;
+    demoContinuationButtons().forEach(function (btn) {
+      btn.textContent = 'Continue ' + count + ' unfinished step' + (count === 1 ? '' : 's');
+      btn.disabled = true;
+      btn.hidden = false;
+    });
+    enableDemoContinuationWhenReady();
+    return plan;
   }
   function restoreDemoDraft() {
     var data = null;
@@ -10966,6 +11033,19 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     setStatus($('demoStatus'), 'Replanning from the current AlloFlow state…');
     $('demoPlanBtn').click();
   });
+  function loadDemoContinuation() {
+    if (demoState.running || (rec && rec.state !== 'inactive') || !demoState.continuation || !demoState.continuation.steps.length) return;
+    var pending = demoState.continuation;
+    clearDemoContinuation();
+    demoState.steps = pending.steps.map(prepareDemoStep);
+    demoState.originalSteps = pending.steps.map(cleanDemoDraftStep);
+    renderDemoPlan();
+    showTab('tabRecord');
+    setStatus($('demoStatus'), pending.steps.length + ' unfinished step' + (pending.steps.length === 1 ? '' : 's') + ' loaded as a separate continuation take. Readiness is being checked again before anything runs.', 'ok');
+    announce('Unfinished demo steps loaded for a continuation take');
+    setTimeout(function () { $('demoPreflightBtn').focus(); }, 0);
+  }
+  ['demoContinueBtn', 'demoContinueEditBtn'].forEach(function (id) { $(id).addEventListener('click', loadDemoContinuation); });
   $('demoGoal').addEventListener('change', saveDemoDraft);
   $('demoGoal').addEventListener('keydown', function (e) {
     if (e.key !== 'Enter' || (!e.ctrlKey && !e.metaKey) || e.shiftKey || e.altKey) return;
@@ -10986,6 +11066,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       } else if (!resp.steps || !resp.steps.length) {
         setStatus($('demoStatus'), 'Gemini couldn’t map that goal to a safe, runnable command sequence. Describe concrete visible actions — for example “open the Educator Hub, then open the Document Builder”.', 'warn');
       } else {
+        clearDemoContinuation();
         demoState.officialId = null;
         demoState.steps = resp.steps.map(function (step) { return prepareDemoStep(Object.assign({}, step, { _included: true })); });
         demoState.originalSteps = demoState.steps.map(function (step) { return Object.assign({}, step); });
@@ -11006,6 +11087,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var resp = await bridgeRequest('allostudio-official-tutorial-request', { tutorialId: 'text-adaptation' }, 30000);
       if (resp.error) throw new Error(resp.error);
       if (!resp.steps || !resp.steps.length) throw new Error('The tutorial manifest was empty.');
+      clearDemoContinuation();
       demoState.officialId = 'text-adaptation';
       demoState.steps = resp.steps.map(function (step) { return prepareDemoStep(Object.assign({}, step, { _included: true })); });
       demoState.originalSteps = demoState.steps.map(function (step) { return Object.assign({}, step); });
@@ -11053,6 +11135,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (demoState.running) return;
     var preflight = await runDemoPreflight();
     if (!preflight.ok) { setStatus($('demoStatus'), 'Recording is blocked until preflight passes.', 'bad'); return; }
+    clearDemoContinuation();
     srcMode = 'screen'; syncSrcButtons();
     var audioMode = $('demoAudioMode').value || 'auto-Kore';
     demoState.previousMicOn = micOn;
@@ -11101,9 +11184,22 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var resp = await bridgeRequest(runRequestType, { steps: steps, tutorialId: demoState.officialId || null }, 1800000);
       clearInterval(aliveTimer);
       if (demoState.abandoned) { demoState.abandoned = false; return; }
-      if (resp.error) setStatus($('demoStatus'), 'Demo problem: ' + resp.error + ' — the recording is still yours; stop it when you’re ready.', 'warn');
-      else if (resp.ok) setStatus($('demoStatus'), 'Demo finished (' + (resp.completed != null ? resp.completed : steps.length) + ' steps).' + ((rec && rec.state !== 'inactive') ? ' Stopping the recording…' : ''), 'ok');
-      else setStatus($('demoStatus'), 'Demo stopped early' + (resp.reason ? ': ' + resp.reason : '') + '. Captions cover the steps that ran.', 'warn');
+      if (resp.error) {
+        clearDemoContinuation();
+        setStatus($('demoStatus'), 'Demo problem: ' + resp.error + ' - the recording is still yours; stop it when you are ready.', 'warn');
+      } else if (resp.ok) {
+        clearDemoContinuation();
+        setStatus($('demoStatus'), 'Demo finished (' + (resp.completed != null ? resp.completed : steps.length) + ' steps).' + ((rec && rec.state !== 'inactive') ? ' Stopping the recording...' : ''), 'ok');
+      } else {
+        var continuation = offerDemoContinuation(steps, resp);
+        var continuationNote = '';
+        if (continuation.remainingSteps.length) {
+          continuationNote = continuation.timedOut
+            ? ' ' + continuation.remainingSteps.length + ' later step' + (continuation.remainingSteps.length === 1 ? ' is' : 's are') + ' held. Wait for the background command to finish before planning another take.'
+            : ' Use Continue unfinished steps to load the exact remaining sequence as a separate take; readiness will run again first.';
+        }
+        setStatus($('demoStatus'), 'Demo stopped early' + (resp.reason ? ': ' + resp.reason : '') + '. Captions cover the steps that ran.' + continuationNote, 'warn');
+      }
       setTimeout(function () { if (rec && rec.state !== 'inactive') stopRecording(); }, 1600);
     } catch (e) {
       setStatus($('demoStatus'), 'Demo problem: ' + String((e && e.message) || e).slice(0, 140) + ' — stop the recording manually if it is still running.', 'warn');
@@ -11114,6 +11210,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       $('demoStartBtn').disabled = !hasPlan;
       $('demoRehearseBtn').disabled = !hasPlan;
       $('demoPreflightBtn').disabled = !hasPlan;
+      enableDemoContinuationWhenReady();
       demoState.preflightOk = false;
     }
   });

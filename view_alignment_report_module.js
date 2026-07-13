@@ -33,8 +33,8 @@ var AlertCircle = _lazyIcon('AlertCircle');
 var Sparkles = _lazyIcon('Sparkles');
 
 // ─── Plan O: Comprehensive section renderers ───────────────────────────
-// Each dimension (vocabulary, engagement, accessibility, udl, content
-// accuracy) renders as a card with status + body content.
+// Each curriculum-readiness dimension renders as a card with a status and
+// supporting evidence, recommendations, or an explicit incomplete state.
 function statusBadgeClass(status) {
   if (status === 'Aligned' || status === 'Pass') return 'bg-green-100 text-green-700';
   if (status === 'Not Aligned' || status === 'Revise') return 'bg-red-100 text-red-700';
@@ -60,7 +60,7 @@ function ComprehensiveSection(p) {
 }
 
 // ─── StandardsSection ─────────────────────────────────────────────────
-// Plan R+: Standards alignment is now the 6th comprehensive dimension.
+// Standards alignment participates in the shared readiness model.
 // Renders the per-standard summary header + the existing per-report cards
 // inside the same ComprehensiveSection framework as the others.
 function StandardsSection(p) {
@@ -1072,25 +1072,38 @@ function ReadinessScoreCard(p) {
     }
   }, " // Polish #2: Score circle removed — already rendered in the executive summary banner // above. This card now functions as the per-dimension chip strip + blocking-issues // detail panel that didn't fit in the summary banner.", /*#__PURE__*/React.createElement("div", {
     className: "min-w-0"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", {
     className: "text-xs font-bold uppercase tracking-wider mb-3",
     style: {
       color: textColor
     }
-  }, "Per-Dimension Breakdown"), " // Per-dimension status chips", /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap gap-2"
+  }, "Per-Dimension Breakdown"), " // Per-dimension status links", /*#__PURE__*/React.createElement("nav", {
+    "aria-label": "Audit dimension results"
+  }, /*#__PURE__*/React.createElement("ul", {
+    className: "flex flex-wrap gap-2 list-none p-0 m-0"
   }, ALL_DIMENSIONS_FOR_RENDER.map(function (dim) {
-    var dimData = (o.dimensionScores || {})[dim];
-    if (!dimData) return null;
-    var pct = typeof dimScores[dim] === 'number' ? dimScores[dim] + '%' : '—';
-    var chipColor = dimData.status === 'Aligned' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : dimData.status === 'Not Aligned' ? 'bg-rose-100 text-rose-800 border-rose-300' : dimData.status === 'Partially Aligned' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-slate-100 text-slate-800 border-slate-300';
-    return /*#__PURE__*/React.createElement("div", {
-      key: dim,
-      className: 'flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full border ' + chipColor
-    }, /*#__PURE__*/React.createElement("span", null, dimLabels[dim] || dim), /*#__PURE__*/React.createElement("span", {
+    var dimData = (o.dimensionScores || {})[dim] || {};
+    var pctValue = typeof dimScores[dim] === 'number' ? dimScores[dim] : null;
+    var pct = pctValue !== null ? pctValue + '%' : null;
+    // Older saved audits may not include dimensionScores. Preserve all nine
+    // navigation targets and infer only what their recorded percentage proves.
+    var status = dimData.status || (dimData.computeFailed ? 'Compute failed' : dimData.notApplicable ? 'Not applicable' : dimData.notEvaluated ? 'Not evaluated' : pctValue === 100 ? 'Aligned' : pctValue === 0 ? 'Not Aligned' : pctValue !== null ? 'Partially Aligned' : 'Not evaluated');
+    var label = dimLabels[dim] || dim;
+    var chipColor = status === 'Aligned' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : status === 'Not Aligned' ? 'bg-rose-100 text-rose-800 border-rose-300' : status === 'Partially Aligned' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-slate-100 text-slate-800 border-slate-300';
+    return /*#__PURE__*/React.createElement("li", {
+      key: dim
+    }, /*#__PURE__*/React.createElement("a", {
+      href: '#audit-' + dim,
+      "aria-label": label + ': ' + status + (pct ? ', ' + pct : ''),
+      className: 'flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full border no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ' + chipColor
+    }, /*#__PURE__*/React.createElement("span", null, label), /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "·"), /*#__PURE__*/React.createElement("span", null, status), pct && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "·"), /*#__PURE__*/React.createElement("span", {
       className: "font-bold"
-    }, pct));
-  })), o.blockingIssues && o.blockingIssues.length > 0 && /*#__PURE__*/React.createElement("div", {
+    }, pct))));
+  }))), o.blockingIssues && o.blockingIssues.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 p-2 bg-white border border-rose-300 rounded text-xs"
   }, /*#__PURE__*/React.createElement("div", {
     className: "font-bold text-rose-900 mb-1"
@@ -1114,19 +1127,22 @@ function ReadinessScoreCard(p) {
     }, /*#__PURE__*/React.createElement("span", {
       className: "font-semibold"
     }, b.dimension + ': '), b.issue);
-  })))), o.notes && /*#__PURE__*/React.createElement("div", {
-    className: "mt-3 text-[11px] italic",
-    style: {
-      color: textColor
-    }
-  }, o.notes));
+  })))), (o.scoreBasis || o.notes) && /*#__PURE__*/React.createElement("details", {
+    className: "mt-3 p-2 bg-white border border-slate-300 rounded text-xs text-slate-800"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "cursor-pointer font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 rounded"
+  }, "How scoring works"), o.scoreBasis && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2"
+  }, o.scoreBasis), o.notes && /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 italic"
+  }, o.notes)));
 }
 var ALL_DIMENSIONS_FOR_RENDER = ['standards', 'vocabulary', 'engagement', 'accessibility', 'udl', 'accuracy', 'differentiation', 'cognitiveLoad', 'culturalResponsiveness'];
 
 // ─── ExecutiveSummary helpers ─────────────────────────────────────────
 // Pull and rank the top recommendations across all dimensions so a teacher
 // sees "what to fix" at the top of the report without scrolling through
-// five separate dimension cards.
+// nine separate dimension cards.
 function extractTopRecommendations(comprehensive, n) {
   var all = [];
   if (!comprehensive) return all;
@@ -1252,7 +1268,15 @@ function extractTopRecommendations(comprehensive, n) {
   all.sort(function (a, b) {
     return a.priority - b.priority;
   });
-  return all.slice(0, typeof n === 'number' ? n : 4);
+  var seenRecommendations = new Set();
+  var uniqueRecommendations = all.filter(function (item) {
+    var normalizedText = String(item.text || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    var key = String(item.dimensionKey || item.dimension || '') + '|' + normalizedText;
+    if (!normalizedText || seenRecommendations.has(key)) return false;
+    seenRecommendations.add(key);
+    return true;
+  });
+  return uniqueRecommendations.slice(0, typeof n === 'number' ? n : 4);
 }
 function ExecutiveSummary(p) {
   var c = p.comp;
@@ -1261,6 +1285,14 @@ function ExecutiveSummary(p) {
   };
   var standardsReportCount = p.standardsReportCount || 0;
   var onApplyFixes = p.onApplyFixes;
+  var generatedAt = c && c.auditMetadata && c.auditMetadata.generatedAt;
+  var generatedDateLabel = null;
+  if (generatedAt) {
+    var generatedDate = new Date(generatedAt);
+    if (!isNaN(generatedDate.getTime())) {
+      generatedDateLabel = generatedDate.toLocaleString();
+    }
+  }
   if (!c) return null;
   var overall = c.overall || {};
   var certifiedScore = typeof overall.score === 'number' ? overall.score : null;
@@ -1367,7 +1399,7 @@ function ExecutiveSummary(p) {
     style: {
       color: statusClr.text
     }
-  }, "Curriculum Audit"), /*#__PURE__*/React.createElement("div", {
+  }, "Curriculum Audit"), /*#__PURE__*/React.createElement("h2", {
     className: "text-xl font-black mb-1",
     style: {
       color: statusClr.text
@@ -1377,12 +1409,14 @@ function ExecutiveSummary(p) {
     style: {
       color: statusClr.text
     }
-  }, standardsReportCount > 0 ? standardsReportCount + ' standard' + (standardsReportCount === 1 ? '' : 's') + ' audited · ' : '', dimEvaluated + ' of ' + dimApplicable + ' applicable comprehensive dimension' + (dimApplicable === 1 ? '' : 's') + ' evaluated · ' + dimTotal + ' total', failedDims.length > 0 ? ' · ' + failedDims.length + ' failed to compute' : '')),
+  }, standardsReportCount > 0 ? standardsReportCount + ' standard' + (standardsReportCount === 1 ? '' : 's') + ' audited · ' : '', dimEvaluated + ' of ' + dimApplicable + ' applicable comprehensive dimension' + (dimApplicable === 1 ? '' : 's') + ' evaluated · ' + dimTotal + ' total', failedDims.length > 0 ? ' · ' + failedDims.length + ' failed to compute' : '', generatedDateLabel ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, " · Generated "), /*#__PURE__*/React.createElement("time", {
+    dateTime: generatedAt
+  }, generatedDateLabel)) : null)),
   // Apply fixes button
   typeof onApplyFixes === 'function' && (topRecs.length > 0 || dimEvaluated > 0) && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onApplyFixes,
-    className: "flex-shrink-0 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2",
+    className: "flex-shrink-0 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2",
     title: "Open Audit Remediator: review and apply fixes"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
@@ -1396,7 +1430,7 @@ function ExecutiveSummary(p) {
     onClick: function () {
       p.onGeneratePreCheck(topRecs);
     },
-    className: "flex-shrink-0 px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2",
+    className: "flex-shrink-0 px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2",
     title: "Generate a Pre-Check Quiz that probes the prerequisites the audit identified as gaps. Students take the quiz before the lesson; missed concepts get just-in-time AI explainers."
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
@@ -1410,7 +1444,7 @@ function ExecutiveSummary(p) {
   // Top recommendations
   topRecs.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mt-3"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", {
     className: "text-[11px] font-bold uppercase tracking-wider mb-2",
     style: {
       color: statusClr.text
@@ -1432,7 +1466,7 @@ function ExecutiveSummary(p) {
     }, " ↓") : null];
     var chip = r.dimensionKey ? /*#__PURE__*/React.createElement("a", {
       href: '#audit-' + r.dimensionKey,
-      className: 'flex-shrink-0 inline-flex items-center justify-center text-[10px] font-bold uppercase px-2 py-0.5 rounded border no-underline transition-colors ' + prClass,
+      className: 'flex-shrink-0 inline-flex items-center justify-center text-[10px] font-bold uppercase px-2 py-0.5 rounded border no-underline transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 ' + prClass,
       style: {
         minWidth: '90px',
         textAlign: 'center'
@@ -1476,6 +1510,61 @@ function ExecutiveSummary(p) {
     }, r.text));
   }))));
 }
+function formatCoverageMetric(numerator, denominator, percent, unitLabel) {
+  if (typeof denominator !== 'number' || denominator <= 0) return 'N/A — no eligible ' + unitLabel;
+  if (typeof numerator !== 'number') return 'Not recorded in this saved audit';
+  var resolvedPercent = typeof percent === 'number' ? percent : Math.round(numerator / denominator * 100);
+  return numerator + ' of ' + denominator + ' ' + unitLabel + ' (' + resolvedPercent + '%)';
+}
+function AudioMetric(p) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "p-3 rounded-lg bg-white border border-indigo-200"
+  }, /*#__PURE__*/React.createElement("dt", {
+    className: "text-xs font-bold text-indigo-950"
+  }, p.label), /*#__PURE__*/React.createElement("dd", {
+    className: "mt-1 text-sm font-semibold text-slate-900"
+  }, p.value), p.detail && /*#__PURE__*/React.createElement("dd", {
+    className: "mt-1 text-xs text-slate-700"
+  }, p.detail));
+}
+function AudioCoverageSummary(p) {
+  var a = p.audio;
+  if (!a) return null;
+  var unscopedCount = (a.unscopedEmbeddedAudioArtifacts || 0) + (a.unscopedPreparedAudioArtifacts || 0);
+  return /*#__PURE__*/React.createElement("section", {
+    "aria-labelledby": "audit-audio-coverage-heading",
+    className: "mb-4 p-4 rounded-xl border border-indigo-300 bg-indigo-50 text-indigo-950"
+  }, /*#__PURE__*/React.createElement("h3", {
+    id: "audit-audio-coverage-heading",
+    className: "font-bold text-base"
+  }, "Audio access coverage"), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-sm text-indigo-950"
+  }, "Capability, dedicated controls, embedded files, and synchronized audio are different evidence levels. Counts below use readable resources or readable sentences as their denominator."), /*#__PURE__*/React.createElement("dl", {
+    className: "mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3"
+  }, /*#__PURE__*/React.createElement(AudioMetric, {
+    label: "App-wide read aloud",
+    value: formatCoverageMetric(a.readAloudCapableArtifacts, a.readableArtifacts, a.readAloudCapabilityPct, 'readable resources'),
+    detail: "Counts resources that can use the global Read This Page text-to-speech pathway."
+  }), /*#__PURE__*/React.createElement(AudioMetric, {
+    label: "Dedicated read-aloud controls",
+    value: formatCoverageMetric(a.dedicatedReadAloudArtifacts, a.readableArtifacts, a.dedicatedReadAloudPct, 'readable resources'),
+    detail: "Counts resources with their own Listen or read-aloud controls."
+  }), /*#__PURE__*/React.createElement(AudioMetric, {
+    label: "Embedded audio files",
+    value: formatCoverageMetric(a.embeddedAudioArtifacts, a.readableArtifacts, a.embeddedAudioPct, 'readable resources'),
+    detail: "Counts audio already attached to a readable resource; on-demand TTS is not counted here."
+  }), /*#__PURE__*/React.createElement(AudioMetric, {
+    label: "Prepared synchronized audio",
+    value: formatCoverageMetric(a.preparedSentences, a.expectedSentences, a.preparedSentenceCoveragePct, 'readable sentences'),
+    detail: "Counts sentence-level audio prepared in advance for synchronized playback."
+  })), a.runtimeFallbackAvailable && /*#__PURE__*/React.createElement("p", {
+    className: "mt-3 text-xs text-indigo-950"
+  }, /*#__PURE__*/React.createElement("strong", null, "Runtime fallback:"), " At least one readable resource can be spoken on demand but does not have complete prepared synchronized audio."), unscopedCount > 0 && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-xs text-amber-950 bg-amber-50 border border-amber-300 rounded p-2"
+  }, /*#__PURE__*/React.createElement("strong", null, "Unscoped audio:"), ' ' + unscopedCount + ' audio-bearing artifact' + (unscopedCount === 1 ? ' was' : 's were') + ' excluded from coverage percentages because no readable source text could be matched to the audio.'), a.notes && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-xs text-slate-700 italic"
+  }, a.notes));
+}
 function FailedDimensionCard(p) {
   var d = p.data;
   var label = p.label;
@@ -1502,6 +1591,44 @@ function FailedDimensionCard(p) {
   }, "Show error"), /*#__PURE__*/React.createElement("pre", {
     className: "mt-1 p-2 bg-amber-100 rounded overflow-x-auto whitespace-pre-wrap"
   }, d.error)));
+}
+function NotEvaluatedCard(p) {
+  var d = p.data;
+  var label = p.label;
+  if (!d || !d.notEvaluated) return null;
+  var reason = d.reason || Array.isArray(d.recommendations) && d.recommendations[0] || d.notes || 'Required evidence was not available for this dimension.';
+  return /*#__PURE__*/React.createElement("div", {
+    id: p.id || undefined,
+    tabIndex: -1,
+    className: "bg-slate-50 p-4 rounded-xl border border-slate-300 shadow-sm mb-6 scroll-mt-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
+    className: "text-lg"
+  }, "◌"), /*#__PURE__*/React.createElement("h3", {
+    className: "font-bold text-slate-800"
+  }, label), /*#__PURE__*/React.createElement("span", {
+    className: "ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-800"
+  }, "Not evaluated")), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-700"
+  }, reason), Array.isArray(d.recommendations) && d.recommendations.length > 1 && /*#__PURE__*/React.createElement("ul", {
+    className: "list-disc ml-5 mt-2 text-sm text-slate-700 space-y-1"
+  }, d.recommendations.slice(1, 5).map(function (item, index) {
+    return /*#__PURE__*/React.createElement("li", {
+      key: index
+    }, item);
+  })));
+}
+function MissingDimensionCard(p) {
+  return /*#__PURE__*/React.createElement(NotEvaluatedCard, {
+    id: p.id,
+    label: p.label,
+    data: {
+      notEvaluated: true,
+      reason: 'This required dimension was not returned by the saved audit. Regenerate the audit to complete this evidence.'
+    }
+  });
 }
 
 // Plan R+: N/A card for dimensions explicitly flagged as Not Applicable
@@ -1532,17 +1659,19 @@ function NotApplicableCard(p) {
 function ComprehensiveBlock(p) {
   var c = p.comp;
   if (!c) return null;
-  return /*#__PURE__*/React.createElement("div", {
+  return /*#__PURE__*/React.createElement("section", {
+    "aria-labelledby": "audit-findings-heading",
     className: "mt-8 pt-6 border-t border-slate-200 max-w-4xl mx-auto"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mb-6"
   }, /*#__PURE__*/React.createElement("h2", {
+    id: "audit-findings-heading",
     className: "text-xl font-black text-slate-800 uppercase tracking-tight mb-1"
   }, "Per-Dimension Findings"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600"
   }, "Detailed evidence and recommendations from each comprehensive audit dimension. Apply fixes from the summary panel above.")), c.auditScope && /*#__PURE__*/React.createElement("div", {
     className: "mb-4 p-3 rounded border border-slate-300 bg-slate-50 text-sm text-slate-800"
-  }, /*#__PURE__*/React.createElement("strong", null, "Audit scope: "), (c.auditScope.includedArtifactIds || []).length + ' artifacts · ' + (c.auditScope.includedTypes || []).join(', '), c.auditScope.contextTruncated ? /*#__PURE__*/React.createElement("span", null, " · AI context was truncated") : null, c.auditScope.warnings && c.auditScope.warnings.length > 0 ? /*#__PURE__*/React.createElement("ul", {
+  }, /*#__PURE__*/React.createElement("strong", null, "Audit scope: "), (c.auditScope.includedArtifactIds || []).length + ' artifact' + ((c.auditScope.includedArtifactIds || []).length === 1 ? '' : 's'), (c.auditScope.includedTypes || []).length > 0 ? /*#__PURE__*/React.createElement("span", null, ' · ' + c.auditScope.includedTypes.join(', ')) : null, c.auditScope.selectionMode ? /*#__PURE__*/React.createElement("span", null, ' · Selection: ' + c.auditScope.selectionMode) : null, (c.auditScope.excludedArtifactCount || 0) > 0 ? /*#__PURE__*/React.createElement("span", null, ' · ' + c.auditScope.excludedArtifactCount + ' eligible artifact' + (c.auditScope.excludedArtifactCount === 1 ? '' : 's') + ' outside scope') : null, c.auditScope.contextTruncated ? /*#__PURE__*/React.createElement("span", null, " · AI context was truncated") : null, c.auditScope.warnings && c.auditScope.warnings.length > 0 ? /*#__PURE__*/React.createElement("ul", {
     className: "list-disc ml-5 mt-1"
   }, c.auditScope.warnings.map(function (w, i) {
     return /*#__PURE__*/React.createElement("li", {
@@ -1550,13 +1679,13 @@ function ComprehensiveBlock(p) {
     }, w);
   })) : null), /*#__PURE__*/React.createElement("div", {
     className: "mb-4 p-3 rounded border border-blue-300 bg-blue-50 text-sm text-blue-950"
-  }, /*#__PURE__*/React.createElement("strong", null, "Accessibility scope: "), "These are selected content-accessibility indicators, not a WCAG conformance assessment. Manual keyboard, screen-reader, zoom/reflow, contrast, and rendered-content testing are still required."), c.differentiation && c.differentiation.audioCoverage && /*#__PURE__*/React.createElement("div", {
-    className: "mb-4 p-3 rounded border border-indigo-300 bg-indigo-50 text-sm text-indigo-950"
-  }, /*#__PURE__*/React.createElement("strong", null, "Audio coverage: "), 'Read-aloud capable ' + (c.differentiation.audioCoverage.readAloudCapabilityPct === null ? 'N/A' : c.differentiation.audioCoverage.readAloudCapabilityPct + '%') + ' · Embedded audio ' + (c.differentiation.audioCoverage.embeddedAudioPct === null ? 'N/A' : c.differentiation.audioCoverage.embeddedAudioPct + '%') + ' · Prepared synchronized sentences ' + (c.differentiation.audioCoverage.preparedSentenceCoveragePct === null ? 'N/A' : c.differentiation.audioCoverage.preparedSentenceCoveragePct + '%')), c.overall && /*#__PURE__*/React.createElement(ReadinessScoreCard, {
+  }, /*#__PURE__*/React.createElement("strong", null, "Accessibility scope: "), "These are selected content-accessibility indicators, not a WCAG conformance assessment. Manual keyboard, screen-reader, zoom/reflow, contrast, and rendered-content testing are still required."), c.differentiation && c.differentiation.audioCoverage && /*#__PURE__*/React.createElement(AudioCoverageSummary, {
+    audio: c.differentiation.audioCoverage
+  }), c.overall && /*#__PURE__*/React.createElement(ReadinessScoreCard, {
     overall: c.overall
   }),
   // Standards rendered first (most teacher-relevant)
-  c.standards && (c.standards.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  c.standards ? c.standards.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
     id: "audit-standards",
     data: c.standards,
     label: "Standards alignment"
@@ -1566,45 +1695,90 @@ function ComprehensiveBlock(p) {
     label: "Standards alignment"
   }) : /*#__PURE__*/React.createElement(StandardsSection, {
     standards: c.standards
-  })), c.vocabulary && (c.vocabulary.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
+    id: "audit-standards",
+    label: "Standards alignment"
+  }), c.vocabulary ? c.vocabulary.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+    id: "audit-vocabulary",
+    data: c.vocabulary,
+    label: "Vocabulary fit"
+  }) : c.vocabulary.notEvaluated ? /*#__PURE__*/React.createElement(NotEvaluatedCard, {
     id: "audit-vocabulary",
     data: c.vocabulary,
     label: "Vocabulary fit"
   }) : /*#__PURE__*/React.createElement(VocabularySection, {
     vocab: c.vocabulary
-  })), c.engagement && (c.engagement.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
+    id: "audit-vocabulary",
+    label: "Vocabulary fit"
+  }), c.engagement ? c.engagement.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+    id: "audit-engagement",
+    data: c.engagement,
+    label: "Engagement variety"
+  }) : c.engagement.notEvaluated ? /*#__PURE__*/React.createElement(NotEvaluatedCard, {
     id: "audit-engagement",
     data: c.engagement,
     label: "Engagement variety"
   }) : /*#__PURE__*/React.createElement(EngagementSection, {
     eng: c.engagement
-  })), c.accessibility && (c.accessibility.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
+    id: "audit-engagement",
+    label: "Engagement variety"
+  }), c.accessibility ? c.accessibility.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+    id: "audit-accessibility",
+    data: c.accessibility,
+    label: "Content accessibility"
+  }) : c.accessibility.notEvaluated ? /*#__PURE__*/React.createElement(NotEvaluatedCard, {
     id: "audit-accessibility",
     data: c.accessibility,
     label: "Content accessibility"
   }) : /*#__PURE__*/React.createElement(AccessibilitySection, {
     access: c.accessibility
-  })), c.udl && (c.udl.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
+    id: "audit-accessibility",
+    label: "Content accessibility"
+  }), c.udl ? c.udl.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+    id: "audit-udl",
+    data: c.udl,
+    label: "UDL principles"
+  }) : c.udl.notEvaluated ? /*#__PURE__*/React.createElement(NotEvaluatedCard, {
     id: "audit-udl",
     data: c.udl,
     label: "UDL principles"
   }) : /*#__PURE__*/React.createElement(UdlSection, {
     udl: c.udl
-  })), c.accuracy && (c.accuracy.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
+    id: "audit-udl",
+    label: "UDL principles"
+  }), c.accuracy ? c.accuracy.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+    id: "audit-accuracy",
+    data: c.accuracy,
+    label: "Content accuracy"
+  }) : c.accuracy.notEvaluated ? /*#__PURE__*/React.createElement(NotEvaluatedCard, {
     id: "audit-accuracy",
     data: c.accuracy,
     label: "Content accuracy"
   }) : /*#__PURE__*/React.createElement(AccuracySection, {
     acc: c.accuracy
-  })),
+  }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
+    id: "audit-accuracy",
+    label: "Content accuracy"
+  }),
   // Plan R+ new dimensions
-  c.differentiation && (c.differentiation.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  c.differentiation ? c.differentiation.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+    id: "audit-differentiation",
+    data: c.differentiation,
+    label: "Differentiation coverage"
+  }) : c.differentiation.notEvaluated ? /*#__PURE__*/React.createElement(NotEvaluatedCard, {
     id: "audit-differentiation",
     data: c.differentiation,
     label: "Differentiation coverage"
   }) : /*#__PURE__*/React.createElement(DifferentiationSection, {
     diff: c.differentiation
-  })), c.cognitiveLoad && (c.cognitiveLoad.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
+    id: "audit-differentiation",
+    label: "Differentiation coverage"
+  }), c.cognitiveLoad ? c.cognitiveLoad.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
     id: "audit-cognitiveLoad",
     data: c.cognitiveLoad,
     label: "Cognitive load / pacing"
@@ -1612,9 +1786,16 @@ function ComprehensiveBlock(p) {
     id: "audit-cognitiveLoad",
     data: c.cognitiveLoad,
     label: "Cognitive load / pacing"
+  }) : c.cognitiveLoad.notEvaluated ? /*#__PURE__*/React.createElement(NotEvaluatedCard, {
+    id: "audit-cognitiveLoad",
+    data: c.cognitiveLoad,
+    label: "Cognitive load / pacing"
   }) : /*#__PURE__*/React.createElement(CognitiveLoadSection, {
     load: c.cognitiveLoad
-  })), c.culturalResponsiveness && (c.culturalResponsiveness.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
+    id: "audit-cognitiveLoad",
+    label: "Cognitive load / pacing"
+  }), c.culturalResponsiveness ? c.culturalResponsiveness.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
     id: "audit-culturalResponsiveness",
     data: c.culturalResponsiveness,
     label: "Cultural responsiveness"
@@ -1622,22 +1803,49 @@ function ComprehensiveBlock(p) {
     id: "audit-culturalResponsiveness",
     data: c.culturalResponsiveness,
     label: "Cultural responsiveness"
+  }) : c.culturalResponsiveness.notEvaluated ? /*#__PURE__*/React.createElement(NotEvaluatedCard, {
+    id: "audit-culturalResponsiveness",
+    data: c.culturalResponsiveness,
+    label: "Cultural responsiveness"
   }) : /*#__PURE__*/React.createElement(CulturalResponsivenessSection, {
     cr: c.culturalResponsiveness
-  })));
+  }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
+    id: "audit-culturalResponsiveness",
+    label: "Cultural responsiveness"
+  }));
 }
 function AlignmentReportView(props) {
   var t = props.t;
   var generatedContent = props.generatedContent;
   var comprehensive = generatedContent && generatedContent.data && generatedContent.data.comprehensive;
   var reports = generatedContent && generatedContent.data && Array.isArray(generatedContent.data.reports) ? generatedContent.data.reports : [];
-  return /*#__PURE__*/React.createElement("div", {
-    className: "curriculum-audit-report space-y-8 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10",
+  if (!comprehensive) return /*#__PURE__*/React.createElement("section", {
+    className: "curriculum-audit-report max-w-4xl mx-auto h-full overflow-y-auto p-6",
     role: "region",
-    "aria-label": "Curriculum audit report",
+    "aria-labelledby": "curriculum-audit-report-heading",
+    tabIndex: 0,
+    lang: "en"
+  }, /*#__PURE__*/React.createElement("h1", {
+    id: "curriculum-audit-report-heading",
+    className: "text-xl font-black text-slate-800"
+  }, "Curriculum audit report"), /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    className: "mt-4 rounded-xl border border-slate-300 bg-slate-50 p-4"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "font-bold text-slate-800"
+  }, "Audit details are unavailable"), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-sm text-slate-700"
+  }, "This saved resource does not contain the comprehensive audit data needed to render the report. Regenerate the curriculum audit to restore all nine evidence dimensions.")));
+  return /*#__PURE__*/React.createElement("section", {
+    className: "curriculum-audit-report space-y-8 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10 print:h-auto print:overflow-visible print:pr-0",
+    role: "region",
+    "aria-labelledby": "curriculum-audit-report-heading",
     tabIndex: 0,
     lang: comprehensive && comprehensive.auditLanguage || 'en'
-  },
+  }, /*#__PURE__*/React.createElement("h1", {
+    id: "curriculum-audit-report-heading",
+    className: "sr-only"
+  }, "Curriculum audit report"),
   // Executive summary banner — readiness score + top fixes + Apply button.
   comprehensive && /*#__PURE__*/React.createElement(ExecutiveSummary, {
     t: t,

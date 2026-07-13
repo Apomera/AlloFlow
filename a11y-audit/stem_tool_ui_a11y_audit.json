@@ -1,11 +1,16 @@
 {
-  "generatedAt": "2026-07-13T20:02:05.578Z",
+  "generatedAt": "2026-07-13T22:49:45.140Z",
   "source": {
     "stemToolFileCount": 119,
-    "registeredToolCount": 122
+    "registeredToolCount": 121
   },
-  "toolCount": 122,
-  "loadErrors": [],
+  "toolCount": 121,
+  "loadErrors": [
+    {
+      "file": "stem_tool_watercycle.js",
+      "error": "Invalid left-hand side in assignment"
+    }
+  ],
   "renderErrors": [],
   "summary": {
     "issueCount": 38,
@@ -15,9 +20,9 @@
     "toolsWithIssues": 33,
     "toolsWithErrors": 0,
     "toolsWithWarnings": 15,
-    "toolsWithCanvas": 36,
+    "toolsWithCanvas": 35,
     "shellCoverage": {
-      "standardShellTools": 122,
+      "standardShellTools": 121,
       "lightBackgroundTools": [],
       "toolsWithoutStandardShell": []
     },
@@ -47,7 +52,7 @@
         "noticeCount": 0
       },
       "science": {
-        "toolCount": 48,
+        "toolCount": 47,
         "errorCount": 0,
         "warningCount": 5,
         "noticeCount": 4
@@ -438,7 +443,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 10 body systems with layered anatomical visualization",
-      "renderedBytes": 34465,
+      "renderedBytes": 34481,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1594,7 +1599,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 24186,
+      "renderedBytes": 24175,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1825,7 +1830,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 25921,
+      "renderedBytes": 25914,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2234,7 +2239,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "",
-      "renderedBytes": 1752,
+      "renderedBytes": 1743,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -2651,7 +2656,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13518,
+      "renderedBytes": 13493,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3025,7 +3030,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 18056,
+      "renderedBytes": 18057,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -3668,7 +3673,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 47814,
+      "renderedBytes": 47807,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3759,7 +3764,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Keyboarding designed for students with disabilities — accommodations are the product, not a menu. AI-personalized passages, IEP-ready progress, no ads or racing.",
-      "renderedBytes": 30626,
+      "renderedBytes": 30624,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3895,34 +3900,6 @@
           ]
         }
       ]
-    },
-    {
-      "id": "waterCycle",
-      "label": "Water Cycle",
-      "category": "science",
-      "ready": true,
-      "lightBackground": false,
-      "aliases": [],
-      "desc": "Live water cycle canvas plus Journey Mode: ride one droplet through evaporation, condensation, precipitation, collection, transpiration, and infiltration with real choices along the way.",
-      "renderedBytes": 21969,
-      "standardShell": true,
-      "issueCount": 0,
-      "errorCount": 0,
-      "warningCount": 0,
-      "noticeCount": 0,
-      "metrics": {
-        "buttons": 30,
-        "roleButtons": 0,
-        "fields": 6,
-        "canvases": 1,
-        "svgs": 0,
-        "images": 0,
-        "headings": 8,
-        "links": 0,
-        "tinyTextClassHits": 0,
-        "fixedWidthRiskCount": 0
-      },
-      "issues": []
     },
     {
       "id": "wave",

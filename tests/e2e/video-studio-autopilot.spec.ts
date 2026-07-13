@@ -73,6 +73,14 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
                 const blockingCount = items.filter(item => item.status === 'block').length;
                 reply(event.source, request, 'allostudio-demovalidate-response', { report: { ok: blockingCount === 0, blockingCount, warningCount: 0, items } });
               }
+              if (request.type === 'allostudio-demorun-request') {
+                const sendStep = (index, phase, label, narration, delay) => setTimeout(() => {
+                  event.source.postMessage({ type: 'allostudio-demostep', bridge: request.bridge, id: request.id, index, phase, label, narration }, location.origin);
+                }, delay);
+                sendStep(0, 'start', 'First custom step', 'Starting the first custom step.', 80);
+                sendStep(0, 'done', 'First custom step', 'First custom step complete.', 240);
+                setTimeout(() => reply(event.source, request, 'allostudio-demorun-response', { ok: false, stopped: true, completed: 1, reason: 'Fixture early stop.' }), 360);
+              }
               if (request.type === 'allostudio-official-tutorial-request') {
                 reply(event.source, request, 'allostudio-official-tutorial-response', {
                   generatedFrom: 'GUIDED_STEPS',
@@ -190,6 +198,16 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await studio.locator('#demoPlanResetBtn').click();
   await expect(studio.locator('#demoPlanList > div').first()).toContainText('First custom step');
 
+  await studio.locator('#demoAudioMode').selectOption('captions');
+  await studio.locator('#demoStartBtn').click();
+  await expect(studio.locator('#demoContinueEditBtn')).toBeVisible({ timeout: 10000 });
+  await expect(studio.locator('#demoContinueEditBtn')).toBeEnabled();
+  await expect(studio.locator('#demoContinueEditBtn')).toHaveText('Continue 1 unfinished step');
+  await studio.locator('#demoContinueEditBtn').click();
+  await expect(studio.locator('#demoPlanList > div')).toHaveCount(1);
+  await expect(studio.locator('#demoPlanList')).toContainText('Second custom step');
+  await expect(studio.locator('#demoPreflightStatus')).toContainText('Preflight passed');
+  await studio.locator('#demoAudioMode').selectOption('auto-Kore');
   await studio.locator('#demoOfficialTextBtn').click();
   await expect(studio.locator('#demoPlanList')).toContainText('Text Adaptation');
   await studio.getByLabel('Step 1 narration').fill('Teacher-approved source walkthrough.');

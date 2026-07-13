@@ -30,6 +30,11 @@ describe('Companion Planting refinements', () => {
     expect(source).toContain('data-companion-workspace-stage');
     expect(source).toContain('prefers-reduced-motion: reduce');
     expect(source).toContain('Ambient ecosystem visitors respond');
+    expect(source).toContain('grid grid-cols-2 gap-2 sm:grid-cols-4');
+    expect(source).toContain('sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5');
+    expect(source).toContain('sm:grid-cols-2 xl:grid-cols-4');
+    expect(source).toContain('min-h-[48px]');
+    expect(source).toContain('min-h-[96px]');
   });
 
   it('renders the default Three Sisters workspace without list-key warnings', () => {

@@ -7,7 +7,7 @@ describe('Water Cycle Hydro Quest', () => {
   test('awards six evidence-based missions and five ranks', () => {
     expect(source).toContain("name: 'Cloud Chaser'");
     expect(source).toContain('complete: !!journey3dVisited.condensing');
-    expect(source).toContain('journeyPaths.runoff > 0 && journeyPaths.infiltrate > 0 && journeyPaths.plant > 0');
+    expect(source).toContain('journey3dPaths.runoff > 0 && journey3dPaths.infiltrate > 0 && journey3dPaths.plant > 0');
     expect(source).toContain('complete: !!journey3dVisited.complete');
     expect(source).toContain('var hydroPoints = hydroCompleted * 20');
     expect(source).toContain("hydroPoints >= 120 ? 'Cycle Guardian'");
@@ -20,6 +20,9 @@ describe('Water Cycle Hydro Quest', () => {
     expect(source).toContain("if (current.journeyView === '3d')");
     expect(source).toContain('visited3d[nextState] = true');
     expect(source).toContain('nextWaterCycle.journey3dStatesVisited = visited3d');
+    expect(source).toContain('var journey3dPaths = Object.assign');
+    expect(source).toContain('next3dPaths[pathKey] = (next3dPaths[pathKey] || 0) + 1');
+    expect(source).toContain('nextData.journey3dPaths = next3dPaths');
   });
 
   test('exposes accessible progress and non-color mission states', () => {

@@ -8,6 +8,7 @@
 // plannable before content exists (the #1 regression, fixed 2026-07-10).
 
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { loadAlloModule } from './setup.js';
 
 let AC;
@@ -245,6 +246,7 @@ describe('command contracts and plan validation', () => {
     expect(pr.timedOut).toBe(true);
     expect(pr.failedStep).toBe(0);
     expect(pr.results).toHaveLength(1); // quiz step never started
+    expect(pr.remainingSteps.map((step) => step.commandId)).toEqual(['generate_quiz']);
     expect(log).not.toContain('quiz-finished');
   });
 
@@ -258,9 +260,30 @@ describe('command contracts and plan validation', () => {
     expect(pr.ok).toBe(false);
     expect(pr.stopped).toBe(true);
     expect(pr.results).toHaveLength(1);
+    expect(pr.remainingSteps.map((step) => step.commandId)).toEqual(['generate_quiz']);
+  });
+
+  it('preserves the failed step at the front of a resumable remainder', async () => {
+    const { ctx } = mkCtx({ hasSourceOrAnalysis: false });
+    const steps = [
+      { commandId: 'generate_quiz', params: {} },
+      { commandId: 'open_learning_hub', params: {} },
+    ];
+    const pr = await AC.runPlan(ctx, steps);
+    expect(pr.ok).toBe(false);
+    expect(pr.remainingSteps).toEqual(steps);
   });
 });
 
+describe('AlloBot plan recovery wiring', () => {
+  it('offers the exact remaining sequence while preserving the original undo point', () => {
+    const app = readFileSync('AlloFlowANTI.txt', 'utf-8');
+    expect(app).toContain('_pendingBotPlanRef.current = { steps: _remaining, originalText: _pendingPlan.originalText, resume: true }');
+    expect(app).toContain("value: '__allo_plan_run'");
+    expect(app).toContain('if (!_pendingPlan.resume || !_planUndoRef.current)');
+    expect(app).toContain('_pendingBotPlanRef.current = null;');
+  });
+});
 describe('runCommandById awaitCompletion isolation', () => {
   it('keeps the sync path synchronous for existing surfaces', () => {
     const { ctx } = mkCtx();

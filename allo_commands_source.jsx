@@ -825,31 +825,31 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
   const t = _mkT((getCtx() || {}).t);
   const list = (Array.isArray(steps) ? steps : []).slice(0, 6);
   const results = [];
-  if (!list.length) return { ok: false, failedStep: 0, results, reason: t('plan.empty', 'There were no steps to run.') };
+  if (!list.length) return { ok: false, failedStep: 0, results, remainingSteps: [], reason: t('plan.empty', 'There were no steps to run.') };
   for (let i = 0; i < list.length; i++) {
-    if (opts.shouldStop && opts.shouldStop()) return { ok: false, stopped: true, failedStep: i, results, reason: t('plan.stopped', 'Stopped before step ') + (i + 1) + '.' };
+    if (opts.shouldStop && opts.shouldStop()) return { ok: false, stopped: true, failedStep: i, results, remainingSteps: list.slice(i), reason: t('plan.stopped', 'Stopped before step ') + (i + 1) + '.' };
     const s = list[i] || {};
     const ctx = getCtx();
     const cmd = buildAlloCommands(ctx).find((c) => c.id === s.commandId);
-    if (!cmd) return { ok: false, failedStep: i, results, reason: t('plan.unavailable', 'Step ') + (i + 1) + ' (' + (s.commandId || '?') + ')' + t('plan.unavailable2', ' isn’t available right now — it may need something an earlier step didn’t produce.') };
+    if (!cmd) return { ok: false, failedStep: i, results, remainingSteps: list.slice(i), reason: t('plan.unavailable', 'Step ') + (i + 1) + ' (' + (s.commandId || '?') + ')' + t('plan.unavailable2', ' isn’t available right now — it may need something an earlier step didn’t produce.') };
     if (cmd.destructive) {
       let allowed = false;
       if (typeof opts.confirmDestructive === 'function') { try { allowed = !!(await opts.confirmDestructive(cmd, s, i)); } catch (_) { allowed = false; } }
-      if (!allowed) return { ok: false, failedStep: i, results, reason: (cmd.label || s.commandId) + t('plan.needs_confirm', ' needs its own confirmation — run it from the Ctrl+K menu.') };
+      if (!allowed) return { ok: false, failedStep: i, results, remainingSteps: list.slice(i), reason: (cmd.label || s.commandId) + t('plan.needs_confirm', ' needs its own confirmation — run it from the Ctrl+K menu.') };
     }
     if (typeof opts.onStep === 'function') { try { opts.onStep(i, 'start', cmd, null); } catch (_) {} }
     let r = null;
     try { r = await runCommandById(ctx, s.commandId, s.params || {}, { confirmed: true, awaitCompletion: true, via: 'plan', timeoutMs: opts.timeoutMs }); }
     catch (e) { r = { handled: false, narration: (e && e.message) || 'unknown' }; }
     results.push(r);
-    if (!r || !r.handled || r.ok === false) return { ok: false, failedStep: i, results, reason: (r && r.narration) || t('plan.step_failed', 'That step didn’t work.') };
+    if (!r || !r.handled || r.ok === false) return { ok: false, failedStep: i, results, remainingSteps: list.slice(i), reason: (r && r.narration) || t('plan.step_failed', 'That step didn’t work.') };
     // A timed-out step is still RUNNING in the background — starting the next
     // step now would race it (two concurrent generations fighting over shared
     // state). Hold the remainder instead; nothing failed, so say so honestly.
-    if (r.timedOut) return { ok: false, timedOut: true, failedStep: i, results, reason: (cmd.label || s.commandId) + t('plan.step_timeout', ' is taking a while and is still working in the background. I’ve held the remaining steps — once it finishes, ask me again for the rest.') };
+    if (r.timedOut) return { ok: false, timedOut: true, failedStep: i, results, remainingSteps: list.slice(i + 1), reason: (cmd.label || s.commandId) + t('plan.step_timeout', ' is taking a while and is still working in the background. I’ve held the remaining steps — once it finishes, ask me again for the rest.') };
     if (typeof opts.onStep === 'function') { try { opts.onStep(i, 'done', cmd, r.narration); } catch (_) {} }
   }
-  return { ok: true, results };
+  return { ok: true, results, remainingSteps: [] };
 }
 // ── S2: the opt-in voice loop ──
 // One singleton SpeechRecognition session; every FINAL transcript routes
