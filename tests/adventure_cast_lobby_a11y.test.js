@@ -109,3 +109,38 @@ describe('adventure mission report accessibility', () => {
     expect(rootModule).toContain('role: "progressbar"');
   });
 });
+describe('adventure cast lobby modal accessibility', () => {
+  it('uses a named focus-contained modal with deliberate heading focus and focus return', () => {
+    expect(source).toContain('const castRef = useRef(null)');
+    expect(source).toContain('useFocusTrap(castRef, true)');
+    expect(source).toContain('ref={castRef} role="dialog" aria-modal="true" aria-labelledby="adventure-cast-lobby-title"');
+    expect(source).toContain('ref={castTitleRef} id="adventure-cast-lobby-title" tabIndex={-1}');
+    expect(source).toContain('requestAnimationFrame(() => castTitleRef.current?.focus())');
+  });
+
+  it('reflows at narrow widths and announces portrait generation', () => {
+    expect(source).toContain('overflow-y-auto p-4 sm:p-8');
+    expect(source).toContain('className="flex flex-wrap justify-center gap-3"');
+    expect(source).toContain('role="status" aria-live="polite">');
+    expect(source).toContain("t('common.loading') || 'Loading'");
+    expect(source).toContain('rounded-full" aria-hidden="true"');
+  });
+
+  it('provides larger, contrasted, visibly focused main actions and hides decorative symbols', () => {
+    expect(source).toContain('min-h-11 px-5 py-2.5 bg-violet-100 text-violet-700');
+    expect(source).toContain('border border-violet-600 focus-visible:outline-none');
+    expect(source.match(/border border-violet-600 rounded-lg focus:ring-2/g)).toHaveLength(4);
+    expect(source).toContain('border-2 border-dashed border-violet-600');
+    expect(source).toContain('min-h-11 px-6 py-2.5 bg-violet-700 text-white');
+    expect(source.match(/<span aria-hidden="true">/g).length).toBeGreaterThanOrEqual(2);
+    expect(source).toContain('group-hover:scale-110 transition-transform" aria-hidden="true"');
+  });
+
+  it('keeps Cast Lobby source and deploy modules synchronized', () => {
+    const rootModule = fs.readFileSync('adventure_module.js', 'utf8');
+    expect(fs.readFileSync('prismflow-deploy/src/adventure_source.jsx', 'utf8')).toBe(source);
+    expect(fs.readFileSync('prismflow-deploy/public/adventure_module.js', 'utf8')).toBe(rootModule);
+    expect(rootModule).toContain('useFocusTrap(castRef, true)');
+    expect(rootModule).toContain('"aria-labelledby": "adventure-cast-lobby-title"');
+  });
+});

@@ -163,6 +163,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Remediated Adventure Mission Report as a named, focus-trapped completion dialog with Escape closure and launcher focus restoration; exposed proficiency as a named progressbar with numeric bounds and value; corrected the New Game accessible name; enlarged all actions with visible focus; repaired small-text contrast; and hid decorative report and action icons (WCAG 1.1.1, 1.3.1, 1.4.3, 2.1.1, 2.1.2, 2.4.3, 2.4.6, 2.4.7, 2.5.8, 4.1.2).
 
+- Remediated Adventure Cast Lobby as a named, focus-contained modal with deliberate heading focus and focus restoration after beginning the adventure; added narrow-width padding and wrapping primary actions; announced portrait-generation status; strengthened remove/action focus indicators, targets, text and component contrast; and hid decorative cast/action symbols (WCAG 1.1.1, 1.3.1, 1.4.3, 1.4.10, 1.4.11, 2.1.1, 2.1.2, 2.4.3, 2.4.7, 2.5.8, 4.1.2, 4.1.3).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
