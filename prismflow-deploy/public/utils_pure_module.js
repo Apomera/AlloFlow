@@ -201,14 +201,20 @@ const storageDB = {
     }
   },
   set: async (key, value) => {
-    if (typeof window === 'undefined') return;
-    if (!window.idbKeyval) { warnLog("storageDB.set: IDB not yet loaded, skipping write for", key); return; }
+    // Reports success as a boolean (2026-07-13): true when the write LANDED,
+    // false when it was skipped or failed (quota, IDB unavailable). Durability-
+    // sensitive callers (batch checkpoints) check the report; legacy callers
+    // that ignore the return keep fire-and-forget semantics — still never throws.
+    if (typeof window === 'undefined') return false;
+    if (!window.idbKeyval) { warnLog("storageDB.set: IDB not yet loaded, skipping write for", key); return false; }
     try {
       const stringified = JSON.stringify(value);
       const valToStore = window.LZString ? window.LZString.compressToUTF16(stringified) : stringified;
       await window.idbKeyval.set(key, valToStore);
+      return true;
     } catch (e) {
       warnLog(`storageDB Write Error [${key}]:`, e);
+      return false;
     }
   },
   del: async (key) => {

@@ -28,14 +28,14 @@ const sanitizeImportedCss = new Function(
 const checkpointRuntimeStart = pipe.indexOf("const _ACTIVE_BATCH_FILES_KEY");
 const checkpointRuntimeEnd = pipe.indexOf('  const _AUDIT_SLICE_BYTES_KB', checkpointRuntimeStart);
 if (checkpointRuntimeStart < 0 || checkpointRuntimeEnd < 0) throw new Error('Batch checkpoint runtime markers missing');
-const makeCheckpointRuntime = (storageDB, idbKeyval, navigatorApi = {}) => new Function(
+const makeCheckpointRuntime = (storageDB, idbKeyval, navigatorApi = {}, addToast = () => {}) => new Function(
   'storageDB', 'window', 'navigator', '_PIPELINE_PROMPT_VERSION',
   '_alloStripVerificationHtmlSnapshot', '_alloRehydrateVerificationHtmlBinding', 'warnLog', 'addToast',
   pipe.slice(checkpointRuntimeStart, checkpointRuntimeEnd)
-    + '\nreturn { normalize: _normalizeBatchCheckpointId, newId: _newBatchCheckpointId, prefixFor: _batchResultPrefixFor, keyFor: _batchResultKeyFor, statusKeyFor: _batchStatusKeyFor, saveFiles: _saveBatchFiles, saveStatusNow: _saveBatchStatusNow, load: _loadActiveBatch, clear: _clearActiveBatch };'
+    + '\nreturn { normalize: _normalizeBatchCheckpointId, newId: _newBatchCheckpointId, prefixFor: _batchResultPrefixFor, keyFor: _batchResultKeyFor, statusKeyFor: _batchStatusKeyFor, saveFiles: _saveBatchFiles, saveStatusNow: _saveBatchStatusNow, load: _loadActiveBatch, clear: _clearActiveBatch, withRootLock: _withBatchCheckpointRootLock };'
 )(
   storageDB, { idbKeyval }, navigatorApi, 'test-prompt-v1',
-  (value) => value, async (value) => value, () => {}, () => {}
+  (value) => value, async (value) => value, () => {}, addToast
 );
 const _checkpointHelperValues = new Map();
 const checkpointHelpers = makeCheckpointRuntime(
@@ -418,6 +418,158 @@ describe('remediation deep-dive hardening', () => {
     expect(values.has(resultKey)).toBe(false);
     expect(file._checkpointResultKey).toBeNull();
     expect(file._checkpointResultBytes).toBe(0);
+  });
+
+  it('falls back to an unlocked mutation when the lock manager rejects, without re-running a started callback', async () => {
+    const values = new Map();
+    const storageDB = {
+      get: async (key) => values.get(key),
+      set: async (key, value) => { values.set(key, value); },
+    };
+    const idbKeyval = {
+      keys: async () => Array.from(values.keys()),
+      del: async (key) => { values.delete(key); },
+    };
+    // Web Locks failures REJECT (sandboxed/opaque-origin iframe), they do not throw sync.
+    let bodyRuns = 0;
+    const rejectingLocks = { locks: { request: () => Promise.reject(new Error('lock manager unavailable')) } };
+    const runtime = makeCheckpointRuntime(storageDB, idbKeyval, rejectingLocks);
+    await expect(runtime.withRootLock(async () => { bodyRuns++; return 'ran'; })).resolves.toBe('ran');
+    expect(bodyRuns).toBe(1);
+    // End-to-end: save + clear still work when every lock request rejects —
+    // the old code left the FILES root alive after Discard (zombie resume banner).
+    const file = { id: 'f1', fileName: 'a.pdf', fileSize: 4, base64: 'AA==', status: 'done', result: { afterScore: 90 } };
+    await expect(runtime.saveFiles([file], {}, 100, 'batch_lockless_tab')).resolves.toBe(true);
+    expect(values.get('pdf_active_batch_files_v1')).toBeTruthy();
+    await expect(runtime.saveStatusNow([file], 'batch_lockless_tab')).resolves.toBe(true);
+    await expect(runtime.clear('batch_lockless_tab')).resolves.toBe(true);
+    expect(values.get('pdf_active_batch_files_v1')).toBeFalsy();
+    expect(Array.from(values.keys()).filter(k => k.startsWith('pdf_active_batch_result_v3_')).length).toBe(0);
+    // A callback that STARTED and then failed must propagate, not re-run (double-apply risk).
+    let startedRuns = 0;
+    const invokingLocks = { locks: { request: (_name, _opts, fn) => Promise.resolve().then(fn) } };
+    const runtime2 = makeCheckpointRuntime(storageDB, idbKeyval, invokingLocks);
+    await expect(runtime2.withRootLock(async () => { startedRuns++; throw new Error('body failed'); })).rejects.toThrow('body failed');
+    expect(startedRuns).toBe(1);
+  });
+
+  it('treats a reported storage-write failure like a thrown one and discloses it', async () => {
+    const toasts = [];
+    const values = new Map();
+    let failKeys = new Set();
+    const storageDB = {
+      get: async (key) => values.get(key),
+      // storageDB.set NEVER throws in production (it catches internally) — it
+      // reports failure as `false`. The old code keyed every rollback on a throw
+      // that could not happen.
+      set: async (key, value) => {
+        if (failKeys.has(key)) return false;
+        values.set(key, value);
+        return true;
+      },
+    };
+    const idbKeyval = {
+      keys: async () => Array.from(values.keys()),
+      del: async (key) => { values.delete(key); },
+    };
+    const runtime = makeCheckpointRuntime(storageDB, idbKeyval, {}, (msg) => toasts.push(msg));
+    const file = { id: 'q1', fileName: 'q.pdf', fileSize: 4, base64: 'AA==', status: 'done', result: { afterScore: 92 } };
+    // Root write quota failure → saveFiles reports false + discloses.
+    failKeys = new Set(['pdf_active_batch_files_v1']);
+    await expect(runtime.saveFiles([file], {}, 100, 'batch_quota_root')).resolves.toBe(false);
+    expect(toasts.some(m => /could not be checkpointed for resume/i.test(m))).toBe(true);
+    // Result write failure → file omitted honestly, status still lands.
+    failKeys = new Set();
+    await expect(runtime.saveFiles([file], {}, 100, 'batch_quota_result')).resolves.toBe(true);
+    const resultKey = runtime.keyFor('batch_quota_result', file);
+    failKeys = new Set([resultKey]);
+    await expect(runtime.saveStatusNow([file], 'batch_quota_result')).resolves.toBe(true);
+    expect(file._checkpointResultOmitted).toBe(true);
+    expect(file._checkpointResultKey).toBeFalsy();
+    const statusRec = values.get(runtime.statusKeyFor('batch_quota_result'));
+    expect(statusRec.statuses[0].resultStored).toBe(false);
+    // Status write failure → reported false + newly stored results rolled back.
+    const file2 = { id: 'q2', fileName: 'q2.pdf', fileSize: 4, base64: 'AA==', status: 'done', result: { afterScore: 88 } };
+    failKeys = new Set([runtime.statusKeyFor('batch_quota_result')]);
+    await expect(runtime.saveStatusNow([file2], 'batch_quota_result')).resolves.toBe(false);
+    expect(values.has(runtime.keyFor('batch_quota_result', file2))).toBe(false);
+  });
+
+  it('discloses a checkpoint takeover by another tab exactly once, and stays silent on a cleared root', async () => {
+    const toasts = [];
+    const values = new Map();
+    const storageDB = {
+      get: async (key) => values.get(key),
+      set: async (key, value) => { values.set(key, value); return true; },
+    };
+    const idbKeyval = {
+      keys: async () => Array.from(values.keys()),
+      del: async (key) => { values.delete(key); },
+    };
+    const runtime = makeCheckpointRuntime(storageDB, idbKeyval, {}, (msg) => toasts.push(msg));
+    const file = { id: 't1', fileName: 't.pdf', fileSize: 4, base64: 'AA==', status: 'done', result: { afterScore: 91 } };
+    await expect(runtime.saveFiles([file], {}, 100, 'batch_original_tab')).resolves.toBe(true);
+    // Foreign root (another tab's batch) → takeover disclosed, once.
+    values.set('pdf_active_batch_files_v1', {
+      schemaVersion: 4, batchId: 'batch_usurper_tab', rootWriteId: 'other_root',
+      files: [{ id: 'x' }], startedAt: 1, savedAt: Date.now(),
+    });
+    await expect(runtime.saveStatusNow([file], 'batch_original_tab')).resolves.toBe(false);
+    await expect(runtime.saveStatusNow([file], 'batch_original_tab')).resolves.toBe(false);
+    expect(toasts.filter(m => /Another tab started a newer batch/i.test(m)).length).toBe(1);
+    // Cleared root (benign end-of-batch) → silent.
+    const quietToasts = [];
+    const runtime2 = makeCheckpointRuntime(storageDB, idbKeyval, {}, (msg) => quietToasts.push(msg));
+    values.delete('pdf_active_batch_files_v1');
+    await expect(runtime2.saveStatusNow([file], 'batch_original_tab')).resolves.toBe(false);
+    expect(quietToasts.length).toBe(0);
+  });
+
+  it('discloses when a version bump clears a saved batch checkpoint (B8)', async () => {
+    const toasts = [];
+    const values = new Map();
+    const storageDB = {
+      get: async (key) => values.get(key),
+      set: async (key, value) => { values.set(key, value); return true; },
+    };
+    const idbKeyval = {
+      keys: async () => Array.from(values.keys()),
+      del: async (key) => { values.delete(key); },
+    };
+    const runtime = makeCheckpointRuntime(storageDB, idbKeyval, {}, (msg) => toasts.push(msg));
+    values.set('pdf_active_batch_files_v1', {
+      schemaVersion: 4, batchId: 'batch_prewave_saved', rootWriteId: 'r1',
+      files: [{ id: 'f', fileName: 'f.pdf', fileSize: 4, base64: 'AA==' }],
+      settings: {}, startedAt: 1, savedAt: Date.now(), promptVersion: 'older-prompt-v0',
+    });
+    await expect(runtime.load()).resolves.toBeNull();
+    expect(values.get('pdf_active_batch_files_v1')).toBeFalsy();
+    expect(toasts.some(m => /earlier AlloFlow version was cleared/i.test(m))).toBe(true);
+    // Source pin: item null-guard sits BEFORE key derivation in the batch runner.
+    expect(pipe).toContain('if (!item) continue; // key derivation dereferences the item');
+    expect(() => runtime.keyFor('batch_prewave_saved', null)).not.toThrow();
+  });
+
+  it('keeps CSS string content intact while still stripping fetch primitives outside strings', () => {
+    // Teacher prose containing "image (" must survive (the old blind strip made it "see none").
+    const prose = sanitizeImportedCss('p { content: "see image (figure 2)"; color: red; }');
+    expect(prose).toContain('see image (figure 2)');
+    expect(prose).toContain('color: red');
+    // A "/*" INSIDE a string is content, not a comment opener — the old blind
+    // comment strip merged across strings and deleted the .b rule entirely.
+    const commentInString = sanitizeImportedCss('.a::before { content: "a/*"; } .b { color: red; } .c::after { content: "*/j"; }');
+    expect(commentInString).toContain('color: red');
+    expect(commentInString).toContain('"a/*"');
+    expect(commentInString).toContain('"*/j"');
+    // The same tokens OUTSIDE a string are still fetch primitives.
+    const mixed = sanitizeImportedCss('.x { background: \\69mage("https://evil.example/e.png"); content: "keep image (safe)"; }');
+    expect(mixed).toContain('keep image (safe)');
+    expect(mixed).not.toMatch(/evil\.example/);
+    // Escape-generated comments still cannot smuggle url( past the sanitizer.
+    const smuggled = sanitizeImportedCss('.y { background: u\\2f\\2a x\\2a\\2f rl("https://evil.example/z.png"); }');
+    expect(smuggled).not.toMatch(/evil\.example|url\s*\(/i);
+    // Unterminated strings fail closed for the whole block.
+    expect(sanitizeImportedCss('.a { content: "broken; color: red; }')).toBe('');
   });
 });
 

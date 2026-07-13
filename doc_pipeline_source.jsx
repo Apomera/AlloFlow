@@ -1905,11 +1905,15 @@ function _alloDocFingerprint(input) {
 // unavailable, fail closed by rendering the source as text.
 var _ALLO_MAX_IMPORTED_HTML_CHARS = 128 * 1024 * 1024;
 function _alloDecodeImportedCss(css) {
+  // Comments are NOT stripped here (2026-07-13): the old string-blind
+  // /\*…\*/ regex merged across quoted strings ('content:"a/*"' ate the next
+  // rule wholesale). _alloStripCssCommentsQuoteAware handles them inside the
+  // sanitize loop with real string tracking; escapes that DECODE into '/'+'*'
+  // still form comments there, so the bypass coverage is unchanged.
   var out = String(css || '');
   for (var pass = 0; pass < 3; pass++) {
     var before = out;
     out = out
-      .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/\\(?:\r\n|[\n\r\f])/g, '')
       .replace(/\\([0-9a-f]{1,6})(?:\r\n|[ \t\r\n\f])?/gi, function(_, hex) {
         var code = parseInt(hex, 16);
@@ -1921,22 +1925,95 @@ function _alloDecodeImportedCss(css) {
   }
   return out.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '');
 }
+// ── Quote-aware CSS helpers (2026-07-13) ─────────────────────────────────────
+// After _alloDecodeImportedCss every escape is decoded, so a real quote char IS
+// a string delimiter: this sanitizer and the browser that parses the OUTPUT
+// tokenize identically (the invariant that keeps string-awareness safe). Text
+// inside string tokens is inert in the output — url()/image() only fetch as
+// function tokens OUTSIDE strings — so prose like content:"see image (fig 2)"
+// must survive while the same token outside a string is still stripped.
+// Returns [start,end) spans of string tokens, or null (fail closed) when a
+// string is unterminated / broken by a newline (CSS bad-string).
+function _alloCssStringSpans(text) {
+  var spans = [];
+  var i = 0, n = text.length;
+  while (i < n) {
+    var ch = text[i];
+    if (ch === '"' || ch === "'") {
+      var start = i; i++;
+      while (i < n && text[i] !== ch && text[i] !== '\n' && text[i] !== '\r' && text[i] !== '\f') i++;
+      if (i >= n || text[i] !== ch) return null;
+      i++;
+      spans.push([start, i]);
+    } else { i++; }
+  }
+  return spans;
+}
+// Removes /*…*/ comments with real string tracking (a "/*" inside a quoted
+// string is content, not a comment opener). Removing a comment can join '/'
+// and '*' into a NEW opener, so loop to a fixpoint; an unterminated comment
+// eats to end-of-block exactly like the browser. Returns null to fail closed
+// (unterminated string, pathological nesting depth).
+function _alloStripCssCommentsQuoteAware(text) {
+  for (var pass = 0; pass < 4; pass++) {
+    var out = '';
+    var i = 0, n = text.length, changed = false;
+    while (i < n) {
+      var ch = text[i];
+      if (ch === '"' || ch === "'") {
+        var q = ch; out += ch; i++;
+        while (i < n && text[i] !== q && text[i] !== '\n' && text[i] !== '\r' && text[i] !== '\f') { out += text[i]; i++; }
+        if (i >= n || text[i] !== q) return null;
+        out += q; i++;
+      } else if (ch === '/' && text[i + 1] === '*') {
+        var end = text.indexOf('*/', i + 2);
+        changed = true;
+        i = end < 0 ? n : end + 2;
+      } else { out += ch; i++; }
+    }
+    if (!changed) return out;
+    text = out;
+  }
+  return null;
+}
+function _alloCssReplaceOutsideStrings(text, regex, replacement) {
+  var spans = _alloCssStringSpans(text);
+  if (spans === null) return null;
+  var inString = function(idx) {
+    for (var k = 0; k < spans.length; k++) { if (idx >= spans[k][0] && idx < spans[k][1]) return true; }
+    return false;
+  };
+  return text.replace(regex, function(match) {
+    var offset = arguments[arguments.length - 2];
+    return inString(offset) ? match : replacement;
+  });
+}
+var _ALLO_CSS_BARE_IMAGE_SRC_RE = /\b(?:image|src)\s*\((?:[^()]|\([^()]*\))*\)/gi;
 function _alloSanitizeImportedCss(css) {
   var clean = _alloDecodeImportedCss(css);
   for (var pass = 0; pass < 3; pass++) {
     var before = clean;
+    clean = _alloStripCssCommentsQuoteAware(clean);
+    if (clean === null) return '';
     clean = clean
       .replace(/@import\b[^;{}]*(?:;|$)/gi, '')
       .replace(/@font-face\b[^{}]*\{[\s\S]*?\}/gi, '')
       .replace(/url\s*\(\s*(?:"[^"]*"|'[^']*'|[^)]*)\)/gi, 'none')
       .replace(/(?:-webkit-)?image-set\s*\((?:[^()]|\([^()]*\))*\)/gi, 'none')
-      .replace(/\b(?:image|src)\s*\((?:[^()]|\([^()]*\))*\)/gi, 'none')
-      .replace(/expression\s*\((?:[^()]|\([^()]*\))*\)/gi, '')
-      .replace(/(?:-moz-binding|behavior)\s*:[^;}]*(?:;|(?=\}))/gi, '');
+      .replace(/expression\s*\((?:[^()]|\([^()]*\))*\)/gi, '');
+    // Bare image()/src() are fetch primitives ONLY as function tokens outside
+    // strings; the same characters inside a string are teacher prose
+    // ('content:"see image (figure 2)"') and must not become "see none".
+    clean = _alloCssReplaceOutsideStrings(clean, _ALLO_CSS_BARE_IMAGE_SRC_RE, 'none');
+    if (clean === null) return '';
+    clean = clean.replace(/(?:-moz-binding|behavior)\s*:[^;}]*(?:;|(?=\}))/gi, '');
     if (clean === before) break;
   }
   // Unknown escapes or any residual fetch/execution primitive fail closed for this style block.
-  if (/\\|@(?:import|font-face)\b|\b(?:url|image|src|expression|(?:-webkit-)?image-set)\s*\(|(?:-moz-binding|behavior)\s*:/i.test(clean)) return '';
+  if (/\\|@(?:import|font-face)\b|\b(?:url|expression|(?:-webkit-)?image-set)\s*\(|(?:-moz-binding|behavior)\s*:/i.test(clean)) return '';
+  var residualBare = _alloCssReplaceOutsideStrings(clean, _ALLO_CSS_BARE_IMAGE_SRC_RE, ' ');
+  if (residualBare === null || residualBare !== clean) return '';
+  // A bare "image(/src(" LEFT OF a string is caught above; one INSIDE a string is inert output.
   return clean;
 }
 function _alloSanitizeRemediationHtml(rawHtml) {
@@ -10425,9 +10502,25 @@ var createDocPipeline = function(deps) {
   const _ACTIVE_BATCH_RESULT_MAX_BYTES = 32 * 1024 * 1024;
   const _ACTIVE_BATCH_RESULTS_MAX_BYTES = 128 * 1024 * 1024;
   let _batchCheckpointWarningShown = false;
+  // True when THIS batch's ability to resume after a tab close is compromised
+  // (root write failed, status writes failing, or another tab took the slot).
+  // The quota-stop messaging reads it so we never promise a Resume that
+  // cannot happen. Reset at batch entry.
+  let _batchCheckpointDegraded = false;
+  let _batchTakeoverWarned = false;
   const _warnBatchCheckpointOnce = (message) => {
     if (_batchCheckpointWarningShown) return;
     _batchCheckpointWarningShown = true;
+    warnLog('[Batch Resume] ' + message);
+    try { if (typeof addToast === 'function') addToast(message, 'warning'); } catch (_) {}
+  };
+  // Ownership takeover is higher-stakes than a single skipped result write, so it
+  // gets its own once-flag: the generic warning firing first must not mask it.
+  const _warnBatchTakeoverOnce = () => {
+    _batchCheckpointDegraded = true;
+    if (_batchTakeoverWarned) return;
+    _batchTakeoverWarned = true;
+    const message = 'Another tab started a newer batch, so this batch\'s resume checkpoint was retired. This run continues; if you close this tab, unfinished files here will need to be re-added.';
     warnLog('[Batch Resume] ' + message);
     try { if (typeof addToast === 'function') addToast(message, 'warning'); } catch (_) {}
   };
@@ -10452,7 +10545,7 @@ var createDocPipeline = function(deps) {
     return _ACTIVE_BATCH_RESULT_PREFIX + encodeURIComponent(_normalizeBatchCheckpointId(batchId) || 'invalid') + '_';
   };
   const _batchResultKeyFor = (batchId, f) => {
-    return _batchResultPrefixFor(batchId) + encodeURIComponent(String(f && f.id != null ? f.id : f.fileName || 'file'));
+    return _batchResultPrefixFor(batchId) + encodeURIComponent(String(f && f.id != null ? f.id : (f && f.fileName) || 'file'));
   };
   const _batchStatusKeyFor = (batchId) => {
     return _ACTIVE_BATCH_STATUS_PREFIX + encodeURIComponent(_normalizeBatchCheckpointId(batchId) || 'invalid');
@@ -10461,7 +10554,23 @@ var createDocPipeline = function(deps) {
     const locks = typeof navigator !== 'undefined' && navigator && navigator.locks;
     if (locks && typeof locks.request === 'function') {
       const lockMode = mode === 'shared' ? 'shared' : 'exclusive';
-      try { return locks.request(_ACTIVE_BATCH_ROOT_LOCK, { mode: lockMode }, fn); } catch (_) {}
+      // An unavailable lock manager (opaque-origin sandboxed iframe, not-fully-active
+      // document) REJECTS the returned promise per spec rather than throwing sync.
+      // Distinguish "lock never granted" (fall back to the unlocked path, same as the
+      // no-API case) from "fn itself failed" (propagate) — re-running a partially
+      // executed fn could double-apply mutations.
+      let _lockBodyStarted = false;
+      const _lockBody = (...args) => { _lockBodyStarted = true; return fn(...args); };
+      try {
+        const req = locks.request(_ACTIVE_BATCH_ROOT_LOCK, { mode: lockMode }, _lockBody);
+        if (req && typeof req.catch === 'function') {
+          return req.catch((err) => {
+            if (_lockBodyStarted) throw err;
+            return Promise.resolve().then(fn);
+          });
+        }
+        return req;
+      } catch (_) {}
     }
     return Promise.resolve().then(fn);
   };
@@ -10601,7 +10710,12 @@ var createDocPipeline = function(deps) {
       // batch-scoped, but the root swap and inactive sweep form one transaction.
       await _withBatchCheckpointRootLock(async () => {
         previousFilesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
-        await storageDB.set(_ACTIVE_BATCH_FILES_KEY, nextFilesRec);
+        // storageDB.set historically swallowed failures (quota!) and resolved
+        // undefined; it now reports success as a boolean. Honor the report when
+        // present — a silently-lost root means every later status write would
+        // fail its ownership gate with no disclosure at all.
+        const _rootOk = await storageDB.set(_ACTIVE_BATCH_FILES_KEY, nextFilesRec);
+        if (_rootOk === false) throw new Error('checkpoint root write failed (storage full or unavailable)');
         // Keeping the sweep under the same lock prevents two simultaneous starts
         // from deleting the namespace belonging to the later root writer.
         await _sweepInactiveBatchCheckpointData(cleanBatchId);
@@ -10613,6 +10727,8 @@ var createDocPipeline = function(deps) {
       return true;
     } catch (e) {
       warnLog('[Batch Resume] saveFiles failed:', e?.message || e);
+      _batchCheckpointDegraded = true;
+      _warnBatchCheckpointOnce('This batch could not be checkpointed for resume. It runs normally, but closing the tab before it finishes will lose the remaining files.');
       return false;
     }
   };
@@ -10626,7 +10742,13 @@ var createDocPipeline = function(deps) {
     let writtenStatusRecord = null;
     try {
       const initialFilesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
-      if (!initialFilesRec || _normalizeBatchCheckpointId(initialFilesRec.batchId) !== cleanBatchId) return false;
+      if (!initialFilesRec || _normalizeBatchCheckpointId(initialFilesRec.batchId) !== cleanBatchId) {
+        // A FOREIGN root means another tab took the checkpoint slot — disclose it
+        // (the run continues; only tab-close resume is lost). A MISSING root is the
+        // benign end-of-batch/cleared case and stays silent.
+        if (initialFilesRec) _warnBatchTakeoverOnce();
+        return false;
+      }
       // Legacy/global keys and cross-file keys are not valid ownership proofs for
       // this file. Re-serialize the in-memory result into its exact v3 namespace.
       for (const f of files) {
@@ -10654,7 +10776,10 @@ var createDocPipeline = function(deps) {
         }
         const resultKey = _batchResultKeyFor(cleanBatchId, f);
         try {
-          await storageDB.set(resultKey, { serialized, bytes, batchId: cleanBatchId, savedAt: Date.now(), promptVersion: _PIPELINE_PROMPT_VERSION });
+          // storageDB.set reports failure as `false` (it never throws) — treat a
+          // reported failure exactly like a thrown one so the omission is disclosed.
+          const _resOk = await storageDB.set(resultKey, { serialized, bytes, batchId: cleanBatchId, savedAt: Date.now(), promptVersion: _PIPELINE_PROMPT_VERSION });
+          if (_resOk === false) throw new Error('result write failed');
         } catch (_) {
           f._checkpointResultOmitted = true;
           _warnBatchCheckpointOnce('Browser storage could not save a batch result. That file will be safely re-run if you resume.');
@@ -10667,6 +10792,7 @@ var createDocPipeline = function(deps) {
       }
       const activeFilesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
       if (!_sameBatchFilesRecord(activeFilesRec, initialFilesRec)) {
+        if (activeFilesRec) _warnBatchTakeoverOnce();
         await _deleteNewlyStoredBatchResults(files, newlyStoredKeys);
         return false;
       }
@@ -10677,11 +10803,13 @@ var createDocPipeline = function(deps) {
       };
       writtenStatusKey = statusKey;
       writtenStatusRecord = statusRecord;
-      await storageDB.set(statusKey, statusRecord);
+      const _statusOk = await storageDB.set(statusKey, statusRecord);
+      if (_statusOk === false) throw new Error('status write failed (storage full or unavailable)');
       // A tab can lose ownership after its initial check. Its scoped write cannot
       // clobber the new batch, but remove it immediately so large blobs do not orphan.
       const activeAfterWrite = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
       if (!_sameBatchFilesRecord(activeAfterWrite, initialFilesRec)) {
+        if (activeAfterWrite) _warnBatchTakeoverOnce();
         const currentStatus = await storageDB.get(statusKey);
         if (_sameBatchStatusRecord(currentStatus, statusRecord, cleanBatchId)) await _deleteBatchStorageKey(statusKey);
         await _deleteNewlyStoredBatchResults(files, newlyStoredKeys);
@@ -10702,6 +10830,7 @@ var createDocPipeline = function(deps) {
         }
       }
       await _deleteNewlyStoredBatchResults(files, newlyStoredKeys);
+      _batchCheckpointDegraded = true;
       _warnBatchCheckpointOnce('Browser storage could not update the batch checkpoint. Keep this tab open until the batch finishes.');
       return false;
     }
@@ -10723,9 +10852,16 @@ var createDocPipeline = function(deps) {
         await _clearActiveBatch();
         return null;
       }
-      if (Date.now() - filesRec.savedAt > _ACTIVE_BATCH_TTL_MS
-          || (filesRec.promptVersion && filesRec.promptVersion !== _PIPELINE_PROMPT_VERSION)) {
+      if (Date.now() - filesRec.savedAt > _ACTIVE_BATCH_TTL_MS) {
         await _clearActiveBatch(batchId);
+        return null;
+      }
+      if (filesRec.promptVersion && filesRec.promptVersion !== _PIPELINE_PROMPT_VERSION) {
+        // B8 disclosure (2026-07-13): a pipeline-version bump invalidates saved
+        // checkpoints. The quota-pause toast promised "use Resume", so the cleanup
+        // must say why the banner never appeared instead of staying silent.
+        await _clearActiveBatch(batchId);
+        try { if (typeof addToast === 'function') addToast('A saved batch checkpoint from an earlier AlloFlow version was cleared (the remediation pipeline was updated since it was saved). Files from that batch need to be re-added.', 'info'); } catch (_) {}
         return null;
       }
       const statusInfo = await _readBatchStatusForFiles(filesRec);
@@ -11817,9 +11953,14 @@ Return ONLY valid JSON:
     const queue = [..._sourceQueue];
     const startTime = Date.now();
     const _batchId = _resumeBatchId || _newBatchCheckpointId();
+    // Fresh batch, fresh checkpoint-health slate (the flags are factory-scoped).
+    _batchCheckpointDegraded = false;
+    _batchTakeoverWarned = false;
+    _batchCheckpointWarningShown = false;
     for (const item of queue) {
+      if (!item) continue; // key derivation dereferences the item — guard BEFORE computing
       const _ownedResultKey = _batchResultKeyFor(_batchId, item);
-      if (item && item._checkpointResultKey && item._checkpointResultKey !== _ownedResultKey) {
+      if (item._checkpointResultKey && item._checkpointResultKey !== _ownedResultKey) {
         item._checkpointResultKey = null;
         item._checkpointResultBytes = 0;
       }
@@ -12013,7 +12154,7 @@ Return ONLY valid JSON:
         const _burstQuotaFail = !_dailyQuota && ((err && err.isQuota) || (_gqFresh && !_gq.perDay));
         if (_dailyQuota) {
           _quotaStopped = true;
-          setPdfBatchStep('Daily AI quota reached — stopped at ' + (i + 1) + '/' + queue.length + '. Remaining files stay queued; resume after the quota resets.');
+          setPdfBatchStep('Daily AI quota reached — stopped at ' + (i + 1) + '/' + queue.length + '. ' + (_batchCheckpointDegraded ? 'Remaining files stay queued in this tab only (checkpoint unavailable).' : 'Remaining files stay queued; resume after the quota resets.'));
           warnLog('[Batch] Daily quota reached — early-stop at ' + (i + 1) + '/' + queue.length + '; ' + (queue.length - i - 1) + ' file(s) left for resume.');
           break;
         }
@@ -12147,10 +12288,16 @@ Return ONLY valid JSON:
     // A quota stop is a PAUSE and a user cancel is an ABORT \u2014 neither is a completion. Saying "Batch
     // complete" (+ the triumphant chord) while files are still queued misreports the run. (M6 2026-07-03)
     const _aborted = !!(_batchAbortCtrl && _batchAbortCtrl.signal && _batchAbortCtrl.signal.aborted);
+    // Honest resume promise: when checkpointing failed or another tab took the
+    // slot, "use Resume" would advertise a resume that cannot happen (or that
+    // silently re-runs everything). Say what is actually true instead.
+    const _queuedTail = _batchCheckpointDegraded
+      ? 'Remaining files stay queued in THIS TAB only; the resume checkpoint could not be kept, so closing the tab loses them.'
+      : null;
     if (_quotaStopped) {
-      addToast(`\u23f8 Batch paused at the AI quota: ${done.length}/${queue.length} PDFs remediated${_failList}. Remaining files stay queued \u2014 use Resume after the quota resets.`, 'warning');
+      addToast(`\u23f8 Batch paused at the AI quota: ${done.length}/${queue.length} PDFs remediated${_failList}. ${_queuedTail || 'Remaining files stay queued \u2014 use Resume after the quota resets.'}`, 'warning');
     } else if (_aborted) {
-      addToast(`\u23f9 Batch stopped: ${done.length}/${queue.length} processed${_failList}. Remaining files stay queued.`, 'warning');
+      addToast(`\u23f9 Batch stopped: ${done.length}/${queue.length} processed${_failList}. ${_queuedTail || 'Remaining files stay queued.'}`, 'warning');
     } else {
       const _verifiedDone = done.filter(q => _batchVerificationFor(q.result).verificationState === 'complete').length;
       const _reviewDone = done.length - _verifiedDone;
