@@ -3788,7 +3788,7 @@
               { id: '_cat_Economics', icon: '', label: '💰 Social Studies & Economics', desc: '', color: 'slate', category: true },
               {
                 id: 'economicsLab', icon: '💰', label: 'Economics Lab',
-                desc: 'Supply & demand curves, personal finance life sim, stock market trading, macro economics dashboard, and lemonade stand entrepreneur sim.',
+                desc: 'Supply & demand curves, personal finance life sim, stock market trading, AI business startup sim, and a national economy policy simulator.',
                 color: 'emerald', ready: true
               },
               {
@@ -5369,7 +5369,7 @@
             // Earth & Space
             astronomy: true, galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true, spaceExplorer: true,
             // Data & Logic
-            behaviorLab: true, schoolBehaviorToolkit: true, dataStudio: true, economicsLab: true, logicLab: true,
+            behaviorLab: true, schoolBehaviorToolkit: true, dataStudio: true, economicsLab: true, logicLab: true, timelineStudio: true,
             // Geography
             geoQuiz: true, geometryProver: true, geometryWorld: true,
             // Applied

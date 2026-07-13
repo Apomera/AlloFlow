@@ -94,7 +94,8 @@ describe('finding 14 — WCAG Success-Criteria normalization', () => {
 describe('finding 7 — Equal Access joins the loop it governs', () => {
   it('the axe-clean stop also requires EA-clean when EA ran', () => {
     expect(anti).toContain("const _eaFails = (cur.secondEngineAudit && typeof cur.secondEngineAudit.failViolations === 'number') ? cur.secondEngineAudit.failViolations : 0;");
-    expect(anti).toContain('if (_vio === 0 && _aiIssues.length === 0 && _eaFails === 0) break;');
+    expect(anti).toContain("const _isCanonicalComplete = (c) => !!(c && c.verificationState === 'complete' && c.afterScoreVerified === true && !c.requiresManualReview && isLiveVerificationHtmlBound(c, c.accessibleHtml));");
+    expect(anti).toContain('if (_vio === 0 && _aiIssues.length === 0 && _eaFails === 0 && _isCanonicalComplete(cur)) break;');
   });
   it('confirmed EA failures feed the next round\'s fix instructions', () => {
     expect(anti).toContain("EQUAL-ACCESS-CONFIRMED: ");

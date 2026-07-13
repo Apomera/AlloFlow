@@ -53,7 +53,10 @@ describe('anti-drift: the view wires iframe-first with popup fallback', () => {
   });
   it('end-of-remediation validates via the popup if opened, else the warm iframe', () => {
     expect(view).toMatch(/const _viaIframe = !_viaPopup && !!\(_veraIframe && _veraIframe\.isReady\(\)\)/);
-    expect(view).toMatch(/_viaIframe \? await validateOnIframe\(_veraIframe, _tbV\) : await validateOnWarmWindow\(_veraWarm, _tbV\)/);
+    expect(view).toMatch(/const _autoArtifact = _selectTaggedArtifact\(_tbV\)/);
+    expect(view).toMatch(/_veraRun = _beginVeraPdfValidation\(_autoArtifact, _autoSourceHtml\)/);
+    expect(view).toMatch(/_viaIframe \? await validateOnIframe\(_veraIframe, _veraRun\.bytes\) : await validateOnWarmWindow\(_veraWarm, _veraRun\.bytes\)/);
+    expect(view).toMatch(/if \(_veraPdfValidationIsCurrent\(_veraRun\)\) \{/);
   });
   it('the iframe is hidden + aria-hidden (it must not be a focusable/visible artifact)', () => {
     expect(view).toMatch(/setAttribute\('aria-hidden', 'true'\)/);

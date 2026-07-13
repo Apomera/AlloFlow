@@ -129,6 +129,30 @@ describe('project JSON saves', () => {
     expect(saved.studentProgressSummary.sel.stationQuestsTotal).toBe(1);
   });
 
+  it('persists a sanitized Builder draft only in teacher projects', async () => {
+    const builderDraft = {
+      version: 1,
+      source: 'history',
+      historySignature: '123:abc',
+      html: '<!doctype html><html><body><h1>Edited lesson</h1></body></html>',
+      activeContentRemoved: true
+    };
+
+    await PhaseKHelpers.executeSaveFile(makeSaveDeps({
+      saveType: 'teacher',
+      saveFileName: 'teacher-with-draft',
+      isIndependentMode: false,
+      builderDraft
+    }));
+    expect((await lastSavedJson()).builderDraft).toEqual(builderDraft);
+
+    await PhaseKHelpers.executeSaveFile(makeSaveDeps({
+      saveFileName: 'student-without-draft',
+      builderDraft
+    }));
+    expect((await lastSavedJson()).builderDraft).toBeUndefined();
+  });
+
   it('saves a student project without the removed researchMode free variable', async () => {
     await PhaseKHelpers.executeSaveFile(makeSaveDeps());
 

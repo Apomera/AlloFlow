@@ -46,11 +46,11 @@ describe('audit coherence — no-text-layer story is enforced by the math', () =
 
 describe('audit coherence — expert-edit re-score cannot inflate past Equal Access', () => {
   it('C4: _reauditAndScore runs EA and takes min(axe, EA) as the deterministic operand', () => {
-    expect(vw).toMatch(/_docPipeline\.runEqualAccessAudit\(newHtml\)\.catch\(\(\) => null\)/);
-    expect(vw).toMatch(/const \[_wv, _wa, _wea\] = await Promise\.all\(\[auditOutputAccessibility\(newHtml\), runAxeAudit\(newHtml\), _weaP\]\);/);
+    expect(vw).toContain('_safeAudit(() => _docPipeline.runEqualAccessAudit(newHtml))');
+    expect(vw).toMatch(/const \[_wv, _wa, _wea\] = await Promise\.all\(\[[\s\S]{0,320}_safeAudit\(\(\) => auditOutputAccessibility\(newHtml\)\)[\s\S]{0,220}_safeAudit\(\(\) => runAxeAudit\(newHtml\)\)/);
     expect(vw).toMatch(/const _wdet = _waOk \? \(_weaOk \? Math\.min\(_wa\.score, _wea\.score\) : _wa\.score\) : \(_weaOk \? _wea\.score : null\);/);
     // and the displayed EA audit stays in sync with the score that used it
-    expect(vw).toMatch(/secondEngineAudit: _weaOk \? _wea : prev\.secondEngineAudit,/);
+    expect(vw).toMatch(/secondEngineAudit: _weaOk \? _wea : null,/);
   });
 });
 
@@ -66,7 +66,8 @@ describe('audit coherence — one modal, one story (display guards)', () => {
   });
   it('C8: the report button never claims "(0% self-check)" when the self-check simply has not run', () => {
     expect(vw).not.toMatch(/conformancePct \?\? 0/);
-    expect(vw).toMatch(/typeof lastTaggedValidation\.pdfUa1Checks\?\.summary\?\.conformancePct === 'number'/);
+    expect(vw).toMatch(/const _currentTaggedValidation = \(_viewValidationMatchesHtml\(lastTaggedValidation, pdfFixResult && pdfFixResult\.accessibleHtml\)[\s\S]{0,180}?_viewTaggedArtifactProofMatches\(lastTaggedValidation, _renderTaggedArtifactTicket\)\) \? lastTaggedValidation : null;/);
+    expect(vw).toMatch(/_currentTaggedValidation && typeof _currentTaggedValidation\.pdfUa1Checks\?\.summary\?\.conformancePct === 'number'/);
   });
 });
 
@@ -256,7 +257,7 @@ describe('assessment mode + answer-key toggle + auto-recovery (Aaron decisions 2
     expect(vpNow2).toMatch(/let _result = await createTaggedPdf\(bytes, pdfFixResult/);
     expect(vpNow2).toMatch(/_res0 > 0 && _res0 <= 200/);
     expect(vpNow2).toMatch(/_res2 != null && _res2 <= _res0/);
-    expect(vpNow2).toMatch(/_preCmdHtml: _pre \} : prev\);/);
+    expect(vpNow2).toMatch(/setPdfFixResult\(prev => prev \? _viewEnforceVerificationHtmlBinding\(\{ \.\.\.prev, accessibleHtml: _h,[^\n]*_preCmdHtml: _pre \}, 'content-modified-pending-reverification', _docPipeline\) : prev\);/);
     expect(vpNow2).toMatch(/if \(_autoRestoreLine\) _rpt\.push\(_autoRestoreLine\);/);
   });
   it('C30: typeset unicode warning points at the word-level Diff / Verification panel', () => {

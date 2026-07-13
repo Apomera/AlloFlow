@@ -31,19 +31,19 @@ describe('student-side terminal handling of a soft-ended session', () => {
     expect(block).toContain('hasConnectedRef.current = false');
   });
 
-  it('handleEndLiveSession still soft-ends with the fields the terminal check reads', () => {
+  it('the confirmed session-end path still soft-ends with the fields the terminal check reads', () => {
     expect(src).toContain("isActive: false,");
-    expect(src).toContain("status: 'ended',");
+    expect(src).toContain("status: 'ended'");
   });
 
   it('soft-end is followed by a delayed delete (session metadata must not outlive the class)', () => {
     // Data-hygiene invariant: ALL end paths converge on deletion. The session
     // modal hard-deletes explicitly; the quiz-dashboard
     // soft-end now schedules a delete after the terminal marker lands.
-    const idx = src.indexOf('const handleEndLiveSession');
+    const idx = src.indexOf('const completeLiveSessionEnd');
     expect(idx).toBeGreaterThan(-1);
-    const block = src.slice(idx, idx + 1600);
-    expect(block).toContain("status: 'ended',");
+    const block = src.slice(idx, idx + 3000);
+    expect(block).toContain("status: 'ended'");
     expect(block).toContain('setTimeout(() => { deleteDoc(sessionRef).catch(() => {}); }');
   });
 });

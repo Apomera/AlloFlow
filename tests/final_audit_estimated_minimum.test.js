@@ -37,11 +37,12 @@ describe('final audit estimated minimum score', () => {
     expect(viewSrc).toContain("t('pdf_audit.verification.estimated_min_label')");
     expect(viewSrc).toContain('Complete final audit');
     expect(viewSrc).toContain('waitForGeminiCalm');
-    expect(viewSrc).toContain('_estimatedMinimumScore: null');
+    expect(viewSrc).toContain('_estimatedMinimumScore: (!_wvOk && Number.isFinite(_wscore)) ? _wscore : null');
   });
 
   it('export payloads carry both verified=false and the estimate basis', () => {
-    expect(viewSrc).toContain('afterScoreVerified: !pdfFixResult._aiVerificationIncomplete');
+    expect(viewSrc).toContain('afterScoreVerified: _jsonVerification.afterScoreVerified');
+    expect(viewSrc).toContain('aiVerificationIncomplete: !!value._aiVerificationIncomplete');
     expect(viewSrc).toContain('estimatedMinimumScore: Number.isFinite(pdfFixResult._estimatedMinimumScore)');
     expect(viewSrc).toContain('estimatedScoreBasis: pdfFixResult._estimatedScoreBasis || null');
   });

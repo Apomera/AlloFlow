@@ -16,7 +16,7 @@ describe('veraPDF rule telemetry — wiring', () => {
   it('it is called at all three sites: fresh export, on-demand validate, and repair-request', () => {
     expect(view).toMatch(/_recordVeraPdfRules\(_vrV, 'export'\)/);
     expect(view).toMatch(/_recordVeraPdfRules\(_vr, 'validate'\)/);
-    expect(view).toMatch(/_recordVeraPdfRules\(veraPdfResult, 'repair'\)/);
+    expect(view).toMatch(/_recordVeraPdfRules\(_currentVeraPdfResult, 'repair'\)/);
   });
   it('it records only rule IDs (clause + test), never document content', () => {
     // the bucket key is built from clause/testNumber only

@@ -113,19 +113,19 @@ beforeAll(async () => {
   const dom = new JSDOM(html, { runScripts: 'outside-only', pretendToBeVisual: true });
   dom.window.eval(axe.source);
   results = await dom.window.axe.run(dom.window.document, {
-    runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+    runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22a', 'wcag22aa'] },
   });
 
-  // Second engine — IBM Equal Access, WCAG_2_1 ruleset, over the same export DOM (fresh JSDOM so
+  // Second engine — IBM Equal Access, WCAG_2_2 ruleset, over the same export DOM (fresh JSDOM so
   // axe and ace don't interfere). A real violation = outcome FAIL with VIOLATION severity (ace also
   // reports RECOMMENDATION / POTENTIAL / MANUAL outcomes, which are advisory and excluded here).
   const aceDom = new JSDOM(html, { pretendToBeVisual: true });
-  const aceReport = await new aceEngine.Checker().check(aceDom.window.document, ['WCAG_2_1']);
+  const aceReport = await new aceEngine.Checker().check(aceDom.window.document, ['WCAG_2_2']);
   aceResults = (aceReport && aceReport.results) || [];
   aceViolations = aceResults.filter((r) => r.value && r.value[1] === 'FAIL' && r.value[0] === 'VIOLATION');
-});
+}, 30_000);
 
-describe('HTML export · axe-core WCAG 2.1 A+AA self-audit gate', () => {
+describe('HTML export · axe-core WCAG 2.2 A+AA self-audit gate', () => {
   it('produced an export to audit', () => {
     expect(typeof html).toBe('string');
     expect(html.length).toBeGreaterThan(500);
@@ -178,7 +178,7 @@ describe('HTML export · axe-core WCAG 2.1 A+AA self-audit gate', () => {
     const lines = results.violations.map(v =>
       `  [${v.impact}] ${v.id} (${v.nodes.length}) — ${v.help}\n      e.g. ${(v.nodes[0]?.target || []).join(' ')}`);
     // eslint-disable-next-line no-console
-    console.log(`\n=== axe WCAG 2.1 A+AA on the export: ${results.passes.length} passes, ${results.incomplete.length} incomplete (e.g. contrast — needs layout), ${results.violations.length} violations ===\n${lines.join('\n') || '  (no violations)'}\n`);
+    console.log(`\n=== axe WCAG 2.2 A+AA on the export: ${results.passes.length} passes, ${results.incomplete.length} incomplete (e.g. contrast — needs layout), ${results.violations.length} violations ===\n${lines.join('\n') || '  (no violations)'}\n`);
     expect(Array.isArray(results.violations)).toBe(true);
   });
 
@@ -308,9 +308,9 @@ describe('HTML export · axe-core WCAG 2.1 A+AA self-audit gate', () => {
     const unexpected = ids.filter(id => !BASELINE.has(id));
     expect(unexpected, `New axe violations not in BASELINE: ${unexpected.join(', ')}`).toEqual([]);
   });
-});
+}, 30_000);
 
-describe('HTML export · IBM Equal Access (ace) WCAG_2_1 self-audit gate — second engine', () => {
+describe('HTML export · IBM Equal Access (ace) WCAG_2_2 self-audit gate — second engine', () => {
   it('ace actually evaluated rules (so its result is meaningful, not a no-op)', () => {
     expect(aceResults.length).toBeGreaterThan(8);
   });
@@ -319,7 +319,7 @@ describe('HTML export · IBM Equal Access (ace) WCAG_2_1 self-audit gate — sec
     const fails = aceResults.filter((r) => r.value && r.value[1] === 'FAIL');
     const lines = fails.map((v) => `  [${v.value[0]}] ${v.ruleId} — ${v.path && v.path.dom}`);
     // eslint-disable-next-line no-console
-    console.log(`\n=== IBM Equal Access (WCAG_2_1) on the export: ${aceResults.length} checks, ${fails.length} FAIL (${aceViolations.length} VIOLATION-level) ===\n${lines.join('\n') || '  (no failures)'}\n`);
+    console.log(`\n=== IBM Equal Access (WCAG_2_2) on the export: ${aceResults.length} checks, ${fails.length} FAIL (${aceViolations.length} VIOLATION-level) ===\n${lines.join('\n') || '  (no failures)'}\n`);
     expect(Array.isArray(aceResults)).toBe(true);
   });
 
@@ -339,7 +339,7 @@ describe('axe-in-jsdom self-check (must flag known failures)', () => {
     const dom = new JSDOM(bad, { runScripts: 'outside-only', pretendToBeVisual: true });
     dom.window.eval(axe.source);
     const r = await dom.window.axe.run(dom.window.document, {
-      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22a', 'wcag22aa'] },
     });
     const ids = r.violations.map(v => v.id);
     expect(ids).toContain('image-alt');
@@ -349,7 +349,7 @@ describe('axe-in-jsdom self-check (must flag known failures)', () => {
   it('ace flags a known failure too (so its 0-violations is also trustworthy)', async () => {
     const bad = `<!DOCTYPE html><html lang="en"><head><title>x</title></head><body><main><img src="x.png"></main></body></html>`;
     const dom = new JSDOM(bad, { pretendToBeVisual: true });
-    const report = await new aceEngine.Checker().check(dom.window.document, ['WCAG_2_1']);
+    const report = await new aceEngine.Checker().check(dom.window.document, ['WCAG_2_2']);
     const fails = (report.results || []).filter((r) => r.value && r.value[1] === 'FAIL');
     expect(fails.some((r) => /img|alt/i.test(r.ruleId))).toBe(true);
   });

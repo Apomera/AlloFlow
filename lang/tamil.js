@@ -20210,7 +20210,19 @@
     "set_ui_language": "இடைமுக மொழியை மாற்றவும்",
     "set_ui_language_done": "தலைப்புப் பகுதியில் உள்ள மொழித் தேர்வுக்கு உங்களை அழைத்துச் சென்றுள்ளோம் — அங்கே உங்கள் மொழியைத் தேர்ந்தெடுக்கவும்.",
     "set_ui_language_hint": "தலைப்புப் பகுதியில் உள்ள மொழித் தேர்வுக்குச் செல்லவும்",
-    "set_ui_language_miss": "இடைமுக மொழித் தேர்வு மேல் பட்டிப் பட்டையில் உள்ளது."
+    "set_ui_language_miss": "இடைமுக மொழித் தேர்வு மேல் பட்டிப் பட்டையில் உள்ளது.",
+    "find_reading": "Find the right book",
+    "find_reading_done": "I found a good match and opened it",
+    "find_reading_hint": "Ask by topic, grade, language, source, or type",
+    "find_reading_none": "I opened the Reading Library, but I could not find a strong match yet",
+    "generate_analysis_ready": "Source analysis ready.",
+    "generate_glossary_ready": "Glossary ready.",
+    "generate_quiz_ready": "Quiz ready — it’s in the output panel.",
+    "generate_sentence_frames_ready": "Sentence frames ready.",
+    "generate_simplified_ready": "Simpler version ready.",
+    "open_reading_library": "Open the Reading Library",
+    "open_reading_library_done": "Reading Library opened.",
+    "open_reading_library_hint": "Browse open picture books in 10 languages"
   },
   "palette": {
     "aria": "AlloFlow கட்டளைப் பலகை",

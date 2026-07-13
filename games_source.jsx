@@ -2193,8 +2193,22 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   );
 });
 const BOTH_TRANSLATIONS = { English: 'Both', Spanish: 'Ambos', French: 'Les deux', Arabic: 'كلاهما', Chinese: '两者', Japanese: '両方', Korean: '둘 다', Portuguese: 'Ambos', German: 'Beide', Italian: 'Entrambi', Russian: 'Оба', Hindi: 'दोनों', Turkish: 'Her ikisi', Vietnamese: 'Cả hai', Thai: 'ทั้งสอง', Hebrew: 'שניהם', Swahili: 'Zote mbili', Dutch: 'Beide', Polish: 'Oba', Ukrainian: 'Обидва' };
+// Shared anti-score-farming economics for drag-sort games. A first-try correct
+// placement earns 20; a correction after a revealed hint earns 5, offsetting
+// the prior -5; already-awarded items cannot award again.
+const makeSortScoreTracker = () => {
+  const missed = new Set();
+  const awarded = new Set();
+  return {
+    correct(id) { if (awarded.has(id)) return 0; awarded.add(id); return missed.has(id) ? 5 : 20; },
+    incorrect(id) { missed.add(id); return -5; },
+  };
+};
+
 const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, titles = { setA: { text: "Set A" }, setB: { text: "Set B" } }, primaryLanguage = "English" }) => {
   const { t } = useContext(LanguageContext);
+  const scoreTrackerRef = useRef(null);
+  if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
   const [score, setScore] = useState(0);
   const [isWon, setIsWon] = useState(false);
@@ -2276,12 +2290,13 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
       } else {
            if (item.correctZone === targetZone) {
                setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: targetZone } : i));
-               setScore(s => s + 20);
+               const delta = scoreTrackerRef.current.correct(item.id);
+       if (delta > 0) setScore(s => s + delta);
                if(playSound) playSound('correct');
                setAnnouncement(t('concept_map.venn.move_correct', { item: itemName, zone: getTitle(targetZone) }));
            } else {
                setAttempts(a => a + 1);
-               setScore(s => Math.max(0, s - 5));
+               setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
                if(playSound) playSound('incorrect');
                showZoneHint(item.correctZone);
                setAnnouncement(t('concept_map.venn.move_incorrect', { item: itemName }));
@@ -2309,11 +2324,12 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
       if (draggedItem.correctZone === targetZone) {
           if (playSound) playSound('correct');
           setItems(prev => prev.map(i => i.id === draggedItem.id ? { ...i, currentZone: targetZone } : i));
-          setScore(s => s + 20);
+          const delta = scoreTrackerRef.current.correct(draggedItem.id);
+       if (delta > 0) setScore(s => s + delta);
       } else {
           if (playSound) playSound('incorrect');
           setAttempts(a => a + 1);
-          setScore(s => Math.max(0, s - 5));
+          setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(draggedItem.id)));
           showZoneHint(draggedItem.correctZone);
       }
       setDraggedItem(null);
@@ -2585,6 +2601,8 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
 });
 const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
   const { t } = useContext(LanguageContext);
+  const scoreTrackerRef = useRef(null);
+  if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
   const [score, setScore] = useState(0);
   const [isWon, setIsWon] = useState(false);
@@ -2674,12 +2692,13 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       } else {
            if (item.correctZone === targetZone) {
                setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: targetZone } : i));
-               setScore(s => s + 20);
+               const delta = scoreTrackerRef.current.correct(item.id);
+       if (delta > 0) setScore(s => s + delta);
                if(playSound) playSound('correct');
                setAnnouncement(`Correct! "${item.text}" is a ${targetZone === 'causes' ? 'Cause' : 'Effect'}.`);
            } else {
                setAttempts(a => a + 1);
-               setScore(s => Math.max(0, s - 5));
+               setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
                if(playSound) playSound('incorrect');
                showZoneHint(item.correctZone);
                setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === 'causes' ? 'Causes' : 'Effects'}.`);
@@ -2707,11 +2726,12 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       if (draggedItem.correctZone === targetZone) {
           if (playSound) playSound('correct');
           setItems(prev => prev.map(i => i.id === draggedItem.id ? { ...i, currentZone: targetZone } : i));
-          setScore(s => s + 20);
+          const delta = scoreTrackerRef.current.correct(draggedItem.id);
+       if (delta > 0) setScore(s => s + delta);
       } else {
           if (playSound) playSound('incorrect');
           setAttempts(a => a + 1);
-          setScore(s => Math.max(0, s - 5));
+          setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(draggedItem.id)));
           showZoneHint(draggedItem.correctZone);
       }
       setDraggedItem(null);
@@ -2983,6 +3003,8 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
 // Shape: data = { leftTitle, rightTitle, leftItems: [string], rightItems: [string] }
 const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
   const { t } = useContext(LanguageContext);
+  const scoreTrackerRef = useRef(null);
+  if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
   const [score, setScore] = useState(0);
   const [isWon, setIsWon] = useState(false);
@@ -3055,12 +3077,13 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
     }
     if (item.correctZone === targetZone) {
       setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: targetZone } : i));
-      setScore(s => s + 20);
+      const delta = scoreTrackerRef.current.correct(item.id);
+       if (delta > 0) setScore(s => s + delta);
       if (playSound) playSound('correct');
       setAnnouncement(`Correct! "${item.text}" belongs in ${targetZone === 'left' ? leftTitle : rightTitle}.`);
     } else {
       setAttempts(a => a + 1);
-      setScore(s => Math.max(0, s - 5));
+      setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
       if (playSound) playSound('incorrect');
       showZoneHint(item.correctZone);
       setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === 'left' ? leftTitle : rightTitle}.`);
@@ -3317,6 +3340,8 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
 // theme: { headerGradient, accentColor (tailwind suffix like 'cyan'), title }
 const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "", gameKey = "multiBucket" }) => {
   const { t } = useContext(LanguageContext);
+  const scoreTrackerRef = useRef(null);
+  if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
   const [score, setScore] = useState(0);
   const [isWon, setIsWon] = useState(false);
@@ -3379,12 +3404,13 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
     const bucketLabel = bucket ? bucket.title : targetBucketId;
     if (item.correctBucketId === targetBucketId) {
       setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentBucketId: targetBucketId } : i));
-      setScore(s => s + 20);
+      const delta = scoreTrackerRef.current.correct(item.id);
+       if (delta > 0) setScore(s => s + delta);
       if (playSound) playSound('correct');
       setAnnouncement(`Correct! "${item.text}" belongs in ${bucketLabel}.`);
     } else {
       setAttempts(a => a + 1);
-      setScore(s => Math.max(0, s - 5));
+      setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
       if (playSound) playSound('incorrect');
       showZoneHint(item.correctBucketId);
       setAnnouncement(`Incorrect. "${item.text}" does not belong in ${bucketLabel}.`);
@@ -3753,7 +3779,6 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   const pipelineWinRef = useRef(null);
   const pipelinePlayAgainRef = useRef(null);
   useGameDialogFocus(pipelineDialogRef, pipelineCloseRef, onClose);
-  useEffect(() => { if (isComplete) pipelinePlayAgainRef.current?.focus(); }, [isComplete]);
   const [shuffledSteps, setShuffledSteps] = useState([]);
   const [connections, setConnections] = useState([]);
   const [connectingFrom, setConnectingFrom] = useState(null);
@@ -3761,6 +3786,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   const [results, setResults] = useState(null);
   const [score, setScore] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  useEffect(() => { if (isComplete) pipelinePlayAgainRef.current?.focus(); }, [isComplete]);
   const [arrowCoords, setArrowCoords] = useState([]);
   const [announcement, setAnnouncement] = useState('');
   const [keyboardSelectedId, setKeyboardSelectedId] = useState(null);
@@ -5899,6 +5925,8 @@ const _MultiZoneColorMap = {
 };
 const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "", gameKey, gameLabel, zoneConfig, layoutMode = 'columns', captionText = "" }) => {
   const { t } = useContext(LanguageContext);
+  const scoreTrackerRef = useRef(null);
+  if (!scoreTrackerRef.current) scoreTrackerRef.current = makeSortScoreTracker();
   const [items, setItems] = useState([]);
   const [score, setScore] = useState(0);
   const [isWon, setIsWon] = useState(false);
@@ -5961,12 +5989,13 @@ const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate,
     const zoneLabel = (zoneConfig.find(z => z.id === targetZone) || {}).label || targetZone;
     if (item.correctZone === targetZone) {
       setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: targetZone } : i));
-      setScore(s => s + 20);
+      const delta = scoreTrackerRef.current.correct(item.id);
+       if (delta > 0) setScore(s => s + delta);
       if (playSound) playSound('correct');
       setAnnouncement(`Correct. "${item.text}" belongs in ${zoneLabel}.`);
     } else {
       setAttempts(a => a + 1);
-      setScore(s => Math.max(0, s - 5));
+      setScore(s => Math.max(0, s + scoreTrackerRef.current.incorrect(item.id)));
       if (playSound) playSound('incorrect');
       setAnnouncement(`Not quite. "${item.text}" does not belong in ${zoneLabel}. Try another zone.`);
     }

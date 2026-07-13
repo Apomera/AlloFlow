@@ -38,9 +38,10 @@ describe('#10 lang-text-floor — target-aware CJK floor', () => {
 
 describe('#11 recov-score-order — re-audit success keys off the FRESH axe result', () => {
   it('anti-drift: _reAxeOk is computed from _reAxe (fresh), not the stale axeResults', () => {
-    expect(src).toContain("const _reAxeOk = _reAxe && typeof _reAxe.score === 'number';");
+    expect(src).toContain("const _reAxeOk = !!(_reAxe && typeof _reAxe.score === 'number' && Number.isFinite(_reAxe.score));");
     // det is computed from the fresh values, not the possibly-stale prior results
-    expect(src).toContain('_reDet = _reAxeOk ? (_reEaOk ? Math.min(_reAxe.score, _reEa.score) : _reAxe.score) : null;');
+    expect(src).toMatch(/const _reDet = _reAxeOk\s*\n\s*\? \(_reEaOk \? Math\.min\(_reAxe\.score, _reEa\.score\) : _reAxe\.score\)\s*\n\s*: \(_reEaOk \? _reEa\.score : null\);/);
+    expect(src).toContain('axeResults = _reAxeOk ? _reAxe : null;');
   });
   it('anti-drift: a failed re-audit falls back to AI-only and reports axe as failed (consistent triage)', () => {
     expect(src).toContain('if (_reAi !== null) finalAfterScore = _reAi;');

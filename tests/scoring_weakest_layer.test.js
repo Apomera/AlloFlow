@@ -136,9 +136,11 @@ describe('anti-drift: the view shows two layers + the governing one, never an av
     expect(viewSrc).toMatch(/Checks passed \(informational\)/);
     expect(viewSrc).not.toMatch(/text-green-700 font-bold"><span>Passed<\/span>/);
   });
-  it('the Workbench recompute routes through the shared headline fn and clears the stale incomplete flag (VDH-1)', () => {
-    expect(viewSrc).toMatch(/const _wscore = \(_wdet !== null\) \? _computeHeadline\(_wv\.score, _wdet\)/);
-    expect(viewSrc).toMatch(/_aiVerificationIncomplete: false,/);
+  it('the Workbench recompute routes through the shared headline fn and derives completeness from fresh evidence (VDH-1)', () => {
+    expect(viewSrc).toContain('const _wscore = _computeHeadline(_wvOk ? _wv.score : null, _wdet);');
+    expect(viewSrc).toContain('_aiVerificationIncomplete: !_wvOk,');
+    expect(viewSrc).toContain('const _freshBinding = await _viewCreateVerificationHtmlBinding(newHtml, _docPipeline);');
+    expect(viewSrc).toContain("pdfUaSelfCheck: _sameBoundHtml ? ((prev.verificationCoverage && prev.verificationCoverage.pdfUaSelfCheck) || 'not-run') : 'not-run',");
   });
   it('the sticky dashboard bar neutralizes when the AI audit was incomplete (VDH-2)', () => {
     expect(viewSrc).toMatch(/pdfFixResult\._aiVerificationIncomplete \? 'text-slate-500' : 'text-emerald-800'/);

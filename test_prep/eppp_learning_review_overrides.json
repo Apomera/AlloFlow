@@ -516,6 +516,121 @@
         "bias-and-context": "editorial-pass-alcohol-stigma-aging-disability-language-and-mixed-pathology",
         "expert-review": "pending-independent-neurology-neuropsychology-and-geriatric-review"
       }
+    },
+    "ch-23": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ninds.nih.gov/health-information/patient-caregiver-education/brain-basics-life-and-death-neuron",
+        "https://www.ncbi.nlm.nih.gov/books/NBK538516/",
+        "https://aasm.org/coding-quarterly-cognitive-behavioral-therapy-for-insomnia/",
+        "https://doi.org/10.1016/S0140-6736(10)61460-9",
+        "https://doi.org/10.1111/joa.13446"
+      ],
+      "reviewNote": "Corrected brain-wide pruning peaks and adolescent-behavior reductionism, LTP-as-complete-basis, settled adult-human olfactory and hippocampal neurogenesis, literal equipotentiality, age-only injury recovery and simple cortical takeover, Romanian-adoptee causal cutoffs, sympathetic-equals-NE shorthand, polyvagal claims presented as settled anatomy, categorical insomnia medication exclusion, universal cataplexy/orexin claims, apnea risk and treatment simplifications, absent parasomnia recall, REM behavior disorder as diagnostic, and AI consciousness self-report; added an accessible autonomic two-neuron pathway diagram and transmitter-exception check, and emphasized variability, differential assessment, and theory-versus-evidence boundaries.",
+      "checks": {
+        "source-support": "editorial-pass-ninds-ncbi-aasm-primary-developmental-and-anatomy-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-mechanisms-qualified-and-exceptions-tested",
+        "accessibility": "shared-renderer-pass-new-svg-labelled-and-described",
+        "bias-and-context": "editorial-pass-developmental-variability-disability-and-nondeterminism",
+        "expert-review": "pending-independent-neuroscience-sleep-developmental-and-psychophysiology-review"
+      }
+    },
+    "ch-24": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1037/h0087356",
+        "https://doi.org/10.1016/j.brat.2008.10.014",
+        "https://doi.org/10.1037/0033-295X.84.2.191",
+        "https://www.bacb.com/wp-content/uploads/2022/01/Ethics-Code-for-Behavior-Analysts-240830-a.pdf"
+      ],
+      "reviewNote": "Corrected extinction-as-proven-suppression, one-trial and unique taste-aversion absolutes, mutually exclusive relaxation/anxiety, universal reinforcement-schedule rankings, extinction-burst inevitability and inferred variable-ratio reinforcement, self-efficacy as a universal strongest predictor, learned helplessness as a complete depression foundation, preparedness as a single phobia explanation, and literal operant/observational analogies for AI training; added safety and alternative-reinforcement safeguards for extinction, rebuilt the operant matrix with clean encoding and a full text alternative, and retained the existing scenario check with a qualified rationale.",
+      "checks": {
+        "source-support": "editorial-pass-primary-learning-theory-exposure-review-and-bacb-ethics",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-functional-relations-boundary-conditions-and-safe-application",
+        "accessibility": "shared-renderer-pass-svg-rebuilt-labelled-and-encoding-clean",
+        "bias-and-context": "editorial-pass-context-individual-variation-and-noncoercive-support",
+        "expert-review": "pending-independent-learning-behavior-analysis-and-clinical-review"
+      }
+    },
+    "ch-25": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1017/S0140525X01003922",
+        "https://doi.org/10.1037/h0047857",
+        "https://doi.org/10.1101/lm.94705",
+        "https://doi.org/10.1037/0033-295X.86.5.420",
+        "https://doi.org/10.1016/j.neuropsychologia.2006.04.021"
+      ],
+      "reviewNote": "Corrected 7±2 and 18–30-second values as universal STM limits, mechanical rehearsal transfer, unlimited/permanent LTM, one-region memory tables, all-implicit-memory-preserved amnesia, hippocampus-as-STM-to-LTM switch, uniformly intact H.M. remote memory and lesion description, central-executive hierarchy, deepest/dual coding/encoding-match absolutes, advice to recreate intoxicated states, recognition-always-easier, repression as established forgetting, a universal Ebbinghaus curve, suggestion as deterministic memory implantation, universal prospective-memory aging decline, and literal AI/H.M./misinformation-effect equivalence; removed encoding corruption and emphasized task conditions, distributed systems, retrieval support, and individual-case uncertainty.",
+      "checks": {
+        "source-support": "editorial-pass-primary-working-memory-hm-eyewitness-and-retrieval-research",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-historical-models-qualified-by-modern-evidence",
+        "accessibility": "shared-renderer-pass-encoding-clean-and-auto-memory-diagram-text-alternative",
+        "bias-and-context": "editorial-pass-aging-trauma-disability-and-individual-memory-claims",
+        "expert-review": "pending-independent-cognitive-neuropsychology-and-forensic-memory-review"
+      }
+    },
+    "ch-26": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1126/science.185.4157.1124",
+        "https://doi.org/10.1037/0033-2909.126.1.17",
+        "https://doi.org/10.1016/j.cognition.2011.01.001",
+        "https://doi.org/10.1037/h0041593",
+        "https://doi.org/10.1177/1745691617693056"
+      ],
+      "reviewNote": "Corrected confirmation bias as uniquely most clinically relevant, an ASD-stereotype/base-rate question, dual-process modes as literal good-versus-bad modules, System 1 as the source of most bias, broad depletion claims, structured methods as System 2, clinical-versus-actuarial prediction as an identical debate, sleep-onset experience as a definitive diagnosis, universal structured superiority for every diagnostic task, guaranteed algorithms, confirmation as only seeking, dissonance as uniform discomfort, and less-reward/more-change as a universal law; rebuilt the corrupted diagram as an accessible interacting-modes and structured-cross-check model, qualified classic findings, and replaced literal AI bias/dissonance mechanisms with testable engineering distinctions.",
+      "checks": {
+        "source-support": "editorial-pass-primary-heuristics-clinical-prediction-dual-process-and-dissonance-research",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-probabilistic-reasoning-and-structured-cross-checks",
+        "accessibility": "shared-renderer-pass-svg-rebuilt-labelled-described-and-encoding-clean",
+        "bias-and-context": "editorial-pass-autism-stereotype-removed-client-context-and-cultural-assessment",
+        "expert-review": "pending-independent-cognitive-clinical-and-decision-science-review"
+      }
+    },
+    "ch-27": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1080/02699939208411068",
+        "https://doi.org/10.1177/0956797614561041",
+        "https://doi.org/10.1037/0033-295X.84.2.191",
+        "https://doi.org/10.1207/S15327965PLI1104_01",
+        "https://doi.org/10.1001/archinte.2007.31",
+        "https://doi.org/10.1037/0033-295X.93.2.206"
+      ],
+      "reviewNote": "Corrected emotion theories as literal current neural sequences, six facial expressions as uniformly universal, facial feedback as deterministic, the bridge study as causal proof, Maslow needs as invariant prerequisites, autonomy as unrestricted control, all rewards as undermining interest, Yerkes–Dodson as a universal moderate-arousal law, fixed coping prescriptions, internal control as inherently healthier, hardiness as a universal buffer, and hostility as the singular toxic cause of coronary disease; added an accessible conditional arousal–performance diagram, qualified the reward vignette, reframed cardiac recovery as multifactorial, and removed literal AI emotion and intrinsic-motivation inference.",
+      "checks": {
+        "source-support": "editorial-pass-primary-emotion-motivation-arousal-coping-and-health-research",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-classic-theories-separated-from-current-boundaries",
+        "accessibility": "shared-renderer-pass-new-svg-labelled-described-and-encoding-clean",
+        "bias-and-context": "editorial-pass-culture-control-social-conditions-and-cardiac-stigma",
+        "expert-review": "pending-independent-affective-motivation-and-health-psychology-review"
+      }
+    },
+    "ch-28": {
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.asha.org/practice-portal/professional-issues/bilingual-service-delivery/",
+        "https://www.asha.org/policy/pi2017-00119/",
+        "https://www.aaidd.org/intellectual-disability/definition",
+        "https://doi.org/10.1177/1529100614522901",
+        "https://doi.org/10.1177/0956797614527860",
+        "https://doi.org/10.1016/j.cognition.2018.10.018"
+      ],
+      "reviewNote": "Corrected infants as producing all phonemes, universal vocabulary explosion, LAD as an identified neural mechanism, one critique as disproving learning accounts, a broadly supported weak Sapir–Whorf version, puberty as a hard language deadline, Chomsky as settled dominant theory, overregularization as unique proof of nativism, g as psychology’s most validated construct, fixed Gf/Gc aging, CHC as a pure mapping onto named tests, a universal three-point Flynn effect, IQ-cutoff definitions of intellectual disability and giftedness, focal navigation loss as normal aging, bilingual executive and dementia advantages as settled, nonverbal tests as culture-free, and mandatory one-dominant-language assessment; added an accessible multilingual assessment workflow, rewrote the overregularization check, and reframed the older-adult case as a potentially urgent differential.",
+      "checks": {
+        "source-support": "editorial-pass-asha-aaidd-primary-language-bilingual-and-cognitive-research",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-competing-models-validity-and-multimethod-assessment",
+        "accessibility": "shared-renderer-pass-new-svg-labelled-described-and-encoding-clean",
+        "bias-and-context": "editorial-pass-multilingual-culture-disability-aging-and-opportunity",
+        "expert-review": "pending-independent-language-development-psychometrics-and-bilingual-assessment-review"
+      }
     }
   }
 }

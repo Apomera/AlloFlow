@@ -27,6 +27,7 @@ describe('Memory Match mode-switch accessibility', () => {
   });
 
   it('provides 44 CSS-pixel dialog actions', () => {
-    expect(files[0][1].match(/min-h-11 rounded-lg/g)).toHaveLength(2);
+    const dialog = files[0][1].slice(files[0][1].indexOf('memory-mode-dialog-title'), files[0][1].indexOf('memory-mode-dialog-title') + 2200);
+    expect(dialog.match(/min-h-11 rounded-lg/g)).toHaveLength(2);
   });
 });

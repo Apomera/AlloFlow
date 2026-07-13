@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-11T18:00:25.740Z
+Generated: 2026-07-12T21:26:46.939Z
 
 ## Scope
 
@@ -13,11 +13,11 @@ Generated: 2026-07-11T18:00:25.740Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 33 |
+| Total findings | 37 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 11 |
+| Tool-level warnings | 15 |
 | Review notices | 22 |
-| Tools with any finding | 30 |
+| Tools with any finding | 32 |
 | Tools with high-confidence errors | 0 |
 | Tools with canvas surfaces | 36 |
 
@@ -25,9 +25,10 @@ Generated: 2026-07-11T18:00:25.740Z
 
 | Severity | Code | Findings | Tools | Example tools | Recommendation |
 | --- | --- | ---: | ---: | --- | --- |
-| warning | `tiny-text` | 9 | 9 | base10, calculus, coordinate, geologyExplorer, particleLab3d, protractor, unitConvert, universe, volume | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
+| warning | `tiny-text` | 12 | 12 | base10, calculus, coordinate, geologyExplorer, inequality, multtable, particleLab3d, plateTectonics, protractor, unitConvert, universe, volume | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
 | warning | `canvas-focus` | 1 | 1 | particleLab3d | If a canvas supports interaction, make it keyboard-focusable and expose keyboard alternatives. |
 | warning | `inline-contrast` | 1 | 1 | appLab | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
+| warning | `svg-name` | 1 | 1 | birdLab | Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title. |
 | notice | `metadata` | 19 | 19 | accessLens, archStudio, birdLab, circuitShelf, codingPlayground, cyberDefense, dataLab, dinoLab, evoLab, geologyExplorer, geometryWorld, moleculeShelf | Fill in label, description, category, and aliases so discovery and context labels stay clear. |
 | notice | `horizontal-overflow-risk` | 3 | 3 | birdLab, plateTectonics, playlab | Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow. |
 
@@ -65,7 +66,7 @@ Generated: 2026-07-11T18:00:25.740Z
 | `beehive` Beehive Simulator | science | standard | 65 | 5 | 1 | 0 | 0 | 0 |  |
 | `behaviorLab` Behavior Lab | science | standard | 24 | 5 | 0 | 0 | 0 | 0 |  |
 | `bikeLab` BikeLab: Physics & Repair | life-skills | standard | 11 | 0 | 0 | 0 | 0 | 0 |  |
-| `birdLab` BirdLab — I-Spy Ornithology | general | standard | 127 | 1 | 0 | 0 | 0 | 2 | horizontal-overflow-risk x1, metadata x1 |
+| `birdLab` BirdLab — I-Spy Ornithology | general | standard | 127 | 1 | 0 | 0 | 1 | 2 | horizontal-overflow-risk x1, metadata x1, svg-name x1 |
 | `brainAtlas` Brain Atlas Explorer | science | standard | 46 | 1 | 1 | 0 | 0 | 0 |  |
 | `bridgeLab` Bridge Engineering Lab | science | standard | 24 | 8 | 0 | 0 | 0 | 0 |  |
 | `calculus` Calculus | math | standard | 29 | 9 | 0 | 0 | 1 | 0 | tiny-text x1 |
@@ -109,7 +110,7 @@ Generated: 2026-07-11T18:00:25.740Z
 | `geometryProver` Geometry | math | standard | 17 | 0 | 0 | 0 | 0 | 0 |  |
 | `geometryWorld` Geometry World | explore | standard | 0 | 0 | 0 | 0 | 0 | 1 | metadata x1 |
 | `graphCalc` graphCalc | math | standard | 26 | 7 | 1 | 0 | 0 | 0 |  |
-| `inequality` Inequality Grapher | math | standard | 30 | 8 | 0 | 0 | 0 | 0 |  |
+| `inequality` Inequality Grapher | math | standard | 30 | 8 | 0 | 0 | 1 | 0 | tiny-text x1 |
 | `kitchenLab` Kitchen Lab | applied | standard | 8 | 1 | 0 | 0 | 0 | 0 |  |
 | `learningLab` Learning Lab | life-skills | standard | 22 | 0 | 0 | 0 | 0 | 0 |  |
 | `lifeSkills` Life Skills Lab | Life Skills | standard | 58 | 3 | 0 | 0 | 0 | 0 |  |
@@ -122,16 +123,16 @@ Generated: 2026-07-11T18:00:25.740Z
 | `moleculeShelf` Molecule Shelf | general | standard | 2 | 0 | 0 | 0 | 0 | 1 | metadata x1 |
 | `moneyMath` Money Math | math | standard | 29 | 2 | 0 | 0 | 0 | 0 |  |
 | `moonMission` Moon Mission | science | standard | 8 | 5 | 0 | 0 | 0 | 0 |  |
-| `multtable` Multiplication Table | math | standard | 22 | 5 | 0 | 0 | 0 | 0 |  |
+| `multtable` Multiplication Table | math | standard | 22 | 5 | 0 | 0 | 1 | 0 | tiny-text x1 |
 | `musicSynth` Music Synthesizer | creative | standard | 94 | 19 | 2 | 0 | 0 | 0 |  |
 | `numberline` Number Line | math | standard | 21 | 5 | 0 | 0 | 0 | 0 |  |
 | `nutritionLab` NutritionLab — Nutrition Science | general | standard | 19 | 0 | 0 | 0 | 0 | 1 | metadata x1 |
 | `opticsLab` Optics Lab | science | standard | 34 | 0 | 0 | 0 | 0 | 0 |  |
 | `oratory` Oratory Lab | science | standard | 16 | 0 | 4 | 0 | 0 | 0 |  |
-| `particleLab3d` Particle Lab 3D | science | standard | 19 | 4 | 1 | 0 | 2 | 0 | canvas-focus x1, tiny-text x1 |
+| `particleLab3d` Particle Lab 3D | science | standard | 25 | 7 | 1 | 0 | 2 | 0 | canvas-focus x1, tiny-text x1 |
 | `petsLab` Science of Pets Lab | life-earth-science | standard | 35 | 7 | 0 | 0 | 0 | 0 |  |
 | `physics` Physics Simulator | science | standard | 0 | 0 | 0 | 0 | 0 | 0 |  |
-| `plateTectonics` Plate Tectonics | science | standard | 25 | 5 | 6 | 0 | 0 | 1 | horizontal-overflow-risk x1 |
+| `plateTectonics` Plate Tectonics | science | standard | 25 | 5 | 6 | 0 | 1 | 1 | horizontal-overflow-risk x1, tiny-text x1 |
 | `playlab` PlayLab | science | standard | 31 | 5 | 1 | 0 | 0 | 1 | horizontal-overflow-risk x1 |
 | `printingPress` PrintingPress | history-engineering | standard | 25 | 0 | 0 | 0 | 0 | 0 |  |
 | `probability` Probability Lab | math | standard | 37 | 5 | 0 | 0 | 0 | 0 |  |

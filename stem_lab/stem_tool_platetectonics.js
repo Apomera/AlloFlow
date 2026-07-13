@@ -773,16 +773,38 @@
       ctx.fillStyle = mantle;
       ctx.fillRect(0, H * 0.5, W, H * 0.5);
 
-      // Convection currents (subtle arrows)
-      ctx.strokeStyle = isDark ? 'rgba(239, 68, 68, 0.3)' : 'rgba(254, 215, 170, 0.4)';
-      ctx.lineWidth = 1;
-      for (var c = 0; c < 4; c++) {
-        var cx = 100 + c * 110;
-        var cy = H * 0.78 + Math.sin(cur.years * 0.01 + c) * 5;
-        ctx.beginPath();
-        ctx.arc(cx, cy, 25, 0, Math.PI * 2);
-        ctx.stroke();
+      // Mantle convection cells: hot rock rises at the boundary, spreads, cools, and sinks.
+      var motionReduced = false;
+      try { motionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+      var flowPhase = motionReduced ? 0.16 : (cur.years * 0.0018);
+      var cellY = H * 0.79, cellRx = 112, cellRy = H * 0.16;
+      ctx.save();
+      for (var c = 0; c < 2; c++) {
+        var cellCx = c === 0 ? 158 : 382;
+        var direction = c === 0 ? -1 : 1;
+        var flowGrad = ctx.createLinearGradient(cellCx, cellY + cellRy, cellCx, cellY - cellRy);
+        flowGrad.addColorStop(0, isDark ? 'rgba(127,29,29,0.28)' : 'rgba(153,27,27,0.24)');
+        flowGrad.addColorStop(1, isDark ? 'rgba(251,146,60,0.72)' : 'rgba(254,215,170,0.78)');
+        ctx.strokeStyle = flowGrad; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.ellipse(cellCx, cellY, cellRx, cellRy, 0, 0, Math.PI * 2); ctx.stroke();
+        for (var fp = 0; fp < 9; fp++) {
+          var fa = direction * (flowPhase + fp / 9) * Math.PI * 2;
+          var fx = cellCx + Math.cos(fa) * cellRx, fy = cellY + Math.sin(fa) * cellRy;
+          var rising = Math.sin(fa) < 0;
+          ctx.fillStyle = rising ? '#fdba74' : '#f87171';
+          ctx.globalAlpha = 0.35 + (rising ? 0.5 : 0.28);
+          ctx.shadowColor = rising ? '#fb923c' : '#991b1b'; ctx.shadowBlur = rising ? 8 : 3;
+          ctx.beginPath(); ctx.arc(fx, fy, rising ? 3.2 : 2.5, 0, Math.PI * 2); ctx.fill();
+        }
       }
+      // Central upwelling plume and cooler return flow at the outer edges.
+      var plume = ctx.createLinearGradient(0, H * 0.94, 0, H * 0.56);
+      plume.addColorStop(0, 'rgba(127,29,29,0)'); plume.addColorStop(0.45, 'rgba(249,115,22,0.28)'); plume.addColorStop(1, 'rgba(254,215,170,0.68)');
+      ctx.globalAlpha = 1; ctx.shadowBlur = 10; ctx.shadowColor = '#fb923c'; ctx.fillStyle = plume;
+      ctx.beginPath(); ctx.moveTo(238, H * 0.96); ctx.bezierCurveTo(245, H * 0.76, 256, H * 0.66, 270, H * 0.55); ctx.bezierCurveTo(284, H * 0.66, 295, H * 0.76, 302, H * 0.96); ctx.closePath(); ctx.fill();
+      ctx.shadowBlur = 0; ctx.globalAlpha = 0.82; ctx.fillStyle = isDark ? '#fed7aa' : '#7c2d12'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('HOT RISES', 270, H * 0.72); ctx.fillText('COOL SINKS', 70, H * 0.91); ctx.fillText('COOL SINKS', 470, H * 0.91);
+      ctx.restore();
 
       // Boundary line at x=270
       var bx = 270;

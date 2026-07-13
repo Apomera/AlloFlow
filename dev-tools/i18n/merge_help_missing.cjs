@@ -69,7 +69,7 @@ function buildPrompt(targetLang, missingJson) {
     'RULES — strict, the output will be auto-validated:',
     '  1. Keep all JSON keys IDENTICAL. Do not translate keys.',
     '  2. Preserve emoji and symbols exactly (🤖, ⚠️, ☐, [ ], ~, +, −, ✅).',
-    '  3. Preserve technical/branded terms verbatim: AlloFlow, Gemini, Canvas, WCAG 2.1 AA, axe-core, ARIA, PDF/UA, AcroForm, OCR, WebAssembly, CDN, CSV, HTML, RTL, ELL, CBM, IDEA, IEP, FERPA, .alloflow.json, OpenDyslexic, Lexend, Atkinson Hyperlegible. Keep px units and number ranges (e.g. 12-24px, 8-14).',
+    '  3. Preserve technical/branded terms verbatim: AlloFlow, Gemini, Canvas, WCAG 2.2 AA, axe-core, ARIA, PDF/UA, AcroForm, OCR, WebAssembly, CDN, CSV, HTML, RTL, ELL, CBM, IDEA, IEP, FERPA, .alloflow.json, OpenDyslexic, Lexend, Atkinson Hyperlegible. Keep px units and number ranges (e.g. 12-24px, 8-14).',
     '  4. Preserve any {placeholder} or ${variable} tokens EXACTLY — do not translate or alter them.',
     '  5. Return ONLY valid JSON. No prose, no markdown fences, no leading/trailing whitespace.',
     '',

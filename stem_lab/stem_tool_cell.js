@@ -158,8 +158,34 @@ window.StemLab = window.StemLab || {
     // cytoplasmic streaming particles
     var drift = reduced ? 0 : t;
     for (var i = 0; i < 80; i++) { var a = _ih(i) * 6.2832 + drift * (0.2 + _ih(i + 99) * 0.3), rr = _ih(i + 7) * 0.46; var pp = P(0.5 + Math.cos(a) * rr, 0.5 + Math.sin(a) * rr * (RY / RX)); cx2d.fillStyle = 'rgba(125,211,252,' + (0.04 + _ih(i + 3) * 0.06) + ')'; cx2d.beginPath(); cx2d.arc(pp[0], pp[1], 1 + _ih(i + 5) * 1.6, 0, 6.2832); cx2d.fill(); }
-    // membrane (fluid bilayer dots)
-    cx2d.lineWidth = S(0.012); cx2d.strokeStyle = '#22d3ee'; cx2d.globalAlpha = 0.5; cx2d.beginPath(); cx2d.ellipse(cx, cy, RX, RY, 0, 0, 6.2832); cx2d.stroke(); cx2d.globalAlpha = 1;
+    // Cytoskeleton: faint structural fibers beneath the organelles.
+    cx2d.save(); cx2d.globalAlpha = 0.13; cx2d.lineWidth = Math.max(1, S(0.004));
+    for (var cf = 0; cf < 9; cf++) {
+      var cfa = cf / 9 * 6.2832 + (reduced ? 0 : t * 0.025);
+      cx2d.strokeStyle = cf % 2 ? '#a78bfa' : '#67e8f9';
+      cx2d.beginPath();
+      cx2d.moveTo(cx + Math.cos(cfa) * RX * 0.08, cy + Math.sin(cfa) * RY * 0.08);
+      cx2d.bezierCurveTo(cx + Math.cos(cfa + 0.55) * RX * 0.42, cy + Math.sin(cfa + 0.55) * RY * 0.42, cx + Math.cos(cfa - 0.35) * RX * 0.72, cy + Math.sin(cfa - 0.35) * RY * 0.72, cx + Math.cos(cfa) * RX * 0.93, cy + Math.sin(cfa) * RY * 0.93);
+      cx2d.stroke();
+    }
+    cx2d.restore();
+    // Fluid-mosaic membrane: two phospholipid head layers with hydrophobic tails.
+    var memInset = Math.max(2, S(0.008));
+    cx2d.lineWidth = Math.max(1, S(0.004)); cx2d.strokeStyle = '#22d3ee'; cx2d.globalAlpha = 0.72;
+    cx2d.beginPath(); cx2d.ellipse(cx, cy, RX - memInset, RY - memInset, 0, 0, 6.2832); cx2d.stroke();
+    cx2d.beginPath(); cx2d.ellipse(cx, cy, RX - memInset * 2.7, RY - memInset * 2.7, 0, 0, 6.2832); cx2d.stroke();
+    for (var ml = 0; ml < 64; ml++) {
+      var ma = ml / 64 * 6.2832;
+      var ux = Math.cos(ma), uy = Math.sin(ma);
+      var hx = cx + ux * (RX - memInset), hy = cy + uy * (RY - memInset);
+      var ix = cx + ux * (RX - memInset * 2.7), iy = cy + uy * (RY - memInset * 2.7);
+      cx2d.strokeStyle = 'rgba(125,211,252,0.38)'; cx2d.lineWidth = 1;
+      cx2d.beginPath(); cx2d.moveTo(hx - ux * 1.5, hy - uy * 1.5); cx2d.lineTo(ix + ux * 1.5, iy + uy * 1.5); cx2d.stroke();
+      cx2d.fillStyle = ml % 11 === 0 ? '#fbbf24' : '#67e8f9';
+      cx2d.beginPath(); cx2d.arc(hx, hy, ml % 11 === 0 ? 2.7 : 1.7, 0, 6.2832); cx2d.fill();
+      cx2d.beginPath(); cx2d.arc(ix, iy, ml % 11 === 0 ? 2.7 : 1.7, 0, 6.2832); cx2d.fill();
+    }
+    cx2d.globalAlpha = 1;
     var L = interiorLayout(type);
     // dot clusters first (ribosomes) so organelles sit on top
     L.forEach(function (o) { if (!o.dot) return; var p = P(o.x, o.y); cx2d.fillStyle = CELL_ORGANELLES.ribosomes.color; cx2d.globalAlpha = 0.9; cx2d.beginPath(); cx2d.arc(p[0], p[1], Math.max(1.3, S(o.r)), 0, 6.2832); cx2d.fill(); });
@@ -187,12 +213,39 @@ window.StemLab = window.StemLab || {
         cx2d.fillStyle = '#9f1239'; cx2d.beginPath(); cx2d.ellipse(0, 0, R, R * 0.55, 0, 0, 6.2832); cx2d.fill();
         cx2d.shadowBlur = 0; cx2d.strokeStyle = '#fda4af'; cx2d.lineWidth = R * 0.1;   // cristae
         for (var cr2 = -2; cr2 <= 2; cr2++) { cx2d.beginPath(); cx2d.moveTo(cr2 * R * 0.32, -R * 0.5); cx2d.quadraticCurveTo(cr2 * R * 0.32 + R * 0.18, 0, cr2 * R * 0.32, R * 0.5); cx2d.stroke(); }
+        // ATP packets radiate from the cristae, connecting structure to function.
+        cx2d.shadowColor = '#fde047'; cx2d.shadowBlur = reduced ? 3 : 7;
+        for (var ap = 0; ap < 5; ap++) {
+          var atpPhase = reduced ? (0.2 + ap * 0.13) : ((t * 0.22 + ap / 5 + ph * 0.17) % 1);
+          var atpAngle = ap / 5 * 6.2832 + ph * 0.8;
+          var atpRadius = R * (0.7 + atpPhase * 1.65);
+          var atpAlpha = Math.max(0, 1 - atpPhase) * 0.9;
+          cx2d.fillStyle = 'rgba(253,224,71,' + atpAlpha.toFixed(2) + ')';
+          cx2d.beginPath(); cx2d.arc(Math.cos(atpAngle) * atpRadius, Math.sin(atpAngle) * atpRadius * 0.72, Math.max(1.4, R * 0.085), 0, 6.2832); cx2d.fill();
+        }
+        cx2d.shadowBlur = 0;
         cx2d.restore();
       } else if (o.key === 'chloroplast') {
         cx2d.save(); cx2d.translate(p[0], p[1]); cx2d.rotate(0.5 + ph);
         cx2d.fillStyle = '#166534'; cx2d.beginPath(); cx2d.ellipse(0, 0, R, R * 0.6, 0, 0, 6.2832); cx2d.fill();
         cx2d.fillStyle = '#4ade80';   // grana stacks
         for (var gr = -2; gr <= 2; gr++) { cx2d.beginPath(); cx2d.ellipse(gr * R * 0.34, 0, R * 0.12, R * 0.34, 0, 0, 6.2832); cx2d.fill(); }
+        // Photons stream toward the grana; oxygen bubbles leave as a visible product.
+        cx2d.shadowColor = '#fde047'; cx2d.shadowBlur = reduced ? 3 : 7;
+        for (var sp = 0; sp < 4; sp++) {
+          var lightPhase = reduced ? (0.2 + sp * 0.2) : ((t * 0.28 + sp / 4 + ph * 0.11) % 1);
+          var lightX = -R * (2.6 - lightPhase * 2.1), lightY = -R * (1.7 - lightPhase * 1.55);
+          cx2d.fillStyle = 'rgba(253,224,71,' + (0.35 + lightPhase * 0.6).toFixed(2) + ')';
+          cx2d.beginPath(); cx2d.arc(lightX, lightY, Math.max(1.5, R * 0.08), 0, 6.2832); cx2d.fill();
+        }
+        cx2d.shadowColor = '#67e8f9'; cx2d.shadowBlur = reduced ? 2 : 5;
+        for (var ox = 0; ox < 3; ox++) {
+          var oxygenPhase = reduced ? (0.25 + ox * 0.2) : ((t * 0.18 + ox / 3 + ph * 0.19) % 1);
+          cx2d.strokeStyle = 'rgba(103,232,249,' + Math.max(0.18, 0.8 - oxygenPhase * 0.55).toFixed(2) + ')';
+          cx2d.lineWidth = 1.2; cx2d.beginPath();
+          cx2d.arc(R * (0.7 + oxygenPhase * 1.45), -R * (0.25 + oxygenPhase * 1.15), Math.max(1.8, R * (0.07 + oxygenPhase * 0.035)), 0, 6.2832); cx2d.stroke();
+        }
+        cx2d.shadowBlur = 0;
         cx2d.restore();
       } else if (o.key === 'vacuole') {
         cx2d.fillStyle = 'rgba(94,234,212,0.16)'; cx2d.strokeStyle = 'rgba(94,234,212,0.55)';

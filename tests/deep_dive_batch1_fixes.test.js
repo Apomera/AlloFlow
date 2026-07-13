@@ -129,8 +129,10 @@ describe('H3 — Stop/staleness honored during the storm wait', () => {
     // the post-wait re-check (distinct from the loop-top check: anchored to its own comment)
     expect(anti).toContain('// Re-check before firing; shouldAbort above also exits the wait itself within seconds.');
     const at = anti.indexOf('// Re-check before firing; shouldAbort above also exits the wait itself within seconds.');
-    const after = anti.slice(at, at + 300);
-    expect(after).toContain('if (pdfAutoContinueAbortRef.current || _genStale()) break;');
+    const after = anti.slice(at, at + 500);
+    expect(after).toMatch(/if \(pdfAutoContinueAbortRef\.current \|\| _genStale\(\)\s*\n\s*\|\| pdfHtmlRevisionRef\.current !== _roundHtmlRevision\) \{/);
+    expect(after).toContain('cur = pdfFixResultRef.current;');
+    expect(after).toContain('break;');
   });
 });
 

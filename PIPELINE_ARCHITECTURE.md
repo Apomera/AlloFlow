@@ -138,7 +138,7 @@ For violations that can't be fixed surgically — like a document with no semant
 This is the most powerful but least predictable layer. It can restructure entire sections, convert visual formatting to semantic markup, and resolve complex multi-element violations. But it can also introduce new issues, which is why:
 
 - **Deterministic fixes run AFTER every AI rewrite** to catch common AI mistakes (invalid ARIA roles, bad lang values, broken list structure)
-- **Both axe-core and 3 parallel AI audits verify the result** before accepting it
+- **A fresh AI rubric audit, axe-core, and IBM Equal Access each contribute verification evidence** before the result can be marked fully verified
 - **A regression guard reverts the change** if the score drops more than 5 points
 
 ---
@@ -162,14 +162,18 @@ Every audit starts at 100 and deducts points per unique violation type:
 
 An earlier design granted proportional deduction credit for model-asserted "passing checks" (`passFactor`). This was removed: unverified model-asserted passes no longer buy back deductions. Every displayed AI score is the deduction-grounded recalculation from the issue list — never the model's self-reported number.
 
-### Dual-Engine Verification (weakest layer governs)
+### Three-Engine Verification and Evidence State (weakest layer governs)
 
-The headline score is **`min(AI Rubric Score, deterministic engine score)`** — the weakest verified layer, not an average:
+When all required evidence is fresh, the headline score is **`min(AI Rubric Score, deterministic engine score)`** — the weakest verified layer, not an average:
 
 1. **AI Rubric Score** — Gemini evaluates the HTML against the WCAG rubric (chunked for long documents, deduplicated), recomputed from the issue deductions
-2. **Deterministic engines** — axe-core, plus IBM Equal Access when available (the more conservative of the two governs); local, zero API cost, no AI variance
+2. **Deterministic engines** — axe-core and IBM Equal Access (the more conservative of the two governs); local, zero API cost, no AI variance
 
-Averaging was abandoned (2026-06-21) because the two engines measure different things — the midpoint described neither, and an inflated automated half could mask a failing content half. Both layer scores are shown separately in the UI, and PDF/UA status is kept separate from HTML/WCAG scoring: the in-app structural self-check is a preflight, while veraPDF/PAC-style review is the institution-facing QA path.
+A canonical evidence state prevents a numeric score from being mistaken for complete verification. **Complete** requires fresh AI, axe-core, and Equal Access evidence with no manual or potential findings. **Review required** means all engines ran but at least one finding needs human judgment. **Partial** means some, but not all, engines completed. **Unavailable** means no required engine completed. Scores and engine details may still be useful in the latter states, but are explicitly unverified.
+
+Verification evidence is bound to the exact remediated HTML using a versioned SHA-256 record plus paired, non-serializable in-memory witnesses for both the HTML and its digest. This prevents either a same-length HTML edit or a digest-only swap from inheriting a prior claim. Saved projects re-hash restored HTML before recovering verified state; legacy, mismatched, or stale projects load as unverified until a fresh three-engine audit completes. PDF/UA and veraPDF results are additionally scoped to the exact tagged-PDF artifact so an asynchronous result cannot attest to newer bytes.
+
+Averaging was abandoned (2026-06-21) because the engines measure different things — the midpoint described neither, and an inflated automated result could mask a failing content result. Engine scores and coverage are shown separately in the UI, and PDF/UA status is kept separate from HTML/WCAG scoring: the in-app structural self-check is a preflight, while veraPDF/PAC-style review is the institution-facing QA path.
 
 ### Multi-Auditor Triangulation
 
@@ -206,14 +210,16 @@ For each pass (up to 8 by default):
       retry isn't an identical re-roll)
   2. Run deterministic cleanup (list, contrast, ARIA roles, lang)
   3. If the pass changed nothing, skip re-audit (results are identical) and count a stall
-  4. Run 1 AI audit + axe-core (unchanged sections come from a temp-0 memo, not re-billed)
+  4. Run a fresh AI audit, axe-core, and IBM Equal Access
+     (unchanged AI sections come from a temp-0 memo, not re-billed)
   5. Check:
-     - Target score reached (AI ≥ target AND axe = 0)? → STOP
+     - Target score reached with canonical COMPLETE evidence and no automated failures? → STOP
      - Plateau (2 consecutive passes with no meaningful improvement)? → STOP
      - Regression (axe much worse, OR AI dropped >5 without an axe gain)? → REVERT
        (retry once with feedback; 2 consecutive reverts → STOP)
      - Otherwise → continue to next pass
-  Keep-best: the shipped HTML is the best VERIFIED pass, never a degraded working state.
+  Keep-best: the shipped HTML is the best accepted pass; its evidence state is preserved,
+  and partial, unavailable, or review-required evidence is never labeled verified.
 ```
 
 **The target score** is configurable via a slider (default 95/100, raised from 90 on 2026-06-23). Users can set it higher for critical documents or lower for quick processing.
@@ -244,7 +250,7 @@ A professional PDF-ready report containing:
 - After-remediation remaining issues
 - axe-core automated verification results
 - Scoring methodology explanation
-- Standards compliance references (WCAG 2.1 AA, ADA Title II, Section 508, EN 301 549)
+- Standards compliance references (WCAG 2.2 AA, ADA Title II, Section 508, EN 301 549)
 - Knowbility referral for documents needing expert human review
 
 ### Alternative Formats
@@ -255,9 +261,9 @@ A professional PDF-ready report containing:
 
 ### Batch Processing
 - Process multiple PDFs in sequence with automatic retry
-- CSV report with per-file metrics
-- JSON telemetry for institutional analytics
-- HTML summary dashboard
+- CSV report with per-file scores, evidence coverage, verification state, and review reasons
+- JSON telemetry for institutional analytics without treating processed files as verified files
+- HTML summary dashboard that separates processed, fully verified, review-required, and verified-at-target counts
 - ZIP download containing all outputs
 
 ---
@@ -315,7 +321,7 @@ The pipeline uses HTML as its working format internally because HTML provides fu
 - **Fonts are embedded (PDF/UA §7.21.4.1).** A dedicated stage substitutes metric-compatible embeddable fonts (Liberation/DejaVu), subsets them via **fontkit**, and writes `FontFile2` into the font dictionary. Non-embedded fonts are treated as a first-class veto on the PDF/UA pass claim.
 - **Multiple output formats available.** The same remediated document can also be downloaded as read-along **ePub 3.0**, **DAISY**, **ODT**, accessible PDF, or kept as HTML.
 - **The original PDF is not modified.** The pipeline creates a new, accessible version rather than editing the original file. This preserves the original for reference.
-- **Provenance disclosure.** Remediated output carries a machine-generated disclosure (original filename, page count, transform date, WCAG 2.1 AA); content-altering PDF/UA repairs (font substitution, artifact-marking) are surfaced as "REVIEW" notices.
+- **Provenance disclosure.** Remediated output carries a machine-generated disclosure (original filename, page count, transform date, WCAG 2.2 AA); content-altering PDF/UA repairs (font substitution, artifact-marking) are surfaced as "REVIEW" notices.
 
 ---
 
@@ -357,20 +363,21 @@ Input: PDF/DOCX/PPTX
   │   ├── 3b: AI transform to semantic HTML
   │   └── 3c: Surgical micro-tools (AI diagnosis → deterministic execution)
   │
-  ├── Phase 4: Dual-engine verification
+  ├── Phase 4: Three-engine verification + canonical evidence state
   │   ├── AI audit (chunked, deduplicated)
-  │   └── axe-core automated check
+  │   ├── axe-core + IBM Equal Access automated/manual-potential checks
+  │   └── SHA-256 binding + paired runtime witness for the exact verified HTML
   │
   ├── Phase 5: Self-correcting fix loop (up to 8 passes)
   │   ├── AI fix attempt (revert/no-op feedback on retries)
   │   ├── Deterministic cleanup (ARIA roles, lang, lists, contrast)
-  │   ├── 1 AI audit (chunk-memoized) + axe-core
+  │   ├── Fresh AI audit (chunk-memoized) + axe-core + Equal Access
   │   └── Plateau/regression/target detection + keep-best
   │
   ├── Phase 6: Final audit + weakest-layer headline
   │   ├── Full chunked AI audit + structural pass detection
   │   ├── axe-core + Equal Access verification
-  │   └── headline = min(AI, deterministic)
+  │   └── headline = min(AI, deterministic), verified only when evidence is complete
   │
   └── Phase 7: Native tagged-PDF emit + PDF/UA validation
       ├── createTaggedPdf (pdf-lib): /StructTreeRoot, MarkInfo, /Lang, /Alt, /Scope
@@ -433,7 +440,7 @@ A deterministic function that runs **after every styling change** — whether fr
 ## Standards Alignment
 
 The pipeline is designed to support alignment with:
-- **WCAG 2.1 Level AA** — Web Content Accessibility Guidelines
+- **WCAG 2.2 Level AA** — Web Content Accessibility Guidelines
 - **ADA Title II** (28 CFR Part 35 Subpart H) — Americans with Disabilities Act web/mobile accessibility rule, with DOJ-extended compliance dates of April 26, 2027 for state/local entities with populations of 50,000 or more and April 26, 2028 for smaller entities and special district governments ([ADA.gov fact sheet](https://www.ada.gov/resources/2024-03-08-web-rule/)); verify entity-specific obligations with counsel.
 - **Section 508** — Federal accessibility requirements
 - **EN 301 549** — European accessibility standard

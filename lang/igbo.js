@@ -20209,7 +20209,19 @@
     "set_ui_language": "Gbanwee asụsụ interface",
     "set_ui_language_done": "Eziga m gị na nhọrọ asụsụ dị na isi mmalite ahụ — họrọ asụsụ gị ebe ahụ.",
     "set_ui_language_hint": "Wụga na nhọrọ asụsụ dị na isi mmalite ahụ",
-    "set_ui_language_miss": "Nhọrọ asụsụ interface dị na elu ahịrị menu."
+    "set_ui_language_miss": "Nhọrọ asụsụ interface dị na elu ahịrị menu.",
+    "find_reading": "Find the right book",
+    "find_reading_done": "I found a good match and opened it",
+    "find_reading_hint": "Ask by topic, grade, language, source, or type",
+    "find_reading_none": "I opened the Reading Library, but I could not find a strong match yet",
+    "generate_analysis_ready": "Source analysis ready.",
+    "generate_glossary_ready": "Glossary ready.",
+    "generate_quiz_ready": "Quiz ready — it’s in the output panel.",
+    "generate_sentence_frames_ready": "Sentence frames ready.",
+    "generate_simplified_ready": "Simpler version ready.",
+    "open_reading_library": "Open the Reading Library",
+    "open_reading_library_done": "Reading Library opened.",
+    "open_reading_library_hint": "Browse open picture books in 10 languages"
   },
   "palette": {
     "aria": "Palette iwu AlloFlow",

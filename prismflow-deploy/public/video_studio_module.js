@@ -2478,6 +2478,57 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return { ok: true, label: label };
   }
 
+  // Pre-capture checks are pure so the popup, tests, and future desktop shell
+  // can present the same answer without requesting capture permission first.
+  function vsBuildDemoPreflight(state) {
+    var s = state || {};
+    var items = [];
+    var add = function (id, label, status, detail) {
+      items.push({ id: id, label: label, status: status, detail: String(detail || '').slice(0, 220) });
+    };
+    add('plan', 'Approved steps', Number(s.planCount) > 0 ? 'ready' : 'block', Number(s.planCount) > 0 ? Number(s.planCount) + ' step(s) are ready.' : 'Draft or load a tutorial plan first.');
+    add('connection', 'AlloFlow connection', s.openerConnected ? 'ready' : 'block', s.openerConnected ? 'Video Studio is connected to AlloFlow.' : 'Reopen Video Studio from AlloFlow.');
+    add('capture', 'Tab capture support', s.captureSupported ? 'ready' : 'block', s.captureSupported ? 'This browser can request tab capture.' : 'Screen capture is unavailable in this browser.');
+    var mode = String(s.audioMode || 'captions');
+    if (mode === 'mic') add('audio', 'Microphone', s.micSupported ? 'ready' : 'block', s.micSupported ? 'Microphone capture is available.' : 'Microphone capture is unavailable; choose captions or an automatic voice.');
+    else if (mode.indexOf('auto-') === 0) add('audio', 'Automatic narration', s.openerConnected ? 'ready' : 'block', s.openerConnected ? 'Narration will be generated after recording; the microphone stays off.' : 'Automatic narration needs the AlloFlow connection.');
+    else add('audio', 'Captions only', 'ready', 'No microphone or generated speech will be recorded.');
+    var available = Number(s.availableBytes);
+    if (s.storageKnown && isFinite(available) && available < 50 * 1024 * 1024) add('storage', 'Local storage', 'block', 'Less than 50 MB appears available for the recording.');
+    else if (s.storageKnown && isFinite(available) && available < 250 * 1024 * 1024) add('storage', 'Local storage', 'warn', 'Storage is limited; keep this demo short and export promptly.');
+    else add('storage', 'Local storage', s.storageKnown ? 'ready' : 'info', s.storageKnown ? 'Enough local storage appears available.' : 'Storage estimate is unavailable; short recordings are recommended.');
+    if (s.recordingBusy) add('recorder', 'Recorder', 'block', 'Another recording is already active.');
+    add('privacy', 'Privacy', 'info', 'The share dialog must identify the AlloFlow browser tab before automatic actions can run.');
+    var blockingCount = items.filter(function (item) { return item.status === 'block'; }).length;
+    var warningCount = items.filter(function (item) { return item.status === 'warn'; }).length;
+    return { ok: blockingCount === 0, blockingCount: blockingCount, warningCount: warningCount, items: items };
+  }
+
+  function vsAnalyzeDemoTakeQuality(take) {
+    var t = take || {};
+    var captions = Array.isArray(t.captions) ? t.captions : [];
+    var duration = Math.max(0, Number(t.duration) || 0);
+    var captionQuality = vsAnalyzeCaptionQuality(captions, duration);
+    var clips = (Array.isArray(t.audioClips) ? t.audioClips : []).filter(function (clip) { return !!(clip && clip.demoNarrationCue); });
+    var expected = Math.max(0, Math.round(Number(t.demoExpectedNarrationCount) || 0));
+    var failed = Array.isArray(t.demoNarrationFailed) ? t.demoNarrationFailed.length : 0;
+    var checks = [];
+    var add = function (id, label, status, detail) { checks.push({ id: id, label: label, status: status, detail: String(detail || '').slice(0, 220) }); };
+    add('duration', 'Recording length', duration >= 2 ? 'pass' : 'warn', duration >= 2 ? 'The take is ' + Math.round(duration) + ' seconds long.' : 'The take is very short; confirm the whole workflow was captured.');
+    add('captions', 'Instructional captions', captionQuality.ok ? 'pass' : (captions.length ? 'warn' : 'fail'), captions.length ? captions.length + ' caption(s); quality score ' + captionQuality.score + '/100.' : 'No instructional captions were captured.');
+    if (expected > 0) add('narration', 'Automatic narration', clips.length >= expected && !failed ? 'pass' : (clips.length ? 'warn' : 'fail'), clips.length + ' of ' + expected + ' expected narration line(s) are ready' + (failed ? '; ' + failed + ' need retry.' : '.'));
+    else add('narration', 'Narration mode', 'info', 'This demo did not require automatic narration.');
+    var sorted = captions.slice().sort(function (a, b) { return (Number(a.start) || 0) - (Number(b.start) || 0); });
+    var firstStart = sorted.length ? Math.max(0, Number(sorted[0].start) || 0) : 0;
+    var lastEnd = sorted.length ? Math.max(0, Number(sorted[sorted.length - 1].end) || 0) : 0;
+    add('opening', 'Opening pacing', firstStart <= 3 ? 'pass' : 'warn', firstStart <= 3 ? 'The first instruction appears promptly.' : 'The first instruction begins after ' + Math.round(firstStart) + ' seconds.');
+    add('ending', 'Ending margin', !duration || !lastEnd || duration - lastEnd >= 0.5 ? 'pass' : 'warn', !duration || !lastEnd || duration - lastEnd >= 0.5 ? 'The ending has reviewable breathing room.' : 'The final caption ends very close to the recording cutoff.');
+    add('pending', 'Background processing', t.demoNarrationPending ? 'warn' : 'pass', t.demoNarrationPending ? 'Automatic narration is still being generated.' : 'No demo processing is pending.');
+    var failCount = checks.filter(function (check) { return check.status === 'fail'; }).length;
+    var warnCount = checks.filter(function (check) { return check.status === 'warn'; }).length;
+    var score = Math.max(0, 100 - failCount * 30 - warnCount * 10);
+    return { ok: failCount === 0 && warnCount === 0, score: score, failCount: failCount, warningCount: warnCount, checks: checks, captionQuality: captionQuality, narrationClipCount: clips.length, expectedNarrationCount: expected };
+  }
   // Place generated PCM narration without stacking clips on top of each other.
   // PCM is mono 16-bit, so byte length gives an exact duration before WAV wrap.
   function vsScheduleDemoNarrationClip(cue, pcmByteLength, sampleRate, previousEnd, takeDuration, gap) {
@@ -2734,7 +2785,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     };
   }
 
-  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm, vsValidateDemoCapture: vsValidateDemoCapture, vsScheduleDemoNarrationClip: vsScheduleDemoNarrationClip, vsBuildDemoCaptionCues: vsBuildDemoCaptionCues };
+  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm, vsValidateDemoCapture: vsValidateDemoCapture, vsBuildDemoPreflight: vsBuildDemoPreflight, vsAnalyzeDemoTakeQuality: vsAnalyzeDemoTakeQuality, vsScheduleDemoNarrationClip: vsScheduleDemoNarrationClip, vsBuildDemoCaptionCues: vsBuildDemoCaptionCues };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {

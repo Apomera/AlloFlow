@@ -33,6 +33,13 @@ service cloud.firestore {
           return request.resource.data.diff(resource.data).affectedKeys();
         }
         function rosterOnlySelf() {
+          // Students may only touch their OWN roster entry. Nested fields are
+          // deliberately not enumerated here (the client/mailbox validators
+          // enforce per-field shapes); current student-written fields include
+          // join metadata, xp, signal/signalAt, viewingResourceId/viewingAt,
+          // and the Word Sounds wsProgress / wsProbeResult summaries
+          // (2026-07-12: structured numbers + pattern-checked ids only — see
+          // SESSION_TIER1_LEAVES in AlloFlowANTI.txt for justifications).
           return resource.data.get('roster', {})
             .diff(request.resource.data.get('roster', {}))
             .affectedKeys().hasOnly([request.auth.uid]);
@@ -88,9 +95,15 @@ service cloud.firestore {
         }
 
         // Students need GET by code; LIST would allow code enumeration.
-        allow get: if authed();
+        allow get: if authed()
+          && (resource.data.get('kind', '') != 'assignment'
+            || (resource.data.expiresAt is timestamp && resource.data.expiresAt > request.time));
         allow list: if false;
-        allow create: if authed() && request.resource.data.hostId == request.auth.uid;
+        allow create: if authed() && request.resource.data.hostId == request.auth.uid
+          && (request.resource.data.get('kind', '') != 'assignment'
+            || (request.resource.data.expiresAt is timestamp
+              && request.resource.data.expiresAt > request.time
+              && request.resource.data.expiresAt <= request.time + duration.value(31, 'd')));
         allow delete: if isHost();
         allow update: if isHost() || (
           authed()

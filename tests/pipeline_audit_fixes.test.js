@@ -161,7 +161,9 @@ describe('H-8: Load Project resets per-document holdovers (no cross-document sta
     // Harness repair (2026-07-09): M12 added the PDF/UA badge clears inside the block — widened.
     const h = view.slice(_s, _s + 2600);
     expect(h).toMatch(/_paletteSnapshotRef\.current = null;/);   // the dangerous one — stale snapshot drove the doc-A-over-doc-B Revert
-    expect(h).toMatch(/_lastTaggedBytesRef\.current = null;/);
+    // Clearing through the selector is stronger than mutating the bytes ref directly:
+    // it also advances the artifact/validator generations so in-flight work cannot commit.
+    expect(h).toMatch(/_selectTaggedArtifact\(null\);/);
     expect(h).toMatch(/setAppliedPalette\(null\);/);
     expect(h).toMatch(/_setIssueEdit\(\{\}\);/);
     expect(h).toMatch(/setRestyleProposals\(null\);/);

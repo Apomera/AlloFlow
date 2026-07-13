@@ -20082,7 +20082,19 @@
     "zen_off_hint": "Revenigi la interfacon",
     "zen_on": "Eniri zenan reĝimon",
     "zen_on_done": "Zena reĝimo ŝaltita — premu Ctrl+K kaj rulu “eliri el zeno” por reveni.",
-    "zen_on_hint": "Kaŝi ĉion krom la enhavo"
+    "zen_on_hint": "Kaŝi ĉion krom la enhavo",
+    "find_reading": "Find the right book",
+    "find_reading_done": "I found a good match and opened it",
+    "find_reading_hint": "Ask by topic, grade, language, source, or type",
+    "find_reading_none": "I opened the Reading Library, but I could not find a strong match yet",
+    "generate_analysis_ready": "Source analysis ready.",
+    "generate_glossary_ready": "Glossary ready.",
+    "generate_quiz_ready": "Quiz ready — it’s in the output panel.",
+    "generate_sentence_frames_ready": "Sentence frames ready.",
+    "generate_simplified_ready": "Simpler version ready.",
+    "open_reading_library": "Open the Reading Library",
+    "open_reading_library_done": "Reading Library opened.",
+    "open_reading_library_hint": "Browse open picture books in 10 languages"
   },
   "palette": {
     "aria": "AlloFlow komandopaletro",

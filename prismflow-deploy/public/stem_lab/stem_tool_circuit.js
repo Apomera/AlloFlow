@@ -965,12 +965,31 @@ window.StemLab = window.StemLab || {
               h('svg', {
                 viewBox: '0 0 ' + W + ' ' + H,
                 className: 'w-full rounded-xl border transition-all ' + (isShort ? 'bg-red-950/20 border-red-500/50 shadow-lg shadow-red-500/10' : 'bg-slate-900 border-slate-800 shadow-inner'),
+                role: 'img',
+                'aria-label': 'Interactive ' + mode + ' circuit schematic. Battery ' + voltage + ' volts, ' + components.length + ' components, current ' + current.toFixed(3) + ' amps, source power ' + power.toFixed(2) + ' watts. ' + (isShort ? 'Warning: short circuit.' : (current > 0.001 ? 'Circuit energized; animated charge carriers show current flow.' : 'No current is flowing.')),
                 style: { maxHeight: '220px' }
               },
                 // Definitions for gradients & patterns
                 h('defs', null,
                   h('pattern', { id: 'grid', width: 20, height: 20, patternUnits: 'userSpaceOnUse' },
                     h('path', { d: 'M 20 0 L 0 0 0 20', fill: 'none', stroke: 'rgba(255,255,255,0.03)', strokeWidth: 1 })
+                  ),
+                  h('radialGradient', { id: 'circuit-ambient', cx: '42%', cy: '48%', r: '72%' },
+                    h('stop', { offset: '0%', stopColor: isShort ? '#ef4444' : '#0891b2', stopOpacity: current > 0.001 ? 0.18 : 0.04 }),
+                    h('stop', { offset: '62%', stopColor: isShort ? '#7f1d1d' : '#172554', stopOpacity: current > 0.001 ? 0.12 : 0.03 }),
+                    h('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0 })
+                  ),
+                  h('linearGradient', { id: 'circuit-battery', x1: '0', y1: '0', x2: '1', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: isShort ? '#f87171' : '#fde047' }),
+                    h('stop', { offset: '48%', stopColor: isShort ? '#991b1b' : '#ca8a04' }),
+                    h('stop', { offset: '100%', stopColor: isShort ? '#450a0a' : '#713f12' })
+                  ),
+                  h('filter', { id: 'circuit-wire-glow', x: '-30%', y: '-80%', width: '160%', height: '260%' },
+                    h('feGaussianBlur', { stdDeviation: isShort ? '2.8' : '1.8', result: 'wireBlur' }),
+                    h('feMerge', null,
+                      h('feMergeNode', { in: 'wireBlur' }),
+                      h('feMergeNode', { in: 'SourceGraphic' })
+                    )
                   ),
                   // LED Gradients
                   components.map(function(c) {
@@ -984,9 +1003,11 @@ window.StemLab = window.StemLab || {
                 
                 // Grid Background
                 h('rect', { width: W, height: H, fill: 'url(#grid)', rx: 12 }),
+                h('rect', { width: W, height: H, fill: 'url(#circuit-ambient)', rx: 12, pointerEvents: 'none' }),
                 
                 // Battery
-                h('rect', { x: 15, y: 40, width: 40, height: 60, fill: isShort ? '#7f1d1d' : '#ca8a04', stroke: isShort ? '#ef4444' : '#eab308', strokeWidth: 2, rx: 6 }),
+                h('rect', { x: 11, y: 36, width: 48, height: 68, fill: isShort ? '#ef4444' : '#eab308', opacity: current > 0.001 ? 0.18 : 0.08, rx: 10, filter: 'url(#circuit-wire-glow)' }),
+                h('rect', { x: 15, y: 40, width: 40, height: 60, fill: 'url(#circuit-battery)', stroke: isShort ? '#fca5a5' : '#fde047', strokeWidth: 2, rx: 6 }),
                 // Highlight on battery
                 h('rect', { x: 17, y: 42, width: 12, height: 56, fill: 'rgba(255,255,255,0.08)', rx: 3 }),
                 h('text', { x: 35, y: 74, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: '900', fontFamily: 'system-ui' }, fill: '#ffffff' }, voltage + 'V'),
@@ -997,7 +1018,7 @@ window.StemLab = window.StemLab || {
                 // Dynamic Wires
                 (function() {
                   var wires = [];
-                  var wireColor = isShort ? '#ef4444' : '#64748b';
+                  var wireColor = isShort ? '#fb7185' : (current > 0.001 ? '#22d3ee' : '#64748b');
                   var wWidth = isShort ? 2.5 : 2;
                   
                   if (components.length === 0) {
@@ -1044,13 +1065,23 @@ window.StemLab = window.StemLab || {
                     wires.push(h('line', { key: 'w2', x1: 260, y1: maxCy, x2: 260, y2: 140, stroke: wireColor, strokeWidth: wWidth }));
                     wires.push(h('line', { key: 'w3', x1: 260, y1: 140, x2: 35, y2: 140, stroke: wireColor, strokeWidth: wWidth }));
                   }
-                  return wires;
+                  return h('g', { filter: current > 0.001 || isShort ? 'url(#circuit-wire-glow)' : null, opacity: current > 0.001 ? 0.95 : 1 }, wires);
                 })(),
 
                 // Battery connections
                 h('line', { x1: 35, y1: 40, x2: 35, y2: 20, stroke: isShort ? '#ef4444' : '#475569', strokeWidth: 2 }),
                 h('line', { x1: 35, y1: 100, x2: 35, y2: 140, stroke: isShort ? '#ef4444' : '#475569', strokeWidth: 2 }),
 
+                // Electric-field signal pulse: it races around the conductor while
+                // individual charge carriers below remain discrete and visibly slower.
+                !isShort && current > 0.001 && h('g', { 'aria-hidden': 'true', pointerEvents: 'none' },
+                  h('g', { className: 'circ-signal-pulse' },
+                    h('rect', { x: 45, y: 16, width: 24, height: 8, rx: 4, fill: '#67e8f9', opacity: 0.24, filter: 'url(#circuit-wire-glow)' }),
+                    h('circle', { cx: 57, cy: 20, r: 3.2, fill: '#ecfeff', stroke: '#22d3ee', strokeWidth: 1 }),
+                    h('path', { d: 'M51 20 H63', stroke: '#ffffff', strokeWidth: 1.2, opacity: 0.9 })
+                  ),
+                  h('text', { x: 302, y: 15, fill: '#a5f3fc', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' } }, 'field signal ≈ light speed')
+                ),
                 // Current direction arrow
                 !isShort && current > 0.01 && h('g', null,
                   h('polygon', { points: '210,12 220,8 220,16', fill: '#06b6d4', filter: 'drop-shadow(0 0 2px #06b6d4)' }),
@@ -1071,6 +1102,12 @@ window.StemLab = window.StemLab || {
                       var chargeLvl = Math.min(tick / 120, 1);
 
                       return h('g', { key: comp.id },
+                        // Power aura scales with P = VI, revealing where energy becomes heat or light.
+                        compP > 0.01 && comp.type !== 'switch' && comp.type !== 'ammeter' && comp.type !== 'voltmeter' && h('ellipse', {
+                          cx: cx, cy: 78, rx: 18 + Math.min(compP, 20) * 0.7, ry: 25 + Math.min(compP, 20) * 0.8,
+                          fill: comp.type === 'bulb' ? '#fde047' : (comp.type === 'led' ? (comp.ledColor || '#ef4444') : '#fb923c'),
+                          opacity: Math.min(0.08 + compP / 55, 0.34), filter: 'blur(6px)', 'aria-hidden': 'true'
+                        }),
                         // Component body
                         comp.type === 'resistor'
                           ? h('g', null,
@@ -1167,13 +1204,26 @@ window.StemLab = window.StemLab || {
                       var compR2 = getCompR(comp);
                       var compI2 = voltage / compR2;
                       var compP2 = voltage * compI2;
+                      var branchStrength = Math.min(1, Math.log10(1 + Math.max(0, compI2)) / 1.4);
                       var isIdealParallelBranch2 = mode === 'parallel' && compR2 < 0.01;
                       var bulbBright2 = comp.type === 'bulb' ? Math.min(compP2 / 12, 1) : 0;
                       var ledGlow2 = comp.type === 'led' && compI2 > 0.005 ? Math.min(compI2 * 20, 1) : 0;
                       var chargeLvl = Math.min(tick / 120, 1);
 
                       return h('g', { key: comp.id },
-                        // Leads connecting to bus lines
+                        // Each branch gets its own P = VI aura, making parallel power sharing visible.
+                        compP2 > 0.01 && comp.type !== 'switch' && comp.type !== 'ammeter' && comp.type !== 'voltmeter' && h('ellipse', {
+                          cx: 220, cy: cy, rx: 28 + Math.min(compP2, 20) * 0.55, ry: 13 + Math.min(compP2, 20) * 0.35,
+                          fill: comp.type === 'bulb' ? '#fde047' : (comp.type === 'led' ? (comp.ledColor || '#ef4444') : '#fb923c'),
+                          opacity: Math.min(0.08 + compP2 / 55, 0.34), filter: 'blur(5px)', 'aria-hidden': 'true'
+                        }),
+                        // Branch glow and junction nodes encode how total current divides.
+                        !isShort && compI2 > 0.001 && h('g', { 'aria-hidden': 'true', pointerEvents: 'none', filter: 'url(#circuit-wire-glow)' },
+                          h('line', { x1: 180, y1: cy, x2: 202, y2: cy, stroke: '#22d3ee', strokeWidth: 2 + branchStrength * 4, opacity: 0.24 + branchStrength * 0.6 }),
+                          h('line', { x1: 238, y1: cy, x2: 260, y2: cy, stroke: '#22d3ee', strokeWidth: 2 + branchStrength * 4, opacity: 0.24 + branchStrength * 0.6 }),
+                          h('circle', { cx: 180, cy: cy, r: 2.5 + branchStrength * 1.8, fill: '#a5f3fc', stroke: '#0891b2', strokeWidth: 1 }),
+                          h('circle', { cx: 260, cy: cy, r: 2.5 + branchStrength * 1.8, fill: '#a5f3fc', stroke: '#0891b2', strokeWidth: 1 })
+                        ),                        // Leads connecting to bus lines
                         h('line', { x1: 180, y1: cy, x2: 200, y2: cy, stroke: '#475569', strokeWidth: 1.5 }),
                         h('line', { x1: 240, y1: cy, x2: 260, y2: cy, stroke: '#475569', strokeWidth: 1.5 }),
 
@@ -1237,9 +1287,19 @@ window.StemLab = window.StemLab || {
                       );
                     }),
 
+                // Persistent schematic fault marker: visible even without canvas animation.
+                isShort && h('g', { 'aria-hidden': 'true', pointerEvents: 'none', className: 'circuit-short' },
+                  h('circle', { cx: 70, cy: 69, r: 30, fill: '#ef4444', opacity: 0.12, filter: 'url(#circuit-wire-glow)' }),
+                  h('path', { d: 'M55 43 L68 58 L61 65 L78 82 L72 64 L81 58 L67 43 Z', fill: '#fef2f2', stroke: '#fb7185', strokeWidth: 1.4, filter: 'url(#circuit-wire-glow)' }),
+                  h('path', { d: 'M91 48 L85 55 L92 61 L84 69', fill: 'none', stroke: '#fda4af', strokeWidth: 2, strokeLinecap: 'round' }),
+                  h('path', { d: 'M48 83 L42 89 L49 95', fill: 'none', stroke: '#fda4af', strokeWidth: 2, strokeLinecap: 'round' }),
+                  h('rect', { x: 105, y: 50, width: 130, height: 34, rx: 8, fill: '#450a0a', stroke: '#fb7185', strokeWidth: 1.2, opacity: 0.96 }),
+                  h('text', { x: 170, y: 64, textAnchor: 'middle', fill: '#fecaca', style: { fontSize: '9px', fontWeight: '900', fontFamily: 'system-ui' } }, 'SHORT CIRCUIT'),
+                  h('text', { x: 170, y: 76, textAnchor: 'middle', fill: '#fda4af', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' } }, 'near-zero resistance • current surge')
+                ),
                 // Electron dots
                 electronDots.map(function(dot, i) {
-                  return h('circle', { key: 'e' + i, cx: dot.x, cy: dot.y, r: 3, fill: '#06b6d4', opacity: 0.8, filter: 'drop-shadow(0 0 2px #06b6d4)' });
+                  return h('circle', { key: 'e' + i, cx: dot.x, cy: dot.y, r: 3, fill: '#06b6d4', opacity: 0.8, filter: 'drop-shadow(0 0 2px #06b6d4)', 'aria-hidden': 'true' });
                 }),
 
                 // Empty state

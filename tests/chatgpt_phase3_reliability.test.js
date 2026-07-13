@@ -128,16 +128,18 @@ describe('#6 — content fidelity is re-measured after html mutations', () => {
   it('wiring: exported, aliased into the primary pass, and merged per accepted auto-continue round', () => {
     expect(dp).toContain('recomputeContentFidelity: _wrap(_recomputeContentFidelity),');
     expect(dp).toContain('const _normIntegrity = _alloNormForCoverage;');
-    expect(anti).toContain('try { _roundFid = recomputeContentFidelity ? recomputeContentFidelity(cur.sourceText, result.html) : null; } catch (_) {}');
-    expect(anti).toContain('integrityCoverage: _roundFid ? _roundFid.integrityCoverage : cur.integrityCoverage,');
-    expect(anti).toContain('integrityCoverage: snapshot.integrityCoverage,'); // reaches the RENDERED result too
+    expect(anti).toContain('try { _roundFid = (!result._auditOnly && recomputeContentFidelity) ? recomputeContentFidelity(cur.sourceText, result.html) : null; } catch (_) {}');
+    expect(anti).toContain('integrityCoverage: _nextIntegrityCoverage,');
+    // The accepted round is now one exact-HTML-bound snapshot. Fidelity and binding
+    // must travel through that same snapshot into rendered state.
+    expect(anti).toMatch(/verificationHtmlBinding: _verificationHtmlBinding,[\s\S]{0,500}?integrityCoverage: _nextIntegrityCoverage,[\s\S]{0,2500}?!attachVerificationHtmlProof\(cur, result\.html\)[\s\S]{0,500}?const snapshot = cur;[\s\S]{0,800}?setPdfFixResult\(snapshot\);/);
   });
 });
 
 describe('#15 — run identity + honest outcome + honest counters', () => {
   it('every fix run gets a runId; the success outcome states EVIDENCE, not hope', () => {
     expect(dp).toContain("const _runId = 'run-' + _startTime.toString(36)");
-    expect(dp).toContain("axeResults && typeof axeResults.totalViolations === 'number') ? 'success' : 'incomplete',");
+    expect(dp).toContain("outcome: _verificationState.verificationState === 'complete' ? 'success' : 'incomplete',");
     expect(dp).not.toMatch(/outcome: 'success',\n/); // the hard-coded literal is gone
   });
   it('the counters finally measure what their names say', () => {
@@ -231,7 +233,7 @@ describe('#16 — audit-frame neutralization + pinned engines + fail-closed sani
   it('the Equal Access engine is PINNED (a floating @3 changed the rule set under the score)', () => {
     expect(dp).toContain('https://cdn.jsdelivr.net/npm/accessibility-checker-engine@3.1.83/ace.js');
     expect(dp).not.toContain('accessibility-checker-engine@3/ace.js');
-    expect(dp).toContain("const _PIPELINE_PROMPT_VERSION = '20260710-2';"); // scores can shift → cache identity moved
+    expect(dp).toContain("const _PIPELINE_PROMPT_VERSION = '20260711-1';"); // scores can shift → cache identity moved
   });
   it('BEHAVIORAL: without DOMPurify, execution-shaped rawhtml is WITHHELD, benign rawhtml still sanitizes', () => {
     expect(_sanitize('<script>alert(1)</script><p>hi</p>')).toContain('data-allo-rawhtml-withheld');

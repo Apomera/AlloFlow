@@ -442,10 +442,12 @@ describe('B8: 2026-06-29 scorecard fixes (export honesty + OCR/foundations/basel
     expect(dpx).toMatch(/score > beforeScore && !_rptIncomplete && !_rptSliced/);
     expect(dpx).toMatch(/NOT a verified content score/);
   });
-  it('all three export payloads carry the honesty flags; JSON adds afterScoreVerified + basis', () => {
-    expect((vpx.match(/_aiVerificationIncomplete: !!pdfFixResult\._aiVerificationIncomplete, _slicedAudit:/g) || []).length).toBeGreaterThanOrEqual(3);
-    expect(vpx).toMatch(/afterScoreVerified: !pdfFixResult\._aiVerificationIncomplete/);
-    expect(vpx).toMatch(/afterScoreBasis: pdfFixResult\._aiVerificationIncomplete \?/);
+  it('all three export payloads carry raw incompleteness plus canonical bound verification; JSON explains its basis', () => {
+    expect((vpx.match(/_aiVerificationIncomplete: !!pdfFixResult\._aiVerificationIncomplete/g) || []).length).toBeGreaterThanOrEqual(3);
+    expect((vpx.match(/requiresManualReview: _(?:rpt|dl|json|trail)Verification\.requiresManualReview/g) || []).length).toBeGreaterThanOrEqual(3);
+    expect((vpx.match(/verificationHtmlBinding: _(?:rpt|dl|json|trail)Verification\.verificationHtmlBinding/g) || []).length).toBeGreaterThanOrEqual(3);
+    expect(vpx).toMatch(/afterScoreVerified: _jsonVerification\.afterScoreVerified/);
+    expect(vpx).toMatch(/afterScoreBasis: _jsonVerification\.afterScoreVerified \?/);
   });
   // #4: foundations "All images have alt" is count-aware, not a single-match overclaim
   it('foundations card claims "All images have alt" ONLY when every image has it (else honest fraction)', () => {
@@ -457,10 +459,11 @@ describe('B8: 2026-06-29 scorecard fixes (export honesty + OCR/foundations/basel
     expect(dpx).toMatch(/else if \(chosen\.text && _ocrJunk\(chosen\.text\) >= 0\.6\)/);
   });
   // #5: web/HTML-paste unmeasured baseline = null (not 0) → excluded from history avg-gain
-  it('web/HTML-paste baseline failure sets beforeScore=null (not a fake 0 → N gain)', () => {
-    expect(vpx).toMatch(/let beforeScore = null;/);
-    expect(vpx).toMatch(/_bAxe \?\? _bAi \?\? null\)/);
-    expect(vpx).toMatch(/catch \(_\) \{ beforeScore = null; \}/);
+  it('web/HTML-paste baseline failures remain null (not a fake 0 → N gain)', () => {
+    expect(vpx).toMatch(/const _safeAudit = \(run\) => Promise\.resolve\(\)\.then\(run\)\.catch\(\(\) => null\);/);
+    expect(vpx).toMatch(/const _bDet = _bAxe !== null \? \(_bEa !== null \? Math\.min\(_bAxe, _bEa\) : _bAxe\) : _bEa;/);
+    expect(vpx).toMatch(/const beforeScore = _computeHeadline\(_bAi, _bDet\);/);
+    expect(vpx).toMatch(/beforeScore: Number\.isFinite\(beforeScore\) \? beforeScore : null/);
   });
 });
 
@@ -503,7 +506,8 @@ describe('B9: 2026-06-30 multi-h1 outline fix + Equal Access shown in the export
     expect(dpx).toMatch(/headline is governed by the IBM Equal Access engine/);
   });
   it('both report generators pass the EA score, and all export after-objects carry secondEngineAudit', () => {
-    expect(dpx).toMatch(/_eaScore = isBeforeAfter \? \(d\.after\?\.secondEngineAudit\?\.score\)/);
+    expect(dpx).toMatch(/const _eaAuditForReport = isBeforeAfter \? \(d\.after\?\.secondEngineAudit \|\| null\) : \(d\.secondEngineAudit \|\| d\._baselineSecondEngineAudit \|\| null\);/);
+    expect(dpx).toMatch(/const _eaScore = _eaAuditForReport && _eaAuditForReport\.score;/);
     expect(dpx).toMatch(/fr\.secondEngineAudit && typeof fr\.secondEngineAudit\.score === 'number'/);
     expect((vpx.match(/secondEngineAudit: pdfFixResult\.secondEngineAudit \|\| null/g) || []).length).toBeGreaterThanOrEqual(4);
   });
@@ -523,7 +527,8 @@ describe('B10: 2026-06-30 EA-consistency sweep (score labels name the governing 
   it('the compact header tag is governing-aware (shows "automated" when the deterministic layer is lower)', () => {
     expect(vpx).toMatch(/const _govTag = pdfFixResult\._aiVerificationIncomplete/);
     expect(vpx).toMatch(/_hdrDet < _hdrAi\)\s*\n?\s*\?\s*\(t\('pdf_audit\.dashboard\.automated_tag'\)/);
-    expect(vpx).toMatch(/uppercase tracking-wide" title=\{_govTag === \(t\('pdf_audit\.dashboard\.automated_tag'\)/);
+    expect(vpx).toMatch(/_govTag === \(t\('pdf_audit\.dashboard\.automated_tag'\)[\s\S]{0,120}<_AlloQualifier/);
+    expect(vpx).toMatch(/automated_tag_title/);
   });
   // #2/#3 pre-fix audit badge + breakdown: name Equal Access, drop "lower of the two"
   it('the pre-fix audit badge says "lower of AI & automated" and the breakdown shows the baseline Equal Access score', () => {
@@ -534,7 +539,7 @@ describe('B10: 2026-06-30 EA-consistency sweep (score labels name the governing 
   });
   // #4 JSON export engines array includes IBM Equal Access when it ran
   it('the JSON export engines array adds IBM Equal Access when the second engine ran', () => {
-    expect(vpx).toMatch(/\.concat\(pdfFixResult\.secondEngineAudit \? \['IBM Equal Access \(WCAG 2\.1 AA\)'\] : \[\]\)/);
+    expect(vpx).toMatch(/\.concat\(pdfFixResult\.secondEngineAudit \? \['IBM Equal Access \(WCAG 2\.2 AA\)'\] : \[\]\)/);
   });
   // #5 batch HTML report has a per-doc Equal Access column (header + cell)
   it('the batch HTML report has an Equal Access column (header + per-row score/fails cell)', () => {
@@ -556,11 +561,12 @@ describe('B11: audit #1 — null AI score no longer coerced to 0 (no fabricated 
   const dpx = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
   const vpx = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 
-  it('the headline derivations pass null PER-OPERAND, never the `(finalAi.score || 0)` object-truthiness coercion', () => {
+  it('the headline derivations pass null per validated operand, never `(score || 0)` coercions', () => {
     expect(vpx).not.toMatch(/_computeHeadline\(\(finalAi\.score \|\| 0\), \(finalAxe\.score \|\| 0\)\)/);
     expect(vpx).not.toMatch(/reAxe \? _computeHeadline\(\(reAi\.score \|\| 0\), \(reAxe\.score \|\| 0\)\)/);
-    expect(vpx).toMatch(/_computeHeadline\(\(finalAi && typeof finalAi\.score === 'number'\) \? finalAi\.score : null/);
-    expect(vpx).toMatch(/_computeHeadline\(\(typeof reAi\.score === 'number'\) \? reAi\.score : null/);
+    expect(vpx).toMatch(/const _finalAiScore = \(finalAi && Number\.isFinite\(finalAi\.score\)[^;]+\) \? finalAi\.score : null;/);
+    expect(vpx).toMatch(/const finalScore = _computeHeadline\(_finalAiScore, _finalDetScore\);/);
+    expect(vpx).toMatch(/const _wscore = _computeHeadline\(_wvOk \? _wv\.score : null, _wdet\);/);
   });
   it('_alloComputeHeadline falls through to the surviving layer (null AI + good axe → axe, not 0)', () => {
     const m = dpx.match(/var _alloComputeHeadline = function[\s\S]*?\n\};/);
@@ -579,11 +585,13 @@ describe('B12: audit honesty cluster #3-#7,#9 (export ↔ screen consistency)', 
     expect((vpx.match(/integrityCoverage: pdfFixResult\.integrityCoverage \?\? null/g) || []).length).toBeGreaterThanOrEqual(3);
   });
   it('#4: the pre-tag (standalone) report falls through to triangulated audit fields', () => {
-    expect(dpx).toMatch(/d\.axeCoreAudit\?\.score \?\? d\.axeScore \?\? d\._baselineAxeScore/);
-    expect(dpx).toMatch(/d\.aiAudit\?\.score \?\? d\.verificationAudit\?\.score \?\? d\._aiOnlyScore/);
+    expect(dpx).toMatch(/const _axeAuditForReport = isBeforeAfter \?[^;]+: \(d\.axeCoreAudit \|\| d\.axeAudit \|\| d\._baselineAxeAudit \|\| null\);/);
+    expect(dpx).toMatch(/const _aiAuditForReport = isBeforeAfter \?[^;]+: \(d\.aiAudit \|\| d\.verificationAudit \|\| null\);/);
+    expect(dpx).toMatch(/const _structScore = _axeAuditForReport\?\.score \?\? \(isBeforeAfter \? d\.after\?\.axeScore : \(d\.axeScore \?\? d\._baselineAxeScore\)\);/);
+    expect(dpx).toMatch(/const _semScore = _aiAuditForReport\?\.score \?\? \(isBeforeAfter \? undefined : d\._aiOnlyScore\);/);
   });
   it('#5: engines[] is built dynamically (real pass count, axe gated on whether it ran) — no hardcoded literal', () => {
-    expect(vpx).not.toMatch(/engines: \['AI \(Gemini, 5-pass self-consistency\)', 'axe-core \(Deque WCAG 2\.1 AA\)'\]/);
+    expect(vpx).not.toMatch(/engines: \['AI \(Gemini, 5-pass self-consistency\)', 'axe-core \(Deque WCAG 2\.2 AA\)'\]/);
     expect((vpx.match(/'AI \(Gemini' \+ \(_p \? ', ' \+ _p \+ '-pass self-consistency'/g) || []).length).toBeGreaterThanOrEqual(2);
     expect((vpx.match(/pdfFixResult\.axeAudit && typeof pdfFixResult\.axeAudit\.score === 'number'\) \? \['axe-core/g) || []).length).toBeGreaterThanOrEqual(2);
   });

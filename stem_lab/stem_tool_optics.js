@@ -108,7 +108,6 @@
     st.id = 'stem-optics-css';
     st.textContent = [
       '[data-op-focusable]:focus { outline: 2px solid #38bdf8; outline-offset: 2px; }',
-      '[data-op-focusable]:focus:not(:focus-visible) { outline: none; }',
       '[data-op-focusable]:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }',
       '[data-op-focusable] { transition: filter 0.12s ease, box-shadow 0.12s ease; }',
       '[data-op-focusable]:hover:not(:disabled):not([aria-busy="true"]) { filter: brightness(1.12); }',
@@ -135,6 +134,8 @@
       '.opticslab-status-value{font-size:15px;font-weight:900;color:#f8fafc;margin:0;}',
       '.opticslab-library-toggle{margin-top:8px;width:100%;border-radius:8px;border:1px solid rgba(125,211,252,.32);background:rgba(14,165,233,.10);color:#bae6fd;padding:8px 10px;font-size:11px;font-weight:900;cursor:pointer;}',
       '@media (max-width:760px){.opticslab-focus-grid{grid-template-columns:1fr;}.opticslab-status-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '.opticslab-tool-shell button,.opticslab-tool-shell summary{min-block-size:24px;min-inline-size:24px;}',
+      '@media(forced-colors:active){.opticslab-tool-shell button,.opticslab-tool-shell input,.opticslab-tool-shell select,.opticslab-tool-shell summary{background:Canvas!important;color:CanvasText!important;border:1px solid ButtonText!important;box-shadow:none!important}.opticslab-tool-shell [role=tab][aria-selected=true]{outline:2px solid Highlight!important}.opticslab-tool-shell [data-op-focusable]:focus-visible{outline:3px solid Highlight!important}}',
       'input[type="range"][data-op-focusable], input[type="checkbox"][data-op-focusable] { accent-color: #38bdf8; }'
     ].join('\n');
     document.head.appendChild(st);
@@ -161,6 +162,20 @@
   }
 
   // ──────────────────────────────────────────────────────────────────
+  function opTabKeyDown(e, activate) {
+    var key = e.key;
+    if (key !== 'ArrowLeft' && key !== 'ArrowRight' && key !== 'Home' && key !== 'End') return;
+    var parent = e.currentTarget && e.currentTarget.parentNode;
+    if (!parent || !parent.querySelectorAll) return;
+    var tabs = Array.prototype.slice.call(parent.querySelectorAll('[role="tab"]:not([disabled])'));
+    if (!tabs.length) return;
+    var current = tabs.indexOf(e.currentTarget);
+    var next = key === 'Home' ? 0 : key === 'End' ? tabs.length - 1
+      : (current + (key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+    e.preventDefault();
+    tabs[next].focus();
+    activate(tabs[next].getAttribute('data-op-tab-value'));
+  }
   // GENERAL HELPERS
   // ──────────────────────────────────────────────────────────────────
   var DEG = Math.PI / 180;
@@ -1761,9 +1776,10 @@
           ['single', 'grating'].map(function(m) {
             var sel = mode === m;
             return h('button', {
-              key: m, role: 'tab', 'aria-selected': sel,
-              'data-op-focusable': 'true',
+              key: m, role: 'tab', 'aria-selected': sel, tabIndex: sel ? 0 : -1,
+              'data-op-focusable': 'true', 'data-op-tab-value': m,
               onClick: function() { upd('diffMode', m); },
+              onKeyDown: function(e) { opTabKeyDown(e, function(value) { upd('diffMode', value); }); },
               style: {
                 padding: '4px 10px',
                 background: sel ? 'linear-gradient(135deg,#0284c7,#0369a1)' : 'rgba(56,189,248,0.10)',
@@ -3030,8 +3046,11 @@
               key: tab.id,
               role: 'tab',
               'aria-selected': sel,
+              tabIndex: sel ? 0 : -1,
               'data-op-focusable': 'true',
+              'data-op-tab-value': tab.id,
               onClick: function() { upd('mode', tab.id); },
+              onKeyDown: function(e) { opTabKeyDown(e, function(value) { upd('mode', value); }); },
               title: tab.desc,
               style: {
                 padding: '8px 12px',
@@ -4287,9 +4306,10 @@
         subModes.map(function(m) {
           var sel = sub === m.id;
           return h('button', {
-            key: m.id, role: 'tab', 'aria-selected': sel,
-            'data-op-focusable': 'true',
+            key: m.id, role: 'tab', 'aria-selected': sel, tabIndex: sel ? 0 : -1,
+            'data-op-focusable': 'true', 'data-op-tab-value': m.id,
             onClick: function() { upd('phenoSub', m.id); },
+            onKeyDown: function(e) { opTabKeyDown(e, function(value) { upd('phenoSub', value); }); },
             title: m.desc,
             style: {
               padding: '7px 11px',
@@ -8996,10 +9016,10 @@
       subView === 'refIndex' && h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(20,184,166,0.30)', borderRadius: 10, padding: '12px', overflowX: 'auto' } },
         h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12 } },
           h('thead', null, h('tr', { style: { background: 'rgba(20,184,166,0.10)' } },
-            h('th', { style: { padding: '8px 10px', textAlign: 'left', color: '#5eead4', fontWeight: 800 } }, 'Material'),
-            h('th', { style: { padding: '8px 10px', textAlign: 'right', color: '#5eead4', fontWeight: 800 } }, 'n'),
-            h('th', { style: { padding: '8px 10px', textAlign: 'left', color: '#5eead4', fontWeight: 800 } }, 'Category'),
-            h('th', { style: { padding: '8px 10px', textAlign: 'left', color: '#5eead4', fontWeight: 800 } }, 'Note')
+            h('th', { scope: 'col', style: { padding: '8px 10px', textAlign: 'left', color: '#5eead4', fontWeight: 800 } }, 'Material'),
+            h('th', { scope: 'col', style: { padding: '8px 10px', textAlign: 'right', color: '#5eead4', fontWeight: 800 } }, 'n'),
+            h('th', { scope: 'col', style: { padding: '8px 10px', textAlign: 'left', color: '#5eead4', fontWeight: 800 } }, 'Category'),
+            h('th', { scope: 'col', style: { padding: '8px 10px', textAlign: 'left', color: '#5eead4', fontWeight: 800 } }, 'Note')
           )),
           h('tbody', null, REFRACTIVE_INDEX_DATA.map(function(r, i) {
             return h('tr', { key: 'ri'+i, style: { borderTop: '1px solid rgba(100,116,139,0.20)' } },
@@ -12503,9 +12523,9 @@
         h('div', { style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', marginBottom: 8 } }, 'Diffraction order angles'),
         h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12 } },
           h('thead', null, h('tr', { style: { borderBottom: '1px solid rgba(168,85,247,0.30)' } },
-            h('th', { style: { padding: '4px 8px', textAlign: 'left', color: '#d8b4fe' } }, 'Order m'),
-            h('th', { style: { padding: '4px 8px', textAlign: 'left', color: '#d8b4fe' } }, 'Angle θ'),
-            h('th', { style: { padding: '4px 8px', textAlign: 'left', color: '#d8b4fe' } }, 'sin θ'))),
+            h('th', { scope: 'col', style: { padding: '4px 8px', textAlign: 'left', color: '#d8b4fe' } }, 'Order m'),
+            h('th', { scope: 'col', style: { padding: '4px 8px', textAlign: 'left', color: '#d8b4fe' } }, 'Angle θ'),
+            h('th', { scope: 'col', style: { padding: '4px 8px', textAlign: 'left', color: '#d8b4fe' } }, 'sin θ'))),
           h('tbody', null, orders.map(function(o) {
             return h('tr', { key: o.m, style: { borderBottom: '1px solid rgba(100,116,139,0.20)' } },
               h('td', { style: { padding: '6px 8px', fontFamily: 'monospace', color: 'var(--allo-stem-text, #cbd5e1)' } }, '±' + o.m + (o.m === 0 ? ' (central)' : '')),

@@ -1,6 +1,6 @@
 # EPPP native pack QA report
 
-Generated: 2026-07-11T19:57:23.069Z
+Generated: 2026-07-12T21:42:15.099Z
 
 Pack: EPPP Part 1 — Source-Reviewed Pilot v1.0.0
 

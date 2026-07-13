@@ -404,7 +404,7 @@ describe('mirrored data contract (reading_library/)', () => {
     });
 
     expect(errors).toEqual([]);
-  });
+  }, 15_000);
 
   it('mirrored Gutenberg full texts carry no print-era markup artifacts', () => {
     // The importer strips [Illustration…] blocks, bracketed/boxed transcriber

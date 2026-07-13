@@ -32,7 +32,7 @@ describe('PDF-P0.1: exported reports describe the weakest-layer model, not a 50/
 
 describe('PDF-P0.3: the BATCH compliance summary no longer overclaims PDF/UA', () => {
   it('drops the bare "meet WCAG 2.1 Level AA compliance (score ≥ 90)" attestation', () => {
-    expect(audit).not.toMatch(/meet WCAG 2\.1 Level AA compliance \(score ≥ 90\)/);
+    expect(audit).not.toMatch(/meet WCAG 2\.2 Level AA compliance \(score ≥ 90\)/);
   });
   it('reframes the score as AlloFlow\'s content audit + carries the PDF/UA caveat', () => {
     expect(audit).toMatch(/scored <strong>≥ 90 on AlloFlow's content audit<\/strong>/);
@@ -48,8 +48,8 @@ describe('the inserted "Accessibility Statement" no longer asserts certified com
     expect(audit).not.toMatch(/Insert Compliance Statement/);
   });
   it('reframes the standards as "built toward … not an independent conformance audit" + a caveat', () => {
-    expect(audit).toMatch(/Built toward WCAG 2\.1 Level AA[\s\S]{0,80}not an independent conformance audit/);
-    expect(audit).toMatch(/Color contrast targeted to WCAG 2\.1 AA/); // was "ratios meeting"
+    expect(audit).toMatch(/Built toward WCAG 2\.2 Level AA[\s\S]{0,80}not an independent conformance audit/);
+    expect(audit).toMatch(/Color contrast targeted to WCAG 2\.2 AA/); // was "ratios meeting"
     expect(audit).toMatch(/not an independently validated WCAG, ADA, Section 508, or PDF\/UA conformance audit/);
   });
 });

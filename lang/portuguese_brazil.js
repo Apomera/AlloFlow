@@ -20598,7 +20598,19 @@
     "set_ui_language": "Alterar o idioma da interface",
     "set_ui_language_done": "Encaminhamos você ao seletor de idioma no cabeçalho — escolha seu idioma por lá.",
     "set_ui_language_hint": "Ir para o seletor de idioma no cabeçalho",
-    "set_ui_language_miss": "O seletor de idioma da interface fica na barra de menus superior."
+    "set_ui_language_miss": "O seletor de idioma da interface fica na barra de menus superior.",
+    "find_reading": "Find the right book",
+    "find_reading_done": "I found a good match and opened it",
+    "find_reading_hint": "Ask by topic, grade, language, source, or type",
+    "find_reading_none": "I opened the Reading Library, but I could not find a strong match yet",
+    "generate_analysis_ready": "Source analysis ready.",
+    "generate_glossary_ready": "Glossary ready.",
+    "generate_quiz_ready": "Quiz ready — it’s in the output panel.",
+    "generate_sentence_frames_ready": "Sentence frames ready.",
+    "generate_simplified_ready": "Simpler version ready.",
+    "open_reading_library": "Open the Reading Library",
+    "open_reading_library_done": "Reading Library opened.",
+    "open_reading_library_hint": "Browse open picture books in 10 languages"
   },
   "palette": {
     "aria": "Paleta de comandos do AlloFlow",

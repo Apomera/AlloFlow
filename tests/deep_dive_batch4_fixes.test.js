@@ -109,8 +109,8 @@ describe('M21/M22 — fidelity panel honesty', () => {
 describe('M25 — a skipped auto-veraPDF is disclosed, not silent', () => {
   it('records WHY it was skipped (transport blocked vs validation failed) and clears at run entry', () => {
     expect(view).toContain("if (pdfAutoVeraPdf && _isPdfSkip) setVeraPdfAutoSkipped('transport-blocked');");
-    expect(view).toContain("if (!_validated) { try { setVeraPdfAutoSkipped('validation-failed'); } catch (_) {} }");
-    expect(view).toContain('setLastTaggedValidation(null); setVeraPdfResult(null); setVeraPdfAutoSkipped(null);');
+    expect(view).toContain("if (!_validated && _attemptCurrent) { try { setVeraPdfAutoSkipped('validation-failed'); } catch (_) {} }");
+    expect(view).toContain('setLastTaggedValidation(null); setVeraPdfResult(null); setVeraPdfAutoSkipped(null); _selectTaggedArtifact(null);');
   });
   it('renders one amber line where the badge would be', () => {
     expect(view).toContain('if (!_ltv && veraPdfAutoSkipped) return (');

@@ -12,8 +12,8 @@ const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
 const games = fs.readFileSync(path.join(ROOT, 'games_module.js'), 'utf8');
 
 describe('sort-game scoring economics', () => {
-    const start = games.indexOf('var makeSortScoreTracker');
-    const end = games.indexOf('// ── App dependencies from window ──', start);
+    const start = games.indexOf('const makeSortScoreTracker');
+    const end = games.indexOf('const VennGame = React.memo', start);
     const factory = new Function(games.slice(start, end) + '; return makeSortScoreTracker;')();
 
     it('awards full credit once, reduced credit after a miss, nothing on repeats', () => {

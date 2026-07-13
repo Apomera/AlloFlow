@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-11T19:57:23.892Z",
+  "generatedAt": "2026-07-12T21:42:15.856Z",
   "goal": "Deeply review the complete 2,933-question legacy universe; correct, diversify, or retire failures; and publish only items that pass the required gates.",
   "requiredGates": [
     "stable provenance and domain tagging",

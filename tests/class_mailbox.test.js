@@ -113,6 +113,9 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
         expect(got.data).toBe('AAABBB');
         expect(got.of).toBe(1);
         expect(got.title).toBe('Cells unit');
+        const expiredId = 'PK-22345678-1234-1234-1234-123456789012';
+        expect(call({ a: 'putpack', admin, id: expiredId, k: PK, part: 1, of: 1, data: 'OLD', title: 'Old unit', expiresAt: new Date(Date.now() - 1000).toISOString() }).ok).toBe(true);
+        expect(call({ a: 'getpack', id: expiredId, k: PK, part: 1 }).e).toBe('expired');
         expect(call({ a: 'getpack', id, k: 'wrong_wrong_wrong_20', part: 1 }).e).toBe('denied');
         expect(call({ a: 'getpack', id: 'PK-00000000-0000-0000-0000-000000000000', k: PK }).e).toBe('no-pack');
         expect(call({ a: 'delpack', admin, id }).ok).toBe(true);
@@ -411,7 +414,7 @@ describe('ANTI wiring pins', () => {
         expect(anti).toMatch(/AlloFlow Class Mailbox" Drive folder/);
         expect(anti).toMatch(/isMailboxSession=\{!!mbLive\}/);
         expect(anti).toMatch(/mailboxJoinUrl=\{mbLive\?\.joinUrl \|\| ''\}/);
-        expect(anti).toMatch(/onEndMailboxSession=\{mbLive \? endMailboxLiveSession : null\}/);
+        expect(anti).toMatch(/onRequestEndSession=\{requestEndLiveSession\}/);
         expect(anti).toContain('Why might Google say “unverified app” or “unsafe”?');
         expect(anti).toContain('A Google account alone does not make a workflow FERPA-compliant.');
         expect(anti).toContain('What is stored, where, and for how long?');

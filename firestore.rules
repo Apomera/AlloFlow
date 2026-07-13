@@ -95,9 +95,15 @@ service cloud.firestore {
         }
 
         // Students need GET by code; LIST would allow code enumeration.
-        allow get: if authed();
+        allow get: if authed()
+          && (resource.data.get('kind', '') != 'assignment'
+            || (resource.data.expiresAt is timestamp && resource.data.expiresAt > request.time));
         allow list: if false;
-        allow create: if authed() && request.resource.data.hostId == request.auth.uid;
+        allow create: if authed() && request.resource.data.hostId == request.auth.uid
+          && (request.resource.data.get('kind', '') != 'assignment'
+            || (request.resource.data.expiresAt is timestamp
+              && request.resource.data.expiresAt > request.time
+              && request.resource.data.expiresAt <= request.time + duration.value(31, 'd')));
         allow delete: if isHost();
         allow update: if isHost() || (
           authed()

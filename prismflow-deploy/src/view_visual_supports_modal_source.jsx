@@ -60,22 +60,6 @@ function PausableImage(props) {
     style || {}
   );
   const imgInlineStyle = { width: '100%', height: '100%', objectFit: 'contain', display: 'block' };
-  const handleTabKeyDown = function (event) {
-    const tabs = ['boards', 'schedules'];
-    const current = tabs.indexOf(vsTab);
-    let next = null;
-    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (current + 1) % tabs.length;
-    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (current - 1 + tabs.length) % tabs.length;
-    else if (event.key === 'Home') next = 0;
-    else if (event.key === 'End') next = tabs.length - 1;
-    if (next === null) return;
-    event.preventDefault();
-    setVsTab(tabs[next]);
-    window.setTimeout(function () {
-      const tab = document.getElementById('visual-supports-tab-' + tabs[next]);
-      if (tab) tab.focus();
-    }, 0);
-  };
 
   return (
     <div style={wrapperStyle}>
@@ -110,6 +94,26 @@ function PausableImage(props) {
 
 function VisualSupportsModal(props) {
   const { setShowVisualSupports, setVsTab, showVisualSupports, vsTab } = props;
+  // Roving-tabindex arrow-key handler for the Boards/Schedules tablist. Must
+  // live HERE (vsTab/setVsTab scope) — it was accidentally defined inside
+  // PausableImage, leaving the JSX reference below a free variable that
+  // crashed this modal on render (caught by check_render_refs).
+  const handleTabKeyDown = function (event) {
+    const tabs = ['boards', 'schedules'];
+    const current = tabs.indexOf(vsTab);
+    let next = null;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (current + 1) % tabs.length;
+    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (current - 1 + tabs.length) % tabs.length;
+    else if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = tabs.length - 1;
+    if (next === null) return;
+    event.preventDefault();
+    setVsTab(tabs[next]);
+    window.setTimeout(function () {
+      const tab = document.getElementById('visual-supports-tab-' + tabs[next]);
+      if (tab) tab.focus();
+    }, 0);
+  };
   const dialogRef = React.useRef(null);
   React.useEffect(function () {
     const dialog = dialogRef.current;

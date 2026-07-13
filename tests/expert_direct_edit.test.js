@@ -55,10 +55,15 @@ describe('_spliceBlock: precise single-occurrence replacement, minimal mutation'
 describe('anti-drift: the mini-audit is shared (no drift between Workbench + direct-edit)', () => {
   it('_reauditAndScore exists and folds in score + issueResolution', () => {
     expect(src).toMatch(/const _reauditAndScore = async \(newHtml, onActivity\) => \{/);
-    expect(src).toMatch(/const _weaP = \(_docPipeline && typeof _docPipeline\.runEqualAccessAudit === 'function'\)/);
-    expect(src).toMatch(/Promise\.all\(\[auditOutputAccessibility\(newHtml\), runAxeAudit\(newHtml\), _weaP\]\)/);
-    expect(src).toMatch(/recomputeIssueResolution\(prev\.issueResolution, _wv\)/);
-    expect(src).toMatch(/_wscore = \(_wdet !== null\) \? _computeHeadline\(_wv\.score, _wdet\)/);
+    expect(src).toContain('const _safeAudit = (run) => Promise.resolve().then(run).catch(() => null);');
+    expect(src).toContain('_safeAudit(() => auditOutputAccessibility(newHtml)),');
+    expect(src).toContain('_safeAudit(() => runAxeAudit(newHtml)),');
+    expect(src).toContain("? _safeAudit(() => _docPipeline.runEqualAccessAudit(newHtml)) : Promise.resolve(null),");
+    expect(src).toContain('const _wscore = _computeHeadline(_wvOk ? _wv.score : null, _wdet);');
+    expect(src).toContain("issueResolution: (_wvOk && typeof recomputeIssueResolution === 'function') ? (recomputeIssueResolution(prev.issueResolution, _wv) || prev.issueResolution) : prev.issueResolution,");
+    expect(src).toContain('const _freshBinding = await _viewCreateVerificationHtmlBinding(newHtml, _docPipeline);');
+    expect(src).toContain('if (prev.accessibleHtml !== newHtml) return prev;');
+    expect(src).toContain("pdfUaSelfCheck: _sameBoundHtml ? ((prev.verificationCoverage && prev.verificationCoverage.pdfUaSelfCheck) || 'not-run') : 'not-run',");
   });
   it('the Expert Workbench now delegates to _reauditAndScore (the old inline copy is gone)', () => {
     expect(src).toMatch(/const _ra = await _reauditAndScore\(result\.html, \(entry\) => setAgentActivityLog/);

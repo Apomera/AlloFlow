@@ -88,7 +88,7 @@ describe('anti-drift: the loop carries the corrected logic', () => {
   it('revert keys on deterministic regression (baseline-guarded) / more issues (AI-branch-gated), not the blend', () => {
     expect(src).toContain("const _detRegressed = (_det !== null) && (typeof _curDet === 'number') && _det < (_curDet - 1);");
     expect(src).toContain("const _moreIssues = (_vio === 0) && ((reVerify.issues ? reVerify.issues.length : 0) > _aiIssues.length);");
-    expect(src).toContain('if (_detRegressed || _moreIssues) {');
+    expect(src).toContain('if (!result._auditOnly && (_detRegressed || _moreIssues)) {');
     expect(src).not.toContain('if (newScore < (cur.afterScore || 0)) {');
   });
   it('AI-flagged contrast is routed to the deterministic fixer in the axe-clean branch', () => {

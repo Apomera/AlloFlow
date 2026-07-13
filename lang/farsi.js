@@ -20096,7 +20096,19 @@
     "set_ui_language": "تغییر زبان رابط کاربری",
     "set_ui_language_done": "شما را به انتخابگر زبان در نوار بالا هدایت کردیم — زبان خود را همان‌جا انتخاب کنید.",
     "set_ui_language_hint": "پرش به انتخابگر زبان در نوار بالا",
-    "set_ui_language_miss": "انتخابگر زبان رابط کاربری در نوار منوی بالا قرار دارد."
+    "set_ui_language_miss": "انتخابگر زبان رابط کاربری در نوار منوی بالا قرار دارد.",
+    "find_reading": "Find the right book",
+    "find_reading_done": "I found a good match and opened it",
+    "find_reading_hint": "Ask by topic, grade, language, source, or type",
+    "find_reading_none": "I opened the Reading Library, but I could not find a strong match yet",
+    "generate_analysis_ready": "Source analysis ready.",
+    "generate_glossary_ready": "Glossary ready.",
+    "generate_quiz_ready": "Quiz ready — it’s in the output panel.",
+    "generate_sentence_frames_ready": "Sentence frames ready.",
+    "generate_simplified_ready": "Simpler version ready.",
+    "open_reading_library": "Open the Reading Library",
+    "open_reading_library_done": "Reading Library opened.",
+    "open_reading_library_hint": "Browse open picture books in 10 languages"
   },
   "palette": {
     "aria": "پنل فرمان AlloFlow",

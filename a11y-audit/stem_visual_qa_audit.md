@@ -1,25 +1,25 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-11T18:00:31.104Z
+Generated: 2026-07-12T22:27:25.424Z
 
 ## Scope
 
-- Registered STEM tools: 122
+- Registered STEM tools: 121
 - STEM tool files: 119
-- Monitored student-facing visual markers: 72
+- Monitored student-facing visual markers: 74
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
-| Load errors | 0 |
-| Marker passes | 72 |
-| Marker failures | 0 |
-| Monitored first-screen findings | 15 |
+| Load errors | 1 |
+| Marker passes | 73 |
+| Marker failures | 1 |
+| Monitored first-screen findings | 16 |
 | High-confidence monitored errors | 0 |
-| Source/public drift | 0 |
-| Any source/public/build drift | 1 |
-| Monitored file drift | 0 |
+| Source/public drift | 2 |
+| Any source/public/build drift | 5 |
+| Monitored file drift | 2 |
 
 ## Visual Marker Coverage
 
@@ -35,7 +35,7 @@ Generated: 2026-07-11T18:00:31.104Z
 | pass | `nutritionLab` | `data-nutrition-practice-path` | Rendered |
 | pass | `bakingScience` | `data-baking-kitchen-bench` | Rendered |
 | pass | `cellularLab` | `data-cellularlab-focus-panel` | Rendered |
-| pass | `companionPlanting` | `data-companion-workspace-stage` | Rendered |
+| fail | `companionPlanting` | `data-companion-workspace-stage` | Review |
 | pass | `dnaLab` | `data-dna-mission` | Rendered |
 | pass | `alphaFoldExplorer` | `data-alphafold-mission` | Rendered |
 | pass | `swimLab` | `data-swimlab-readiness` | Rendered |
@@ -90,6 +90,8 @@ Generated: 2026-07-11T18:00:31.104Z
 | pass | `protractor` | `data-protractor-command` | Rendered |
 | pass | `volume` | `data-volume-command` | Rendered |
 | pass | `base10` | `data-manipulatives-command` | Rendered |
+| pass | `multtable` | `data-multtable-command` | Rendered |
+| pass | `inequality` | `data-inequality-command` | Rendered |
 | pass | `numberline` | `data-numberline-focus` | Rendered |
 | pass | `moneyMath` | `data-moneymath-focus` | Rendered |
 | pass | `logicLab` | `data-logiclab-focus` | Rendered |
@@ -102,7 +104,7 @@ Generated: 2026-07-11T18:00:31.104Z
 
 | Severity | Code | Count | Tools |
 | --- | --- | ---: | --- |
-| warning | `canvas-focus` | 2 | `bikeLab`, `funcGrapher` |
+| warning | `canvas-focus` | 3 | `bikeLab`, `skatelab`, `funcGrapher` |
 | warning | `heading` | 2 | `cellularLab`, `bikeLab` |
 | warning | `canvas-name` | 1 | `funcGrapher` |
 | notice | `horizontal-overflow-risk` | 10 | `opticsLab`, `cellularLab`, `dinoLab`, `printingPress`, `birdLab`, `playlab`, `bikeLab`, `echolocation`, `statsLab`, `volume` |
@@ -111,7 +113,11 @@ Generated: 2026-07-11T18:00:31.104Z
 
 | Status | File | Monitored | Hashes |
 | --- | --- | --- | --- |
-| build-drift | `stem_tool_particlelab3d.js` | no | source `A284849D1A8B`, public `A284849D1A8B`, build `FACF95D1AC25` |
+| build-drift | `stem_tool_circuit.js` | yes | source `C71A16911AAC`, public `C71A16911AAC`, build `4A474AAC85A8` |
+| source-public-drift | `stem_tool_companionplanting.js` | yes | source `7D3F03451492`, public `2E8FF8053DD3`, build `682FAEB000EA` |
+| build-drift | `stem_tool_economicslab.js` | no | source `F5B7DD4BAD48`, public `F5B7DD4BAD48`, build `8BD285AA61CC` |
+| source-public-drift | `stem_tool_particlelab3d.js` | no | source `D53BE9D40D0D`, public `7E5ED7C03E6C`, build `A284849D1A8B` |
+| build-drift | `stem_tool_roadready.js` | no | source `3DA8BB08AF9F`, public `3DA8BB08AF9F`, build `4250E357A8BD` |
 
 ## Gate Policy
 

@@ -63,8 +63,12 @@ describe('anti-drift: critic #1 + ocr-fidelity-5 ship in the source', () => {
 
 describe('anti-drift: critic #3 — veraPDF verdict cannot survive a re-tag', () => {
   it('the Tier-B re-tag drops the stale veraPdf and re-points the bytes ref', () => {
-    expect(view).toMatch(/if \(_reBytes instanceof Uint8Array\) _lastTaggedBytesRef\.current = _reBytes/);
-    expect(view).toMatch(/pdfUa1Checks: _re\.pdfUa1Checks \|\| prev\.pdfUa1Checks, veraPdf: null/);
+    expect(view).toMatch(/if \(!\(_reBytes instanceof Uint8Array\)\) throw new Error\('Restored tagged export returned no byte buffer'\)/);
+    expect(view).toMatch(/const _restoredArtifact = _selectTaggedArtifact\(_reBytes\);\s*\n\s*setLastTaggedValidation\(null\);\s*\n\s*setVeraPdfResult\(null\);/);
+    expect(view).toMatch(/pdfUa1Checks: _re\.pdfUa1Checks \|\| null/);
+    expect(view).toMatch(/veraPdf: null,[\s\S]{0,80}veraPdfAt: null,[\s\S]{0,80}veraPdfBytesHash: null/);
+    expect(view).toMatch(/if \(!_taggedArtifactTicketIsCurrent\(_restoredArtifact\)[\s\S]{0,220}String\(html \|\| ''\)\) return;/);
+    expect(view).toMatch(/_viewAttachTaggedArtifactProof\(_restoredValidation, _restoredArtifact\)/);
   });
   it('the report only claims green ISO-verified when there IS a current tagged PDF (hasChecks) AND the self-check agrees (no "Mostly")', () => {
     // hardened 2026-06-23 (Canvas test): also require hasChecks, so a stale compliant veraPDF result can't

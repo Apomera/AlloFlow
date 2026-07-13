@@ -88,21 +88,30 @@ describe('audit trail: veraPDF verdict is bound to the bytes it validated (no st
 describe('anti-drift: source wires verdict-to-bytes binding + clears stale verdicts', () => {
   it('a shared _sha256OfBytes helper exists and the trail uses it for the shipped fingerprint', () => {
     expect(audit).toMatch(/async function _sha256OfBytes\(bytes\)/);
-    expect(audit).toMatch(/const shippedFingerprint = await _sha256OfBytes\(_lastTaggedBytesRef\.current\);/);
+    // The trail may fingerprint bytes only after exact-HTML and runtime artifact proof gates pass.
+    expect(audit).toMatch(/const _currentTaggedValidation = \(_viewValidationMatchesHtml\(lastTaggedValidation, pdfFixResult && pdfFixResult\.accessibleHtml\)[\s\S]{0,180}_viewTaggedArtifactProofMatches\(lastTaggedValidation, _renderTaggedArtifactTicket\)\) \? lastTaggedValidation : null;/);
+    expect(audit).toMatch(/const shippedFingerprint = _currentTaggedValidation \? await _sha256OfBytes\(_lastTaggedBytesRef\.current\) : null;/);
   });
   it('both veraPDF validation sites store veraPdfBytesHash (verdict bound to validated bytes)', () => {
-    expect(audit).toMatch(/const _vbhV = await _sha256OfBytes\(_tbV\);/);          // auto-validate (Make Accessible)
-    expect(audit).toMatch(/const _vbh = await _sha256OfBytes\(_vbBytes\);/);       // on-demand validate
+    expect(audit).toMatch(/const _vbhV = await _sha256OfBytes\(_veraRun\.bytes\);/);   // auto-validate (Make Accessible)
+    expect(audit).toMatch(/const _vbh = await _sha256OfBytes\(_manualRun\.bytes\);/); // on-demand validate
     const stores = audit.match(/veraPdfBytesHash: _vbh[V]?/g) || [];
     expect(stores.length).toBeGreaterThanOrEqual(2);
   });
   it('the trail attaches the verdict ONLY on a bytes-hash match', () => {
-    expect(audit).toMatch(/const _veraBytesMatch = !!\(_vera && shippedFingerprint && lastTaggedValidation\.veraPdfBytesHash && lastTaggedValidation\.veraPdfBytesHash === shippedFingerprint\);/);
+    expect(audit).toMatch(/const _vera = _currentTaggedValidation && _currentTaggedValidation\.veraPdf;/);
+    expect(audit).toMatch(/const _veraBytesMatch = !!\(_vera && shippedFingerprint && _currentTaggedValidation\.veraPdfBytesHash && _currentTaggedValidation\.veraPdfBytesHash === shippedFingerprint\);/);
     expect(audit).toMatch(/const veraPdfTrail = \(_veraBytesMatch && !_vera\.error\) \?/);
   });
   it('the baseline + typeset byte-producing buttons clear the stale verdict', () => {
-    const clears = audit.match(/veraPdf: null, veraPdfAt: null, veraPdfBytesHash: null/g) || [];
-    expect(clears.length).toBeGreaterThanOrEqual(2);
+    const baseline = audit.slice(audit.indexOf("subject: 'Tagged baseline by AlloFlow (pre-remediation)'"), audit.indexOf('// Parity with the main tagged-download path'));
+    expect(baseline).toMatch(/_selectTaggedArtifact\(taggedBytes\)/);
+    expect(baseline).toMatch(/setLastTaggedValidation\(null\);\s*\n\s*setVeraPdfResult\(null\);/);
+    const typesetStart = audit.indexOf('const _typesetArtifact = _selectTaggedArtifact(taggedBytes)');
+    const typeset = audit.slice(typesetStart, audit.indexOf('const _rt =', typesetStart));
+    expect(typeset).toMatch(/veraPdf: null,[\s\S]{0,80}veraPdfAt: null,[\s\S]{0,80}veraPdfBytesHash: null/);
+    expect(typeset).toMatch(/if \(!_taggedArtifactTicketIsCurrent\(_typesetArtifact\)[\s\S]{0,180}_typesetSourceHtml\) return;/);
+    expect(typeset).toMatch(/_viewAttachTaggedArtifactProof\(_typesetValidation, _typesetArtifact\)/);
   });
   it('the stale path is surfaced honestly (withheld, re-validate) in payload + visible row', () => {
     expect(audit).toMatch(/computed on a DIFFERENT set of bytes/);

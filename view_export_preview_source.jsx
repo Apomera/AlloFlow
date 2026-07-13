@@ -63,14 +63,46 @@ function ExportPreviewView(props) {
   const [imageAltText, setImageAltText] = React.useState('');
   const [imageDecorative, setImageDecorative] = React.useState(false);
   const [imageAltError, setImageAltError] = React.useState('');
+  const [imageInsertBusy, setImageInsertBusy] = React.useState(false);
+  const [exportActionBusy, setExportActionBusy] = React.useState(false);
   const imageFileInputRef = React.useRef(null);
   const imageAddButtonRef = React.useRef(null);
   const imageAltInputRef = React.useRef(null);
   const imageInsertionRangeRef = React.useRef(null);
   const exportDialogRef = React.useRef(null);
   const imageDialogRef = React.useRef(null);
+  const imageInsertRunRef = React.useRef(0);
+  const writingCheckRunRef = React.useRef(0);
+  const auditRunRef = React.useRef(0);
+  const expertRunRef = React.useRef(0);
+  const exportActionLockRef = React.useRef(false);
+  const mountedRef = React.useRef(true);
+  const openerRef = React.useRef(null);
+
+  React.useEffect(() => () => {
+    mountedRef.current = false;
+    imageInsertRunRef.current += 1;
+    writingCheckRunRef.current += 1;
+    auditRunRef.current += 1;
+    expertRunRef.current += 1;
+  }, []);
+
+  // Capture the launch control before the following focus-trap effect moves
+  // focus into the dialog. Effects run in declaration order.
+  React.useEffect(() => {
+    if (!showExportPreview) return undefined;
+    openerRef.current = document.activeElement;
+    return () => {
+      const opener = openerRef.current;
+      if (opener && opener.isConnected && typeof opener.focus === 'function') {
+        window.setTimeout(() => opener.focus(), 0);
+      }
+    };
+  }, [showExportPreview]);
 
   const closeImageDialog = React.useCallback(() => {
+    imageInsertRunRef.current += 1;
+    setImageInsertBusy(false);
     setPendingImageFile(null);
     setImageAltText('');
     setImageDecorative(false);
@@ -117,54 +149,96 @@ function ExportPreviewView(props) {
   }, [pendingImageFile, closeImageDialog]);
 
   const insertPendingImage = React.useCallback(() => {
-    if (!pendingImageFile) return;
-    const alt = imageDecorative ? '' : imageAltText.trim();
-    if (!imageDecorative && !alt) {
+    if (!pendingImageFile || imageInsertBusy) return;
+    const file = pendingImageFile;
+    const decorative = imageDecorative;
+    const alt = decorative ? '' : imageAltText.trim();
+    if (!decorative && !alt) {
       setImageAltError('Describe the image, or mark it as decorative.');
       imageAltInputRef.current?.focus();
       return;
     }
+    const runId = ++imageInsertRunRef.current;
+    setImageInsertBusy(true);
     const reader = new FileReader();
     reader.onload = (ev) => {
+      if (!mountedRef.current || runId !== imageInsertRunRef.current) return;
       const iframe = exportPreviewRef.current;
       const doc = iframe?.contentDocument;
-      if (!doc) {
+      const dataUrl = ev?.target?.result;
+      if (!doc || typeof dataUrl !== 'string') {
+        setImageInsertBusy(false);
         addToast && addToast('Preview not ready yet.', 'error');
         return;
       }
+      if (!/^data:image\/(png|jpe?g|gif|webp);base64,/i.test(dataUrl)) {
+        setImageInsertBusy(false);
+        addToast && addToast('That image format is not supported. Choose PNG, JPEG, GIF, or WebP.', 'error');
+        return;
+      }
       const img = doc.createElement('img');
-      img.src = ev.target.result;
       img.style.cssText = 'max-width:100%;height:auto;border-radius:8px;margin:12px 0;cursor:move;';
       img.alt = alt;
-      const savedRange = imageInsertionRangeRef.current;
-      if (savedRange && savedRange.startContainer?.ownerDocument === doc) {
-        try {
-          savedRange.collapse(false);
-          savedRange.insertNode(img);
-        } catch (_) {
+      img.setAttribute('tabindex', '0');
+      img.setAttribute('data-allo-crop-tabindex-added', 'added');
+      img.onload = () => {
+        if (!mountedRef.current || runId !== imageInsertRunRef.current) return;
+        const pixels = (img.naturalWidth || 0) * (img.naturalHeight || 0);
+        if (!img.naturalWidth || img.naturalWidth > 10000 || img.naturalHeight > 10000 || pixels > 25000000) {
+          img.onload = null;
+          setImageInsertBusy(false);
+          addToast && addToast('That image is too large to edit safely. Choose an image under 10,000 pixels per side and 25 megapixels.', 'error');
+          return;
+        }
+        img.onload = null;
+        const savedRange = imageInsertionRangeRef.current;
+        if (savedRange && savedRange.startContainer?.ownerDocument === doc && savedRange.startContainer?.isConnected) {
+          try {
+            savedRange.collapse(false);
+            savedRange.insertNode(img);
+          } catch (_) {
+            (doc.querySelector('main') || doc.body).appendChild(img);
+          }
+        } else {
           (doc.querySelector('main') || doc.body).appendChild(img);
         }
-      } else {
-        (doc.querySelector('main') || doc.body).appendChild(img);
-      }
-      imageInsertionRangeRef.current = null;
-      closeImageDialog();
-      addToast && addToast(imageDecorative ? 'Decorative image inserted.' : 'Image inserted with alternative text.', 'success');
+        try {
+          if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1');
+          const InputEventCtor = doc.defaultView?.Event || Event;
+          doc.body?.dispatchEvent(new InputEventCtor('input', { bubbles: true }));
+        } catch (_) {}
+        imageInsertionRangeRef.current = null;
+        closeImageDialog();
+        addToast && addToast(decorative ? 'Decorative image inserted.' : 'Image inserted with alternative text.', 'success');
+      };
+      img.onerror = () => {
+        if (!mountedRef.current || runId !== imageInsertRunRef.current) return;
+        setImageInsertBusy(false);
+        addToast && addToast('Could not decode that image.', 'error');
+      };
+      img.src = dataUrl;
     };
-    reader.onerror = () => addToast && addToast('Could not read that image.', 'error');
-    reader.readAsDataURL(pendingImageFile);
-  }, [pendingImageFile, imageDecorative, imageAltText, exportPreviewRef, addToast, closeImageDialog]);
-  const openerRef = React.useRef(null);
-  React.useEffect(() => {
-    if (!showExportPreview) return undefined;
-    openerRef.current = document.activeElement;
-    return () => {
-      const opener = openerRef.current;
-      if (opener && opener.isConnected && typeof opener.focus === 'function') {
-        window.setTimeout(() => opener.focus(), 0);
-      }
+    reader.onerror = () => {
+      if (!mountedRef.current || runId !== imageInsertRunRef.current) return;
+      setImageInsertBusy(false);
+      addToast && addToast('Could not read that image.', 'error');
     };
-  }, [showExportPreview]);
+    reader.readAsDataURL(file);
+  }, [pendingImageFile, imageInsertBusy, imageDecorative, imageAltText, exportPreviewRef, addToast, closeImageDialog]);
+
+  const runExportFromPreview = React.useCallback(async () => {
+    if (exportActionLockRef.current) return;
+    exportActionLockRef.current = true;
+    setExportActionBusy(true);
+    try {
+      await executeExportFromPreview();
+    } catch (error) {
+      if (mountedRef.current) addToast && addToast('Export failed. The builder is still open so you can try again.', 'error');
+    } finally {
+      exportActionLockRef.current = false;
+      if (mountedRef.current) setExportActionBusy(false);
+    }
+  }, [executeExportFromPreview, addToast]);
 
   const handleRadioGroupKeyDown = React.useCallback((e) => {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) return;
@@ -203,7 +277,7 @@ function ExportPreviewView(props) {
           <div className="allo-docsuite fixed inset-0 z-[200] bg-black/60 flex items-stretch justify-center p-4" role="presentation"
             onClick={(e) => { if (e.target === e.currentTarget) setShowExportPreview(false); }}>
             {pendingImageFile && (
-              <div className="fixed inset-0 z-[210] bg-black/70 flex items-center justify-center p-4" role="presentation"
+              <div className="allo-docsuite fixed inset-0 z-[210] bg-black/70 flex items-center justify-center p-4" role="presentation"
                 onClick={(e) => { if (e.target === e.currentTarget) closeImageDialog(); }}
                 >
                 <div ref={imageDialogRef} tabIndex={-1} className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="image-description-title" aria-describedby="image-description-help">
@@ -223,7 +297,7 @@ function ExportPreviewView(props) {
                   <p id="builder-image-alt-error" className="mt-2 min-h-5 text-sm font-bold text-red-700" role="alert">{imageAltError}</p>
                   <div className="mt-4 flex justify-end gap-3">
                     <button type="button" onClick={closeImageDialog} className="min-h-11 rounded-lg border border-slate-400 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">Cancel</button>
-                    <button type="button" onClick={insertPendingImage} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800">Insert image</button>
+                    <button type="button" onClick={insertPendingImage} disabled={imageInsertBusy} aria-busy={imageInsertBusy} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:cursor-wait disabled:opacity-60">{imageInsertBusy ? 'Inserting image...' : 'Insert image'}</button>
                   </div>
                 </div>
               </div>
@@ -239,6 +313,7 @@ function ExportPreviewView(props) {
                     <button onClick={() => setShowExportPreview(false)} className="p-2 ml-1 hover:bg-red-50 hover:text-red-600 rounded-full transition-colors" data-help-key="doc_builder_close_btn" aria-label={t("a11y.close_doc_builder")}><X size={20} /></button>
                   </div>
                 </div>
+                <button type="button" aria-controls="document-builder-preview" onClick={() => exportPreviewRef.current?.focus()} className="sr-only focus:not-sr-only focus:relative focus:z-10 focus:rounded focus:bg-indigo-700 focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-white">Skip to editable preview</button>
                 {exportPreviewSource === 'remediation' && (
                   <div className="bg-emerald-50 border border-emerald-300 rounded-lg px-2.5 py-1.5 text-[11px] text-emerald-800" role="status">
                     <span className="font-bold">♿ {t('export_preview.remediation_banner_title') || 'Editing the remediated document.'}</span>{' '}
@@ -247,7 +322,7 @@ function ExportPreviewView(props) {
                 )}
 
                 {/* ── SECTION: Quick Start ── */}
-                <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Quick Start<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Quick Start<span className="flex-1 h-px bg-indigo-100"></span></h3>
 
                 {/* Presets */}
                 <div>
@@ -291,7 +366,7 @@ function ExportPreviewView(props) {
                 </div>
 
                 {/* ── SECTION: Appearance ── */}
-                <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Appearance<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Appearance<span className="flex-1 h-px bg-indigo-100"></span></h3>
 
                 {/* Style */}
                 <div>
@@ -317,14 +392,14 @@ function ExportPreviewView(props) {
                   )}
                   <div className="grid grid-cols-2 gap-1" role="radiogroup" aria-label="Document style" onKeyDown={handleRadioGroupKeyDown}>
                     {Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars).map(([key, s]) => (
-                      <button key={key} role="radio" aria-checked={exportTheme === key} tabIndex={exportTheme === key ? 0 : -1} onClick={() => { setExportTheme(key); setTimeout(updateExportPreview, 50); }}
+                      <button key={key} role="radio" aria-checked={exportTheme === key} tabIndex={exportTheme === key ? 0 : -1} onClick={() => setExportTheme(key)}
                         className={`text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === key ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}
                       >{s.emoji} {s.name}</button>
                     ))}
                     {/* User brand profiles as selectable themes — clicking one applies its
                         CSS vars via doc_pipeline_source.jsx:16325 BrandProfile fallback. */}
                     {brandProfiles.map(p => (
-                      <button key={p.id} role="radio" aria-checked={exportTheme === p.id} tabIndex={exportTheme === p.id ? 0 : -1} onClick={() => { setExportTheme(p.id); setTimeout(updateExportPreview, 50); }}
+                      <button key={p.id} role="radio" aria-checked={exportTheme === p.id} tabIndex={exportTheme === p.id ? 0 : -1} onClick={() => setExportTheme(p.id)}
                         className={`text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === p.id ? 'bg-rose-600 text-white ring-2 ring-rose-300' : 'bg-white border border-rose-400 text-rose-700 hover:bg-rose-50'}`}
                         title="School brand profile"
                       >🏷️ {p.name || 'Brand'}</button>
@@ -432,7 +507,7 @@ function ExportPreviewView(props) {
                 </div>
 
                 {/* ── SECTION: Word Art ── */}
-                <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Word Art<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2 pt-1"><span className="flex-1 h-px bg-indigo-100"></span>Word Art<span className="flex-1 h-px bg-indigo-100"></span></h3>
                 <div className="bg-gradient-to-br from-amber-50 to-rose-50 rounded-lg border border-amber-200 p-2 space-y-2">
                   <input type="text" id="wordart-text-input" placeholder={t("placeholders.word_art_text_input")} defaultValue="" className="w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none" aria-label={t("a11y.word_art_text")} />
                   <div>
@@ -441,14 +516,14 @@ function ExportPreviewView(props) {
                       {[['goldFoil','✨','Gold'],['neonGlow','💡','Neon'],['retroArcade','🕹️','Retro'],['chalkboard','🖍️','Chalk'],['embossed','🏛️','3D'],['rainbow','🌈','Rainbow']].map(([key, emoji, label], i) => (
                         <button key={key} type="button" role="radio" aria-checked={i === 0} tabIndex={i === 0 ? 0 : -1} data-wa-preset={key}
                           className="wordart-preset-btn text-[10px] font-bold py-1.5 px-1 rounded-md border text-slate-700 transition-all"
-                          style={i === 0 ? { background: '#f59e0b', color: 'white', borderColor: '#f59e0b' } : { background: 'white', borderColor: '#fcd34d' }}
+                          style={i === 0 ? { background: '#b45309', color: 'white', borderColor: '#b45309' } : { background: 'white', borderColor: '#fcd34d' }}
                           onClick={(e) => {
                             const parent = e.currentTarget.parentElement;
                             if (!parent) return;
                             parent.querySelectorAll('.wordart-preset-btn').forEach(b => { b.setAttribute('aria-checked', 'false'); b.tabIndex = -1; b.style.background = 'white'; b.style.color = ''; b.style.borderColor = '#fcd34d'; });
                             e.currentTarget.setAttribute('aria-checked', 'true');
                             e.currentTarget.tabIndex = 0;
-                            e.currentTarget.style.background = '#f59e0b';
+                            e.currentTarget.style.background = '#b45309';
                             e.currentTarget.style.color = 'white';
                             e.currentTarget.style.borderColor = '#f59e0b';
                           }}
@@ -482,7 +557,7 @@ function ExportPreviewView(props) {
                       <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Align</div>
                       <div className="flex gap-0.5" role="radiogroup" aria-label={t("a11y.word_art_alignment")} onKeyDown={handleRadioGroupKeyDown}>
                         {[['left','⇤'],['center','⇔'],['right','⇥']].map(([a, icon]) => (
-                          <button key={a} type="button" role="radio" aria-checked={a === 'center'} tabIndex={a === 'center' ? 0 : -1} data-wa-align={a}
+                          <button key={a} type="button" role="radio" aria-checked={a === 'center'} tabIndex={a === 'center' ? 0 : -1} data-wa-align={a} aria-label={`Align ${a}`}
                             className="wordart-align-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all"
                             style={a === 'center' ? { background: '#4f46e5', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569' }}
                             onClick={(e) => {
@@ -548,15 +623,16 @@ function ExportPreviewView(props) {
                         const node = wrap.firstChild;
                         if (node) doc.body.appendChild(node);
                       }
+                      try { if (doc.body) { doc.body.setAttribute('data-allo-user-edited', '1'); doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true })); } } catch (_) {}
                       if (textInput) textInput.value = '';
                       addToast('✨ Word art inserted', 'success');
                     }}
-                    className="w-full px-3 py-2 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white rounded-lg text-[11px] font-bold transition-all shadow-sm hover:shadow-md"
+                    className="w-full px-3 py-2 bg-gradient-to-r from-amber-700 to-rose-700 hover:from-amber-800 hover:to-rose-800 text-white rounded-lg text-[11px] font-bold transition-all shadow-sm hover:shadow-md"
                   >✨ Insert Word Art</button>
                 </div>
 
                 {/* ── SECTION: Content ── */}
-                <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Content<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Content<span className="flex-1 h-px bg-indigo-100"></span></h3>
 
                 {/* Resource Toggles */}
                 <div>
@@ -605,7 +681,7 @@ function ExportPreviewView(props) {
                         return (
                           <label key={key} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" title={tooltip}>
                             <input type="checkbox" checked={exportConfig[key]} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, [key]: e.target.checked }))} className="rounded" />
-                            <span>{label}{isTeacherOnly && <span className="ml-1 text-[11px] text-indigo-400 font-bold">(also in student copy)</span>}</span>
+                            <span>{label}{isTeacherOnly && <span className="ml-1 text-[11px] text-indigo-700 font-bold">(also in student copy)</span>}</span>
                           </label>
                         );
                       });
@@ -627,7 +703,7 @@ function ExportPreviewView(props) {
                 })()}
 
                 {/* ── SECTION: Export ── */}
-                <div className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Export<span className="flex-1 h-px bg-indigo-100"></span></div>
+                <h3 className="text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2"><span className="flex-1 h-px bg-indigo-100"></span>Export<span className="flex-1 h-px bg-indigo-100"></span></h3>
 
                 {/* Additional Options */}
                 <div>
@@ -848,13 +924,14 @@ function ExportPreviewView(props) {
                       className="flex-1 text-[11px] p-1.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300"
                       aria-label={t("a11y.custom_export_style")} />
                     <button onClick={generateCustomExportStyle}
+                      aria-label={isGeneratingStyle ? 'Generating custom style' : 'Generate custom style'}
                       disabled={!exportStylePrompt.trim() || isGeneratingStyle}
                       className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200 disabled:opacity-40"
                     >{isGeneratingStyle ? '...' : '✨'}</button>
                   </div>
-                  {customExportCSS && <div className="flex items-center gap-2 mt-1">
+                  {customExportCSS && <div role="status" aria-live="polite" className="flex items-center gap-2 mt-1">
                     <div className="text-[11px] text-green-700 font-medium">✓ Custom style active</div>
-                    <button onClick={() => { setCustomExportCSS(''); setTimeout(() => { if (typeof updateExportPreview === 'function') updateExportPreview(); }, 50); }} className="text-[11px] text-slate-600 hover:text-red-500 font-bold">Reset</button>
+                    <button onClick={() => setCustomExportCSS('')} className="text-[11px] text-slate-600 hover:text-red-500 font-bold">Reset</button>
                   </div>}
                 </div>
 
@@ -870,35 +947,51 @@ function ExportPreviewView(props) {
                       .filter((el) => (el.textContent || '').trim().length >= 3);
                   };
                   const runWritingCheck = async () => {
+                    const runId = ++writingCheckRunRef.current;
+                    const sourceDoc = exportPreviewRef.current?.contentDocument;
+                    const sourceHtml = sourceDoc?.documentElement?.outerHTML || '';
                     setWritingCheck({ status: 'loading' });
+                    if (!sourceDoc || !sourceHtml) {
+                      setWritingCheck({ status: 'error', error: t('export_preview.writing.no_preview') || 'Preview not ready - wait for it to render.' });
+                      return;
+                    }
                     try {
                       const linter = await _ensureHarper();
+                      if (!mountedRef.current || runId !== writingCheckRunRef.current) return;
                       const blocks = _leafBlocks();
-                      if (!blocks) { setWritingCheck({ status: 'error', error: t('export_preview.writing.no_preview') || 'Preview not ready — wait for it to render.' }); return; }
+                      if (!blocks) { setWritingCheck({ status: 'error', error: t('export_preview.writing.no_preview') || 'Preview not ready - wait for it to render.' }); return; }
                       const items = [];
                       let capped = false;
                       for (let bi = 0; bi < blocks.length; bi++) {
                         if (items.length >= 150) { capped = true; break; }
-                        const text = blocks[bi].textContent || '';
+                        const blockText = blocks[bi].textContent || '';
                         let lints = [];
-                        try { lints = await linter.lint(text); } catch (_) { continue; }
+                        try { lints = await linter.lint(blockText); } catch (_) { continue; }
+                        if (!mountedRef.current || runId !== writingCheckRunRef.current) return;
                         for (const l of lints) {
                           try {
                             const span = l.span();
                             const sugg = (l.suggestions ? l.suggestions() : []).map((s) => (s.get_replacement_text ? s.get_replacement_text() : '')).filter(Boolean).slice(0, 3);
-                            items.push({ blockIndex: bi, message: l.message ? l.message() : 'Possible issue', start: span.start, end: span.end, bad: text.slice(span.start, span.end), snippet: (span.start > 20 ? '…' : '') + text.slice(Math.max(0, span.start - 20), Math.min(text.length, span.end + 24)) + (span.end + 24 < text.length ? '…' : ''), suggestions: sugg });
+                            items.push({ blockIndex: bi, message: l.message ? l.message() : 'Possible issue', start: span.start, end: span.end, bad: blockText.slice(span.start, span.end), snippet: (span.start > 20 ? '...' : '') + blockText.slice(Math.max(0, span.start - 20), Math.min(blockText.length, span.end + 24)) + (span.end + 24 < blockText.length ? '...' : ''), suggestions: sugg });
                           } catch (_) {}
                           if (items.length >= 150) { capped = true; break; }
                         }
                       }
+                      const currentDoc = exportPreviewRef.current?.contentDocument;
+                      if (currentDoc !== sourceDoc || currentDoc?.documentElement?.outerHTML !== sourceHtml) {
+                        if (mountedRef.current && runId === writingCheckRunRef.current) setWritingCheck({ status: 'error', error: 'The document changed while it was being checked. Run the writing check again for current results.' });
+                        return;
+                      }
                       setWritingCheck({ status: 'done', items, capped });
-                    } catch (e) { setWritingCheck({ status: 'error', error: ((e && e.message) || 'The checker failed to load — check the network and try again.').slice(0, 180) }); }
+                    } catch (e) {
+                      if (mountedRef.current && runId === writingCheckRunRef.current) setWritingCheck({ status: 'error', error: ((e && e.message) || 'The checker failed to load - check the network and try again.').slice(0, 180) });
+                    }
                   };
                   const _locate = (item, outline) => {
                     const blocks = _leafBlocks();
                     const el = blocks && blocks[item.blockIndex];
                     if (!el) return null;
-                    try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); if (outline) { el.style.outline = '3px solid #f59e0b'; el.style.outlineOffset = '2px'; setTimeout(() => { try { el.style.outline = ''; el.style.outlineOffset = ''; } catch (_) {} }, 2200); } } catch (_) {}
+                    try { el.scrollIntoView({ block: 'center', behavior: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth' }); if (outline) { el.style.outline = '3px solid #f59e0b'; el.style.outlineOffset = '2px'; setTimeout(() => { try { el.style.outline = ''; el.style.outlineOffset = ''; } catch (_) {} }, 2200); } } catch (_) {}
                     return el;
                   };
                   const _apply = (item, replacement) => {
@@ -963,11 +1056,11 @@ function ExportPreviewView(props) {
                   {exportPreviewSource === 'remediation' && wc && (
                     <p className="text-[10px] text-amber-700 mt-1">{t('export_preview.writing.remediation_caution') || '⚠ This is a remediated document — its wording comes from the source PDF. Apply grammar changes thoughtfully; the original author’s phrasing may be intentional.'}</p>
                   )}
-                  {wc && wc.status === 'error' && <div className="mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5">{wc.error}</div>}
-                  {wc && wc.status === 'done' && wc.items.length === 0 && <div className="mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5">✓ {t('export_preview.writing.clean') || 'No grammar suggestions found.'}</div>}
+                  {wc && wc.status === 'error' && <div role="alert" aria-live="assertive" className="mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5">{wc.error}</div>}
+                  {wc && wc.status === 'done' && wc.items.length === 0 && <div role="status" aria-live="polite" className="mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5">✓ {t('export_preview.writing.clean') || 'No grammar suggestions found.'}</div>}
                   {wc && wc.status === 'done' && wc.items.length > 0 && (
                     <div className="mt-1.5 space-y-1.5 max-h-64 overflow-y-auto">
-                      <div className="text-[10px] font-bold text-slate-600">{wc.items.length} {t('export_preview.writing.suggestions') || 'suggestion(s)'}{wc.capped ? ' (first 150 shown)' : ''} — {t('export_preview.writing.suggestions_note') || 'nothing is changed unless you Apply it'}:</div>
+                      <div role="status" aria-live="polite" className="text-[10px] font-bold text-slate-600">{wc.items.length} {t('export_preview.writing.suggestions') || 'suggestion(s)'}{wc.capped ? ' (first 150 shown)' : ''} — {t('export_preview.writing.suggestions_note') || 'nothing is changed unless you Apply it'}:</div>
                       {wc.items.map((item, ii) => (
                         <div key={ii} className="bg-white border border-slate-200 rounded-lg p-1.5 text-[11px]">
                           <button onClick={() => _locate(item, true)} className="text-left w-full hover:underline" title={t('export_preview.writing.locate_title') || 'Scroll the preview to this spot'}>
@@ -993,16 +1086,12 @@ function ExportPreviewView(props) {
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">♿ Accessibility Audit</div>
                   <button
                     onClick={async () => {
+                      const runId = ++auditRunRef.current;
                       setExportAuditLoading(true); setExportAuditResult(null);
                       try {
                         const iframe = exportPreviewRef.current;
-                        const doc = iframe?.contentDocument;
-                        const html = doc ? doc.documentElement.outerHTML : getExportPreviewHTML();
-                        // IBM Equal Access — the SECOND deterministic engine, so the export audit gets the
-                        // same two-engine consensus the PDF-remediation pipeline uses (axe-core + IBM ace).
-                        // The audit engines only touch window/document/fetch (not the AI deps), so borrow
-                        // runEqualAccessAudit from the doc-pipeline factory with stub deps and cache the
-                        // instance. Fail-soft: if the engine can't load, the report degrades to axe-only.
+                        const sourceDoc = iframe?.contentDocument;
+                        const html = sourceDoc ? sourceDoc.documentElement.outerHTML : getExportPreviewHTML();
                         let _runEA = null;
                         try {
                           const _mk = window.AlloModules && window.AlloModules.createDocPipeline;
@@ -1013,13 +1102,19 @@ function ExportPreviewView(props) {
                             }));
                             if (_inst && typeof _inst.runEqualAccessAudit === 'function') _runEA = _inst.runEqualAccessAudit;
                           }
-                        } catch (_) { /* no second engine available — axe + AI still run */ }
+                        } catch (_) {}
                         const [aiResult, axeResult, eaResult] = await Promise.all([
                           auditOutputAccessibility(html),
                           runAxeAudit(html).catch(() => null),
                           _runEA ? _runEA(html).catch(() => null) : Promise.resolve(null)
                         ]);
-                        const combined = aiResult || { score: 0, summary: '', issues: [], passes: [] };
+                        if (!mountedRef.current || runId !== auditRunRef.current) return;
+                        const currentDoc = exportPreviewRef.current?.contentDocument;
+                        if (sourceDoc && (currentDoc !== sourceDoc || currentDoc?.documentElement?.outerHTML !== html)) {
+                          setExportAuditResult({ score: -2, summary: 'The document changed during the audit. Run the audit again for results bound to the current document.', issues: [], passes: [] });
+                          return;
+                        }
+                        const combined = { ...(aiResult || { score: 0, summary: '', issues: [], passes: [] }) };
                         if (axeResult) {
                           combined.axeViolations = axeResult.totalViolations;
                           combined.axePasses = axeResult.totalPasses;
@@ -1031,13 +1126,13 @@ function ExportPreviewView(props) {
                           combined.eaPotential = eaResult.potentialViolations;
                           combined.summary = (combined.summary || '') + ` | IBM Equal Access: ${eaResult.failViolations} violations`;
                         }
-                        // Two-engine deterministic consensus: both rule engines ran AND both found zero.
-                        if (axeResult && eaResult) {
-                          combined.deterministicConsensus = (axeResult.totalViolations === 0 && eaResult.failViolations === 0) ? 'clean' : 'issues';
-                        }
+                        if (axeResult && eaResult) combined.deterministicConsensus = (axeResult.totalViolations === 0 && eaResult.failViolations === 0) ? 'clean' : 'issues';
                         setExportAuditResult(combined);
-                      } catch (e) { setExportAuditResult({ score: -1, summary: 'Audit failed', issues: [], passes: [] }); }
-                      setExportAuditLoading(false);
+                      } catch (e) {
+                        if (mountedRef.current && runId === auditRunRef.current) setExportAuditResult({ score: -1, summary: 'Audit failed. Check your connection and try again.', issues: [], passes: [] });
+                      } finally {
+                        if (mountedRef.current && runId === auditRunRef.current) setExportAuditLoading(false);
+                      }
                     }}
                     disabled={exportAuditLoading}
                     data-help-key="doc_builder_wcag_audit_btn"
@@ -1046,8 +1141,11 @@ function ExportPreviewView(props) {
                   >
                     {exportAuditLoading ? <><RefreshCw size={12} className="animate-spin" aria-hidden="true" /> Auditing...</> : <><span aria-hidden="true">♿</span> Run WCAG Audit</>}
                   </button>
+                  {exportAuditResult && exportAuditResult.score < 0 && (
+                    <div role="alert" aria-live="assertive" className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[11px] font-bold text-amber-900">{exportAuditResult.summary}</div>
+                  )}
                   {exportAuditResult && exportAuditResult.score >= 0 && (
-                    <div className="mt-2 space-y-2">
+                    <div role="status" aria-live="polite" aria-atomic="true" className="mt-2 space-y-2">
                       <div className={`text-center p-3 rounded-xl ${exportAuditResult.score >= 80 ? 'bg-green-50 border border-green-200' : exportAuditResult.score >= 60 ? 'bg-amber-50 border border-amber-200' : 'bg-red-50 border border-red-200'}`}>
                         <div className={`text-2xl font-black ${exportAuditResult.score >= 80 ? 'text-green-700' : exportAuditResult.score >= 60 ? 'text-amber-700' : 'text-red-700'}`}>{exportAuditResult.score}/100</div>
                         <div className="text-[11px] font-bold text-slate-600 uppercase">Accessibility Automated Score</div>
@@ -1078,7 +1176,7 @@ function ExportPreviewView(props) {
                       )}
                       {exportAuditResult.passes?.length > 0 && (
                         <div>
-                          <div className="text-[11px] font-bold text-green-600 uppercase mb-1">Passes ({exportAuditResult.passes.length})</div>
+                          <div className="text-[11px] font-bold text-green-700 uppercase mb-1">Passes ({exportAuditResult.passes.length})</div>
                           {exportAuditResult.passes.slice(0, 3).map((pass, i) => (
                             <div key={i} className="text-[11px] text-green-700 mb-0.5 flex items-start gap-1"><span className="text-green-500">✓</span> {pass}</div>
                           ))}
@@ -1102,11 +1200,20 @@ function ExportPreviewView(props) {
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     {/* Editing toolbar */}
-                    <input ref={imageFileInputRef} type="file" accept="image/*" className="sr-only" tabIndex={-1} aria-hidden="true"
+                    <input ref={imageFileInputRef} type="file" accept="image/png,image/jpeg,image/gif,image/webp" className="sr-only" tabIndex={-1} aria-hidden="true"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         e.target.value = '';
                         if (!file) return;
+                        const allowedTypes = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp']);
+                        if (!allowedTypes.has(String(file.type || '').toLowerCase())) {
+                          addToast && addToast('Choose a PNG, JPEG, GIF, or WebP image. SVG and other active formats are not supported.', 'error');
+                          return;
+                        }
+                        if (file.size > 8 * 1024 * 1024) {
+                          addToast && addToast('That image is larger than 8 MB. Resize or compress it before inserting.', 'error');
+                          return;
+                        }
                         setImageAltText('');
                         setImageDecorative(false);
                         setImageAltError('');
@@ -1122,8 +1229,9 @@ function ExportPreviewView(props) {
                     </button>
                     <div className="w-px h-5 bg-slate-200"></div>
                     <button onClick={toggleA11yInspect}
+                      aria-pressed={a11yInspectMode}
                       className={`text-xs font-bold flex items-center gap-1 px-2 py-1 rounded transition-all ${a11yInspectMode ? 'bg-violet-100 text-violet-700 ring-1 ring-violet-300' : 'text-slate-600 hover:text-violet-600 hover:bg-slate-100'}`}
-                      title="Toggle accessibility inspector — shows heading hierarchy, alt text, ARIA labels, table structure, and input labels. Select any badge to edit.">
+                      title="Toggle accessibility inspector — shows heading hierarchy, alt text, ARIA labels, table structure, and input labels. Editable badges support Enter, Space, and click.">
                       ♿ A11y Inspect
                     </button>
                     {/* Diff view entry point for the remediated-PDF pathway of Document Builder.
@@ -1151,8 +1259,10 @@ function ExportPreviewView(props) {
                     <div className="w-px h-5 bg-slate-200"></div>
                                         {exportAuditResult && exportAuditResult.score >= 0 && <span className={`text-[11px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 ${exportAuditResult.score >= 90 ? 'bg-green-100 text-green-700 ring-1 ring-green-300' : exportAuditResult.score >= 70 ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-300' : 'bg-red-100 text-red-700 ring-1 ring-red-300'}`} title={exportAuditResult.summary || ''}>{"♿"} {exportAuditResult.score}/100</span>}
 <button onClick={updateExportPreview} className="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100"><RefreshCw size={12} /> Regenerate</button>
-                    <button onClick={executeExportFromPreview}
-                      disabled={exportPreviewMode === 'slides' && !pptxLoaded}
+                    <button onClick={runExportFromPreview}
+                      disabled={exportActionBusy || (exportPreviewMode === 'slides' && !pptxLoaded)}
+                      aria-busy={exportActionBusy}
+                      aria-label={exportActionBusy ? 'Export in progress' : undefined}
                       className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                       title={exportPreviewMode === 'slides' && !pptxLoaded ? 'Slides library still loading...' : ''}
                     ><Download size={14} /> {exportPreviewMode === 'worksheet' ? 'Print Worksheet' : exportPreviewMode === 'html' ? 'Download HTML' : exportPreviewMode === 'slides' ? (pptxLoaded ? 'Export Slides' : 'Loading...') : 'Download PDF'}</button>
@@ -1172,7 +1282,7 @@ function ExportPreviewView(props) {
                           let text = '';
                           try {
                             const _tClone = doc.body.cloneNode(true);
-                            _tClone.querySelectorAll('.allo-block-controls, .allo-block-remove, script, style').forEach(el => el.remove());
+                            _tClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style').forEach(el => el.remove());
                             _tClone.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,tr,figcaption,blockquote,div').forEach(el => { try { el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
                             text = (_tClone.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
                           } catch (_) { text = (doc.body.innerText || doc.body.textContent || '').trim(); }
@@ -1187,7 +1297,7 @@ function ExportPreviewView(props) {
                           let html = '';
                           try {
                             const _mClone = doc.documentElement.cloneNode(true);
-                            _mClone.querySelectorAll('.allo-block-controls, .allo-block-remove, #allo-builder-edit-css, script, style').forEach(el => el.remove());
+                            _mClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script, style').forEach(el => el.remove());
                             html = _mClone.outerHTML;
                           } catch (_) { html = doc.documentElement.outerHTML; }
                           // Spoken-math captions (2026-07-05): the ```mathml fence below is
@@ -1242,11 +1352,12 @@ function ExportPreviewView(props) {
                           try {
                             const doc = exportPreviewRef.current?.contentDocument;
                             const items = Array.isArray(history) ? history.filter(h => h && h.data != null) : [];
+                            const hasLiveEdits = !!(doc?.body?.getAttribute && doc.body.getAttribute('data-allo-user-edited') === '1');
                             const today = new Date().toISOString().split('T')[0];
                             const title = (exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc && doc.title) || (items[0] && items[0].title) || 'AlloFlow Lesson';
                             const esc = (v) => (v == null ? '' : String(v));
                             const out = ['---', 'title: ' + esc(title), 'source: AlloFlow (Universal Design for Learning toolkit)', 'date_exported: ' + today, '---', '', '# ' + esc(title), ''];
-                            if (items.length) {
+                            if (items.length && !hasLiveEdits) {
                               items.forEach(it => {
                                 const ty = it.type, d = it.data;
                                 out.push('## ' + esc(it.title || (ty ? ty.charAt(0).toUpperCase() + ty.slice(1).replace(/[-_]/g, ' ') : 'Resource')), '');
@@ -1303,7 +1414,7 @@ function ExportPreviewView(props) {
                               let html = '';
                               try {
                                 const _mdClone = doc.documentElement.cloneNode(true);
-                                _mdClone.querySelectorAll('.allo-block-controls, .allo-block-remove, #allo-builder-edit-css, script, style').forEach(el => el.remove());
+                                _mdClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script, style').forEach(el => el.remove());
                                 html = _mdClone.outerHTML;
                               } catch (_) { html = doc.documentElement.outerHTML; }
                               // #6: preserve tables (pipe tables) + image alts before the tag-strip.
@@ -1340,7 +1451,8 @@ function ExportPreviewView(props) {
                           // and carry the document's actual title + language into the OPF metadata.
                           const _clone = doc.documentElement.cloneNode(true);
                           try {
-                            _clone.querySelectorAll('.allo-block-controls, .allo-block-remove, #allo-builder-edit-css, script').forEach(el => el.remove());
+                            _clone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script').forEach(el => el.remove());
+                            _clone.querySelectorAll('[data-allo-crop-tabindex-added]').forEach(el => { const added = el.getAttribute('data-allo-crop-tabindex-added') === 'added'; el.removeAttribute('data-allo-crop-tabindex-added'); if (added) el.removeAttribute('tabindex'); el.removeAttribute('aria-keyshortcuts'); });
                             _clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
                           } catch (_) {}
                           const _escXml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -1388,7 +1500,7 @@ function ExportPreviewView(props) {
                           let text = '';
                           try {
                             const _bClone = doc.body.cloneNode(true);
-                            _bClone.querySelectorAll('.allo-block-controls, .allo-block-remove, script, style').forEach(el => el.remove());
+                            _bClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style').forEach(el => el.remove());
                             _bClone.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(el => { try { el.insertAdjacentText('beforebegin', '\n\n'); el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
                             _bClone.querySelectorAll('p,li,tr,figcaption,blockquote,div').forEach(el => { try { el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
                             text = (_bClone.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
@@ -1568,16 +1680,17 @@ function ExportPreviewView(props) {
                 {/* ── Expert Workbench: Command Bar + Agent Activity (collapsible) ── */}
                 <details open className="bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-600 group">
                   <summary className="cursor-pointer px-2 py-1.5 flex items-center gap-2 list-none select-none hover:bg-slate-800/50">
-                    <span className="inline-block transition-transform group-open:rotate-90 text-slate-600 text-[10px]">▸</span>
-                    <span className="text-[11px] text-purple-700 font-bold shrink-0">{isAgentRunning ? '🤖 Agent' : '⌨️ Expert'}</span>
-                    {isAgentRunning && <span className="text-[11px] text-amber-700 animate-pulse">Running...</span>}
-                    <span className="ml-auto text-[10px] text-slate-500">{agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? '' : 's'}` : 'idle'}</span>
+                    <span className="inline-block transition-transform group-open:rotate-90 text-slate-300 text-[10px]">▸</span>
+                    <span className="text-[11px] text-purple-200 font-bold shrink-0">{isAgentRunning ? '🤖 Agent' : '⌨️ Expert'}</span>
+                    {isAgentRunning && <span className="text-[11px] text-amber-300 animate-pulse">Running...</span>}
+                    <span className="ml-auto text-[10px] text-slate-300">{agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? '' : 's'}` : 'idle'}</span>
                   </summary>
                   <div className="px-2 pb-1.5">
                   <form className="flex-1 flex gap-1" onSubmit={async (e) => {
                     e.preventDefault();
                     if (!expertCommandInput.trim() || isAgentRunning) return;
                     const cmd = expertCommandInput.trim();
+                    const expertRunId = ++expertRunRef.current;
                     setExpertCommandInput('');
                     setIsAgentRunning(true);
                     console.info('[ExpertWorkbench] start command=' + JSON.stringify(cmd) + ' context=export-preview');
@@ -1591,12 +1704,27 @@ function ExportPreviewView(props) {
                         onProgress: (msg) => { /* could update UI */ },
                         onActivity: (entry) => {
                           console.info('[ExpertWorkbench] activity type=' + entry.type + ' text=' + entry.text);
-                          setAgentActivityLog(prev => [...prev, entry]);
+                          if (mountedRef.current && expertRunId === expertRunRef.current) setAgentActivityLog(prev => [...prev, entry]);
                         }
                       });
-                      if (result && result.html && result.html !== currentHtml && doc) {
+                      const liveDoc = exportPreviewRef.current?.contentDocument;
+                      const liveHtml = liveDoc ? ('<!DOCTYPE html>\n' + liveDoc.documentElement.outerHTML) : '';
+                      const resultIsCurrent = mountedRef.current && expertRunId === expertRunRef.current && liveDoc === doc && liveHtml === currentHtml;
+                      if (!resultIsCurrent) {
+                        setAgentActivityLog(prev => [...prev, { text: 'Result not applied because the document changed while the command was running.', type: 'info', time: new Date().toLocaleTimeString() }]);
+                        addToast('The document changed while the Workbench was running, so its older result was not applied.', 'info');
+                      } else if (result && result.html && result.html !== currentHtml && doc) {
                         doc.open(); doc.write(result.html); doc.close();
                         doc.designMode = 'on';
+                        try {
+                          if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1');
+                          window.__alloBuilderEditedPack = { html: '<!DOCTYPE html>\n' + doc.documentElement.outerHTML, at: Date.now() };
+                        } catch (_) {}
+                        auditRunRef.current += 1;
+                        writingCheckRunRef.current += 1;
+                        setExportAuditResult(null);
+                        setExportAuditLoading(false);
+                        setWritingCheck(null);
                         if (result.score !== undefined) {
                           setAgentActivityLog(prev => [...prev, { text: '📊 Score: ' + result.score + '/100', type: 'score', time: new Date().toLocaleTimeString() }]);
                         }
@@ -1612,7 +1740,7 @@ function ExportPreviewView(props) {
                       setAgentActivityLog(prev => [...prev, { text: '❌ ' + (err && (err.message || err)), type: 'error', time: new Date().toLocaleTimeString() }]);
                       addToast('❌ Workbench failed: ' + (err && (err.message || err) || 'unknown error'), 'error');
                     }
-                    setIsAgentRunning(false);
+                    if (mountedRef.current) setIsAgentRunning(false);
                   }}>
                     <input
                       type="text"
@@ -1636,7 +1764,7 @@ function ExportPreviewView(props) {
                     <div className={(agentLogFullView ? 'max-h-64' : 'max-h-24') + ' overflow-y-auto px-2 py-1 space-y-0.5 text-[11px] font-mono'} aria-live="polite" aria-label="Agent activity log">
                       {(agentLogFullView ? agentActivityLog : agentActivityLog.slice(-8)).map((entry, i) => (
                         <div key={i} className={'flex items-start gap-1 ' + (entry.type === 'error' ? 'text-red-400' : entry.type === 'score' ? 'text-cyan-300' : entry.type === 'success' || entry.type === 'complete' ? 'text-green-400' : entry.type === 'tool' ? 'text-amber-300' : entry.type === 'command' ? 'text-purple-300' : 'text-slate-400')}>
-                          <span className="text-slate-600 shrink-0">{entry.time}</span>
+                          <span className="text-slate-400 shrink-0">{entry.time}</span>
                           <span>{entry.text}</span>
                         </div>
                       ))}
@@ -1653,12 +1781,13 @@ function ExportPreviewView(props) {
                         if (!ok) { try { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.focus(); ta.select(); ok = document.execCommand('copy'); document.body.removeChild(ta); } catch (_) { ok = false; } }
                         addToast(ok ? ('📋 Log copied (' + agentActivityLog.length + ' events)') : 'Could not copy — select the log text manually.', ok ? 'success' : 'error');
                       }} className="text-[10px] text-cyan-300 hover:text-cyan-200 underline" title="Copy the full agent/pipeline log to the clipboard">📋 Copy log</button>
-                      <button type="button" onClick={() => { setAgentActivityLog([]); console.info('[ExpertWorkbench] log cleared'); }} className="text-[10px] text-slate-500 hover:text-slate-300 underline ml-auto">Clear</button>
+                      <button type="button" onClick={() => { setAgentActivityLog([]); console.info('[ExpertWorkbench] log cleared'); }} className="text-[10px] text-slate-300 hover:text-white underline ml-auto">Clear</button>
                     </div>
                   </div>
                 )}
                 <div className="flex-1 overflow-hidden bg-slate-100 p-4">
                   <iframe
+                    id="document-builder-preview"
                     ref={exportPreviewRef}
                     title="Editable document preview"
                     className="w-full h-full bg-white rounded-lg shadow-inner border border-slate-400"
@@ -1712,7 +1841,21 @@ function ExportPreviewView(props) {
                         const _captureEdits = () => {
                           try { window.__alloBuilderEditedPack = { html: '<!DOCTYPE html>\n' + doc.documentElement.outerHTML, at: Date.now() }; } catch (_) {}
                         };
-                        doc.addEventListener('input', () => { try { if (_capT) clearTimeout(_capT); _capT = setTimeout(_captureEdits, 800); } catch (_) {} }, true);
+                        doc.addEventListener('input', () => {
+                          try {
+                            if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1');
+                            writingCheckRunRef.current += 1;
+                            auditRunRef.current += 1;
+                            expertRunRef.current += 1;
+                            if (mountedRef.current) {
+                              setWritingCheck(null);
+                              setExportAuditResult(null);
+                              setExportAuditLoading(false);
+                            }
+                            if (_capT) clearTimeout(_capT);
+                            _capT = setTimeout(_captureEdits, 800);
+                          } catch (_) {}
+                        }, true);
                       } catch (_) {}
                     }}
                   />

@@ -104,7 +104,9 @@ describe('#6-ext — per-round recompute carries numeric + structural warnings (
     expect(dp).toContain('recomputableFidelityKinds: _RECOMPUTABLE_FIDELITY_KINDS,');
     expect(anti).toContain('(cur.fidelityNotes || []).filter((n) => !(n && _recompKinds[n.kind])).concat(_roundFid.fidelityNotes || [])');
     expect(anti).toContain('fidelityNotes: _roundNotes,');
-    expect(anti).toContain('fidelityNotes: snapshot.fidelityNotes,');
+    expect(anti).toContain('if (_verificationHtmlBinding && !attachVerificationHtmlProof(cur, result.html)) {');
+    expect(anti).toContain('const snapshot = cur;');
+    expect(anti).toContain('setPdfFixResult(snapshot);');
     expect(anti).toContain('_roundFid.numericWarn].filter(Boolean)');
   });
 });

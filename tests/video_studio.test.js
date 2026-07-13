@@ -1828,6 +1828,40 @@ describe('vsValidateDemoCapture', () => {
 });
 
 // ─── Automatic narration placement ───────────────────────────────────────────
+describe('Demo Autopilot preflight and quality analysis', () => {
+  it('blocks missing plan/connection/capture and passes a ready automatic-voice setup', () => {
+    const blocked = VS.vsBuildDemoPreflight({ planCount: 0, openerConnected: false, captureSupported: false, audioMode: 'auto-Kore' });
+    expect(blocked.ok).toBe(false);
+    expect(blocked.blockingCount).toBeGreaterThanOrEqual(3);
+    const ready = VS.vsBuildDemoPreflight({ planCount: 2, openerConnected: true, captureSupported: true, micSupported: true, audioMode: 'auto-Kore', storageKnown: true, availableBytes: 1024 * 1024 * 1024 });
+    expect(ready.ok).toBe(true);
+    expect(ready.items.find(item => item.id === 'audio').status).toBe('ready');
+  });
+
+  it('warns for limited storage and blocks an unavailable requested microphone', () => {
+    const report = VS.vsBuildDemoPreflight({ planCount: 1, openerConnected: true, captureSupported: true, micSupported: false, audioMode: 'mic', storageKnown: true, availableBytes: 100 * 1024 * 1024 });
+    expect(report.ok).toBe(false);
+    expect(report.warningCount).toBe(1);
+    expect(report.items.find(item => item.id === 'audio').status).toBe('block');
+  });
+
+  it('scores a complete narrated demo and flags incomplete output', () => {
+    const good = VS.vsAnalyzeDemoTakeQuality({
+      duration: 10,
+      captions: [{ start: 0.5, end: 3, text: 'Add the source passage.' }, { start: 4, end: 8, text: 'Review the adapted text.' }],
+      audioClips: [{ demoNarrationCue: { text: 'one' } }, { demoNarrationCue: { text: 'two' } }],
+      demoExpectedNarrationCount: 2,
+      demoNarrationFailed: [],
+      demoNarrationPending: false
+    });
+    expect(good.ok).toBe(true);
+    expect(good.score).toBe(100);
+    const bad = VS.vsAnalyzeDemoTakeQuality({ duration: 1, captions: [], audioClips: [], demoExpectedNarrationCount: 2, demoNarrationFailed: [{ text: 'missing' }] });
+    expect(bad.ok).toBe(false);
+    expect(bad.failCount).toBeGreaterThanOrEqual(2);
+    expect(bad.score).toBeLessThan(50);
+  });
+});
 describe('vsScheduleDemoNarrationClip', () => {
   it('uses PCM duration and shifts later clips so narration never overlaps', () => {
     const first = VS.vsScheduleDemoNarrationClip({ start: 1 }, 48000, 24000, 0, 10, 0.12);
@@ -2063,6 +2097,18 @@ describe('take persistence + export hardening wiring', () => {
   it('ships the fixture-safe official Text Adaptation tutorial and narration recovery controls', () => {
     const html = popup();
     expect(html).toContain('id="demoOfficialTextBtn"');
+    expect(html).toContain('id="demoPreflightBtn"');
+    expect(html).toContain('id="demoRehearseBtn"');
+    expect(html).toContain('id="demoPlanSummary"');
+    expect(html).toContain('id="demoPlanResetBtn"');
+    expect(html).toContain('id="demoPrivacyIndicator"');
+    expect(html).toContain('function moveDemoStep(index, direction)');
+    expect(html).toContain('function estimateDemoPlanSeconds()');
+    expect(html).toContain("review.setAttribute('aria-label', 'Review ' + check.label)");
+    expect(html).toContain('id="demoQualityCard"');
+    expect(html).toContain('function runDemoPreflight()');
+    expect(html).toContain('function renderDemoQuality(take)');
+    expect(html).toContain('Rehearsal complete. Review the pacing');
     expect(html).toContain("bridgeRequest('allostudio-official-tutorial-request'");
     expect(html).toContain("type: 'allostudio-official-tutorial-cleanup'");
     expect(html).toContain('id="demoNarrCancelBtn"');
@@ -2084,7 +2130,8 @@ describe('take persistence + export hardening wiring', () => {
     expect(anti).toContain("source: 'official-tutorial'");
     expect(anti).toContain('setInputText(snapshot.inputText)');
     expect(anti).toContain('setGeneratedContent(snapshot.generatedContent)');
-  });  it('versions the popup from the loaded controller module instead of a stale fixed pin', () => {
+  });
+  it('versions the popup from the loaded controller module instead of a stale fixed pin', () => {
     const m = moduleText();
     expect(m).toContain('document.currentScript && document.currentScript.src');
     expect(m).toContain("searchParams.get('v') || 'dev'");

@@ -1312,6 +1312,10 @@ const executeSaveFile = async (deps) => {
               // Educator continuity: guided-tour resume point rides the project file
               // (Canvas wipes origin storage between sessions). null unless in guided mode.
               guidedTourProgress: deps.guidedTourProgress || null,
+              // Versioned, history-bound, sanitized WYSIWYG edits from the
+              // Document Builder. Student files intentionally omit this
+              // teacher-authoring surface.
+              builderDraft: deps.builderDraft || null,
               history: history,
               timestamp: new Date(),
               progressLog: studentProgressLog,

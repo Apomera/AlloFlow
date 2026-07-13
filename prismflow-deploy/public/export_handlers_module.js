@@ -814,7 +814,7 @@
       // exports (2026-06-11; the live preview keeps its badges untouched).
       var _exClone = iframeDoc.documentElement.cloneNode(true);
       try {
-        var _exKill = _exClone.querySelectorAll('#a11y-inspect-css, #allo-builder-edit-css, .a11y-inspect-badge');
+        var _exKill = _exClone.querySelectorAll('#a11y-inspect-css, #a11y-inspect-styles, #allo-builder-edit-css, .a11y-inspect-badge, [data-allo-crop-ui]');
         for (var _ki = 0; _ki < _exKill.length; _ki++) _exKill[_ki].remove();
         var _exEd = _exClone.querySelectorAll('[contenteditable]');
         for (var _ei = 0; _ei < _exEd.length; _ei++) _exEd[_ei].removeAttribute('contenteditable');
@@ -826,6 +826,13 @@
             var _cn = _cl[_ci];
             if (_cn.indexOf('a11y-inspect') === 0 || _cn.indexOf('a11y-outline') === 0) _cl.remove(_cn);
           }
+        }
+        var _exCropKeys = _exClone.querySelectorAll('[data-allo-crop-tabindex-added]');
+        for (var _cki = 0; _cki < _exCropKeys.length; _cki++) {
+          var _exAddedTab = _exCropKeys[_cki].getAttribute('data-allo-crop-tabindex-added') === 'added';
+          _exCropKeys[_cki].removeAttribute('data-allo-crop-tabindex-added');
+          if (_exAddedTab) _exCropKeys[_cki].removeAttribute('tabindex');
+          _exCropKeys[_cki].removeAttribute('aria-keyshortcuts');
         }
         var _exBody = _exClone.querySelector('body');
         if (_exBody) _exBody.removeAttribute('data-allo-user-edited');
@@ -841,13 +848,16 @@
         catch (_kaErr) { console.warn('[Export] karaoke failed', _kaErr); }
       }
       htmlContent = '<!DOCTYPE html>\n<html' + _exClone.outerHTML.substring(5);
+      try { iframeDoc.designMode = 'on'; } catch (_) {}
       console.log('[Export] ✅ Using edited iframe content, chrome stripped (' + htmlContent.length + ' chars)');
     } else {
       console.warn('[Export] ⚠️ Iframe empty or missing — falling back to generateFullPackHTML(history)');
       htmlContent = generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, exportConfig);
       console.log('[Export] ✅ Regenerated from history: ' + htmlContent.length + ' chars, ' + (history ? history.length : 0) + ' history items');
     }
-    if (!htmlContent || htmlContent.trim().length < 200) {
+    const _exportMeaningfulText = String(htmlContent || '').replace(/<script\b[\s\S]*?<\/script>/gi, '').replace(/<style\b[\s\S]*?<\/style>/gi, '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;|&#160;/gi, ' ').trim();
+    const _exportHasNonTextContent = /<(?:img|svg|canvas|video|audio|math|table|form|input|textarea|select|hr)\b/i.test(String(htmlContent || ''));
+    if (!htmlContent || (!_exportMeaningfulText && !_exportHasNonTextContent)) {
       const exportable = getExportableHistory();
       const skipped = getSkippedResources();
       if (addToast) {
@@ -877,10 +887,13 @@
     // Read-aloud audio is handled by the download-time modal above (inline
     // sentence-karaoke on every reading passage), replacing the old per-text toggles.
 
-    if (typeof setShowExportPreview === 'function') setShowExportPreview(false);
+    // Keep the Builder open until the browser has accepted the export handoff.
+    // Failed popups/ZIP generation remain recoverable and preserve the live draft.
     if (mode === 'slides') {
-      if (typeof handleExportSlides === 'function') handleExportSlides();
-      return;
+      if (typeof handleExportSlides !== 'function') return false;
+      await handleExportSlides();
+      if (typeof setShowExportPreview === 'function') setShowExportPreview(false);
+      return true;
     }
     if (mode === 'print' || mode === 'worksheet') {
       const printWindow = window.open('', '_blank');
@@ -888,9 +901,11 @@
         printWindow.document.write(htmlContent);
         printWindow.document.close();
         setTimeout(function() { printWindow.print(); }, 500);
-      } else {
-        if (window.AlloFlowUX) window.AlloFlowUX.toast((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.', 'error'); else alert((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.');
+        if (typeof setShowExportPreview === 'function') setShowExportPreview(false);
+        return true;
       }
+      if (window.AlloFlowUX) window.AlloFlowUX.toast((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.', 'error'); else alert((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.');
+      return false;
     } else if (mode === 'html') {
       // Single-file option: skip the zip and download just the self-contained
       // .html (images are base64-inlined), so teachers can email one file that
@@ -921,7 +936,10 @@
         URL.revokeObjectURL(url);
         if (addToast) addToast('HTML export downloaded!', 'success');
       }
+      if (typeof setShowExportPreview === 'function') setShowExportPreview(false);
+      return true;
     }
+    return false;
   };
 
   // ── handleExport ─────────────────────────────────────────────────
@@ -943,7 +961,9 @@
     }
     const isWorksheet = mode === 'worksheet';
     const htmlContent = generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, exportConfig);
-    if (!htmlContent || htmlContent.trim().length < 200) {
+    const _exportMeaningfulText = String(htmlContent || '').replace(/<script\b[\s\S]*?<\/script>/gi, '').replace(/<style\b[\s\S]*?<\/style>/gi, '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;|&#160;/gi, ' ').trim();
+    const _exportHasNonTextContent = /<(?:img|svg|canvas|video|audio|math|table|form|input|textarea|select|hr)\b/i.test(String(htmlContent || ''));
+    if (!htmlContent || (!_exportMeaningfulText && !_exportHasNonTextContent)) {
       const exportable = getExportableHistory();
       const skipped = getSkippedResources();
       if (addToast) {
@@ -1097,31 +1117,34 @@
       if (!doc || !doc.head || !doc.body) return;
       const style = doc.createElement('style');
       style.id = 'a11y-inspect-styles';
-      style.textContent = '\n        .a11y-inspect-badge { position:absolute; z-index:9999; font-size:10px; font-weight:800; font-family:monospace; padding:2px 6px; border-radius:4px; pointer-events:auto; line-height:1.3; max-width:280px; word-wrap:break-word; box-shadow:0 2px 6px rgba(0,0,0,0.2); cursor:pointer; }\n        .a11y-inspect-badge:hover { opacity:1 !important; z-index:10000; box-shadow:0 4px 12px rgba(0,0,0,0.3); }\n        .a11y-badge-heading { background:#7c3aed; color:#fff; }\n        .a11y-badge-img { background:#dc2626; color:#fff; }\n        .a11y-badge-aria { background:#0891b2; color:#fff; }\n        .a11y-badge-role { background:#059669; color:#fff; }\n        .a11y-badge-table { background:#d97706; color:#fff; }\n        .a11y-badge-input { background:#e11d48; color:#fff; }\n        .a11y-badge-link { background:#2563eb; color:#fff; }\n        .a11y-badge-lang { background:#4f46e5; color:#fff; }\n        .a11y-badge-landmark { background:#166534; color:#fff; }\n        .a11y-inspect-outline { outline:3px solid; outline-offset:2px; position:relative; }\n        .a11y-inspect-outline-heading { outline-color:#7c3aed; }\n        .a11y-inspect-outline-img { outline-color:#dc2626; }\n        .a11y-inspect-outline-aria { outline-color:#0891b2; }\n        .a11y-inspect-outline-role { outline-color:#059669; }\n        .a11y-inspect-outline-table { outline-color:#d97706; }\n        .a11y-inspect-outline-input { outline-color:#e11d48; }\n        .a11y-inspect-outline-landmark { outline-color:#166534; }\n      ';
+      style.textContent = '\n        .a11y-inspect-badge { position:absolute; z-index:9999; font-size:10px; font-weight:800; font-family:monospace; padding:2px 6px; border-radius:4px; pointer-events:auto; line-height:1.3; max-width:280px; word-wrap:break-word; box-shadow:0 2px 6px rgba(0,0,0,0.2); cursor:default; }\n        .a11y-inspect-badge[role="button"] { cursor:pointer; }\n        .a11y-inspect-badge[role="button"]:focus-visible { outline:3px solid #ffffff; outline-offset:2px; box-shadow:0 0 0 5px #1e293b; }\n        .a11y-inspect-badge:hover { opacity:1 !important; z-index:10000; box-shadow:0 4px 12px rgba(0,0,0,0.3); }\n        .a11y-badge-heading { background:#7c3aed; color:#fff; }\n        .a11y-badge-img { background:#dc2626; color:#fff; }\n        .a11y-badge-aria { background:#0891b2; color:#fff; }\n        .a11y-badge-role { background:#059669; color:#fff; }\n        .a11y-badge-table { background:#d97706; color:#fff; }\n        .a11y-badge-input { background:#e11d48; color:#fff; }\n        .a11y-badge-link { background:#2563eb; color:#fff; }\n        .a11y-badge-lang { background:#4f46e5; color:#fff; }\n        .a11y-badge-landmark { background:#166534; color:#fff; }\n        .a11y-inspect-outline { outline:3px solid; outline-offset:2px; position:relative; }\n        .a11y-inspect-outline-heading { outline-color:#7c3aed; }\n        .a11y-inspect-outline-img { outline-color:#dc2626; }\n        .a11y-inspect-outline-aria { outline-color:#0891b2; }\n        .a11y-inspect-outline-role { outline-color:#059669; }\n        .a11y-inspect-outline-table { outline-color:#d97706; }\n        .a11y-inspect-outline-input { outline-color:#e11d48; }\n        .a11y-inspect-outline-landmark { outline-color:#166534; }\n      ';
       doc.head.appendChild(style);
-      const badge = function(el, cls, text) {
+      const badge = function(el, cls, text, attrName) {
         el.classList.add('a11y-inspect-outline', 'a11y-inspect-outline-' + cls.replace('a11y-badge-', ''));
         el.style.position = el.style.position || 'relative';
         const b = doc.createElement('span');
         b.className = 'a11y-inspect-badge ' + cls;
         b.textContent = text;
-        b.title = 'Click to edit this accessibility attribute';
         b.style.position = 'absolute'; b.style.top = '-14px'; b.style.left = '0';
-        b.addEventListener('click', function(ev) {
-          ev.stopPropagation();
-          const current = b.dataset.attrValue || '';
-          const attrName = b.dataset.attrName;
-          const target = b.dataset.targetSelector;
-          if (attrName && target) {
+        if (attrName) {
+          b.setAttribute('role', 'button');
+          b.setAttribute('tabindex', '0');
+          b.setAttribute('aria-label', 'Edit ' + attrName + ': ' + (el.getAttribute(attrName) || 'empty'));
+          b.title = 'Select to edit ' + attrName;
+          const activate = function(ev) {
+            ev.stopPropagation();
+            const current = el.getAttribute(attrName) || '';
             const newVal = prompt('Edit ' + attrName + ':', current);
             if (newVal !== null) {
-              const targetEl = doc.querySelector(target) || el;
-              targetEl.setAttribute(attrName, newVal);
-              b.textContent = b.dataset.prefix + (newVal || '(empty)');
-              b.dataset.attrValue = newVal;
+              el.setAttribute(attrName, newVal);
+              b.textContent = (attrName === 'aria-label' ? 'ARIA: ' : attrName.toUpperCase() + ': ') + (newVal || '(empty)');
+              b.setAttribute('aria-label', 'Edit ' + attrName + ': ' + (newVal || 'empty'));
+              try { if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1'); doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true })); } catch (_) {}
             }
-          }
-        });
+          };
+          b.addEventListener('click', activate);
+          b.addEventListener('keydown', function(ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); activate(ev); } });
+        }
         el.appendChild(b);
       };
       doc.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(function(h, i) {
@@ -1138,29 +1161,41 @@
         b.dataset.prefix = 'ALT: ';
         b.dataset.targetSelector = 'img:nth-of-type(' + (i + 1) + ')';
         b.textContent = alt ? 'ALT: ' + alt : 'ALT: ⚠️ MISSING';
-        b.title = 'Click to edit alt text';
+        b.setAttribute('role', 'button');
+        b.setAttribute('tabindex', '0');
+        b.setAttribute('aria-label', 'Edit image alternative text: ' + (alt || 'missing'));
+        b.title = 'Select to edit alt text';
         b.style.cssText = 'position:absolute;top:-14px;left:0;cursor:pointer;';
-        b.addEventListener('click', function(ev) {
+        const editAlt = function(ev) {
           ev.stopPropagation();
-          const newAlt = prompt('Edit alt text for this image:', alt || '');
-          if (newAlt !== null) { img.setAttribute('alt', newAlt); b.textContent = 'ALT: ' + (newAlt || '(empty)'); b.dataset.attrValue = newAlt; }
-        });
+          const currentAlt = img.getAttribute('alt') || '';
+          const newAlt = prompt('Edit alt text for this image:', currentAlt);
+          if (newAlt !== null) {
+            img.setAttribute('alt', newAlt);
+            b.textContent = 'ALT: ' + (newAlt || '(empty)');
+            b.dataset.attrValue = newAlt;
+            b.setAttribute('aria-label', 'Edit image alternative text: ' + (newAlt || 'empty'));
+            try { if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1'); doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true })); } catch (_) {}
+          }
+        };
+        b.addEventListener('click', editAlt);
+        b.addEventListener('keydown', function(ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); editAlt(ev); } });
         const wrapper = doc.createElement('span');
         wrapper.style.cssText = 'position:relative;display:inline-block;';
         img.parentNode.insertBefore(wrapper, img);
         wrapper.appendChild(img);
         wrapper.appendChild(b);
       });
-      doc.querySelectorAll('[aria-label]').forEach(function(el) {
+      doc.querySelectorAll('[aria-label]:not(.a11y-inspect-badge)').forEach(function(el) {
         const label = el.getAttribute('aria-label');
-        badge(el, 'a11y-badge-aria', 'ARIA: ' + label);
+        badge(el, 'a11y-badge-aria', 'ARIA: ' + label, 'aria-label');
       });
-      doc.querySelectorAll('[role]').forEach(function(el) {
+      doc.querySelectorAll('[role]:not(.a11y-inspect-badge)').forEach(function(el) {
         const role = el.getAttribute('role');
         if (role === 'main' || role === 'contentinfo' || role === 'banner' || role === 'navigation') {
           badge(el, 'a11y-badge-landmark', 'LANDMARK: ' + role);
         } else {
-          badge(el, 'a11y-badge-role', 'ROLE: ' + role);
+          badge(el, 'a11y-badge-role', 'ROLE: ' + role, 'role');
         }
       });
       doc.querySelectorAll('table').forEach(function(tbl) {
@@ -1173,7 +1208,7 @@
         if (el.type === 'hidden') return;
         const labelEl = el.id ? doc.querySelector('label[for="' + el.id + '"]') : null;
         const label = el.getAttribute('aria-label') || (labelEl ? labelEl.textContent : '') || '';
-        badge(el, 'a11y-badge-input', label ? 'LABEL: ' + label : 'LABEL: ⚠️ MISSING');
+        badge(el, 'a11y-badge-input', label ? 'LABEL: ' + label : 'LABEL: ⚠️ MISSING', 'aria-label');
       });
       const html = doc.documentElement;
       const lang = html.getAttribute('lang');
@@ -1195,7 +1230,7 @@
         '<span style="color:#fbbf24;">■</span> Tables ' +
         '<span style="color:#fb7185;">■</span> Input Labels ' +
         '<span style="color:#818cf8;">■</span> Landmarks' +
-        '<br><em style="font-size:10px;opacity:0.7;">Click any badge to edit the attribute</em>';
+        '<br><em style="font-size:10px;opacity:0.7;">Use Enter, Space, or click on ALT, ARIA, role, and label badges to edit</em>';
       doc.body.appendChild(legend);
   };
 

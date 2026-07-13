@@ -36,25 +36,23 @@ describe('_distributeCallsToRuns — positioned words mapped onto per-leaf runs 
     expect(d[0].calls.map((c) => c.text)).toEqual(['w0', 'w1']);
     expect(d[1].calls.map((c) => c.text)).toEqual(['w2', 'w3', 'w4']);
   });
-  it('the LAST run soaks up any remainder so NO positioned word is dropped', () => {
-    const d = _distributeCallsToRuns(runsOf('one', 'two'), callsOf(10)); // run word counts 1 + 1 = 2, but 10 boxes
-    expect(d[0].calls.length).toBe(1);
-    expect(d[1].calls.length).toBe(9); // remainder soaked
-    const total = d.reduce((a, g) => a + g.calls.length, 0);
-    expect(total).toBe(10); // every box drawn
+  it('flags large count divergence so the caller uses semantic block layout', () => {
+    const d = _distributeCallsToRuns(runsOf('one', 'two'), callsOf(10));
+    expect(d.map((g) => g.calls.length)).toEqual([0, 0]);
+    expect(d.mismatch).toEqual({ leafWords: 2, boxes: 10 });
   });
   it('every run gets an entry (even empty) so its BDC/EMC is still emitted and the MCR stays backed', () => {
-    const d = _distributeCallsToRuns(runsOf('alpha beta gamma', 'delta', 'epsilon'), callsOf(3));
+    const d = _distributeCallsToRuns(runsOf('alpha beta', 'delta', 'epsilon'), callsOf(4));
     expect(d.length).toBe(3);
-    // first run wants 3, consumes all 3; the middle/last runs get empty arrays but still an entry
-    expect(d[0].calls.length).toBe(3);
-    expect(d[1].calls).toEqual([]);
-    expect(d[2].calls).toEqual([]);
+    // all runs retain entries so every semantic leaf keeps a BDC/EMC and backed MCR
+    expect(d.map((g) => g.calls.length)).toEqual([2, 1, 1]);
     expect(d.every((g) => g.run)).toBe(true);
   });
   it('degenerate inputs never throw', () => {
     expect(_distributeCallsToRuns([], callsOf(3))).toEqual([]);
-    expect(_distributeCallsToRuns(runsOf('x'), [])).toEqual([{ run: { text: 'x', role: 'P', mcid: 0 }, calls: [] }]);
+    const empty = _distributeCallsToRuns(runsOf('x'), []);
+    expect([...empty]).toEqual([{ run: { text: 'x', role: 'P', mcid: 0 }, calls: [] }]);
+    expect(empty.mismatch).toEqual({ leafWords: 1, boxes: 0 });
     expect(_distributeCallsToRuns(null, null)).toEqual([]);
   });
 });

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-11T18:00:25.740Z",
+  "generatedAt": "2026-07-12T21:26:46.939Z",
   "source": {
     "stemToolFileCount": 119,
     "registeredToolCount": 122
@@ -8,13 +8,13 @@
   "loadErrors": [],
   "renderErrors": [],
   "summary": {
-    "issueCount": 33,
+    "issueCount": 37,
     "errorCount": 0,
-    "warningCount": 11,
+    "warningCount": 15,
     "noticeCount": 22,
-    "toolsWithIssues": 30,
+    "toolsWithIssues": 32,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 10,
+    "toolsWithWarnings": 14,
     "toolsWithCanvas": 36,
     "shellCoverage": {
       "standardShellTools": 122,
@@ -31,13 +31,13 @@
       "general": {
         "toolCount": 11,
         "errorCount": 0,
-        "warningCount": 0,
+        "warningCount": 1,
         "noticeCount": 12
       },
       "math": {
         "toolCount": 22,
         "errorCount": 0,
-        "warningCount": 6,
+        "warningCount": 8,
         "noticeCount": 0
       },
       "Games": {
@@ -49,7 +49,7 @@
       "science": {
         "toolCount": 48,
         "errorCount": 0,
-        "warningCount": 3,
+        "warningCount": 4,
         "noticeCount": 4
       },
       "technology": {
@@ -172,14 +172,17 @@
     {
       "code": "tiny-text",
       "severity": "warning",
-      "count": 9,
-      "toolCount": 9,
+      "count": 12,
+      "toolCount": 12,
       "exampleTools": [
         "base10",
         "calculus",
         "coordinate",
         "geologyExplorer",
+        "inequality",
+        "multtable",
         "particleLab3d",
+        "plateTectonics",
         "protractor",
         "unitConvert",
         "universe",
@@ -206,6 +209,16 @@
         "appLab"
       ],
       "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
+    },
+    {
+      "code": "svg-name",
+      "severity": "warning",
+      "count": 1,
+      "toolCount": 1,
+      "exampleTools": [
+        "birdLab"
+      ],
+      "recommendation": "Mark decorative SVGs aria-hidden or give informative SVGs an aria-label/title."
     },
     {
       "code": "metadata",
@@ -931,18 +944,18 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive bird-spotting and species ID for adolescents. Layered habitat scenes with animated birds whose movement signatures double as field marks. Pairs with Cornell Lab's free Merlin Bird ID app for real photos and audio. Maine-relevant without being Maine-only.",
-      "renderedBytes": 144110,
+      "renderedBytes": 146262,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 3,
       "errorCount": 0,
-      "warningCount": 0,
+      "warningCount": 1,
       "noticeCount": 2,
       "metrics": {
         "buttons": 127,
         "roleButtons": 0,
         "fields": 1,
         "canvases": 0,
-        "svgs": 1,
+        "svgs": 2,
         "images": 0,
         "headings": 128,
         "links": 0,
@@ -950,6 +963,14 @@
         "fixedWidthRiskCount": 2
       },
       "issues": [
+        {
+          "toolId": "birdLab",
+          "severity": "warning",
+          "code": "svg-name",
+          "message": "SVG is neither aria-hidden nor named.",
+          "index": 1,
+          "selector": "div.birdlab-shell.p-6 > button.w-full.mb-5:nth-of-type(1) > div.p-4.flex:nth-of-type(1) > div:nth-of-type(2) > svg"
+        },
         {
           "toolId": "birdLab",
           "severity": "notice",
@@ -1190,7 +1211,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Build series & parallel circuits with Ohm's Law",
-      "renderedBytes": 22560,
+      "renderedBytes": 22859,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1572,7 +1593,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 24175,
+      "renderedBytes": 24186,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1684,7 +1705,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore economics through supply & demand curves, personal finance, stock-market, business, and macro-policy simulations.",
-      "renderedBytes": 11521,
+      "renderedBytes": 11968,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1803,7 +1824,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 25882,
+      "renderedBytes": 25908,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2275,11 +2296,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Visualize inequalities on a number line with notation, quiz, solver, badges & AI tutor.",
-      "renderedBytes": 15568,
+      "renderedBytes": 18722,
       "standardShell": true,
-      "issueCount": 0,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 0,
+      "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
         "buttons": 30,
@@ -2290,10 +2311,21 @@
         "images": 0,
         "headings": 4,
         "links": 0,
-        "tinyTextClassHits": 0,
+        "tinyTextClassHits": 3,
         "fixedWidthRiskCount": 0
       },
-      "issues": []
+      "issues": [
+        {
+          "toolId": "inequality",
+          "severity": "warning",
+          "code": "tiny-text",
+          "message": "Tool uses persistent 8px/9px text utility classes.",
+          "count": 3,
+          "classes": [
+            "text-[9px]"
+          ]
+        }
+      ]
     },
     {
       "id": "kitchenLab",
@@ -2618,7 +2650,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 13481,
+      "renderedBytes": 13480,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2646,11 +2678,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive 12×12 grid with quiz modes, speed runs, streaks, badges & AI tutor.",
-      "renderedBytes": 29114,
+      "renderedBytes": 32501,
       "standardShell": true,
-      "issueCount": 0,
+      "issueCount": 1,
       "errorCount": 0,
-      "warningCount": 0,
+      "warningCount": 1,
       "noticeCount": 0,
       "metrics": {
         "buttons": 22,
@@ -2661,10 +2693,21 @@
         "images": 0,
         "headings": 3,
         "links": 0,
-        "tinyTextClassHits": 0,
+        "tinyTextClassHits": 3,
         "fixedWidthRiskCount": 0
       },
-      "issues": []
+      "issues": [
+        {
+          "toolId": "multtable",
+          "severity": "warning",
+          "code": "tiny-text",
+          "message": "Tool uses persistent 8px/9px text utility classes.",
+          "count": 3,
+          "classes": [
+            "text-[9px]"
+          ]
+        }
+      ]
     },
     {
       "id": "musicSynth",
@@ -2821,22 +2864,22 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Run fully 3D particle experiments with states of matter, gas laws, diffusion, collisions, attraction, live measurements, and particle tracing.",
-      "renderedBytes": 9901,
+      "renderedBytes": 19670,
       "standardShell": true,
       "issueCount": 2,
       "errorCount": 0,
       "warningCount": 2,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 19,
+        "buttons": 25,
         "roleButtons": 0,
-        "fields": 4,
+        "fields": 7,
         "canvases": 1,
-        "svgs": 1,
+        "svgs": 2,
         "images": 0,
-        "headings": 5,
+        "headings": 7,
         "links": 0,
-        "tinyTextClassHits": 1,
+        "tinyTextClassHits": 3,
         "fixedWidthRiskCount": 0
       },
       "issues": [
@@ -2853,7 +2896,7 @@
           "severity": "warning",
           "code": "tiny-text",
           "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 1,
+          "count": 3,
           "classes": [
             "text-[9px]"
           ]
@@ -2924,11 +2967,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore tectonic plates, earthquakes, volcanoes, and continental drift.",
-      "renderedBytes": 25273,
+      "renderedBytes": 27444,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 2,
       "errorCount": 0,
-      "warningCount": 0,
+      "warningCount": 1,
       "noticeCount": 1,
       "metrics": {
         "buttons": 25,
@@ -2937,12 +2980,22 @@
         "canvases": 6,
         "svgs": 0,
         "images": 0,
-        "headings": 6,
+        "headings": 7,
         "links": 0,
-        "tinyTextClassHits": 0,
+        "tinyTextClassHits": 4,
         "fixedWidthRiskCount": 2
       },
       "issues": [
+        {
+          "toolId": "plateTectonics",
+          "severity": "warning",
+          "code": "tiny-text",
+          "message": "Tool uses persistent 8px/9px text utility classes.",
+          "count": 4,
+          "classes": [
+            "text-[9px]"
+          ]
+        },
         {
           "toolId": "plateTectonics",
           "severity": "notice",
@@ -3135,7 +3188,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Three.js stoop simulator + deep science of raptor hunt mechanics: talon grip force, vision, flight physics, silent flight, and the DDT-era recovery story. 8 species roster from peregrine to harpy.",
-      "renderedBytes": 25686,
+      "renderedBytes": 25704,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3191,7 +3244,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Pseudo-3D driving simulator + US permit test + fuel efficiency physics. Maine state focus.",
-      "renderedBytes": 40793,
+      "renderedBytes": 40782,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3408,7 +3461,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Skate / BMX physics: kickflips, halfpipe pumps, and gap jumps. Same physics that lands a 720.",
-      "renderedBytes": 69196,
+      "renderedBytes": 69198,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3604,7 +3657,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 47841,
+      "renderedBytes": 47823,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3695,7 +3748,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Keyboarding designed for students with disabilities — accommodations are the product, not a menu. AI-personalized passages, IEP-ready progress, no ads or racing.",
-      "renderedBytes": 30626,
+      "renderedBytes": 30624,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,

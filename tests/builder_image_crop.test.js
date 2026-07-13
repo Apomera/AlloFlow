@@ -110,7 +110,7 @@ describe('anti-drift: builder crop shipped with its privacy + chrome-sweep invar
     expect(anti).toMatch(/window\.__alloBuilderCropOriginals/);
   });
   it('the close-time remediation write-back strips crop chrome AND crop bookkeeping attrs', () => {
-    expect(anti).toMatch(/#a11y-inspect-css, \.a11y-inspect-badge, #print-banner, \[data-allo-crop-ui\]/);
+    expect(anti).toMatch(/#a11y-inspect-css[^'\n]*\.a11y-inspect-badge[^'\n]*\[data-allo-crop-ui\]/);
     expect(anti).toMatch(/removeAttribute\('data-allo-crop-id'\); n\.removeAttribute\('data-allo-crop'\)/);
   });
   it('the export shim sweeps live crop chrome before the module serializes the iframe', () => {

@@ -20201,7 +20201,19 @@
     "set_ui_language": "इन्टरफेसको भाषा परिवर्तन गर्नुहोस्",
     "set_ui_language_done": "तपाईंलाई हेडरमा रहेको भाषा छनोट गर्ने ठाउँमा पुर्‍याइयो — त्यहाँ आफ्नो भाषा छान्नुहोस्।",
     "set_ui_language_hint": "हेडरमा रहेको भाषा छनोटकर्तामा जानुहोस्",
-    "set_ui_language_miss": "इन्टरफेसको भाषा छनोट गर्ने ठाउँ माथिल्लो मेनु पट्टीमा छ।"
+    "set_ui_language_miss": "इन्टरफेसको भाषा छनोट गर्ने ठाउँ माथिल्लो मेनु पट्टीमा छ।",
+    "find_reading": "Find the right book",
+    "find_reading_done": "I found a good match and opened it",
+    "find_reading_hint": "Ask by topic, grade, language, source, or type",
+    "find_reading_none": "I opened the Reading Library, but I could not find a strong match yet",
+    "generate_analysis_ready": "Source analysis ready.",
+    "generate_glossary_ready": "Glossary ready.",
+    "generate_quiz_ready": "Quiz ready — it’s in the output panel.",
+    "generate_sentence_frames_ready": "Sentence frames ready.",
+    "generate_simplified_ready": "Simpler version ready.",
+    "open_reading_library": "Open the Reading Library",
+    "open_reading_library_done": "Reading Library opened.",
+    "open_reading_library_hint": "Browse open picture books in 10 languages"
   },
   "palette": {
     "aria": "AlloFlow कमाण्ड प्यालेट",

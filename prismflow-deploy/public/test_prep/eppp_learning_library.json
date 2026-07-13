@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-11T19:57:23.367Z",
+  "generatedAt": "2026-07-12T21:42:15.382Z",
   "libraryId": "eppp-learning-library",
   "reviewStandard": {
     "checks": [
@@ -18,12 +18,12 @@
     "chapters": 49,
     "sections": 278,
     "diagrams": 25,
-    "diagramPlacements": 50,
-    "knowledgeChecks": 90,
+    "diagramPlacements": 52,
+    "knowledgeChecks": 91,
     "flashcards": 415,
     "memoryAids": 255,
     "qaPassedChapters": 0,
-    "sourceReviewedChapters": 20,
+    "sourceReviewedChapters": 26,
     "qaPassedFlashcards": 0,
     "sourceReviewedFlashcards": 9,
     "qaPassedMemoryAids": 0,
@@ -3680,20 +3680,26 @@
       "examWeight": "12%",
       "sectionCount": 5,
       "diagramCount": 1,
-      "knowledgeCheckCount": 1,
+      "knowledgeCheckCount": 2,
       "referenceCount": 4,
       "hasAiReflectiveCoda": true,
       "legacySource": "js/textbook_ch23.js",
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "reviewReferences": [],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Corrected brain-wide pruning peaks and adolescent-behavior reductionism, LTP-as-complete-basis, settled adult-human olfactory and hippocampal neurogenesis, literal equipotentiality, age-only injury recovery and simple cortical takeover, Romanian-adoptee causal cutoffs, sympathetic-equals-NE shorthand, polyvagal claims presented as settled anatomy, categorical insomnia medication exclusion, universal cataplexy/orexin claims, apnea risk and treatment simplifications, absent parasomnia recall, REM behavior disorder as diagnostic, and AI consciousness self-report; added an accessible autonomic two-neuron pathway diagram and transmitter-exception check, and emphasized variability, differential assessment, and theory-versus-evidence boundaries.",
+      "reviewReferences": [
+        "https://www.ninds.nih.gov/health-information/patient-caregiver-education/brain-basics-life-and-death-neuron",
+        "https://www.ncbi.nlm.nih.gov/books/NBK538516/",
+        "https://aasm.org/coding-quarterly-cognitive-behavioral-therapy-for-insomnia/",
+        "https://doi.org/10.1016/S0140-6736(10)61460-9",
+        "https://doi.org/10.1111/joa.13446"
+      ],
       "checks": {
-        "source-support": "pending",
-        "accuracy-and-currency": "pending",
-        "instructional-quality": "pending",
-        "accessibility": "shared-renderer-pass-content-review-pending",
-        "bias-and-context": "pending",
-        "expert-review": "pending"
+        "source-support": "editorial-pass-ninds-ncbi-aasm-primary-developmental-and-anatomy-sources",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-mechanisms-qualified-and-exceptions-tested",
+        "accessibility": "shared-renderer-pass-new-svg-labelled-and-described",
+        "bias-and-context": "editorial-pass-developmental-variability-disability-and-nondeterminism",
+        "expert-review": "pending-independent-neuroscience-sleep-developmental-and-psychophysiology-review"
       },
       "sections": [
         {
@@ -3710,7 +3716,7 @@
         {
           "id": "ch-23-section-2",
           "heading": "Neuroplasticity & Brain Development",
-          "preview": "Neuroplasticity is the brain’s ability to reorganize its neural connections in response to experience, injury, or environmental demands. Key concepts: Synaptogenesis : Formation of new synapses. Most rapid prenatally and in early childhood. Synaptic pruning : Elimination of unused connections (“use it or lose it”). Ref",
+          "preview": "Neuroplasticity is the brain’s ability to reorganize its neural connections in response to experience, injury, or environmental demands. Key concepts: Synaptogenesis : Formation of new synapses. Most rapid prenatally and in early childhood. Synaptic pruning : Activity-dependent strengthening and elimination of synapses",
           "keyTerms": [
             "Neuroplasticity",
             "Synaptogenesis",
@@ -3731,7 +3737,7 @@
         {
           "id": "ch-23-section-3",
           "heading": "The Autonomic Nervous System",
-          "preview": "The autonomic nervous system (ANS) controls involuntary bodily functions and mediates the stress response: Division Function Neurotransmitter Effects Sympathetic NS \"Fight or flight\" Norepinephrine (NE) Increased heart rate, dilated pupils, inhibited digestion, released glucose, bronchial dilation, sweating. Adrenal me",
+          "preview": "The autonomic nervous system (ANS) controls involuntary bodily functions and mediates the stress response: Division Function Neurotransmitter Effects Sympathetic NS \"Fight or flight\" ACh at preganglionic synapses; mostly NE at postganglionic targets (sweat glands use ACh) Increased heart rate, dilated pupils, inhibited",
           "keyTerms": [
             "ANS",
             "Sympathetic",
@@ -3744,15 +3750,15 @@
             "Polyvagal"
           ],
           "hasDiagram": true,
-          "diagramDescription": "🧬 Autonomic Nervous System. Remember: \"Sympathy\" for a stressful situation (Sympathetic = Fight/Flight). A \"Parachute\" calms you down (Parasympathetic = Rest/Digest). Everything the sympathetic nervous system turns on during an emergency (heart rate, breathing), the parasympathetic reverses when safe.",
-          "hasKnowledgeCheck": false,
+          "diagramDescription": "Autonomic two-neuron pathways and major transmitter exceptions",
+          "hasKnowledgeCheck": true,
           "hasExpandableCase": false,
           "reviewStatus": "review-required"
         },
         {
           "id": "ch-23-section-4",
           "heading": "States of Consciousness & Sleep Disorders",
-          "preview": "Consciousness exists on a continuum from full wakefulness to deep sleep to coma. Sleep disorders (EPPP tested): Disorder Key Features Insomnia Difficulty initiating/maintaining sleep. Most common sleep disorder. CBT-I is first-line treatment (not medication). Narcolepsy Excessive daytime sleepiness + cataplexy (sudden ",
+          "preview": "Consciousness exists on a continuum from full wakefulness to deep sleep to coma. Sleep disorders (EPPP tested): Disorder Key Features Insomnia Persistent difficulty initiating or maintaining sleep, or early awakening, with daytime impact despite adequate opportunity. CBT-I is recommended first-line for chronic insomnia",
           "keyTerms": [
             "Insomnia",
             "Narcolepsy",
@@ -3806,16 +3812,21 @@
       "referenceCount": 7,
       "hasAiReflectiveCoda": true,
       "legacySource": "js/textbook_ch24.js",
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "reviewReferences": [],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Corrected extinction-as-proven-suppression, one-trial and unique taste-aversion absolutes, mutually exclusive relaxation/anxiety, universal reinforcement-schedule rankings, extinction-burst inevitability and inferred variable-ratio reinforcement, self-efficacy as a universal strongest predictor, learned helplessness as a complete depression foundation, preparedness as a single phobia explanation, and literal operant/observational analogies for AI training; added safety and alternative-reinforcement safeguards for extinction, rebuilt the operant matrix with clean encoding and a full text alternative, and retained the existing scenario check with a qualified rationale.",
+      "reviewReferences": [
+        "https://doi.org/10.1037/h0087356",
+        "https://doi.org/10.1016/j.brat.2008.10.014",
+        "https://doi.org/10.1037/0033-295X.84.2.191",
+        "https://www.bacb.com/wp-content/uploads/2022/01/Ethics-Code-for-Behavior-Analysts-240830-a.pdf"
+      ],
       "checks": {
-        "source-support": "pending",
-        "accuracy-and-currency": "pending",
-        "instructional-quality": "pending",
-        "accessibility": "shared-renderer-pass-content-review-pending",
-        "bias-and-context": "pending",
-        "expert-review": "pending"
+        "source-support": "editorial-pass-primary-learning-theory-exposure-review-and-bacb-ethics",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-functional-relations-boundary-conditions-and-safe-application",
+        "accessibility": "shared-renderer-pass-svg-rebuilt-labelled-and-encoding-clean",
+        "bias-and-context": "editorial-pass-context-individual-variation-and-noncoercive-support",
+        "expert-review": "pending-independent-learning-behavior-analysis-and-clinical-review"
       },
       "sections": [
         {
@@ -3877,7 +3888,7 @@
             "Discriminative stimulus"
           ],
           "hasDiagram": true,
-          "diagramDescription": "The Operant Conditioning Matrix",
+          "diagramDescription": "Classify operant contingencies by whether a stimulus is added or removed and whether the future behavior increases or decreases",
           "hasKnowledgeCheck": true,
           "hasExpandableCase": false,
           "reviewStatus": "review-required"
@@ -3907,7 +3918,7 @@
         {
           "id": "ch-24-section-5",
           "heading": "Advanced Learning Concepts",
-          "preview": "Additional learning theories tested on the EPPP: Learned helplessness (Seligman) : When organisms learn that their behavior has no effect on outcomes, they stop trying even when escape becomes possible. Foundation for the cognitive model of depression. Latent learning (Tolman) : Learning occurs without reinforcement; i",
+          "preview": "Additional learning theories tested on the EPPP: Learned helplessness (Seligman) : When organisms learn that their behavior has no effect on outcomes, they stop trying even when escape becomes possible. an influential experimental model relevant to perceived uncontrollability and depression, not a complete account of d",
           "keyTerms": [
             "Learned helplessness",
             "Seligman",
@@ -3939,16 +3950,22 @@
       "referenceCount": 5,
       "hasAiReflectiveCoda": true,
       "legacySource": "js/textbook_ch25.js",
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "reviewReferences": [],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Corrected 7±2 and 18–30-second values as universal STM limits, mechanical rehearsal transfer, unlimited/permanent LTM, one-region memory tables, all-implicit-memory-preserved amnesia, hippocampus-as-STM-to-LTM switch, uniformly intact H.M. remote memory and lesion description, central-executive hierarchy, deepest/dual coding/encoding-match absolutes, advice to recreate intoxicated states, recognition-always-easier, repression as established forgetting, a universal Ebbinghaus curve, suggestion as deterministic memory implantation, universal prospective-memory aging decline, and literal AI/H.M./misinformation-effect equivalence; removed encoding corruption and emphasized task conditions, distributed systems, retrieval support, and individual-case uncertainty.",
+      "reviewReferences": [
+        "https://doi.org/10.1017/S0140525X01003922",
+        "https://doi.org/10.1037/h0047857",
+        "https://doi.org/10.1101/lm.94705",
+        "https://doi.org/10.1037/0033-295X.86.5.420",
+        "https://doi.org/10.1016/j.neuropsychologia.2006.04.021"
+      ],
       "checks": {
-        "source-support": "pending",
-        "accuracy-and-currency": "pending",
-        "instructional-quality": "pending",
-        "accessibility": "shared-renderer-pass-content-review-pending",
-        "bias-and-context": "pending",
-        "expert-review": "pending"
+        "source-support": "editorial-pass-primary-working-memory-hm-eyewitness-and-retrieval-research",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-historical-models-qualified-by-modern-evidence",
+        "accessibility": "shared-renderer-pass-encoding-clean-and-auto-memory-diagram-text-alternative",
+        "bias-and-context": "editorial-pass-aging-trauma-disability-and-individual-memory-claims",
+        "expert-review": "pending-independent-cognitive-neuropsychology-and-forensic-memory-review"
       },
       "sections": [
         {
@@ -3965,7 +3982,7 @@
         {
           "id": "ch-25-section-2",
           "heading": "Atkinson-Shiffrin Model (Multi-Store Model)",
-          "preview": "The Atkinson-Shiffrin (1968) model describes three distinct memory stores: Store Capacity Duration Key Features Sensory memory Very large &lt;1 second (iconic/visual) to ~3–5 seconds (echoic/auditory) Iconic (Sperling) = visual; Echoic = auditory. Requires attention to transfer to STM. Short-term memory (STM) 7 ± 2 ite",
+          "preview": "The Atkinson-Shiffrin (1968) model describes three distinct memory stores: Store Capacity Duration Key Features Sensory memory Very large &lt;1 second (iconic/visual) to ~3–5 seconds (echoic/auditory) Iconic (Sperling) = visual; Echoic = auditory. Requires attention to transfer to STM. Short-term memory (STM) Historica",
           "keyTerms": [
             "Atkinson-Shiffrin",
             "Sensory memory",
@@ -3990,7 +4007,7 @@
         {
           "id": "ch-25-section-3",
           "heading": "Working Memory (Baddeley)",
-          "preview": "Baddeley’s working memory model (1974) replaced the passive STM concept with an active processing system: Central executive : Attentional control system; directs focus, allocates resources, coordinates the subsystems. The most important component but least understood. Phonological loop : Processes verbal/auditory infor",
+          "preview": "Baddeley’s working memory model (1974) replaced the passive STM concept with an active processing system: Central executive : Attentional control system; directs focus, allocates resources, coordinates the subsystems. A capacity-limited control component that coordinates attention and subsystems; it is a theoretical co",
           "keyTerms": [
             "Working memory",
             "Baddeley",
@@ -4008,7 +4025,7 @@
         {
           "id": "ch-25-section-4",
           "heading": "Encoding, Storage & Retrieval",
-          "preview": "Levels of processing (Craik & Lockhart, 1972): Shallow processing : Structural (how it looks) or phonemic (how it sounds) → poor memory Deep processing : Semantic (what it means) → better memory The deeper the processing, the more durable the memory trace Encoding principles: Elaborative rehearsal : Connecting new info",
+          "preview": "Levels of processing (Craik & Lockhart, 1972): Shallow processing : Structural (how it looks) or phonemic (how it sounds) → poor memory Deep processing : Semantic (what it means) → better memory Semantic elaboration often improves later memory, but effectiveness depends on the retrieval goal and match between encoding ",
           "keyTerms": [
             "Levels of processing",
             "Craik & Lockhart",
@@ -4061,16 +4078,22 @@
       "referenceCount": 3,
       "hasAiReflectiveCoda": true,
       "legacySource": "js/textbook_ch26.js",
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "reviewReferences": [],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Corrected confirmation bias as uniquely most clinically relevant, an ASD-stereotype/base-rate question, dual-process modes as literal good-versus-bad modules, System 1 as the source of most bias, broad depletion claims, structured methods as System 2, clinical-versus-actuarial prediction as an identical debate, sleep-onset experience as a definitive diagnosis, universal structured superiority for every diagnostic task, guaranteed algorithms, confirmation as only seeking, dissonance as uniform discomfort, and less-reward/more-change as a universal law; rebuilt the corrupted diagram as an accessible interacting-modes and structured-cross-check model, qualified classic findings, and replaced literal AI bias/dissonance mechanisms with testable engineering distinctions.",
+      "reviewReferences": [
+        "https://doi.org/10.1126/science.185.4157.1124",
+        "https://doi.org/10.1037/0033-2909.126.1.17",
+        "https://doi.org/10.1016/j.cognition.2011.01.001",
+        "https://doi.org/10.1037/h0041593",
+        "https://doi.org/10.1177/1745691617693056"
+      ],
       "checks": {
-        "source-support": "pending",
-        "accuracy-and-currency": "pending",
-        "instructional-quality": "pending",
-        "accessibility": "shared-renderer-pass-content-review-pending",
-        "bias-and-context": "pending",
-        "expert-review": "pending"
+        "source-support": "editorial-pass-primary-heuristics-clinical-prediction-dual-process-and-dissonance-research",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-probabilistic-reasoning-and-structured-cross-checks",
+        "accessibility": "shared-renderer-pass-svg-rebuilt-labelled-described-and-encoding-clean",
+        "bias-and-context": "editorial-pass-autism-stereotype-removed-client-context-and-cultural-assessment",
+        "expert-review": "pending-independent-cognitive-clinical-and-decision-science-review"
       },
       "sections": [
         {
@@ -4108,7 +4131,7 @@
         {
           "id": "ch-26-section-3",
           "heading": "Dual-Process Theory (System 1 & System 2)",
-          "preview": "Kahneman’s (2011) dual-process theory describes two modes of thinking: System 1 System 2 Fast, automatic, intuitive Slow, deliberate, analytical Effortless, always \"on\" Effortful, requires concentration Prone to biases and heuristics Can override System 1 (but requires effort) Pattern recognition, emotional reactions L",
+          "preview": "Kahneman’s (2011) dual-process theory describes two modes of thinking: System 1 System 2 Fast, automatic, intuitive Slow, deliberate, analytical Often rapid and relatively automatic Effortful, requires concentration Prone to biases and heuristics Can override System 1 (but requires effort) Pattern recognition, emotiona",
           "keyTerms": [
             "System 1",
             "System 2",
@@ -4118,7 +4141,7 @@
             "Analytical reasoning"
           ],
           "hasDiagram": true,
-          "diagramDescription": "Kahneman's Dual-Process Theory",
+          "diagramDescription": "Dual-process reasoning as interacting modes with a structured cross-check rather than two literal brain modules",
           "hasKnowledgeCheck": false,
           "hasExpandableCase": true,
           "reviewStatus": "review-required"
@@ -4126,7 +4149,7 @@
         {
           "id": "ch-26-section-4",
           "heading": "Problem-Solving Strategies",
-          "preview": "Problem-solving approaches: Algorithms : Step-by-step procedures guaranteed to produce a solution (slow but reliable) Heuristics : Mental shortcuts that are faster but not guaranteed (efficient but error-prone) Insight : Sudden \"aha!\" realization (Köhler’s apes); restructuring of the problem Trial and error : Trying so",
+          "preview": "Problem-solving approaches: Algorithms : Defined step-by-step procedures that yield a solution when the procedure is valid, applicable, and correctly executed; feasibility and efficiency vary Heuristics : Mental shortcuts that are faster but not guaranteed (efficient but error-prone) Insight : Sudden \"aha!\" realization",
           "keyTerms": [
             "Algorithm",
             "Insight",
@@ -4152,21 +4175,28 @@
       "domainNumber": 5,
       "examWeight": "13%",
       "sectionCount": 4,
-      "diagramCount": 0,
+      "diagramCount": 1,
       "knowledgeCheckCount": 2,
       "referenceCount": 6,
       "hasAiReflectiveCoda": true,
       "legacySource": "js/textbook_ch27.js",
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "reviewReferences": [],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Corrected emotion theories as literal current neural sequences, six facial expressions as uniformly universal, facial feedback as deterministic, the bridge study as causal proof, Maslow needs as invariant prerequisites, autonomy as unrestricted control, all rewards as undermining interest, Yerkes–Dodson as a universal moderate-arousal law, fixed coping prescriptions, internal control as inherently healthier, hardiness as a universal buffer, and hostility as the singular toxic cause of coronary disease; added an accessible conditional arousal–performance diagram, qualified the reward vignette, reframed cardiac recovery as multifactorial, and removed literal AI emotion and intrinsic-motivation inference.",
+      "reviewReferences": [
+        "https://doi.org/10.1080/02699939208411068",
+        "https://doi.org/10.1177/0956797614561041",
+        "https://doi.org/10.1037/0033-295X.84.2.191",
+        "https://doi.org/10.1207/S15327965PLI1104_01",
+        "https://doi.org/10.1001/archinte.2007.31",
+        "https://doi.org/10.1037/0033-295X.93.2.206"
+      ],
       "checks": {
-        "source-support": "pending",
-        "accuracy-and-currency": "pending",
-        "instructional-quality": "pending",
-        "accessibility": "shared-renderer-pass-content-review-pending",
-        "bias-and-context": "pending",
-        "expert-review": "pending"
+        "source-support": "editorial-pass-primary-emotion-motivation-arousal-coping-and-health-research",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-classic-theories-separated-from-current-boundaries",
+        "accessibility": "shared-renderer-pass-new-svg-labelled-described-and-encoding-clean",
+        "bias-and-context": "editorial-pass-culture-control-social-conditions-and-cardiac-stigma",
+        "expert-review": "pending-independent-affective-motivation-and-health-psychology-review"
       },
       "sections": [
         {
@@ -4203,7 +4233,7 @@
         {
           "id": "ch-27-section-3",
           "heading": "Theories of Motivation",
-          "preview": "Maslow’s hierarchy of needs (1943): Physiological : Food, water, sleep, sex (must be met first) Safety : Security, stability, shelter Love/belonging : Social connections, intimacy, friendship Esteem : Self-respect, recognition, competence Self-actualization : Realizing full potential, personal growth Maslow later added",
+          "preview": "Maslow’s hierarchy of needs (1943): Physiological : Food, water, sleep, and other physiological needs (placed at the base in the classic model; not an invariant prerequisite) Safety : Security, stability, shelter Love/belonging : Social connections, intimacy, friendship Esteem : Self-respect, recognition, competence Se",
           "keyTerms": [
             "Maslow",
             "Self-actualization",
@@ -4218,8 +4248,8 @@
             "Flow",
             "Drive reduction"
           ],
-          "hasDiagram": false,
-          "diagramDescription": "",
+          "hasDiagram": true,
+          "diagramDescription": "Arousal and performance are related conditionally: task complexity, skill, stressor, and the measured outcome can shift the useful range",
           "hasKnowledgeCheck": true,
           "hasExpandableCase": false,
           "reviewStatus": "review-required"
@@ -4255,21 +4285,28 @@
       "domainNumber": 5,
       "examWeight": "13%",
       "sectionCount": 4,
-      "diagramCount": 0,
+      "diagramCount": 1,
       "knowledgeCheckCount": 2,
       "referenceCount": 4,
       "hasAiReflectiveCoda": true,
       "legacySource": "js/textbook_ch28.js",
-      "reviewStatus": "review-required",
-      "reviewNote": "",
-      "reviewReferences": [],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Corrected infants as producing all phonemes, universal vocabulary explosion, LAD as an identified neural mechanism, one critique as disproving learning accounts, a broadly supported weak Sapir–Whorf version, puberty as a hard language deadline, Chomsky as settled dominant theory, overregularization as unique proof of nativism, g as psychology’s most validated construct, fixed Gf/Gc aging, CHC as a pure mapping onto named tests, a universal three-point Flynn effect, IQ-cutoff definitions of intellectual disability and giftedness, focal navigation loss as normal aging, bilingual executive and dementia advantages as settled, nonverbal tests as culture-free, and mandatory one-dominant-language assessment; added an accessible multilingual assessment workflow, rewrote the overregularization check, and reframed the older-adult case as a potentially urgent differential.",
+      "reviewReferences": [
+        "https://www.asha.org/practice-portal/professional-issues/bilingual-service-delivery/",
+        "https://www.asha.org/policy/pi2017-00119/",
+        "https://www.aaidd.org/intellectual-disability/definition",
+        "https://doi.org/10.1177/1529100614522901",
+        "https://doi.org/10.1177/0956797614527860",
+        "https://doi.org/10.1016/j.cognition.2018.10.018"
+      ],
       "checks": {
-        "source-support": "pending",
-        "accuracy-and-currency": "pending",
-        "instructional-quality": "pending",
-        "accessibility": "shared-renderer-pass-content-review-pending",
-        "bias-and-context": "pending",
-        "expert-review": "pending"
+        "source-support": "editorial-pass-asha-aaidd-primary-language-bilingual-and-cognitive-research",
+        "accuracy-and-currency": "editorial-pass-2026-07-12",
+        "instructional-quality": "editorial-pass-competing-models-validity-and-multimethod-assessment",
+        "accessibility": "shared-renderer-pass-new-svg-labelled-described-and-encoding-clean",
+        "bias-and-context": "editorial-pass-multilingual-culture-disability-aging-and-opportunity",
+        "expert-review": "pending-independent-language-development-psychometrics-and-bilingual-assessment-review"
       },
       "sections": [
         {
@@ -4286,7 +4323,7 @@
         {
           "id": "ch-28-section-2",
           "heading": "Language Development & Theories",
-          "preview": "Language development milestones: 0–6 months : Cooing, babbling (all phonemes, including non-native ones) ~6–10 months : Babbling narrows to native language phonemes ~12 months : First words (holophrases — single words used as whole sentences) ~18–24 months : Vocabulary explosion; telegraphic speech (\"want cookie\") ~2–5",
+          "preview": "Language development milestones: 0–6 months : Cooing and increasingly speech-like vocal play; early perception is broadly sensitive to many speech contrasts, but infants do not literally produce every phoneme ~6–10 months : Babbling narrows to native language phonemes ~12 months : First words (holophrases — single word",
           "keyTerms": [
             "Chomsky",
             "LAD",
@@ -4309,7 +4346,7 @@
         {
           "id": "ch-28-section-3",
           "heading": "Theories of Intelligence",
-          "preview": "Theorist Theory Key Concepts Spearman Two-factor theory g (general intelligence) underlies all cognitive abilities + s (specific abilities for each task). g is the most validated construct in psychology. Cattell & Horn Gf-Gc theory Fluid intelligence (Gf) : novel problem-solving, pattern recognition; declines with age ",
+          "preview": "Theorist Theory Key Concepts Spearman Two-factor theory g (general intelligence) underlies all cognitive abilities + s (specific abilities for each task). Positive correlations among diverse cognitive tests support a broad general factor, but its interpretation, scope, and use remain scientifically and socially consequ",
           "keyTerms": [
             "Spearman g",
             "Cattell",
@@ -4331,7 +4368,7 @@
         {
           "id": "ch-28-section-4",
           "heading": "Bilingualism & Language Diversity",
-          "preview": "Bilingualism: Simultaneous bilingualism : Learning two languages from birth Sequential bilingualism : Learning a second language after the first is established Code-switching : Alternating between languages within a conversation (a sign of competence, not confusion) Cognitive advantages : Enhanced executive function, c",
+          "preview": "Bilingualism: Simultaneous bilingualism : Learning two languages from birth Sequential bilingualism : Learning a second language after the first is established Code-switching : Alternating between languages within a conversation (a sign of competence, not confusion) Cognitive advantages : Bilingual experience can suppo",
           "keyTerms": [
             "Bilingualism",
             "Code-switching",
@@ -4340,8 +4377,8 @@
             "Nonverbal tests",
             "Cultural bias"
           ],
-          "hasDiagram": false,
-          "diagramDescription": "",
+          "hasDiagram": true,
+          "diagramDescription": "Multilingual assessment workflow: define the question, map language experience, select valid methods, triangulate evidence, and document limits",
           "hasKnowledgeCheck": true,
           "hasExpandableCase": false,
           "reviewStatus": "review-required"

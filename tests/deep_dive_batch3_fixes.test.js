@@ -97,7 +97,7 @@ describe('M1/M2/M6 — circle-back covers null audits, respects the wall, and ke
 describe('M12 — the PDF/UA badge never wears another document\'s verdict', () => {
   it('cleared at RUN ENTRY (covers fresh uploads that bypass the loaders)', () => {
     // M25 (batch 4) extended the same run-entry clear with the auto-skip flag.
-    expect(view).toContain('try { setLastTaggedValidation(null); setVeraPdfResult(null); setVeraPdfAutoSkipped(null); } catch (_) {}');
+    expect(view).toContain('try { setLastTaggedValidation(null); setVeraPdfResult(null); setVeraPdfAutoSkipped(null); _selectTaggedArtifact(null); } catch (_) {}');
   });
   it('cleared in all three doc-swap loaders (start-screen, sidebar, resume-incomplete)', () => {
     // each loader clears BOTH state slices; the resume loader also drops the bytes ref

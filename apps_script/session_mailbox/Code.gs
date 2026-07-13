@@ -24,7 +24,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 8;
+var VERSION = 9;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -815,6 +815,7 @@ function putSubmission(cache, props, p, admin) {
     var packMeta;
     try { packMeta = JSON.parse(manifest.getBlob().getDataAsString()); } catch (e) { return out({ ok: false, e: 'corrupt' }); }
     if (String(p.k || '') !== String(packMeta.k || '')) return out({ ok: false, e: 'denied' });
+    if (packMeta.expiresAt && Date.parse(packMeta.expiresAt) <= Date.now()) return out({ ok: false, e: 'expired' });
     sourceKind = 'homework';
     sourceId = packId;
     rateIdentity = packId.slice(-12) + ':' + String(p.k || '').slice(0, 12);
@@ -905,7 +906,7 @@ function putPack(cache, p) {
     }
     replacePackFileV7('pack-' + id + '.json', JSON.stringify({
       v: 2, k: String(p.k), t: Date.now(), title: String(p.title || '').slice(0, 140),
-      chars: assembled.length, of: downloadParts
+      expiresAt: String(p.expiresAt || ''), chars: assembled.length, of: downloadParts
     }), 'application/json');
     for (var r = 1; r <= of; r++) cache.remove('u:' + id + ':' + r);
     return out({ ok: true, id: id, chars: assembled.length, of: downloadParts });
@@ -923,6 +924,7 @@ function getPack(cache, p) {
   var body;
   try { body = JSON.parse(file.getBlob().getDataAsString()); } catch (err) { return out({ ok: false, e: 'corrupt' }); }
   if (String(p.k || '') !== String(body.k || '')) return out({ ok: false, e: 'denied' });
+  if (body.expiresAt && Date.parse(body.expiresAt) <= Date.now()) return out({ ok: false, e: 'expired' });
   var part = Math.max(1, parseInt(p.part, 10) || 1);
   if (body.data !== undefined) {
     var legacy = String(body.data || '');

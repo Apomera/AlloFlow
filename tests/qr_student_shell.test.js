@@ -258,13 +258,18 @@ describe('Canvas-managed QR auth sequencing', () => {
     expect(sessionModalSource).toContain("if (isLocalOnly || !activeSessionCode || typeof window === 'undefined') return '';");
     expect(sessionModalSource).toContain('if (mailboxJoinUrl) return mailboxJoinUrl;');
     expect(sessionModalSource).toContain("isMailboxSession ? 'Class Mailbox QR join' : 'Student QR join'");
-    expect(sessionModalSource).toContain("typeof onEndMailboxSession === 'function'");
+    expect(sessionModalSource).toContain("typeof onRequestEndSession === 'function'");
     expect(sessionModalSource).toContain('{!isMailboxSession && (');
     expect(sessionModalSource).toContain('aria-labelledby="alloflow-session-modal-title"');
     expect(sessionModalSource).toContain('<button');
     expect(sessionModalSource).toContain('text-5xl sm:text-7xl');
     expect(sessionModalSource).toContain('flex flex-col sm:flex-row');
     expect(sessionModalSource).toContain('This code was not saved to Firebase, so students cannot join it.');
+    expect(rootSource).toContain('aria-labelledby="alloflow-homework-qr-title"');
+    expect(rootSource).toContain('Take-home assignment');
+    expect(rootSource).toContain('Student AI off &middot; No live session');
+    expect(rootSource).toContain('This QR does not join your class, show a session code, or connect to live pacing.');
+    expect(rootSource).toContain("_makeAlloQrSvg(url, 'AlloFlow homework assignment QR')");
     expect(phaseOModule).toBe(phaseOPublicModule);
     expect(sessionModalModule).toBe(sessionModalPublicModule);
   });
@@ -415,5 +420,19 @@ describe('Cloudflare student shell build wiring', () => {
     expect(buildScript).toContain("'static'");
     expect(buildScript).not.toContain("'alloflow_intro_teacher.mp4',");
     expect(buildScript).not.toContain("'alloflow_intro_family.mp4',");
+  });
+});
+
+describe('homework QR hardening', () => {
+  it('keeps homework payloads separate from live-session joins and exposes teacher verification controls', () => {
+    const creator = sliceBetween(rootSource, 'const createHomeworkAssignmentLink = useCallback', 'const testHomeworkAsStudent');
+    expect(creator).toContain('allo_assignment: assignmentId');
+    expect(creator).not.toContain('allo_join:');
+    expect(rootSource).toContain("window.open(url, '_blank')");
+    expect(rootSource).toContain('Revoke homework link');
+    expect(rootSource).toContain("throw new Error('Assignment expired')");
+    expect(rootSource).toContain('function _alloAssignmentIsExpired(packet)');
+    expect(rootSource).toContain('expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),');
+    expect(rootSource).toContain('ref={homeworkQrDialogRef} tabIndex={-1}');
   });
 });

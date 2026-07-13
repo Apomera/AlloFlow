@@ -652,7 +652,14 @@ const handleLoadProject = (e, deps) => {
                 setStickers(Array.isArray(rawData.stickers) ? rawData.stickers : []);
             }
             if (Array.isArray(loadedHistory)) {
-                setHistory(hydrateHistory(loadedHistory));
+                const hydratedHistory = hydrateHistory(loadedHistory);
+                setHistory(hydratedHistory);
+                // Restore only after the loaded resource list is known. The
+                // host validates the draft envelope against this exact history,
+                // sanitizes imported HTML, and clears any previous-project draft.
+                if (typeof deps.restoreBuilderDraft === 'function') {
+                    deps.restoreBuilderDraft(rawData && rawData.builderDraft, hydratedHistory);
+                }
                 if (isStudentSave) {
                     setIsStudentLinkMode(true);
                     setIsTeacherMode(false);

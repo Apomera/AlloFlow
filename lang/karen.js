@@ -12291,7 +12291,19 @@
     "set_ui_language": "ဆီတလဲကွၢ်ကျဲာ်ပှၤ ကိၢ်ကျဲာ်တၢ်ကတိၤ",
     "set_ui_language_done": "ပဒုးနဲၣ်နၤ ဆူ တၢ်ဃုထၢကျိာ်လၢ ထီၣ်ဖီခိၣ် (header) လံ — ဃုထၢနကျိာ်ဖဲန့ၣ်တက့ၢ်.",
     "set_ui_language_hint": "စံၣ်ဆူ တၢ်ဃုထၢကျိာ် လၢထီၣ်ဖီခိၣ် (header)",
-    "set_ui_language_miss": "တၢ်ဃုထၢ ကွၢ်ကျဲာ်ပှၤကျိာ် အိၣ်လၢ ထးကတၢၢ်တၢ်နဲၣ်ကျဲဘၣ်ပှၤ (top menu bar) န့ၣ်လီၤ."
+    "set_ui_language_miss": "တၢ်ဃုထၢ ကွၢ်ကျဲာ်ပှၤကျိာ် အိၣ်လၢ ထးကတၢၢ်တၢ်နဲၣ်ကျဲဘၣ်ပှၤ (top menu bar) န့ၣ်လီၤ.",
+    "find_reading": "Find the right book",
+    "find_reading_done": "I found a good match and opened it",
+    "find_reading_hint": "Ask by topic, grade, language, source, or type",
+    "find_reading_none": "I opened the Reading Library, but I could not find a strong match yet",
+    "generate_analysis_ready": "Source analysis ready.",
+    "generate_glossary_ready": "Glossary ready.",
+    "generate_quiz_ready": "Quiz ready — it’s in the output panel.",
+    "generate_sentence_frames_ready": "Sentence frames ready.",
+    "generate_simplified_ready": "Simpler version ready.",
+    "open_reading_library": "Open the Reading Library",
+    "open_reading_library_done": "Reading Library opened.",
+    "open_reading_library_hint": "Browse open picture books in 10 languages"
   },
   "palette": {
     "aria": "AlloFlow တၢ်ပၢအလီၢ်",

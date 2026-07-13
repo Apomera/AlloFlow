@@ -20202,7 +20202,19 @@
     "set_ui_language": "Hloov cov lus ntawm lub vijtsam",
     "set_ui_language_done": "Tau coj koj mus rau qhov xaiv lus nyob saum toj — xaiv koj hom lus ntawd.",
     "set_ui_language_hint": "Mus ncaj rau qhov xaiv lus nyob saum toj",
-    "set_ui_language_miss": "Qhov xaiv cov lus ntawm lub vijtsam nyob ntawm txoj kab xaim saum toj."
+    "set_ui_language_miss": "Qhov xaiv cov lus ntawm lub vijtsam nyob ntawm txoj kab xaim saum toj.",
+    "find_reading": "Find the right book",
+    "find_reading_done": "I found a good match and opened it",
+    "find_reading_hint": "Ask by topic, grade, language, source, or type",
+    "find_reading_none": "I opened the Reading Library, but I could not find a strong match yet",
+    "generate_analysis_ready": "Source analysis ready.",
+    "generate_glossary_ready": "Glossary ready.",
+    "generate_quiz_ready": "Quiz ready — it’s in the output panel.",
+    "generate_sentence_frames_ready": "Sentence frames ready.",
+    "generate_simplified_ready": "Simpler version ready.",
+    "open_reading_library": "Open the Reading Library",
+    "open_reading_library_done": "Reading Library opened.",
+    "open_reading_library_hint": "Browse open picture books in 10 languages"
   },
   "palette": {
     "aria": "AlloFlow lub khob qhia haujlwm",

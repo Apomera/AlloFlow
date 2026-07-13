@@ -77,8 +77,10 @@ describe('anti-drift: Recovery wiring + the re-tag-failure desync guard', () => 
     expect(src).toMatch(/accessibleHtml: html, htmlChars: html\.length, finalText: _restoredText/);
   });
   it('on re-tag failure it drops the stale cached bytes + flags validation stale (no display↔export divergence)', () => {
-    expect(src).toMatch(/_lastTaggedBytesRef\.current = null/);
-    expect(src).toMatch(/_staleAfterRestore: true/);
+    const failedRetagStart = src.indexOf("warnLog('[TierB] re-tag failed:");
+    const failedRetag = src.slice(failedRetagStart, src.indexOf("addToast(`Restored", failedRetagStart) + 400);
+    expect(failedRetag).toMatch(/_selectTaggedArtifact\(null\)/);
+    expect(failedRetag).toMatch(/setLastTaggedValidation\(null\);\s*\n\s*setVeraPdfResult\(null\);/);
   });
   it('(2026-06-23; repointed 2026-07-05) the view-side folds are SINGLE-SOURCED, not hand-synced copies', () => {
     // Superseded premise: this test used to require TWO inline _normTokenForDiff copies kept in sync.

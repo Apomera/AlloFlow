@@ -367,6 +367,21 @@
   // per-device, and falls back to English. Covers every standard language AND
   // free-typed custom ones, and stays entirely out of lang/*.js.
   var UI_I18N_KEY = 'allo_lingua_ui_i18n_v1';
+  // Hand-translated interface packs, fetched once per language from the same
+  // lang/<slug>.js CDN the app uses (a STATIC file, NOT a Gemini call). Cached
+  // per-device. tr() prefers these over the runtime-AI cache — accurate + free.
+  var PACK_I18N_KEY = 'allo_lingua_pack_i18n_v1';
+  var LANG_CDN = 'https://alloflow-cdn.pages.dev/lang/';
+  var LANG_RAW = 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/';
+  function localeSlug(name){
+    return String(name||'').toLowerCase().replace(/[()]/g,'').replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+  }
+  // Resolve a language NAME to its pack slug via the app matcher (handles variant
+  // routing: "Spanish" -> spanish_latin_america, endonyms, etc.), else slugify.
+  async function resolveSlug(name){
+    try{ if(window.AlloLangMatcher && window.AlloLangMatcher.match){ var m=await window.AlloLangMatcher.match(name); if(m&&m.slug) return m.slug; } }catch(_){}
+    return localeSlug(name);
+  }
   function sanitizeUiPack(obj) {
     if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null;
     var keys = Object.keys(UI_STRINGS.English), out = {}, n = 0;
@@ -1092,6 +1107,7 @@
     var recent0 = normalizeRecentLessons(read(RECENT_KEY,{}));
     var chat0 = normalizeChats(read(CHAT_KEY,{}));
     var ai0 = normalizeUiI18n(read(UI_I18N_KEY,{}));
+    var pack0 = read(PACK_I18N_KEY,{}) || {};
     var ps=useState(p0), profile=ps[0], setProfile=ps[1];
     var gs=useState(g0), progress=gs[0], setProgress=gs[1];
     var rls=useState(recent0), recentLessons=rls[0], setRecentLessons=rls[1];
@@ -1128,17 +1144,19 @@
     var phraseRef=useRef(null), conversationPromptRef=useRef(null), reviewRegionRef=useRef(null), reviewAnswerRef=useRef(null);
     var previousIndexRef=useRef(0), previousTurnRef=useRef(0), reviewFocusPendingRef=useRef(false), captureCompletedRef=useRef(false);
     var chatRequestRef=useRef(0), chatVoiceRef=useRef(null), chatLogRef=useRef(null), chatCaptureRef=useRef(false), chatStoreRef=useRef(chat0), previousChatTargetRef=useRef(p0.target);
-    var aiI18nRef=useRef(ai0), uiTransReqRef=useRef(0);
+    var aiI18nRef=useRef(ai0), packI18nRef=useRef(pack0), uiTransReqRef=useRef(0), packReqRef=useRef(0);
     var imageReqRef=useRef(0), sceneReqRef=useRef(0), pictureReqRef=useRef(0), reviewImgReqRef=useRef(0), imgWarnedRef=useRef(false);
     var uts=useState(false), uiTranslating=uts[0], setUiTranslating=uts[1];
     var uatk=useState(0), setUiTick=uatk[1];
     var generationRequestRef=useRef(0), coachRequestRef=useRef(0), target=lang(profile.target), known=lang(profile.known);
     function tr(key,params){
       var known=profile.known, sp=UI_STRINGS[known];
-      if(sp&&sp[key]!=null)return interpolate(sp[key],params);
+      if(sp&&sp[key]!=null)return interpolate(sp[key],params);            // bundled static (en/es/fr/pt)
+      var pk=packI18nRef.current[known];
+      if(pk&&pk[key]!=null)return interpolate(pk[key],params);            // hand-translated lang pack (fetched)
       var ap=aiI18nRef.current[known];
-      if(ap&&ap[key]!=null)return interpolate(ap[key],params);
-      return translate(known,key,params);
+      if(ap&&ap[key]!=null)return interpolate(ap[key],params);            // runtime-AI cache
+      return translate(known,key,params);                                // trigger runtime-AI (returns English meanwhile)
     }
     // True when the current known-language chrome came from runtime AI translation
     // (not a bundled pack, not English) — used for an honest disclosure.

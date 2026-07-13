@@ -28,8 +28,10 @@ describe('acl-1: the watchdog can actually stop the auto-continue loop', () => {
     expect(host).toMatch(/const _myRunGen = \(typeof window !== 'undefined'\) \? \(window\.__alloPdfRunGen \|\| 0\) : 0;/);
     expect(host).toMatch(/const _genStale = \(\) => \(typeof window !== 'undefined'\) && \(\(window\.__alloPdfRunGen \|\| 0\) !== _myRunGen\)/);
     expect(host).toMatch(/if \(pdfAutoContinueAbortRef\.current \|\| _genStale\(\)\) break;/);
-    // the per-round write is guarded: a stale gen breaks before stomping fresh state
-    expect(host).toMatch(/if \(_genStale\(\)\) break;\s*\n\s*\/\/ Sweep 2026-06-11 \[3\]/);
+    // The per-round write is guarded against both a stale run and an intervening
+    // direct HTML edit; it reloads the authoritative ref before stopping.
+    expect(host).toMatch(/if \(_genStale\(\) \|\| pdfHtmlRevisionRef\.current !== _roundHtmlRevision\) \{\s*\n\s*cur = pdfFixResultRef\.current;\s*\n\s*break;\s*\n\s*\}\s*\n\s*\/\/ Sweep 2026-06-11 \[3\]/);
+    expect(host).toContain('setPdfFixResult(snapshot);');
   });
 });
 

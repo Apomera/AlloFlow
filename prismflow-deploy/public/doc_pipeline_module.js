@@ -30,6 +30,294 @@ var PIPELINE_DEFAULTS = { targetScore: 95 };
 // if the model's output budget changes, change it here. (Vision page-chunking is separate:
 // PAGES_PER_CHUNK is sized to output tokens per PAGE, not chars.)
 var GEMINI_CHUNK_CHARS = 16000;
+
+// Canonical WCAG verification-state policy. Every remediation surface (single-file,
+// batch, exports, and secondary lanes) should derive its claims from this pure helper
+// instead of independently interpreting score presence as conformance evidence.
+// PDF/UA is intentionally reported as a separate export-byte check and never blocks
+// the WCAG state merely because it has not run yet.
+function _alloDeriveVerificationState(input) {
+  input = input || {};
+  var ai = input.ai || input.verificationAudit || null;
+  var axe = input.axe || input.axeAudit || null;
+  var ea = input.equalAccess || input.secondEngineAudit || null;
+  var reasons = [];
+  var _finite = function (v) { return typeof v === 'number' && Number.isFinite(v); };
+  var _count = function (v) { return _finite(v) ? Math.max(0, Math.floor(v)) : null; };
+
+  var aiStatus = 'unavailable';
+  if (!_finite(ai && ai.score)) {
+    reasons.push('ai-unavailable');
+  } else {
+    var _aiPartial = !!(input.aiIncomplete || input.aiVerificationIncomplete || ai._partialAudit || ai.partial || ai._scoreDegraded || ai.scoreDegraded || ai.synthesized);
+    if (_aiPartial) {
+      aiStatus = 'partial';
+      if (input.aiIncomplete || input.aiVerificationIncomplete) reasons.push('ai-verification-incomplete');
+      if (ai._partialAudit || ai.partial) reasons.push('ai-partial-audit');
+      if (ai._scoreDegraded || ai.scoreDegraded) reasons.push('ai-score-degraded');
+      if (ai.synthesized) reasons.push('ai-synthesized');
+    } else {
+      aiStatus = 'complete';
+    }
+  }
+
+  var axeStatus = 'unavailable';
+  var axeReviewCount = 0;
+  if (!_finite(axe && axe.score)) {
+    reasons.push('axe-unavailable');
+  } else {
+    var _axeIncomplete = _count(axe.totalIncomplete);
+    if (_axeIncomplete === null) {
+      axeStatus = 'partial';
+      reasons.push('axe-review-count-unknown');
+    } else if (_axeIncomplete > 0) {
+      axeStatus = 'complete-with-review';
+      axeReviewCount = _axeIncomplete;
+      reasons.push('axe-incomplete:' + _axeIncomplete);
+    } else {
+      axeStatus = 'complete';
+    }
+  }
+
+  var eaStatus = 'unavailable';
+  var eaReviewCount = 0;
+  if (!_finite(ea && ea.score)) {
+    reasons.push('equal-access-unavailable');
+  } else {
+    var _eaPotential = _count(ea.potentialViolations);
+    var _eaManual = _count(ea.manualViolations);
+    var _eaAggregate = _count(ea.reviewFindingCount);
+    if ((_eaPotential === null || _eaManual === null) && _eaAggregate === null) {
+      eaStatus = 'partial';
+      reasons.push('equal-access-review-count-unknown');
+    } else {
+      eaReviewCount = _eaAggregate !== null ? Math.max(_eaAggregate, (_eaPotential || 0) + (_eaManual || 0)) : ((_eaPotential || 0) + (_eaManual || 0));
+      if (eaReviewCount > 0) {
+        eaStatus = 'complete-with-review';
+        if ((_eaPotential || 0) > 0) reasons.push('equal-access-potential:' + _eaPotential);
+        if ((_eaManual || 0) > 0) reasons.push('equal-access-manual:' + _eaManual);
+        if ((_eaPotential === null || _eaManual === null) && _eaAggregate > 0) reasons.push('equal-access-review-findings:' + _eaAggregate);
+      } else {
+        eaStatus = 'complete';
+      }
+    }
+  }
+
+  var extraReasons = Array.isArray(input.extraReasons)
+    ? input.extraReasons
+    : (input.extraReasons == null || input.extraReasons === '' ? [] : [input.extraReasons]);
+  extraReasons.forEach(function (reason) {
+    var text = String(reason == null ? '' : reason).trim();
+    if (text) reasons.push(text);
+  });
+  if (input.languageReviewRequired) reasons.push(String(input.languageReviewReason || 'document-language-needs-review'));
+
+  var reviewCount = axeReviewCount + eaReviewCount + extraReasons.filter(function (r) { return String(r == null ? '' : r).trim(); }).length + (input.languageReviewRequired ? 1 : 0);
+  var allComplete = aiStatus === 'complete' && axeStatus === 'complete' && eaStatus === 'complete';
+  var allUnavailable = aiStatus === 'unavailable' && axeStatus === 'unavailable' && eaStatus === 'unavailable';
+  var hasReviewEvidence = reviewCount > 0 || aiStatus === 'complete-with-review' || axeStatus === 'complete-with-review' || eaStatus === 'complete-with-review';
+  var verificationState = allUnavailable ? 'unavailable' : (hasReviewEvidence ? 'review-required' : (allComplete ? 'complete' : 'partial'));
+  var coverage = {
+    standard: 'WCAG 2.2 AA',
+    ai: aiStatus,
+    axe: axeStatus,
+    equalAccess: eaStatus,
+    pdfUaSelfCheck: input.pdfUaSelfCheck || 'not-run'
+  };
+  // Build the result in a var (rather than a two-space `return {`) because the
+  // pipeline-integrity checker locates the factory export through that token.
+  var result = {
+    verificationCoverage: coverage,
+    coverage: coverage,
+    verificationState: verificationState,
+    afterScoreVerified: verificationState === 'complete',
+    requiresManualReview: verificationState !== 'complete',
+    reviewCount: reviewCount,
+    reasons: reasons
+  };
+  return result;
+}
+// Bind verification evidence to the exact remediated HTML bytes it audited. The
+// digest is safe to persist; the full snapshot is deliberately runtime-only so
+// project/cache/telemetry serialization cannot duplicate document content.
+var _ALLO_VERIFICATION_HTML_BINDING_REASON = 'verification-html-binding-missing-or-stale';
+function _alloIsVerificationHtmlBindingShape(binding) {
+  return !!(binding
+    && binding.version === 1
+    && binding.algorithm === 'SHA-256'
+    && typeof binding.digest === 'string'
+    && /^[0-9a-f]{64}$/.test(binding.digest)
+    && Number.isSafeInteger(binding.utf8ByteLength)
+    && binding.utf8ByteLength >= 0);
+}
+function _alloUtf8Bytes(value) {
+  try {
+    var Encoder = typeof TextEncoder !== 'undefined' ? TextEncoder : null;
+    return Encoder ? new Encoder().encode(String(value)) : null;
+  } catch (_) { return null; }
+}
+async function _alloCreateVerificationHtmlBinding(html) {
+  if (typeof html !== 'string') return null;
+  try {
+    var root = typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : null);
+    var subtle = root && root.crypto && root.crypto.subtle;
+    var bytes = _alloUtf8Bytes(html);
+    if (!subtle || !bytes) return null;
+    var digestBuffer = await subtle.digest('SHA-256', bytes);
+    var digest = Array.from(new Uint8Array(digestBuffer)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+    if (!/^[0-9a-f]{64}$/.test(digest)) return null;
+    var binding = { version: 1, algorithm: 'SHA-256', digest: digest, utf8ByteLength: bytes.byteLength };
+    return binding;
+  } catch (_) { return null; }
+}
+async function _alloVerifyVerificationHtmlBinding(html, binding) {
+  if (typeof html !== 'string' || !_alloIsVerificationHtmlBindingShape(binding)) return false;
+  var fresh = await _alloCreateVerificationHtmlBinding(html);
+  return !!(fresh
+    && fresh.version === binding.version
+    && fresh.algorithm === binding.algorithm
+    && fresh.utf8ByteLength === binding.utf8ByteLength
+    && fresh.digest === binding.digest);
+}
+function _alloAttachVerificationHtmlSnapshot(result, html) {
+  if (!result || typeof result !== 'object' || typeof html !== 'string'
+      || !_alloIsVerificationHtmlBindingShape(result.verificationHtmlBinding)) return result;
+  try {
+    Object.defineProperty(result, '_verificationHtmlSnapshot', {
+      value: html,
+      writable: true,
+      configurable: true,
+      enumerable: false,
+    });
+    Object.defineProperty(result, '_verificationHtmlBindingDigest', {
+      value: result.verificationHtmlBinding.digest,
+      writable: true,
+      configurable: true,
+      enumerable: false,
+    });
+  } catch (_) {
+    // A frozen/host object cannot carry live proof, so fail closed rather than
+    // falling back to an enumerable snapshot that persistence could copy.
+    try { delete result._verificationHtmlSnapshot; } catch (_) {}
+    try { delete result._verificationHtmlBindingDigest; } catch (_) {}
+  }
+  return result;
+}
+function _alloStripVerificationHtmlSnapshot(result) {
+  if (!result || typeof result !== 'object') return result;
+  var clean = Object.assign({}, result);
+  try { delete clean._verificationHtmlSnapshot; } catch (_) {}
+  try { delete clean._verificationHtmlBindingDigest; } catch (_) {}
+  return clean;
+}
+function _alloIsLiveVerificationHtmlBound(result, html) {
+  if (!result || typeof result !== 'object' || !_alloIsVerificationHtmlBindingShape(result.verificationHtmlBinding)) return false;
+  var liveHtml = arguments.length > 1 ? html : result.accessibleHtml;
+  if (typeof liveHtml !== 'string') return false;
+  var descriptor = null;
+  var digestDescriptor = null;
+  try {
+    descriptor = Object.getOwnPropertyDescriptor(result, '_verificationHtmlSnapshot');
+    digestDescriptor = Object.getOwnPropertyDescriptor(result, '_verificationHtmlBindingDigest');
+  } catch (_) {}
+  // Serialized properties are enumerable. Accept only the paired, non-enumerable
+  // proof installed by finalization or a successful hash-checked rehydration.
+  if (!descriptor || descriptor.enumerable !== false || descriptor.value !== liveHtml
+      || !digestDescriptor || digestDescriptor.enumerable !== false
+      || digestDescriptor.value !== result.verificationHtmlBinding.digest) return false;
+  var bytes = _alloUtf8Bytes(liveHtml);
+  return !!(bytes && bytes.byteLength === result.verificationHtmlBinding.utf8ByteLength);
+}
+function _alloApplyVerificationHtmlBinding(verification, isBound, reason) {
+  verification = verification || _alloDeriveVerificationState({});
+  var coverage = Object.assign({ standard: 'WCAG 2.2 AA', ai: 'unavailable', axe: 'unavailable', equalAccess: 'unavailable', pdfUaSelfCheck: 'not-run' }, verification.verificationCoverage || verification.coverage || {});
+  var state = verification.verificationState || 'unavailable';
+  var reasons = Array.isArray(verification.reasons) ? verification.reasons.slice() : [];
+  if (!isBound) {
+    if (state === 'complete') state = 'partial';
+    coverage.pdfUaSelfCheck = 'not-run';
+    var staleReason = String(reason || _ALLO_VERIFICATION_HTML_BINDING_REASON);
+    if (staleReason && reasons.indexOf(staleReason) === -1) reasons.push(staleReason);
+  }
+  var applied = Object.assign({}, verification, {
+    verificationCoverage: coverage,
+    coverage: coverage,
+    verificationState: state,
+    afterScoreVerified: !!isBound && state === 'complete',
+    requiresManualReview: !isBound || state !== 'complete',
+    reviewCount: Number.isFinite(verification.reviewCount) ? Math.max(0, verification.reviewCount) : 0,
+    reasons: reasons,
+  });
+  return applied;
+}
+function _alloEnforceVerificationHtmlBinding(result, reason) {
+  if (!result || typeof result !== 'object') return result;
+  var isBound = _alloIsLiveVerificationHtmlBound(result);
+  var applied = _alloApplyVerificationHtmlBinding({
+    verificationCoverage: result.verificationCoverage || result.coverage,
+    coverage: result.verificationCoverage || result.coverage,
+    verificationState: result.verificationState,
+    afterScoreVerified: result.afterScoreVerified,
+    requiresManualReview: result.requiresManualReview,
+    reviewCount: result.verificationReviewCount,
+    reasons: result.verificationReasons,
+  }, isBound, reason);
+  var enforced = Object.assign({}, result, {
+    verificationCoverage: applied.verificationCoverage,
+    coverage: applied.coverage,
+    verificationState: applied.verificationState,
+    afterScoreVerified: applied.afterScoreVerified,
+    requiresManualReview: applied.requiresManualReview,
+    verificationReviewCount: applied.reviewCount,
+    verificationReasons: applied.reasons,
+  });
+  if (isBound) _alloAttachVerificationHtmlSnapshot(enforced, enforced.accessibleHtml);
+  return enforced;
+}
+async function _alloRehydrateVerificationHtmlBinding(saved) {
+  if (!saved || typeof saved !== 'object') return saved;
+  var clean = _alloStripVerificationHtmlSnapshot(saved);
+  var matches = await _alloVerifyVerificationHtmlBinding(clean.accessibleHtml, clean.verificationHtmlBinding);
+  if (matches) _alloAttachVerificationHtmlSnapshot(clean, clean.accessibleHtml);
+  return _alloEnforceVerificationHtmlBinding(clean, matches ? null : _ALLO_VERIFICATION_HTML_BINDING_REASON);
+}
+function _alloEqualAccessReviewCount(audit) {
+  if (!audit) return 0;
+  var potential = typeof audit.potentialViolations === 'number' && Number.isFinite(audit.potentialViolations) ? Math.max(0, Math.floor(audit.potentialViolations)) : 0;
+  var manual = typeof audit.manualViolations === 'number' && Number.isFinite(audit.manualViolations) ? Math.max(0, Math.floor(audit.manualViolations)) : 0;
+  var aggregate = typeof audit.reviewFindingCount === 'number' && Number.isFinite(audit.reviewFindingCount) ? Math.max(0, Math.floor(audit.reviewFindingCount)) : 0;
+  return Math.max(aggregate, potential + manual);
+}
+function _alloNormalizeStoredVerification(stored, derived) {
+  stored = stored || {};
+  derived = derived || _alloDeriveVerificationState({});
+  var validStates = { complete: 1, 'review-required': 1, partial: 1, unavailable: 1 };
+  var derivedState = validStates[derived.verificationState] ? derived.verificationState : 'unavailable';
+  var storedState = validStates[stored.verificationState] ? stored.verificationState : null;
+  var effectiveState = derivedState;
+  if (storedState === 'review-required' || (derivedState === 'complete' && stored.requiresManualReview === true)) {
+    effectiveState = 'review-required';
+  } else if (derivedState === 'complete' && storedState && storedState !== 'complete') {
+    effectiveState = storedState;
+  }
+  var derivedReasons = Array.isArray(derived.reasons) ? derived.reasons : [];
+  var storedReasons = Array.isArray(stored.verificationReasons) ? stored.verificationReasons : [];
+  var reasons = Array.from(new Set(derivedReasons.concat(storedReasons).filter(Boolean)));
+  if (effectiveState !== derivedState && reasons.length === 0) reasons.push('stored-verification-state:' + effectiveState);
+  var derivedCount = Number.isFinite(derived.reviewCount) ? Math.max(0, derived.reviewCount) : 0;
+  var storedCount = Number.isFinite(stored.verificationReviewCount) ? Math.max(0, stored.verificationReviewCount) : 0;
+  var coverage = derived.verificationCoverage || derived.coverage || { standard: 'WCAG 2.2 AA', ai: 'unavailable', axe: 'unavailable', equalAccess: 'unavailable', pdfUaSelfCheck: 'not-run' };
+  var normalized = {
+    verificationCoverage: coverage,
+    coverage: coverage,
+    verificationState: effectiveState,
+    afterScoreVerified: effectiveState === 'complete',
+    requiresManualReview: effectiveState !== 'complete',
+    reviewCount: Math.max(derivedCount, storedCount),
+    reasons: reasons
+  };
+  return _alloApplyVerificationHtmlBinding(normalized, _alloIsLiveVerificationHtmlBound(stored), _ALLO_VERIFICATION_HTML_BINDING_REASON);
+}
 var ALLO_INTERACTIVE_OBJECT_PROFILE_VERSION = '2026.07.03';
 var ALLO_INTERACTIVE_OBJECT_PROFILES = {
   analysis: { label: 'Source Analysis', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'static-report', notes: 'Exports as a readable analysis report.' },
@@ -1736,10 +2024,10 @@ function _restyleContentFidelity(beforeHtml, afterHtml) {
     try {
       var doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
       var as = doc.querySelectorAll('a[href]'); for (var i = 0; i < as.length; i++) hrefs.push(String(as[i].getAttribute('href') || ''));
-      var ims = doc.querySelectorAll('img'); for (var j = 0; j < ims.length; j++) imgs.push(String(ims[j].getAttribute('src') || '') + ' ' + String(ims[j].getAttribute('alt') || ''));
+      var ims = doc.querySelectorAll('img'); for (var j = 0; j < ims.length; j++) imgs.push(String(ims[j].getAttribute('src') || '') + '\u0000' + String(ims[j].getAttribute('alt') || ''));
     } catch (_) {}
     hrefs.sort(); imgs.sort();
-    return { hrefs: hrefs.join(''), imgs: imgs.join('') };
+    return { hrefs: hrefs.join('\u0001'), imgs: imgs.join('\u0001') };
   };
   var b = _sig(beforeHtml), a = _sig(afterHtml);
   if (b.hrefs !== a.hrefs) { var _lf = { ok: false, reason: 'link-fidelity' }; return _lf; }
@@ -2312,6 +2600,7 @@ function _alloDistributionVerdict(r, opts) {
   var vio = (r.axeAudit && typeof r.axeAudit.totalViolations === 'number') ? r.axeAudit.totalViolations : null;
   var eaFails = (r.secondEngineAudit && typeof r.secondEngineAudit.failViolations === 'number') ? r.secondEngineAudit.failViolations : null;
   // review tier — content trust is in question
+  if (r.verificationState && r.verificationState !== 'complete') review.push('WCAG verification is ' + r.verificationState + '; review the engine coverage and unresolved evidence before distribution');
   if (r.needsExpertReview) review.push(String(r.expertReviewReason || 'this run was flagged for expert review'));
   if (cov != null && cov < 90) review.push('only ' + cov + '% of the source text is preserved in reading order — check the Diff for missing content');
   if (kinds.numeric) review.push('numbers may have changed between source and output — verify scores, dates, and percentages before anyone reads this');
@@ -6641,7 +6930,7 @@ var createDocPipeline = function(deps) {
         });
       });
     }
-    const violationText = violationLines.slice(0, 20).join('\n') || 'General WCAG 2.1 AA compliance issues';
+    const violationText = violationLines.slice(0, 20).join('\n') || 'General WCAG 2.2 AA compliance issues';
 
     const stripped = _stripDataUrlsForAi(html);
     // Also strip image placeholder figures so AI passes can't mangle upload buttons / captions / crop data.
@@ -6853,7 +7142,7 @@ var createDocPipeline = function(deps) {
       const iframeAxe = iframe.contentWindow.axe;
       if (!iframeAxe) return null;
       const results = await iframeAxe.run(idoc.body, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22a', 'wcag22aa'] },
         resultTypes: ['violations']
       });
       const map = {};
@@ -9913,7 +10202,7 @@ var createDocPipeline = function(deps) {
   // results must not mix with fresh ones). Previous: -1 (audit-cache finalization fix + key
   // identity extension — the version had sat at 20260524-1 through six weeks of scoring/honesty
   // changes, so cache hits could replay results produced by superseded logic).
-  const _PIPELINE_PROMPT_VERSION = '20260710-2';
+  const _PIPELINE_PROMPT_VERSION = '20260711-1';
   // Cache identity must include the AI backend/model — a result produced by a local Ollama model is
   // not interchangeable with a Gemini one for the SAME bytes and settings. Best-effort, stable id.
   const _cacheBackendId = () => {
@@ -10055,13 +10344,17 @@ var createDocPipeline = function(deps) {
       const cached = await storageDB.get(key);
       if (!cached || !cached.result || !cached.savedAt) return null;
       if (Date.now() - cached.savedAt > _AUDIT_CACHE_TTL_MS) return null;
-      // Add a flag so the UI can show "from cache" to the user
-      return { ...cached.result, _fromCache: true, _cachedAt: cached.savedAt };
+      // Never trust a serialized runtime snapshot. Recompute the persisted
+      // SHA-256 binding before restoring live verification proof.
+      const restored = await _alloRehydrateVerificationHtmlBinding(cached.result);
+      restored._fromCache = true;
+      restored._cachedAt = cached.savedAt;
+      return restored;
     } catch (_) { return null; }
   };
   const _writeRemediationCache = async (key, result) => {
     if (!key || typeof window === 'undefined' || !window.idbKeyval || !result) return;
-    try { await storageDB.set(key, { result, savedAt: Date.now() }); } catch (_) {}
+    try { await storageDB.set(key, { result: _alloStripVerificationHtmlSnapshot(result), savedAt: Date.now() }); } catch (_) {}
     _sweepPdfCacheStore(); // fire-and-forget bounded eviction (throttled)
   };
 
@@ -10084,7 +10377,7 @@ var createDocPipeline = function(deps) {
     retried: f.retried || false,
     // Keep result so cache hits can be replayed on resume without re-running.
     // The result is order-of-KB (HTML + scores), not order-of-MB like base64.
-    result: f.result || null,
+    result: f.result ? _alloStripVerificationHtmlSnapshot(f.result) : null,
   });
   const _saveBatchFiles = async (files, settings, startedAt) => {
     if (typeof window === 'undefined' || !window.idbKeyval || !Array.isArray(files)) return;
@@ -10120,16 +10413,17 @@ var createDocPipeline = function(deps) {
       const byId = {};
       (statusRec && statusRec.statuses || []).forEach(s => { byId[s.id] = s; });
       // Merge: heavy payload from files-store, status/result overlay from status-store.
-      const merged = filesRec.files.map(f => {
+      const merged = await Promise.all(filesRec.files.map(async f => {
         const s = byId[f.id] || {};
+        const restoredResult = s.result ? await _alloRehydrateVerificationHtmlBinding(s.result) : null;
         return {
           ...f,
           status: s.status || 'pending',
-          result: s.result || null,
+          result: restoredResult,
           error: s.error || null,
           retried: s.retried || false,
         };
-      });
+      }));
       const incomplete = merged.filter(f => f.status !== 'done' && f.status !== 'failed').length;
       const done = merged.filter(f => f.status === 'done').length;
       return {
@@ -10528,7 +10822,7 @@ var createDocPipeline = function(deps) {
         ? `\n\n═══ OUTPUT LANGUAGE ═══\nWrite ALL human-readable field values ("issue", "summary", "passes") in ${_auditOutLang}. Use the locale's standard accessibility / WCAG terminology. JSON keys, WCAG codes (e.g. "1.3.1"), and the "documentLanguage" BCP-47 code stay English/numeric — only translate VALUES that a human will read. The documentLanguage field describes the SOURCE PDF's primary language (not your output language).\n═══════════════════════\n`
         : '';
       // ── Triangulated scoring: run 2 independent audits, average scores, flag discrepancies ──
-      const auditPrompt = `You are a WCAG 2.1 AA accessibility auditor for educational documents. Analyze this PDF for accessibility violations.${_outLangDirective}${_structTreeDirective}
+      const auditPrompt = `You are a WCAG 2.2 AA accessibility auditor for educational documents. Analyze this PDF for accessibility violations.${_outLangDirective}${_structTreeDirective}
 
 Check for these specific issues:
 1. STRUCTURE: Missing heading hierarchy, no logical reading order, flat text without sections
@@ -11345,10 +11639,27 @@ Return ONLY valid JSON:
 
     const done = queue.filter(q => q.status === 'done');
     const failed = queue.filter(q => q.status === 'failed');
+    const _batchVerificationFor = (result) => {
+      const stored = result || {};
+      const derived = _alloDeriveVerificationState({
+        ai: stored.verificationAudit,
+        aiVerificationIncomplete: !!stored._aiVerificationIncomplete,
+        axe: stored.axeAudit,
+        equalAccess: stored.secondEngineAudit,
+        pdfUaSelfCheck: stored.verificationCoverage && stored.verificationCoverage.pdfUaSelfCheck,
+      });
+      return _alloNormalizeStoredVerification(stored, derived);
+    };
+    const fullyVerifiedItems = done.filter(q => _batchVerificationFor(q.result).verificationState === 'complete');
+    const reviewRequiredItems = done.filter(q => _batchVerificationFor(q.result).requiresManualReview);
     const totalElapsed = Math.round((Date.now() - startTime) / 1000);
     setPdfBatchSummary({
       total: queue.length,
-      succeeded: done.length,
+      processed: done.length,
+      fullyVerified: fullyVerifiedItems.length,
+      reviewRequired: reviewRequiredItems.length,
+      // Backward-compatible UI field: “Succeeded” now means fully verified, not merely processed.
+      succeeded: fullyVerifiedItems.length,
       failed: failed.length,
       // Surface the names + errors of failed files so the user doesn't have
       // to scroll the queue UI to find which files need attention. Additive
@@ -11358,6 +11669,8 @@ Return ONLY valid JSON:
       avgAfter: (function() { var valid = done.filter(q => q.result?.afterScore != null); return valid.length ? Math.round(valid.reduce((s, q) => s + q.result.afterScore, 0) / valid.length) : null; })(),
       avgImprovement: (function() { var valid = done.filter(q => q.result?.afterScore != null && q.result?.beforeScore != null); return valid.length ? Math.round(valid.reduce((s, q) => s + (q.result.afterScore - q.result.beforeScore), 0) / valid.length) : null; })(),
       above90: done.filter(q => (q.result?.afterScore || 0) >= 90).length,
+      above90Verified: fullyVerifiedItems.filter(q => (q.result?.afterScore || 0) >= 90).length,
+      verificationStates: done.reduce((acc, q) => { const state = _batchVerificationFor(q.result).verificationState; acc[state] = (acc[state] || 0) + 1; return acc; }, {}),
       needsExpert: done.filter(q => q.result?.needsExpertReview).length,
       totalElapsed,
     });
@@ -11404,7 +11717,9 @@ Return ONLY valid JSON:
     } else if (_aborted) {
       addToast(`\u23f9 Batch stopped: ${done.length}/${queue.length} processed${_failList}. Remaining files stay queued.`, 'warning');
     } else {
-    addToast(`\u2705 Batch complete: ${done.length}/${queue.length} PDFs remediated (avg +${(function(){ var _v = done.filter(q => q.result && q.result.afterScore != null && q.result.beforeScore != null); return _v.length ? Math.round(_v.reduce((s, q) => s + (q.result.afterScore - q.result.beforeScore), 0) / _v.length) : 0; })()} points)${_failList}`, failed.length > 0 ? 'warning' : 'success');
+      const _verifiedDone = done.filter(q => _batchVerificationFor(q.result).verificationState === 'complete').length;
+      const _reviewDone = done.length - _verifiedDone;
+      addToast(`Batch complete: ${done.length}/${queue.length} PDFs processed · ${_verifiedDone} fully verified${_reviewDone > 0 ? ` · ${_reviewDone} require review` : ''} (avg +${(function(){ var _v = done.filter(q => q.result && q.result.afterScore != null && q.result.beforeScore != null); return _v.length ? Math.round(_v.reduce((s, q) => s + (q.result.afterScore - q.result.beforeScore), 0) / _v.length) : 0; })()} points)${_failList}`, (failed.length > 0 || _reviewDone > 0) ? 'warning' : 'success');
     }
     // Audio: triumphant chord ONLY on a genuine full completion (not a quota pause or a user abort).
     if (!_quotaStopped && !_aborted) {
@@ -11440,6 +11755,25 @@ Return ONLY valid JSON:
     const _zipSummary = _run.batchSummary;
     const zip = new window.JSZip();
     const results = _zipQueue.filter(f => f.status === 'done');
+    const _zipVerificationFor = (result) => {
+      const stored = result || {};
+      const derived = _alloDeriveVerificationState({
+        ai: stored.verificationAudit,
+        aiVerificationIncomplete: !!stored._aiVerificationIncomplete,
+        axe: stored.axeAudit,
+        equalAccess: stored.secondEngineAudit,
+        pdfUaSelfCheck: stored.verificationCoverage && stored.verificationCoverage.pdfUaSelfCheck,
+      });
+      return _alloNormalizeStoredVerification(stored, derived);
+    };
+    const _zipFullyVerified = results.filter(f => _zipVerificationFor(f.result).verificationState === 'complete');
+    const _zipReviewRequired = results.filter(f => _zipVerificationFor(f.result).requiresManualReview);
+    const _zipVerificationSummary = Object.assign({}, _zipSummary || {}, {
+      processed: results.length,
+      fullyVerified: _zipFullyVerified.length,
+      reviewRequired: _zipReviewRequired.length,
+      above90Verified: _zipFullyVerified.filter(f => (f.result?.afterScore || 0) >= 90).length,
+    });
 
     // #13: collision-safe entry names. Sanitization can normalize DIFFERENT source names onto the
     // SAME entry ("Report (1).pdf" and "Report [1].pdf" both → Report__1_) — JSZip keeps the LAST
@@ -11534,30 +11868,41 @@ Return ONLY valid JSON:
     // (stored XSS) and the CSV (cell-break + spreadsheet formula injection).
     const _escRpt = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     const _csvCell = (s) => { let v = String(s == null ? '' : s); if (/^[=+\-@\t\r]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; };
-    const csvRows = ['File,Before Score,After Score,Improvement,Fix Passes,Axe Violations,EA Fails,EA Score,Time (s),Expert Review,Tagged PDF,Status'];
+    const csvRows = ['File,Before Score,After Score,Improvement,Fix Passes,Axe Violations,EA Fails,EA Potentials,EA Manual,EA Score,Time (s),Verification State,Fully Verified,Manual Review,Review Finding Count,AI Coverage,Axe Coverage,EA Coverage,Expert Review,Tagged PDF,Processing Status'];
     _zipQueue.forEach(f => {
       const r = f.result;
-      csvRows.push(`${_csvCell(f.fileName)},${r?.beforeScore || ''},${r?.afterScore || ''},${r && r.afterScore != null && r.beforeScore != null ? (r.afterScore - r.beforeScore) : ''},${r?.autoFixPasses || ''},${r?.axeViolations ?? ''},${r?.secondEngineAudit ? r.secondEngineAudit.failViolations : ''},${r?.secondEngineAudit ? r.secondEngineAudit.score : ''},${r?.elapsed || ''},${r?.needsExpertReview ? 'Yes' : 'No'},${_csvCell(_taggedNotes.get(f.id) || '')},${f.status}`);
+      const v = _zipVerificationFor(r);
+      const vc = v.verificationCoverage || {};
+      csvRows.push(`${_csvCell(f.fileName)},${r?.beforeScore ?? ''},${r?.afterScore ?? ''},${r && r.afterScore != null && r.beforeScore != null ? (r.afterScore - r.beforeScore) : ''},${r?.autoFixPasses ?? ''},${r?.axeViolations ?? ''},${r?.secondEngineAudit?.failViolations ?? ''},${r?.secondEngineAudit?.potentialViolations ?? ''},${r?.secondEngineAudit?.manualViolations ?? ''},${r?.secondEngineAudit?.score ?? ''},${r?.elapsed ?? ''},${_csvCell(v.verificationState)},${v.afterScoreVerified ? 'Yes' : 'No'},${v.requiresManualReview ? 'Yes' : 'No'},${v.reviewCount},${_csvCell(vc.ai || '')},${_csvCell(vc.axe || '')},${_csvCell(vc.equalAccess || '')},${r?.needsExpertReview ? 'Yes' : 'No'},${_csvCell(_taggedNotes.get(f.id) || '')},${f.status}`);
     });
     zip.file('batch_accessibility_report.csv', csvRows.join('\n'));
 
     // Structured telemetry JSON for research validation
     const telemetry = {
-      version: '1.0',
+      version: '1.1',
       timestamp: new Date().toISOString(),
       pipelineConfig: { auditorCount: _run.auditorCount, autoFixPasses: _run.autoFixPasses, polishPasses: _run.polishPasses, verificationSamples: 1 }, // S1: entry snapshot; was hardcoded 3 while the loop ran 2; now 1 AI re-audit/pass + axe ($1/$7c, 2026-07-02)
-      summary: _zipSummary,
-      files: _zipQueue.map(f => ({
-        fileName: f.fileName, fileSize: f.fileSize, status: f.status, error: f.error || null,
-        zipName: _zipNameFor.get(f.id) || null, // #13: source-identity → ZIP-entry manifest (suffix-disambiguated on collision)
-        taggedPdf: _taggedNotes.get(f.id) || null,
-        result: f.result ? { beforeScore: f.result.beforeScore, afterScore: f.result.afterScore, improvement: (f.result.afterScore || 0) - (f.result.beforeScore || 0), autoFixPasses: f.result.autoFixPasses, axeViolations: f.result.axeViolations, secondEngine: f.result.secondEngineAudit ? { engine: f.result.secondEngineAudit.engine, failViolations: f.result.secondEngineAudit.failViolations, potentialViolations: f.result.secondEngineAudit.potentialViolations, score: f.result.secondEngineAudit.score } : null, scoreIsBlended: !!f.result._scoreIsBlended, needsExpertReview: f.result.needsExpertReview, elapsed: f.result.elapsed } : null,
-      })),
+      summary: _zipVerificationSummary,
+      files: _zipQueue.map(f => {
+        const v = _zipVerificationFor(f.result);
+        return {
+          fileName: f.fileName, fileSize: f.fileSize, status: f.status, error: f.error || null,
+          zipName: _zipNameFor.get(f.id) || null, // #13: source-identity → ZIP-entry manifest (suffix-disambiguated on collision)
+          taggedPdf: _taggedNotes.get(f.id) || null,
+          verificationCoverage: v.verificationCoverage,
+          verificationState: v.verificationState,
+          afterScoreVerified: v.afterScoreVerified,
+          requiresManualReview: v.requiresManualReview,
+          verificationReviewCount: v.reviewCount,
+          verificationReasons: v.reasons,
+          result: f.result ? { beforeScore: f.result.beforeScore, afterScore: f.result.afterScore, improvement: (f.result.afterScore || 0) - (f.result.beforeScore || 0), autoFixPasses: f.result.autoFixPasses, axeViolations: f.result.axeViolations, verificationCoverage: v.verificationCoverage, verificationState: v.verificationState, afterScoreVerified: v.afterScoreVerified, requiresManualReview: v.requiresManualReview, verificationReviewCount: v.reviewCount, verificationReasons: v.reasons, secondEngine: f.result.secondEngineAudit ? { engine: f.result.secondEngineAudit.engine, failViolations: f.result.secondEngineAudit.failViolations, potentialViolations: f.result.secondEngineAudit.potentialViolations, manualViolations: f.result.secondEngineAudit.manualViolations, reviewFindingCount: f.result.secondEngineAudit.reviewFindingCount, score: f.result.secondEngineAudit.score } : null, scoreIsBlended: !!f.result._scoreIsBlended, needsExpertReview: f.result.needsExpertReview, elapsed: f.result.elapsed } : null,
+        };
+      }),
     };
     zip.file('telemetry.json', JSON.stringify(telemetry, null, 2));
 
     const done = _zipQueue.filter(q => q.status === 'done');
-    const rptHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Batch Accessibility Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1e293b}h1{color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left}th{background:#f1f5f9}.pass{color:#16a34a;font-weight:bold}.warn{color:#d97706;font-weight:bold}.fail{color:#dc2626;font-weight:bold}.stat{display:inline-block;padding:8px 16px;margin:4px;border-radius:8px;background:#f1f5f9;font-weight:bold}</style></head><body><h1>\u267f AlloFlow Batch Accessibility Report</h1><p>Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p><div><span class="stat">${_zipQueue.length} PDFs</span><span class="stat">\u2705 ${done.length} Succeeded</span><span class="stat">Avg: ${_zipSummary?.avgBefore||'?'}\u2192${_zipSummary?.avgAfter||'?'}</span><span class="stat">${_zipSummary?.above90||0} scored 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>2nd engine (Equal Access)</th><th>Passes</th><th>Time</th><th>Tagged PDF</th><th>Status</th></tr></thead><tbody>${_zipQueue.map((f,i)=>{const r=f.result;const s=r?.afterScore||0;const c=s>=90?'pass':s>=70?'warn':'fail';const tg=_taggedNotes.get(f.id)||'\u2014';const tc=tg.indexOf('yes')===0?'pass':(tg.indexOf('EXCLUDED')===0||tg.indexOf('failed')===0)?'fail':'';return '<tr><td>'+(i+1)+'</td><td>'+_escRpt(f.fileName)+'</td><td>'+(r?.beforeScore??'\u2014')+'</td><td class="'+c+'">'+(r?.afterScore??'\u2014')+'</td><td>'+(r && r.afterScore!=null && r.beforeScore!=null ? '+'+(r.afterScore-r.beforeScore) : '\u2014')+'</td><td>'+(r?.secondEngineAudit && typeof r.secondEngineAudit.score==='number' ? (r.secondEngineAudit.score+' ('+(r.secondEngineAudit.failViolations||0)+' fail'+((r.secondEngineAudit.failViolations||0)===1?'':'s')+')') : '\u2014')+'</td><td>'+(r?.autoFixPasses??'\u2014')+'</td><td>'+(r?.elapsed?r.elapsed+'s':'\u2014')+'</td><td class="'+tc+'">'+_escRpt(tg)+'</td><td>'+(f.status==='done'?'\u2705':f.status==='failed'?'\u274c '+_escRpt(f.error||''):'\u23f8 Not processed')+'</td></tr>';}).join('')}</tbody></table></body></html>`;
+    const rptHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Batch Accessibility Report</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#1e293b}h1{color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin:1rem 0}th,td{border:1px solid #cbd5e1;padding:8px 12px;text-align:left}th{background:#f1f5f9}.pass{color:#16a34a;font-weight:bold}.warn{color:#d97706;font-weight:bold}.fail{color:#dc2626;font-weight:bold}.stat{display:inline-block;padding:8px 16px;margin:4px;border-radius:8px;background:#f1f5f9;font-weight:bold}</style></head><body><h1>\u267f AlloFlow Batch Accessibility Report</h1><p>Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p><div><span class="stat">${_zipQueue.length} PDFs</span><span class="stat">${done.length} Processed</span><span class="stat">\u2705 ${_zipVerificationSummary.fullyVerified || 0} Fully verified</span><span class="stat">\u26a0 ${_zipVerificationSummary.reviewRequired || 0} Need review</span><span class="stat">Avg: ${_zipSummary?.avgBefore||'?'}\u2192${_zipSummary?.avgAfter||'?'}</span><span class="stat">${_zipVerificationSummary.above90Verified || 0} verified at 90+</span></div><table><thead><tr><th>#</th><th>File</th><th>Before</th><th>After</th><th>Gain</th><th>2nd engine (Equal Access)</th><th>Passes</th><th>Time</th><th>Verification</th><th>Tagged PDF</th><th>Processing Status</th></tr></thead><tbody>${_zipQueue.map((f,i)=>{const r=f.result;const v=_zipVerificationFor(r);const s=r?.afterScore||0;const c=s>=90?'pass':s>=70?'warn':'fail';const tg=_taggedNotes.get(f.id)||'\u2014';const tc=tg.indexOf('yes')===0?'pass':(tg.indexOf('EXCLUDED')===0||tg.indexOf('failed')===0)?'fail':'';return '<tr><td>'+(i+1)+'</td><td>'+_escRpt(f.fileName)+'</td><td>'+(r?.beforeScore??'\u2014')+'</td><td class="'+c+'">'+(r?.afterScore??'\u2014')+'</td><td>'+(r && r.afterScore!=null && r.beforeScore!=null ? '+'+(r.afterScore-r.beforeScore) : '\u2014')+'</td><td>'+(r?.secondEngineAudit && typeof r.secondEngineAudit.score==='number' ? (r.secondEngineAudit.score+' ('+(r.secondEngineAudit.failViolations||0)+' fail'+((r.secondEngineAudit.failViolations||0)===1?'':'s')+', '+(r.secondEngineAudit.reviewFindingCount||0)+' review)') : '\u2014')+'</td><td>'+(r?.autoFixPasses??'\u2014')+'</td><td>'+(r?.elapsed?r.elapsed+'s':'\u2014')+'</td><td class="'+(v.verificationState==='complete'?'pass':'warn')+'">'+_escRpt(v.verificationState)+(v.reviewCount>0?' ('+v.reviewCount+' review)':'')+'</td><td class="'+tc+'">'+_escRpt(tg)+'</td><td>'+(f.status==='done'?(v.verificationState==='complete'?'\u2705 Processed · fully verified':'\u26a0 Processed · review required'):f.status==='failed'?'\u274c '+_escRpt(f.error||''):'\u23f8 Not processed')+'</td></tr>';}).join('')}</tbody></table></body></html>`;
     zip.file('batch_report.html', rptHtml);
 
     const blob = await zip.generateAsync({ type: 'blob' });
@@ -11567,7 +11912,7 @@ Return ONLY valid JSON:
     a.download = `alloflow_batch_remediation_${new Date().toISOString().slice(0,10)}.zip`;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    addToast(`\ud83d\udce6 Downloaded ZIP: ${results.length} remediated file(s)` + (_taggedCount > 0 ? `, ${_taggedCount} tagged PDF(s)` : '') + ' + reports' + (_taggedCount < results.length ? ' \u2014 see the Tagged PDF column in the CSV for files that were skipped or excluded.' : '.'), 'success');
+    addToast(`\ud83d\udce6 Downloaded ZIP: ${results.length} processed file(s)` + (_taggedCount > 0 ? `, ${_taggedCount} tagged PDF(s)` : '') + ' + reports' + (_taggedCount < results.length ? ' \u2014 see the Tagged PDF column in the CSV for files that were skipped or excluded.' : '.'), 'success');
     // C5 (deep dive 2026-07-01 \u2192 fixed 2026-07-02): files whose tagged PDF was EXCLUDED
     // (failed verification) or failed to generate used to be disclosed only as a CSV notes
     // column \u2014 easy to miss on an unattended batch. Name them in their own warning toast.
@@ -11839,7 +12184,7 @@ Return ONLY JSON:
       _auditChunkMemo.set(key, JSON.stringify(parsed));
     } catch (_) {}
   };
-  // Audit HTML for WCAG 2.1 AA compliance
+  // Audit HTML for WCAG 2.2 AA compliance
   // Short docs (≤8KB): single Gemini call. Long docs: chunked with deduplication.
   const auditOutputAccessibility = async (htmlContent) => {
     if (!callGemini || !htmlContent) return null;
@@ -11849,7 +12194,7 @@ Return ONLY JSON:
       // Short documents: single audit pass
       if (htmlContent.length <= CHUNK_SIZE) {
         const sampleHtml = htmlContent;
-        const _shortPrompt = `You are a WCAG 2.1 AA accessibility auditor. Audit this HTML document for accessibility compliance.\n\n${AUDIT_RUBRIC_PROMPT}\n\nHTML to audit:\n"""${_neutralizePromptFence(sampleHtml)}"""`;
+        const _shortPrompt = `You are a WCAG 2.2 AA accessibility auditor. Audit this HTML document for accessibility compliance.\n\n${AUDIT_RUBRIC_PROMPT}\n\nHTML to audit:\n"""${_neutralizePromptFence(sampleHtml)}"""`;
         // $2: identical short doc re-audited (e.g. baseline vs final with no changes) → memo.
         // The memo stores the fully post-processed result (suppression/locators/tone are all
         // deterministic functions of this same content), keyed on the exact prompt.
@@ -11955,7 +12300,7 @@ Return ONLY JSON:
       let _memoHits = 0;
       const _auditOneChunk = (chunk, chunkNum) => {
         const isFirst = chunkNum === 1;
-        const prompt = `You are a WCAG 2.1 AA accessibility auditor. Audit this HTML section (section ${chunkNum} of ${chunks.length}) for accessibility compliance.
+        const prompt = `You are a WCAG 2.2 AA accessibility auditor. Audit this HTML section (section ${chunkNum} of ${chunks.length}) for accessibility compliance.
 ${isFirst ? 'This is the FIRST section — check global items (lang, title, skip-nav, landmarks).' : 'This is a MIDDLE/END section — focus on content-level issues (headings, images, tables, links, lists, contrast). Skip global checks (lang, title) since those only appear in the first section.'}
 
 ${AUDIT_RUBRIC_PROMPT}
@@ -12226,9 +12571,9 @@ HTML section ${chunkNum}/${chunks.length}:
   // Mirror chain (each HTTP-200-verified): one blocked CDN host must not kill the
   // axe baseline — locked-down school networks routinely block a single CDN.
   const _AXE_CDN_URLS = [
-    'https://cdn.jsdelivr.net/npm/axe-core@4.10.3/axe.min.js',
-    'https://unpkg.com/axe-core@4.10.3/axe.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.10.3/axe.min.js',
+    'https://cdn.jsdelivr.net/npm/axe-core@4.12.1/axe.min.js',
+    'https://unpkg.com/axe-core@4.12.1/axe.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.12.1/axe.min.js',
   ];
   const _AXE_CDN_URL = _AXE_CDN_URLS[0];
   const runAxeAudit = async (htmlContent) => {
@@ -12327,7 +12672,7 @@ HTML section ${chunkNum}/${chunks.length}:
 
       results = await _withTimeout(
         iframeAxe.run(iframeDoc, {
-          runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+          runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22a', 'wcag22aa'] },
           resultTypes: ['violations', 'passes', 'incomplete']
         }),
         30000, 'axe-core audit'
@@ -12361,10 +12706,13 @@ HTML section ${chunkNum}/${chunks.length}:
       };
       return {
         engine: 'axe-core',
-        version: results.testEngine?.version || '4.10.3',
+        version: results.testEngine?.version || '4.12.1',
+        standard: 'WCAG 2.2 A/AA',
         totalViolations: results.violations.length,
         totalPasses: results.passes.length,
         totalIncomplete: (results.incomplete || []).length,
+        manualReviewRequired: (results.incomplete || []).length > 0,
+        verificationStatus: (results.incomplete || []).length > 0 ? 'complete-with-review' : 'complete',
         critical: critical.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(v.tags), helpUrl: v.helpUrl, nodeDetails: v.nodes.slice(0, 3).map(_mapNode) })),
         serious: serious.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(v.tags), helpUrl: v.helpUrl, nodeDetails: v.nodes.slice(0, 3).map(_mapNode) })),
         moderate: moderate.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(v.tags), helpUrl: v.helpUrl, nodeDetails: v.nodes.slice(0, 3).map(_mapNode) })),
@@ -13071,33 +13419,60 @@ HTML section ${chunkNum}/${chunks.length}:
       doc.open(); doc.write(_neutralizeForAuditFrame(htmlContent)); doc.close(); // #16: same neutralization as the axe frame
       await new Promise((r) => setTimeout(r, 150));
       const checker = new window.ace.Checker();
-      const report = await _withTimeout(checker.check(doc, ['WCAG_2_1']), 30000, 'IBM Equal Access audit');
+      const report = await _withTimeout(checker.check(doc, ['WCAG_2_2']), 30000, 'IBM Equal Access WCAG 2.2 audit');
       const results = (report && report.results) || [];
       // value = [toolLevel, outcome]: VIOLATION/RECOMMENDATION × FAIL/POTENTIAL/MANUAL/PASS.
-      // Aggregate per RULE (axe's violation list is rule-level too — keeps scales comparable).
+      // Aggregate per RULE (axe's violation list is rule-level too — keeps scales comparable),
+      // while retaining bounded instance details so POTENTIAL/MANUAL findings are actionable.
       const byRule = (filterFn) => {
         const m = new Map();
         for (const r of results) {
           if (!r || !Array.isArray(r.value) || !filterFn(r.value)) continue;
-          const e = m.get(r.ruleId) || { id: r.ruleId, nodes: 0, description: r.message || r.ruleId };
+          const ruleId = r.ruleId || 'unknown-rule';
+          const e = m.get(ruleId) || { id: ruleId, nodes: 0, description: r.message || ruleId, details: [] };
           e.nodes++;
-          m.set(r.ruleId, e);
+          if (e.details.length < 20) {
+            const _path = r.path && typeof r.path === 'object'
+              ? { aria: r.path.aria == null ? '' : String(r.path.aria), dom: r.path.dom == null ? '' : String(r.path.dom) }
+              : null;
+            e.details.push({
+              level: r.value[0] || null,
+              outcome: r.value[1] || null,
+              message: r.message || '',
+              reasonId: r.reasonId || null,
+              path: _path,
+              snippet: r.snippet == null ? '' : String(r.snippet).slice(0, 500),
+              help: r.help || null,
+            });
+          }
+          m.set(ruleId, e);
         }
         return Array.from(m.values());
       };
       const fails = byRule((v) => v[0] === 'VIOLATION' && v[1] === 'FAIL');
-      const potentials = byRule((v) => v[0] === 'VIOLATION' && v[1] === 'POTENTIAL');
+      // POTENTIAL and MANUAL are review outcomes regardless of whether the rule policy is
+      // VIOLATION or RECOMMENDATION. Dropping recommendation-level outcomes understated review work.
+      const potentials = byRule((v) => v[1] === 'POTENTIAL');
+      const manuals = byRule((v) => v[1] === 'MANUAL');
+      const reviewFindingCount = potentials.length + manuals.length;
       return {
         engine: 'IBM Equal Access',
         version: (window.ace && (window.ace.version || (window.ace.Checker && window.ace.Checker.version))) || '3.x',
+        standard: 'WCAG 2.2',
         failViolations: fails.length,
         potentialViolations: potentials.length,
+        manualViolations: manuals.length,
+        reviewFindingCount,
         fails: fails.slice(0, 30),
+        potentialFindings: potentials.slice(0, 30),
+        manualFindings: manuals.slice(0, 30),
         // Comparable-scale score, DISCLOSED in the UI: rule-level like axe's
         // (15/10/5/2 by impact). EA has no impact tiers — confirmed FAILs
-        // weigh like axe 'serious' (10), POTENTIALs (needs human review)
-        // weigh 2. A judgment call, kept conservative and visible.
-        score: Math.max(0, Math.round(100 - fails.length * 10 - potentials.length * 2)),
+        // weigh like axe 'serious' (10), while POTENTIAL/MANUAL findings
+        // weigh 2. Review findings remain explicitly unresolved below.
+        score: Math.max(0, Math.round(100 - fails.length * 10 - reviewFindingCount * 2)),
+        manualReviewRequired: reviewFindingCount > 0,
+        verificationStatus: reviewFindingCount > 0 ? 'complete-with-review' : 'complete',
       };
     } catch (err) {
       warnLog('[IBM Equal Access] Audit failed (fail-soft — axe-only path continues):', err && err.message);
@@ -15130,7 +15505,7 @@ Respond with ONLY a JSON object (no markdown, no explanation):
                 setPdfFixStep(`Scoring section ${chi + 1}/${bodyChunks.length} accessibility...`);
                 let aiScore = scoreChunkLocally(cleaned); // Start with local score as baseline
                 try {
-                  const auditResult = await callGemini(`You are a WCAG 2.1 AA accessibility auditor. Score this HTML section for accessibility compliance.
+                  const auditResult = await callGemini(`You are a WCAG 2.2 AA accessibility auditor. Score this HTML section for accessibility compliance.
 
 Rate this section 0-100 where:
 - 100 = perfectly accessible (all images have alt, proper headings, semantic HTML, good contrast)
@@ -15632,7 +16007,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         setStep(`Scoring chunk ${chunkIndex + 1}/${totalChunks}...`);
         let aiScore = scoreChunkLocally(cleaned);
         try {
-          const ar = await callGemini(`Score this HTML section 0-100 for WCAG 2.1 AA accessibility.\n\nHTML:\n"""\n${_neutralizePromptFence(sampleHtml(cleaned, 9000))}\n"""\n\nRespond ONLY JSON: {"score": NUMBER, "issues": [], "passes": []}`, true, false, 0 /* temperature=0: deterministic scoring */);
+          const ar = await callGemini(`Score this HTML section 0-100 for WCAG 2.2 AA accessibility.\n\nHTML:\n"""\n${_neutralizePromptFence(sampleHtml(cleaned, 9000))}\n"""\n\nRespond ONLY JSON: {"score": NUMBER, "issues": [], "passes": []}`, true, false, 0 /* temperature=0: deterministic scoring */);
           try {
             const aj = JSON.parse(ar.replace(/```json?\s*/gi, '').replace(/```/g, '').trim());
             if (typeof aj.score === 'number' && aj.score >= 0 && aj.score <= 100) {
@@ -18001,7 +18376,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             return `\n\n═══ SOURCE TAG TREE — PRESERVE THESE HEADING LEVELS ═══\nThis PDF ships a logical structure tree. The headings below were extracted directly from the source's tags. When you emit h1/h2/h3 blocks, MATCH these levels exactly — do not re-infer from font size or visual weight. If a heading in the outline below is missing from your output, the document loses structure that the source explicitly encoded.\n\n${outline}\n═══════════════════════════════════════════════════\n`;
           })()
         : '';
-      const jsonPrompt = `You are a WCAG 2.1 AA accessibility specialist extracting a PDF into structured, semantically correct HTML content blocks. Your output will be used directly by screen readers, so accuracy matters.${_sourceHeadingsDirective}
+      const jsonPrompt = `You are a WCAG 2.2 AA accessibility specialist extracting a PDF into structured, semantically correct HTML content blocks. Your output will be used directly by screen readers, so accuracy matters.${_sourceHeadingsDirective}
 
 Extract ALL content as a JSON array of content blocks. Each block must be one of these types:
 
@@ -18018,7 +18393,7 @@ BLOCK TYPES:
 - {"type":"blockquote","text":"quoted text","cite":"attribution if known"}
 - {"type":"hr"} — for section breaks between major content areas
 
-ACCESSIBILITY RULES (WCAG 2.1 AA):
+ACCESSIBILITY RULES (WCAG 2.2 AA):
 - Include EVERY piece of content from the document. Do NOT summarize or omit.
 - Preserve the LOGICAL reading order (which may differ from visual layout).
   For multi-column layouts: determine the intended reading sequence, don't just read left-to-right across columns.
@@ -18102,7 +18477,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           // Fallback: direct HTML generation if JSON parsing fails
           warnLog('[PDF Fix] JSON extraction failed, falling back to direct HTML:', jsonErr);
           updateProgress(2, 'Fallback: generating HTML directly...');
-          const fallbackPrompt = `Transform this PDF into accessible HTML body content meeting WCAG 2.1 AA. Use proper headings, tables with th scope, alt text, lists, links. Include ALL content. Use inline CSS for styling. Return ONLY HTML.`;
+          const fallbackPrompt = `Transform this PDF into accessible HTML body content meeting WCAG 2.2 AA. Use proper headings, tables with th scope, alt text, lists, links. Include ALL content. Use inline CSS for styling. Return ONLY HTML.`;
           bodyContent = await callGeminiVision(fallbackPrompt, _base64, _mimeType);
           // Validate: reject empty, refusal messages, or non-HTML replies so downstream stages know to recover.
           const _fallbackOk = bodyContent
@@ -18947,7 +19322,7 @@ window.__pdfCropImage = function(imgId) {
 ${bodyContent}
 </main>
 <footer role="contentinfo" style="margin-top:3rem;padding-top:1rem;border-top:1px solid #e2e8f0;font-size:0.75rem;color:#475569;">
-<p>This document was automatically transformed for accessibility compliance (WCAG 2.1 AA) by AlloFlow. Original: ${(_fileName || 'unknown')} (${pageCount} pages). Transformed: ${new Date().toLocaleDateString()}.</p>
+<p>This document was automatically transformed for accessibility compliance (WCAG 2.2 AA) by AlloFlow. Original: ${(_fileName || 'unknown')} (${pageCount} pages). Transformed: ${new Date().toLocaleDateString()}.</p>
 </footer>
 </body>
 </html>`;
@@ -19747,7 +20122,12 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // before/after is apples-to-apples.
       accessibleHtml = _repairLeakedImagePlaceholders(accessibleHtml);
       const _scoreHtml = _stripChromeForAudit(accessibleHtml);
-      try { const _cleanAxe = await runAxeAudit(_scoreHtml); if (_cleanAxe) axeResults = _cleanAxe; } catch (_) {}
+      let _cleanAxe = null;
+      try { _cleanAxe = await runAxeAudit(_scoreHtml); } catch (_) { _cleanAxe = null; }
+      // This is the authoritative audit of the export-equivalent HTML. A failed
+      // fresh run invalidates prior axe evidence instead of silently reusing it.
+      const _cleanAxeOk = !!(_cleanAxe && typeof _cleanAxe.score === 'number' && Number.isFinite(_cleanAxe.score));
+      axeResults = _cleanAxeOk ? _cleanAxe : null;
       let eaResults = null;
       try { eaResults = await runEqualAccessAudit(_scoreHtml); } catch (_) { eaResults = null; }
       // Detect a GENUINE deterministic regression (now that preview chrome is excluded): if the clean
@@ -20239,7 +20619,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // decent document with moderate polish left, not an expert case. The
       // card now means it: criticals present, axe couldn't verify at all, or
       // the score is genuinely rough (<50).
-      const _accessibilityConcern = axeFailed || // axe-core failed entirely — can't verify
+      const _deterministicManualReview = !!(axeResults && axeResults.totalIncomplete > 0) || _alloEqualAccessReviewCount(eaResults) > 0;
+      const _accessibilityConcern = axeFailed || _deterministicManualReview || // checker failed or returned rules needing human determination
         (autoFixPasses > 0 && ((finalAfterScore !== null && finalAfterScore < 50) || axeCritical > 0));
       const _contentFidelityConcern = !!integrityWarning || _structuralFidelityNotes.length > 0;
       let needsExpertReview = _accessibilityConcern || _contentFidelityConcern;       // let: reassigned by the post-recovery re-audit (recov-score-order)
@@ -20361,43 +20742,41 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         try {
           const _reScoreHtml = _stripChromeForAudit(_repairLeakedImagePlaceholders(accessibleHtml)); // apples-to-apples: exclude preview-only chrome
           const _reAxe = await runAxeAudit(_reScoreHtml);
-          // Base success on the FRESH re-audit, not the possibly-stale prior axeResults — else a
-          // transient axe failure (null) would silently re-blend the AI score with the
-          // PRE-recovery deterministic score. Only adopt fresh results; compute det from them. (#11)
-          const _reAxeOk = _reAxe && typeof _reAxe.score === 'number';
-          if (_reAxeOk) axeResults = _reAxe;
+          const _reAxeOk = !!(_reAxe && typeof _reAxe.score === 'number' && Number.isFinite(_reAxe.score));
+          // Fresh evidence is authoritative. A null/invalid audit clears the
+          // pre-recovery result so canonical coverage cannot consume stale axe data.
+          axeResults = _reAxeOk ? _reAxe : null;
           let _reEa = null;
           try { _reEa = await runEqualAccessAudit(_reScoreHtml); } catch (_) { _reEa = null; }
-          const _reEaOk = _reEa && typeof _reEa.score === 'number';
-          // Adopt ONLY the fresh EA; if the fresh EA re-audit failed, NULL the stale pre-recovery value so
-          // the UI's deterministic chip (min(axe, EA)) and the export report use the same axe-only number
-          // the re-blend below actually used — not a stale EA from before recovery. (A2-MED, 2026-06-18)
-          if (_reEaOk) eaResults = _reEa; else eaResults = null;
-          const _reDet = _reAxeOk ? (_reEaOk ? Math.min(_reAxe.score, _reEa.score) : _reAxe.score) : null;
-          const _reAiDegraded = !verification || verification.score === null || verification._scoreDegraded || verification.synthesized;
-          const _reAi = verification ? verification.score : afterScore;
-          if (_reAi !== null && !_reAiDegraded && _reAxeOk) {
+          const _reEaOk = !!(_reEa && typeof _reEa.score === 'number' && Number.isFinite(_reEa.score));
+          eaResults = _reEaOk ? _reEa : null;
+          const _reDet = _reAxeOk
+            ? (_reEaOk ? Math.min(_reAxe.score, _reEa.score) : _reAxe.score)
+            : (_reEaOk ? _reEa.score : null);
+          const _reAiDegraded = !verification
+            || !Number.isFinite(verification.score)
+            || !!verification._scoreDegraded
+            || !!verification.synthesized
+            || _finalAuditScoreMissing;
+          const _reAi = verification && Number.isFinite(verification.score) ? verification.score : null;
+          if (_reAi !== null && !_reAiDegraded && _reDet !== null) {
             axeCoreFailed = false;
             _aiVerificationIncomplete = false;
-            const _reGoverning = _alloComputeHeadline(_reAi, _reDet); // weakest-layer-governs via shared computeHeadline (2026-06-21; was mean)
+            const _reGoverning = _alloComputeHeadline(_reAi, _reDet);
             warnLog('[PDF Fix] Re-scored after recovery mutations (weakest-layer): min(AI ' + _reAi + ', deterministic ' + _reDet + ') = ' + _reGoverning + ' (was ' + finalAfterScore + ')');
             finalAfterScore = _reGoverning;
-          } else if (_reAiDegraded && _reAxeOk) {
-            // AI incomplete post-recovery but deterministic re-audit is good → reliable structural score, labeled.
+          } else if (_reAiDegraded && _reDet !== null) {
+            // AI incomplete post-recovery but at least one fresh deterministic engine completed.
             axeCoreFailed = false;
             _aiVerificationIncomplete = true;
             finalAfterScore = _reDet;
             warnLog('[PDF Fix] AI semantic audit incomplete on re-audit — headline = deterministic structural ' + _reDet + '.');
-          } else if (!_reAxeOk) {
-            // Fresh deterministic re-audit failed: don't keep a stale blend — go AI-only and
-            // mark axe as failed so the triage/_scoreIsBlended stay consistent. (#11)
+          } else if (_reDet === null) {
+            // No fresh deterministic evidence: do not retain a stale blend.
             axeCoreFailed = true;
             if (_reAi !== null) finalAfterScore = _reAi;
-            // The score is now AI-only, NOT deterministic-only — clear the incomplete flag so the headline
-            // renders the "AI rubric only (automated checks unavailable)" label, not the inverted
-            // "structural-only; AI incomplete" one. (score-blend-degraded-2, 2026-06-21)
-            _aiVerificationIncomplete = false;
-            warnLog('[PDF Fix] WARNING: axe-core unavailable on re-audit after recovery — final score is AI-only (' + _reAi + ').');
+            _aiVerificationIncomplete = _reAiDegraded;
+            warnLog('[PDF Fix] WARNING: deterministic verification unavailable on re-audit after recovery' + (_reAi !== null ? ' — final score is AI-only (' + _reAi + ').' : '.'));
           }
           // Recompute triage values that feed _result so the banner matches the shipped doc.
           // On a failed re-audit (_reAxeOk false) report axe as failed/unknown rather than reading
@@ -20405,7 +20784,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           axeViolations = _reAxeOk && axeResults ? axeResults.totalViolations : 0;
           axeCritical = _reAxeOk && axeResults ? axeResults.critical.length : 0;
           axeFailed = !_reAxeOk;
-          const _reAccessibilityConcern = axeFailed || (autoFixPasses > 0 && ((finalAfterScore !== null && finalAfterScore < 50) || axeCritical > 0));
+          const _reDeterministicManualReview = !!(axeResults && axeResults.totalIncomplete > 0) || _alloEqualAccessReviewCount(eaResults) > 0;
+          const _reAccessibilityConcern = axeFailed || _reDeterministicManualReview || (autoFixPasses > 0 && ((finalAfterScore !== null && finalAfterScore < 50) || axeCritical > 0));
           needsExpertReview = _reAccessibilityConcern || _contentFidelityConcern;
           expertReviewReason = (_reAccessibilityConcern && _contentFidelityConcern) ? 'both' : _reAccessibilityConcern ? 'accessibility' : _contentFidelityConcern ? 'content-fidelity' : null;
         } catch (_reErr) { warnLog('[PDF Fix] re-audit after recovery non-fatal:', _reErr && _reErr.message); }
@@ -20426,6 +20806,29 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         : null;
 
       // ── Store results ──
+      // One canonical policy governs every final verification claim. A numeric score alone
+      // is insufficient when an engine was partial/degraded or left human-review findings.
+      const _derivedVerificationState = _alloDeriveVerificationState({
+        ai: verification,
+        aiVerificationIncomplete: _aiVerificationIncomplete,
+        axe: axeResults,
+        equalAccess: eaResults,
+        pdfUaSelfCheck: 'not-run',
+      });
+      // This is deliberately the final HTML-sensitive operation: every recovery,
+      // image reinsertion, sanitizer, and deterministic re-audit above has finished.
+      // A failed/missing Web Crypto digest keeps the finite score visible but makes
+      // the verification state partial rather than certifying unbound content.
+      const _verificationHtmlBinding = await _alloCreateVerificationHtmlBinding(accessibleHtml);
+      const _verificationState = _alloApplyVerificationHtmlBinding(
+        _derivedVerificationState,
+        !!_verificationHtmlBinding,
+        _ALLO_VERIFICATION_HTML_BINDING_REASON
+      );
+      if (_verificationState.requiresManualReview) {
+        needsExpertReview = true;
+        expertReviewReason = _contentFidelityConcern ? 'both' : 'accessibility';
+      }
       // sourceText + finalText feed the "Diff view" button in the remediation UI so
       // the user can audit verbatim-fidelity word-by-word. They cost some memory
       // (~2x doc size) but the UX value is high: the integrity % is only actionable
@@ -20474,6 +20877,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         verificationAudit: verification,
         axeAudit: axeResults,
         secondEngineAudit: eaResults,
+        verificationHtmlBinding: _verificationHtmlBinding,
+        verificationCoverage: _verificationState.verificationCoverage,
+        verificationState: _verificationState.verificationState,
+        afterScoreVerified: _verificationState.afterScoreVerified,
+        requiresManualReview: _verificationState.requiresManualReview,
+        verificationReviewCount: _verificationState.reviewCount,
+        verificationReasons: _verificationState.reasons,
         beforeScore,
         beforeAxeScore,
         // Carry the BEFORE audit's page-slice provenance so the UI can mark the
@@ -20528,9 +20938,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           // 'success' only when the AI verification ran to full coverage AND the axe checker
           // returned a result; anything less is 'incomplete'. (Score-vs-target policy stays with
           // the host — this field feeds the run-history reliability rate defended to UMaine.)
-          outcome: (verification && typeof verification.score === 'number' &&
-            !verification._partialAudit && !verification._scoreDegraded && !verification.synthesized &&
-            axeResults && typeof axeResults.totalViolations === 'number') ? 'success' : 'incomplete',
+          outcome: _verificationState.verificationState === 'complete' ? 'success' : 'incomplete',
+          verificationState: _verificationState.verificationState,
+          verificationReviewCount: _verificationState.reviewCount,
           apiCalls: _pipelineStats.apiCalls,
           visionCalls: _pipelineStats.visionCalls,
           totalApiMs: Math.round(_pipelineStats.totalApiMs),
@@ -20542,6 +20952,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           durationMs: Date.now() - _startTime,
         },
       };
+
+      if (_verificationHtmlBinding) _alloAttachVerificationHtmlSnapshot(_result, accessibleHtml);
 
       _pipeStepEnd(4, autoFixPasses + ' fix passes, score: ' + (verification ? verification.score : '?') + '/100');
       _pipeLog('Done', 'Pipeline complete', {
@@ -20781,6 +21193,39 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
     // the accessibility report (post-tag) has the PdfValidator data; the
     // audit report (pre-tag) stays 2-axis.
     let h = '';
+    const _axeIncompleteCount = opts && Number.isFinite(opts.axeIncomplete) ? opts.axeIncomplete : 0;
+    const _verificationCoverage = opts && opts.verificationCoverage;
+    const _verificationState = (opts && opts.verificationState) || null;
+    const _requiresVerificationReview = !!(opts && opts.requiresManualReview);
+    const _eaAuditForReport = opts && opts.secondEngineAudit;
+    const _eaPotentialCount = _eaAuditForReport && Number.isFinite(_eaAuditForReport.potentialViolations) ? _eaAuditForReport.potentialViolations : 0;
+    const _eaManualCount = _eaAuditForReport && Number.isFinite(_eaAuditForReport.manualViolations) ? _eaAuditForReport.manualViolations : 0;
+    const _eaReviewCount = _eaAuditForReport && Number.isFinite(_eaAuditForReport.reviewFindingCount) ? _eaAuditForReport.reviewFindingCount : (_eaPotentialCount + _eaManualCount);
+    const _escVerify = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    if (_verificationCoverage && (_verificationState !== 'complete' || _requiresVerificationReview)) {
+      const _engineRows = [
+        ['AI semantic review', _verificationCoverage.ai],
+        ['axe-core', _verificationCoverage.axe],
+        ['IBM Equal Access', _verificationCoverage.equalAccess],
+      ].map((pair) => `<li><strong>${pair[0]}:</strong> ${_escVerify(pair[1] || 'unavailable')}</li>`).join('');
+      const _unavailableEngines = [];
+      if (_verificationCoverage.ai === 'unavailable') _unavailableEngines.push('AI semantic review');
+      if (_verificationCoverage.axe === 'unavailable') _unavailableEngines.push('axe-core');
+      if (_verificationCoverage.equalAccess === 'unavailable') _unavailableEngines.push('IBM Equal Access');
+      const _unavailableCopy = _unavailableEngines.length
+        ? `<p style="margin:6px 0 0"><strong>Unavailable evidence:</strong> ${_escVerify(_unavailableEngines.join(', '))}. A score from the remaining engines is partial evidence, not a verified WCAG result.</p>`
+        : '';
+      const _eaCopy = _eaReviewCount > 0
+        ? '<p style="margin:6px 0 0"><strong>Equal Access review findings:</strong> ' + _eaReviewCount + ' rule' + (_eaReviewCount === 1 ? '' : 's') + ' require human judgment (' + _eaPotentialCount + ' potential, ' + _eaManualCount + ' manual). Review the detailed rule records before making a conformance decision.</p>'
+        : '';
+      const _axeCopy = _axeIncompleteCount > 0 && !(opts && opts.automatedNA)
+        ? '<p style="margin:6px 0 0"><strong>axe-core incomplete findings:</strong> ' + _axeIncompleteCount + ' rule' + (_axeIncompleteCount === 1 ? '' : 's') + ' could not be determined automatically. Review those rules before making a conformance decision.</p>'
+        : '';
+      h += `<div style="margin:8px 0 12px;padding:10px 12px;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;color:#78350f;font-size:12px"><strong>&#9888; WCAG verification status: ${_escVerify(_verificationState || 'review-required')}.</strong><ul style="margin:6px 0 0;padding-left:20px">${_engineRows}</ul>${_unavailableCopy}${_axeCopy}${_eaCopy}<p style="margin:6px 0 0">Automated and AI checks cover only their tested scope; unresolved or unavailable checks require human review and must not be presented as conformance.</p></div>`;
+    }
+    if (_axeIncompleteCount > 0 && !(opts && opts.automatedNA) && !_verificationCoverage) {
+      h += `<div style="margin:8px 0 12px;padding:10px 12px;background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;color:#78350f;font-size:12px"><strong>&#9888; Automated review is incomplete.</strong> axe-core returned ${_axeIncompleteCount} rule${_axeIncompleteCount === 1 ? '' : 's'} that could not be determined automatically. The structural score counts confirmed failures only; review the incomplete rules before making a conformance decision.</div>`;
+    }
     // M5 (2026-07-03): surface fidelity concerns (coverage/placement/numeric warning + structural notes)
     // in the Content Integrity section so this DOWNLOADABLE compliance report never prints "Full text
     // preserved." over a flagged concern. opts.integrityWarning + opts.fidelityNotes thread from the result.
@@ -20941,7 +21386,7 @@ tr { page-break-inside: avoid; }
 <a href="#audit-content" class="sr-only" style="position:absolute;left:-9999px">Skip to audit results</a>
 <main id="audit-content" role="main">
 <h1>Accessibility Audit Report</h1>
-<p style="color:#475569;font-size:13px">Document: <strong>${esc(fileName)}</strong><br>Date: ${date}<br>Checked against: WCAG 2.1 Level AA criteria (the accessibility standard referenced by ADA Title II, Section 508, and EN 301 549)<br>Methodology: multi-pass AI self-consistency review + axe-core (Deque) automated verification<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
+<p style="color:#475569;font-size:13px">Document: <strong>${esc(fileName)}</strong><br>Date: ${date}<br>Checked against: WCAG 2.2 Level AA criteria (the accessibility standard referenced by ADA Title II, Section 508, and EN 301 549)<br>Methodology: multi-pass AI self-consistency review + axe-core (Deque) + IBM Equal Access automated verification when available; per-engine coverage and unresolved review findings are disclosed below<br>Tool: AlloFlow Document Accessibility Pipeline</p>`;
 
     // Score
     const score = isBeforeAfter ? (d.after?.score ?? d.afterScore ?? '?') : (d.score ?? '?');
@@ -20975,14 +21420,33 @@ tr { page-break-inside: avoid; }
     // _baselineAxeScore / _aiOnlyScore / _baselineSecondEngineAudit, NOT the fix-result's
     // axeCoreAudit/aiAudit/secondEngineAudit. Fall through to those so the standalone report actually
     // renders the axe-core + AI data its header/footer claim (audit wo72lu4mh #4).
-    const _structScore = isBeforeAfter ? (d.after?.axeCoreAudit?.score ?? d.after?.axeScore) : (d.axeCoreAudit?.score ?? d.axeScore ?? d._baselineAxeScore);
-    const _semScore = isBeforeAfter ? (d.after?.aiAudit?.score ?? d.after?.verificationAudit?.score) : (d.aiAudit?.score ?? d.verificationAudit?.score ?? d._aiOnlyScore);
+    const _axeAuditForReport = isBeforeAfter ? (d.after?.axeCoreAudit || d.after?.axeAudit || null) : (d.axeCoreAudit || d.axeAudit || d._baselineAxeAudit || null);
+    const _aiAuditForReport = isBeforeAfter ? (d.after?.aiAudit || d.after?.verificationAudit || null) : (d.aiAudit || d.verificationAudit || null);
+    const _eaAuditForReport = isBeforeAfter ? (d.after?.secondEngineAudit || null) : (d.secondEngineAudit || d._baselineSecondEngineAudit || null);
+    const _structScore = _axeAuditForReport?.score ?? (isBeforeAfter ? d.after?.axeScore : (d.axeScore ?? d._baselineAxeScore));
+    const _semScore = _aiAuditForReport?.score ?? (isBeforeAfter ? undefined : d._aiOnlyScore);
     // 2nd-engine (IBM Equal Access): when it is the lower deterministic engine it GOVERNS the headline.
-    const _eaScore = isBeforeAfter ? (d.after?.secondEngineAudit?.score) : (d.secondEngineAudit?.score ?? (d._baselineSecondEngineAudit && d._baselineSecondEngineAudit.score));
+    const _eaScore = _eaAuditForReport && _eaAuditForReport.score;
+    const _storedReportCoverage = d.verificationCoverage || d.after?.verificationCoverage || null;
+    const _derivedReportVerification = _alloDeriveVerificationState({
+      ai: _aiAuditForReport || (typeof _semScore === 'number' ? { score: _semScore } : null),
+      aiVerificationIncomplete: !!(d._aiVerificationIncomplete || (d.after && d.after._aiVerificationIncomplete)),
+      axe: _axeAuditForReport || (typeof _structScore === 'number' ? { score: _structScore } : null),
+      equalAccess: _eaAuditForReport,
+      pdfUaSelfCheck: _storedReportCoverage && _storedReportCoverage.pdfUaSelfCheck,
+    });
+    // Before/after callers may provide the live fix result by reference. Do not
+    // spread it: the non-enumerable runtime HTML snapshot is intentionally lost
+    // by cloning and the report must then downgrade rather than overclaim.
+    const _reportBindingSource = d.verificationResult || (d.after && d.after.accessibleHtml ? d.after : d);
+    const _reportVerification = _alloNormalizeStoredVerification(_reportBindingSource, _derivedReportVerification);
+    const _reportCoverage = _reportVerification.verificationCoverage;
+    const _reportState = _reportVerification.verificationState;
+    const _reportRequiresReview = _reportVerification.requiresManualReview;
     // Image-only scan (audit-only report): the engines saw an empty reconstruction — render
     // n/a tiles + explanation instead of by-construction numbers (mirrors the on-screen n/a).
     const _noTextRpt = !isBeforeAfter && d.hasSearchableText === false;
-    html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage, undefined, (typeof _eaScore === 'number' ? _eaScore : undefined), { automatedNA: _noTextRpt, integrityWarning: d.integrityWarning, fidelityNotes: d.fidelityNotes });
+    html += _honestReportBlocks(_structScore, _semScore, d.integrityCoverage, undefined, (typeof _eaScore === 'number' ? _eaScore : undefined), { automatedNA: _noTextRpt, integrityWarning: d.integrityWarning, fidelityNotes: d.fidelityNotes, axeIncomplete: ((_axeAuditForReport || {}).totalIncomplete || 0), verificationCoverage: _reportCoverage, verificationState: _reportState, requiresManualReview: _reportRequiresReview, secondEngineAudit: _eaAuditForReport });
 
     // Reliability metrics
     const audit = isBeforeAfter ? (d.before?.audit || d) : d;
@@ -21047,7 +21511,7 @@ tr { page-break-inside: avoid; }
       if (afterAiAudit) {
         const remainingIssues = afterAiAudit.issues || [];
         html += `<h3 style="color:#4f46e5;font-size:16px;margin-top:1.5rem">🤖 AI Verification — Remaining Issues (${remainingIssues.length})</h3>`;
-        html += `<p style="font-size:11px;color:#6b7280;margin:4px 0 12px">AI re-audit of the remediated HTML for WCAG 2.1 AA compliance</p>`;
+        html += `<p style="font-size:11px;color:#6b7280;margin:4px 0 12px">AI re-audit of the remediated HTML for WCAG 2.2 AA compliance</p>`;
         if (remainingIssues.length > 0) {
           html += `<table style="table-layout:fixed;width:100%"><thead><tr><th style="width:65%">Issue</th><th style="width:20%;text-align:center">WCAG</th><th style="width:15%;text-align:center">Severity</th></tr></thead><tbody>`;
           var escHtml = function(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
@@ -21060,7 +21524,7 @@ tr { page-break-inside: avoid; }
           });
           html += `</tbody></table>`;
         } else {
-          html += `<div role="status" aria-live="polite" aria-atomic="true" aria-label="No AI-detected issues remaining. All WCAG 2.1 AA checks passed in AI verification." style="background:#dcfce7;border:2px solid #16a34a;border-radius:8px;padding:16px;text-align:center;margin:1rem 0"><div style="font-size:1.5rem;font-weight:900;color:#16a34a"><span aria-hidden="true">&#10003; </span>No AI-Detected Issues Remaining</div><div style="font-size:13px;color:#166534;margin-top:4px">All WCAG 2.1 AA checks passed in AI verification</div></div>`;
+          html += `<div role="status" aria-live="polite" aria-atomic="true" aria-label="No AI-detected issues remaining. All WCAG 2.2 AA checks passed in AI verification." style="background:#dcfce7;border:2px solid #16a34a;border-radius:8px;padding:16px;text-align:center;margin:1rem 0"><div style="font-size:1.5rem;font-weight:900;color:#16a34a"><span aria-hidden="true">&#10003; </span>No AI-Detected Issues Remaining</div><div style="font-size:13px;color:#166534;margin-top:4px">All WCAG 2.2 AA checks passed in AI verification</div></div>`;
         }
         // Show verified passes from AI audit
         const afterPasses = afterAiAudit.passes || [];
@@ -21152,8 +21616,8 @@ tr { page-break-inside: avoid; }
     <p style="font-size:11px;color:#64748b;margin-bottom:0.5rem"><strong>Scoring formula:</strong> Start at 100, subtract per confirmed violation: Critical (-15), Serious (-10), Moderate (-5), Minor (-2); each unique violation counted once. Passing checks are listed for transparency but do <strong>not</strong> buy back deductions, so the score stays reconstructable from the issue list above. The headline is the <strong>weakest-layer score</strong>: the LOWER (more conservative) of the AI rubric score and the automated-checker score (axe-core / IBM Equal Access) — a document is only as accessible as its worst dimension, so a high score on one engine cannot mask a low score on the other. Both layer scores are also reported separately.</p>`;
 
     html += `<div class="footer">
-      <p><strong>Methodology:</strong> ${audit.auditorCount || 1}-pass AI self-consistency review with adaptive confidence scoring, a descriptive score-variability summary (SD, SEM) across passes, and axe-core (Deque Systems) automated WCAG 2.1 AA verification. Deterministic fixes applied for color contrast, heading hierarchy, table structure, and landmark regions.</p>
-      <p><strong>Standards:</strong> WCAG 2.1 Level AA | ADA Title II (28 CFR Part 35 Subpart H) | Section 508 | EN 301 549</p>
+      <p><strong>Methodology:</strong> ${audit.auditorCount || 1}-pass AI self-consistency review with adaptive confidence scoring, a descriptive score-variability summary (SD, SEM) across passes, and independent axe-core (Deque Systems) plus IBM Equal Access automated WCAG 2.2 checks when available. Per-engine coverage, unavailable evidence, and unresolved review findings are disclosed separately. Deterministic fixes applied for color contrast, heading hierarchy, table structure, and landmark regions.</p>
+      <p><strong>Standards:</strong> WCAG 2.2 Level AA | ADA Title II (28 CFR Part 35 Subpart H) | Section 508 | EN 301 549</p>
       <p><strong>Limitations:</strong> This automated audit identifies common accessibility barriers but cannot replace manual testing with assistive technology. For comprehensive compliance verification, consider professional accessibility auditing services such as <a href="https://knowbility.org" style="color:#2563eb">Knowbility</a> (AccessWorks usability testing with people with disabilities).</p>
       <p>Generated by AlloFlow Document Accessibility Pipeline | ${date} | Open source (GNU AGPL v3)</p>
     </div></main></body></html>`;
@@ -21183,6 +21647,17 @@ tr { page-break-inside: avoid; }
     const date = opts.generatedDate || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const ar = auditResult || {};
     const fr = fixResult || {};
+    const _derivedAccessibilityVerification = _alloDeriveVerificationState({
+      ai: fr.verificationAudit || fr.aiAudit,
+      aiVerificationIncomplete: !!fr._aiVerificationIncomplete,
+      axe: fr.axeAudit,
+      equalAccess: fr.secondEngineAudit,
+      pdfUaSelfCheck: fr.verificationCoverage && fr.verificationCoverage.pdfUaSelfCheck,
+    });
+    const _accessibilityVerification = _alloNormalizeStoredVerification(fr, _derivedAccessibilityVerification);
+    const _accessibilityVerificationCoverage = _accessibilityVerification.verificationCoverage;
+    const _accessibilityVerificationState = _accessibilityVerification.verificationState;
+    const _accessibilityRequiresReview = _accessibilityVerification.requiresManualReview;
     const checks = (pdfUa1Checks && pdfUa1Checks.checks) || [];
     const checkSum = (pdfUa1Checks && pdfUa1Checks.summary) || { pass: 0, fail: 0, warn: 0, manual: 0, na: 0, conformancePct: 0 };
 
@@ -21414,7 +21889,7 @@ tr { page-break-inside: avoid; }
     <h1>♿ Accessibility Conformance Report</h1>
     <div class="meta"><strong>Document:</strong> ${fileName}</div>
     <div class="meta"><strong>Generated:</strong> ${_esc(date)} · AlloFlow Document Accessibility Pipeline (${_esc((pdfUa1Checks && pdfUa1Checks.validatorVersion) || 'self-check')})</div>
-    <div class="meta"><strong>Specification:</strong> ${_esc((pdfUa1Checks && pdfUa1Checks.spec) || 'PDF/UA-1 (ISO 14289-1) — self-check')} · WCAG 2.1 AA</div>
+    <div class="meta"><strong>Specification:</strong> ${_esc((pdfUa1Checks && pdfUa1Checks.spec) || 'PDF/UA-1 (ISO 14289-1) — self-check')} · WCAG 2.2 AA</div>
   </header>
 
   <div class="summary-card">
@@ -21441,7 +21916,7 @@ tr { page-break-inside: avoid; }
     fr.integrityCoverage,
     opts.postExportValidator && opts.postExportValidator.summary,
     (fr.secondEngineAudit && typeof fr.secondEngineAudit.score === 'number' ? fr.secondEngineAudit.score : undefined),
-    { integrityWarning: fr.integrityWarning, fidelityNotes: fr.fidelityNotes }
+    { integrityWarning: fr.integrityWarning, fidelityNotes: fr.fidelityNotes, axeIncomplete: ((fr.axeAudit || {}).totalIncomplete || 0), verificationCoverage: _accessibilityVerificationCoverage, verificationState: _accessibilityVerificationState, requiresManualReview: _accessibilityRequiresReview, secondEngineAudit: fr.secondEngineAudit }
   )}
 
   ${_veraBlock}
@@ -21557,8 +22032,8 @@ tr { page-break-inside: avoid; }
 
   <div class="footer">
     <p><strong>About this report:</strong> AlloFlow's PDF/UA-1 self-check inspects the tagged PDF structure (StructTreeRoot, MarkInfo, ParentTree, MCID linkage, Lang, Title, ViewerPreferences) and reports per-rule pass/fail in the format used by Adobe Accessibility Checker and PAC 3. Self-check results are advisory — for high-stakes compliance filings (federal contracts, ADA Title II audits), pair this report with an independent run through <a href="https://pdfua.foundation/en/pdf-accessibility-checker-pac">PAC 3</a> or Adobe Acrobat Pro's Accessibility Checker.</p>
-    <p><strong>Standards referenced:</strong> PDF/UA-1 (ISO 14289-1) · WCAG 2.1 Level AA · ADA Title II (28 CFR Part 35 Subpart H) · Section 508 · EN 301 549</p>
-    <p><strong>Methodology:</strong> ${((auditResult && auditResult._slicedAudit) || (fixResult && fixResult._beforeWasSliced)) ? `Page-sliced AI review — the initial audit split the document into ${_esc(String((auditResult && auditResult._sliceCount) || (fixResult && fixResult._beforeSliceCount) || 'multiple'))} page-ranges (one pass each) because a single whole-document pass exceeded the model; cross-page checks (reading order, heading continuity) are approximate` : 'Multi-pass AI self-consistency review (up to 10 stakeholder-perspective passes of a single model)'}, axe-core (Deque Systems) automated WCAG 2.1 AA verification, deterministic content-stream MCID wrapping with role inference from font scale + source tag tree, and structural validation against PDF/UA-1 specification requirements.</p>
+    <p><strong>Standards referenced:</strong> PDF/UA-1 (ISO 14289-1) · WCAG 2.2 Level AA · ADA Title II (28 CFR Part 35 Subpart H) · Section 508 · EN 301 549</p>
+    <p><strong>Methodology:</strong> ${((auditResult && auditResult._slicedAudit) || (fixResult && fixResult._beforeWasSliced)) ? `Page-sliced AI review — the initial audit split the document into ${_esc(String((auditResult && auditResult._sliceCount) || (fixResult && fixResult._beforeSliceCount) || 'multiple'))} page-ranges (one pass each) because a single whole-document pass exceeded the model; cross-page checks (reading order, heading continuity) are approximate` : 'Multi-pass AI self-consistency review (up to 10 stakeholder-perspective passes of a single model)'}, independent axe-core (Deque Systems) plus IBM Equal Access automated WCAG 2.2 checks when available, explicit per-engine verification coverage and manual-review status, deterministic content-stream MCID wrapping with role inference from font scale + source tag tree, and structural validation against PDF/UA-1 specification requirements.</p>
     <p><strong>Limitations:</strong> Automated checks cannot verify reading order intent, alt-text quality, or contextual appropriateness. For comprehensive compliance verification consider professional accessibility auditing services such as <a href="https://knowbility.org">Knowbility</a> (AccessWorks usability testing with people with disabilities).</p>
     <p>Generated by AlloFlow · Open source (GNU AGPL v3) · ${_esc(date)}</p>
   </div>
@@ -25694,7 +26169,7 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
       (axeResult.serious || []).forEach(function(v) { violationSummary.push('SERIOUS: ' + v.description + ' (' + v.id + ') — ' + (v.nodes || 1) + ' elements'); });
       (axeResult.moderate || []).forEach(function(v) { violationSummary.push('MODERATE: ' + v.description + ' (' + v.id + ') — ' + (v.nodes || 1) + ' elements'); });
 
-      var analyzePrompt = 'You are a WCAG 2.1 AA remediation agent with surgical micro-tools.\n\n' +
+      var analyzePrompt = 'You are a WCAG 2.2 AA remediation agent with surgical micro-tools.\n\n' +
         'AVAILABLE TOOLS:\n' + toolDescriptions + '\n\n' +
         'CURRENT SCORE: ' + currentScore + '/100\nTARGET: ' + targetScore + '/100\n\n' +
         'AXE-CORE VIOLATIONS (' + axeResult.totalViolations + ' total):\n' +
@@ -28964,10 +29439,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   ${categories.map((cat, catIdx) => {
                       const catColor = catColors[catIdx % catColors.length];
                       return `
-                          <div role="listitem" class="alloflow-cs-dropzone" data-category-id="${cat.id}" data-category-color="${catColor}" style="flex: 1; min-width: 160px; border: 2px solid ${catColor}; border-radius: 12px; background: ${catColor}11; padding: 14px 12px; text-align: center; break-inside: avoid; page-break-inside: avoid;">
+                          <div role="listitem" class="alloflow-cs-dropzone" data-category-id="${_escTxt(cat.id)}" data-category-label="${_escTxt(cat.label)}" data-category-color="${catColor}" style="flex: 1; min-width: 160px; border: 2px solid ${catColor}; border-radius: 12px; background: ${catColor}11; padding: 14px 12px; text-align: center; break-inside: avoid; page-break-inside: avoid;">
                               <div style="font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.05em; color: ${catColor}; font-weight: bold; margin-bottom: 4px;">Category</div>
-                              <div style="font-size: 1.05em; font-weight: bold; color: #1e293b;">${cat.label}</div>
-                              <div class="alloflow-cs-dropzone-target" data-dropzone-for="${cat.id}" style="margin-top: 10px; min-height: 36px; border: 2px dashed transparent; border-radius: 6px; transition: border-color 0.15s; display: none;"></div>
+                              <div style="font-size: 1.05em; font-weight: bold; color: #1e293b;">${_escTxt(cat.label)}</div>
+                              ${(cfg.conceptSortInteractive !== false && !isWorksheet) ? `<button type="button" class="alloflow-cs-place-btn" data-place-for="${_escTxt(cat.id)}" disabled style="margin-top:8px;padding:7px 10px;background:#4f46e5;color:#fff;border:0;border-radius:6px;font-weight:700;cursor:pointer;">Place selected item in ${_escTxt(cat.label)}</button>` : ''}
+                              <div class="alloflow-cs-dropzone-target" data-dropzone-for="${_escTxt(cat.id)}" style="margin-top: 10px; min-height: 36px; border: 2px dashed transparent; border-radius: 6px; transition: border-color 0.15s; display: none;"></div>
                           </div>
                       `;
                   }).join('')}
@@ -28976,7 +29452,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
 
           const instructionsHtml = `
               <div style="background: #fefce8; border-left: 4px solid #eab308; padding: 12px 16px; border-radius: 4px; margin-bottom: 20px; font-size: 0.9em; color: #713f12; break-inside: avoid; page-break-inside: avoid;">
-                  <strong>How to use:</strong> Cut along the dashed lines to separate the strips. Mix them up and have students sort each strip into the matching category above.${hasAnyImage ? ' Strips with images give visual learners a non-text entry point.' : ''}
+                  ${(cfg.conceptSortInteractive !== false && !isWorksheet) ? '<strong>How to use:</strong> Select an item, then choose the named Place button in a category. Keyboard users can press Enter or Space on both controls.' : '<strong>How to use:</strong> Cut along the dashed lines to separate the strips. Mix them up and sort each strip into the matching category above.'}${hasAnyImage ? ' Strips with images give visual learners a non-text entry point.' : ''}
               </div>
           `;
 
@@ -32615,11 +33091,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         '.alloflow-cs-strip.alloflow-cs-selected { border-color: #4f46e5 !important; background: #eef2ff !important; box-shadow: 0 0 0 3px #c7d2fe; }' +
                         '.alloflow-cs-dropzone { cursor: pointer; transition: background 0.15s; }' +
                         '.alloflow-cs-dropzone.alloflow-cs-droptarget { background: rgba(79,70,229,0.08) !important; }' +
+                        '.alloflow-cs-place-btn:disabled { opacity:0.55; cursor:not-allowed; }' +
+                        '.alloflow-cs-place-btn:focus-visible { outline:3px solid #1e3a8a; outline-offset:3px; }' +
                         '.alloflow-cs-dropzone-target.alloflow-cs-has-strips { display: block !important; border-color: rgba(148,163,184,0.3) !important; }' +
                         '.alloflow-cs-strip.alloflow-cs-correct { border-color: #16a34a !important; background: #f0fdf4 !important; }' +
                         '.alloflow-cs-strip.alloflow-cs-wrong { border-color: #dc2626 !important; background: #fef2f2 !important; }' +
                         '@media print {' +
-                        '  .alloflow-cs-controls { display: none !important; }' +
+                        '  .alloflow-cs-controls, .alloflow-cs-place-btn { display: none !important; }' +
                         '  .alloflow-cs-dropzone-target { display: none !important; }' +
                         '}';
                     document.head.appendChild(csStyle);
@@ -32636,6 +33114,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             if (selectedStrip) { selectedStrip.classList.remove('alloflow-cs-selected'); selectedStrip.setAttribute('aria-pressed', 'false'); }
                             selectedStrip = null;
                             categoriesContainer.querySelectorAll('.alloflow-cs-dropzone').forEach(function(z) { z.classList.remove('alloflow-cs-droptarget'); });
+                            categoriesContainer.querySelectorAll('.alloflow-cs-place-btn').forEach(function(b) { b.disabled = true; });
                         };
                         var clearMarks = function() {
                             stripsContainer.querySelectorAll('.alloflow-cs-strip').forEach(function(s) { s.classList.remove('alloflow-cs-correct', 'alloflow-cs-wrong'); });
@@ -32660,6 +33139,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                 s.classList.add('alloflow-cs-selected');
                                 s.setAttribute('aria-pressed', 'true');
                                 categoriesContainer.querySelectorAll('.alloflow-cs-dropzone').forEach(function(z) { z.classList.add('alloflow-cs-droptarget'); });
+                                categoriesContainer.querySelectorAll('.alloflow-cs-place-btn').forEach(function(b) { b.disabled = false; });
+                                resultsEl.textContent = 'Selected ' + (s.textContent || 'item').trim() + '. Choose a category.';
                             };
                             s.addEventListener('click', pick);
                             s.addEventListener('keydown', function(e) {
@@ -32670,13 +33151,21 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         // Wire each dropzone
                         categoriesContainer.querySelectorAll('.alloflow-cs-dropzone').forEach(function(z) {
                             var target = z.querySelector('.alloflow-cs-dropzone-target');
+                            var placeBtn = z.querySelector('.alloflow-cs-place-btn');
                             if (!target) return;
-                            z.addEventListener('click', function(e) {
-                                if (e.target.closest('.alloflow-cs-strip')) return;
+                            var placeSelected = function() {
                                 if (!selectedStrip) return;
+                                var itemLabel = (selectedStrip.textContent || 'item').trim();
+                                var categoryLabel = z.getAttribute('data-category-label') || 'category';
                                 target.appendChild(selectedStrip);
                                 target.classList.add('alloflow-cs-has-strips');
                                 clearSelection();
+                                resultsEl.textContent = 'Placed ' + itemLabel + ' in ' + categoryLabel + '.';
+                            };
+                            if (placeBtn) placeBtn.addEventListener('click', function(e) { e.stopPropagation(); placeSelected(); });
+                            z.addEventListener('click', function(e) {
+                                if (e.target.closest('.alloflow-cs-strip') || e.target.closest('.alloflow-cs-place-btn')) return;
+                                placeSelected();
                             });
                         });
                         checkBtn.addEventListener('click', function() {
@@ -32919,6 +33408,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   var _wrap = function(fn) { return function() { _bindState(); return fn.apply(this, arguments); }; };
   var _wrapAsync = function(fn) { return async function() { _bindState(); return fn.apply(this, arguments); }; };
   return {
+    deriveVerificationState: _alloDeriveVerificationState,
+    createVerificationHtmlBinding: _alloCreateVerificationHtmlBinding,
+    verifyVerificationHtmlBinding: _alloVerifyVerificationHtmlBinding,
+    isLiveVerificationHtmlBound: _alloIsLiveVerificationHtmlBound,
+    applyVerificationHtmlBinding: _alloApplyVerificationHtmlBinding,
+    enforceVerificationHtmlBinding: _alloEnforceVerificationHtmlBinding,
+    rehydrateVerificationHtmlBinding: _alloRehydrateVerificationHtmlBinding,
     getPipelineStats: _getPipelineStats,
     // Storm visibility + wait-not-stop (2026-07-05, maintainer): host follow-up loops (auto-continue)
     // gate each round on these instead of firing into an active Canvas rate-limit storm — the run
@@ -33048,6 +33544,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
+window.AlloModules.createDocPipeline.deriveVerificationState = _alloDeriveVerificationState;
+window.AlloModules.createDocPipeline.createVerificationHtmlBinding = _alloCreateVerificationHtmlBinding;
+window.AlloModules.createDocPipeline.verifyVerificationHtmlBinding = _alloVerifyVerificationHtmlBinding;
+window.AlloModules.createDocPipeline.isLiveVerificationHtmlBound = _alloIsLiveVerificationHtmlBound;
+window.AlloModules.createDocPipeline.applyVerificationHtmlBinding = _alloApplyVerificationHtmlBinding;
+window.AlloModules.createDocPipeline.enforceVerificationHtmlBinding = _alloEnforceVerificationHtmlBinding;
+window.AlloModules.createDocPipeline.rehydrateVerificationHtmlBinding = _alloRehydrateVerificationHtmlBinding;
 window.AlloModules.createDocPipeline.interactiveObjectProfileFor = _alloInteractiveObjectProfileFor;
 window.AlloModules.createDocPipeline.interactiveObjectManifestItem = _alloInteractiveObjectManifestItem;
 window.AlloModules.createDocPipeline.interactiveObjectProfileSummary = _alloInteractiveObjectProfileSummary;

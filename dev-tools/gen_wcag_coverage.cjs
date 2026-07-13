@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // dev-tools/gen_wcag_coverage.cjs
 //
-// Generates docs/wcag_sc_coverage.md — a reviewer-facing WCAG 2.1 coverage
+// Generates docs/wcag_sc_coverage.md — a reviewer-facing WCAG 2.2 coverage
 // table for AlloFlow's document-remediation pipeline. Answers the question an
 // institutional reviewer (UMaine/Garry, a district 508 office, PAC) actually
 // asks: "which WCAG success criteria does this tool repair automatically, which
@@ -54,7 +54,7 @@ function parseRegistry() {
   return tools.filter((t) => t.wcag);
 }
 
-// ── 2. WCAG 2.1 Level A + AA master list, with conservative document-applicability ──
+// ── 2. WCAG 2.2 Level A + AA master list, with conservative document-applicability ──
 // applies: 'doc'  = applies to a static remediated document
 //          'cond' = conditional (only when the doc embeds the relevant media/forms)
 //          'na'   = interactive-web criterion, not meaningful for a static document
@@ -73,7 +73,7 @@ const CRITERIA = [
   { id: '1.3.1', name: 'Info and Relationships', level: A, applies: 'doc' },
   { id: '1.3.2', name: 'Meaningful Sequence', level: A, applies: 'doc', mech: 'reading order is set by the PDF struct-tree build + linear HTML' },
   { id: '1.3.3', name: 'Sensory Characteristics', level: A, applies: 'doc', manual: true },
-  { id: '1.3.4', name: 'Orientation', level: AA, applies: 'na', note: 'viewport/display criterion' },
+  { id: '1.3.4', name: 'Orientation', level: AA, applies: 'doc', mech: 'reflowable HTML does not restrict display orientation' },
   { id: '1.3.5', name: 'Identify Input Purpose', level: AA, applies: 'cond', note: 'forms only' },
   // 1.4
   { id: '1.4.1', name: 'Use of Color', level: A, applies: 'doc', manual: true },
@@ -84,46 +84,52 @@ const CRITERIA = [
   { id: '1.4.10', name: 'Reflow', level: AA, applies: 'doc', mech: 'semantic HTML reflows; no fixed two-dimensional layout is emitted' },
   { id: '1.4.11', name: 'Non-text Contrast', level: AA, applies: 'doc', manual: true },
   { id: '1.4.12', name: 'Text Spacing', level: AA, applies: 'doc' },
-  { id: '1.4.13', name: 'Content on Hover or Focus', level: AA, applies: 'na', note: 'interactive hover/focus behavior' },
+  { id: '1.4.13', name: 'Content on Hover or Focus', level: AA, applies: 'cond', note: 'interactive HTML controls only; requires runtime and manual review' },
   // 2.1 keyboard
-  { id: '2.1.1', name: 'Keyboard', level: A, applies: 'na', note: 'interactive operation' },
-  { id: '2.1.2', name: 'No Keyboard Trap', level: A, applies: 'na', note: 'interactive operation' },
-  { id: '2.1.4', name: 'Character Key Shortcuts', level: A, applies: 'na', note: 'interactive operation' },
+  { id: '2.1.1', name: 'Keyboard', level: A, applies: 'cond', note: 'interactive HTML controls only; verify every function by keyboard' },
+  { id: '2.1.2', name: 'No Keyboard Trap', level: A, applies: 'cond', note: 'interactive HTML controls only; requires runtime keyboard testing' },
+  { id: '2.1.4', name: 'Character Key Shortcuts', level: A, applies: 'cond', note: 'interactive HTML controls with shortcuts only' },
   // 2.2 timing
   { id: '2.2.1', name: 'Timing Adjustable', level: A, applies: 'na', note: 'time limits — not applicable to a static document' },
   { id: '2.2.2', name: 'Pause, Stop, Hide', level: A, applies: 'na', note: 'moving content — not applicable to a static document' },
   // 2.3 seizures
-  { id: '2.3.1', name: 'Three Flashes or Below Threshold', level: A, applies: 'na', note: 'flashing content — not applicable to a static document' },
+  { id: '2.3.1', name: 'Three Flashes or Below Threshold', level: A, applies: 'cond', note: 'animated or embedded media only; requires manual review' },
   // 2.4 navigation
   { id: '2.4.1', name: 'Bypass Blocks', level: A, applies: 'doc' },
   { id: '2.4.2', name: 'Page Titled', level: A, applies: 'doc' },
-  { id: '2.4.3', name: 'Focus Order', level: A, applies: 'na', note: 'interactive focus' },
+  { id: '2.4.3', name: 'Focus Order', level: A, applies: 'cond', note: 'interactive HTML controls only; requires runtime keyboard testing' },
   { id: '2.4.4', name: 'Link Purpose (In Context)', level: A, applies: 'doc' },
   { id: '2.4.5', name: 'Multiple Ways', level: AA, applies: 'na', note: 'site-level navigation' },
   { id: '2.4.6', name: 'Headings and Labels', level: AA, applies: 'doc', mech: 'descriptive headings via fix_heading / fix_remove_empty_heading + AI heading review' },
-  { id: '2.4.7', name: 'Focus Visible', level: AA, applies: 'na', note: 'interactive focus' },
+  { id: '2.4.7', name: 'Focus Visible', level: AA, applies: 'cond', note: 'interactive HTML controls; sanitizer restores a visible baseline, runtime review required' },
+  { id: '2.4.11', name: 'Focus Not Obscured (Minimum)', level: AA, applies: 'cond', note: 'interactive HTML controls only; WCAG 2.2 runtime/manual review' },
   // 2.5 input modalities
-  { id: '2.5.1', name: 'Pointer Gestures', level: A, applies: 'na', note: 'interactive operation' },
-  { id: '2.5.2', name: 'Pointer Cancellation', level: A, applies: 'na', note: 'interactive operation' },
+  { id: '2.5.1', name: 'Pointer Gestures', level: A, applies: 'cond', note: 'interactive HTML controls only' },
+  { id: '2.5.2', name: 'Pointer Cancellation', level: A, applies: 'cond', note: 'interactive HTML controls only' },
   { id: '2.5.3', name: 'Label in Name', level: A, applies: 'cond', note: 'forms/controls only' },
-  { id: '2.5.4', name: 'Motion Actuation', level: A, applies: 'na', note: 'interactive operation' },
+  { id: '2.5.4', name: 'Motion Actuation', level: A, applies: 'cond', note: 'interactive HTML controls only' },
+  { id: '2.5.7', name: 'Dragging Movements', level: AA, applies: 'cond', note: 'drag-enabled HTML only; a non-drag alternative must be verified' },
+  { id: '2.5.8', name: 'Target Size (Minimum)', level: AA, applies: 'cond', note: 'interactive HTML controls only; axe WCAG 2.2 plus manual exception review' },
   // 3.1 readable
   { id: '3.1.1', name: 'Language of Page', level: A, applies: 'doc' },
   { id: '3.1.2', name: 'Language of Parts', level: AA, applies: 'doc' },
   // 3.2 predictable
-  { id: '3.2.1', name: 'On Focus', level: A, applies: 'na', note: 'interactive behavior' },
-  { id: '3.2.2', name: 'On Input', level: A, applies: 'na', note: 'interactive behavior' },
-  { id: '3.2.3', name: 'Consistent Navigation', level: AA, applies: 'na', note: 'site-level' },
-  { id: '3.2.4', name: 'Consistent Identification', level: AA, applies: 'na', note: 'site-level' },
+  { id: '3.2.1', name: 'On Focus', level: A, applies: 'cond', note: 'interactive HTML controls only' },
+  { id: '3.2.2', name: 'On Input', level: A, applies: 'cond', note: 'interactive HTML controls only' },
+  { id: '3.2.3', name: 'Consistent Navigation', level: AA, applies: 'cond', note: 'multi-page or repeated-navigation HTML only' },
+  { id: '3.2.4', name: 'Consistent Identification', level: AA, applies: 'cond', note: 'repeated interactive components only' },
+  { id: '3.2.6', name: 'Consistent Help', level: A, applies: 'cond', note: 'HTML exports containing repeated help mechanisms only' },
   // 3.3 input assistance
   { id: '3.3.1', name: 'Error Identification', level: A, applies: 'cond', note: 'forms only' },
   { id: '3.3.2', name: 'Labels or Instructions', level: A, applies: 'doc' },
   { id: '3.3.3', name: 'Error Suggestion', level: AA, applies: 'cond', note: 'forms only' },
-  { id: '3.3.4', name: 'Error Prevention (Legal, Financial, Data)', level: AA, applies: 'na', note: 'transactional submission' },
+  { id: '3.3.4', name: 'Error Prevention (Legal, Financial, Data)', level: AA, applies: 'cond', note: 'transactional forms only' },
+  { id: '3.3.7', name: 'Redundant Entry', level: A, applies: 'cond', note: 'multi-step forms only; WCAG 2.2 runtime/manual review' },
+  { id: '3.3.8', name: 'Accessible Authentication (Minimum)', level: AA, applies: 'cond', note: 'authentication flows only; normally outside a remediated document' },
   // 4.1 compatible
   { id: '4.1.1', name: 'Parsing', level: A, applies: 'doc', note: 'obsolete in WCAG 2.2; AlloFlow still de-dupes ids' },
   { id: '4.1.2', name: 'Name, Role, Value', level: A, applies: 'doc' },
-  { id: '4.1.3', name: 'Status Messages', level: AA, applies: 'na', note: 'dynamic status — not applicable to a static document' },
+  { id: '4.1.3', name: 'Status Messages', level: AA, applies: 'cond', note: 'dynamic HTML controls only' },
 ];
 
 // Bonus AAA criterion AlloFlow handles (surfaced so the tool isn't undersold).
@@ -178,22 +184,22 @@ function md({ rows, stats }) {
   const sections = Object.entries(principles).map(([n, title]) =>
     `### Principle ${n}: ${title}\n\n` + tbl(rows.filter((r) => r.id.startsWith(n + '.'))));
 
-  return `# AlloFlow — WCAG 2.1 Success-Criterion Coverage
+  return `# AlloFlow — WCAG 2.2 Success-Criterion Coverage
 
 ${STAMP}
 
-This table maps every automated repair AlloFlow's document-remediation pipeline performs to a WCAG 2.1 success criterion. The **Automated** column is generated directly from the live \`SURGICAL_TOOL_REGISTRY\` in \`doc_pipeline_source.jsx\` (each repair tool carries its own \`wcag:\` tag), so it cannot drift ahead of the code — re-run \`node dev-tools/gen_wcag_coverage.cjs\` after adding a tool.
+This table maps every automated repair AlloFlow's document-remediation pipeline performs to a WCAG 2.2 success criterion. The **Automated** column is generated directly from the live \`SURGICAL_TOOL_REGISTRY\` in \`doc_pipeline_source.jsx\` (each repair tool carries its own \`wcag:\` tag), so it cannot drift ahead of the code — re-run \`node dev-tools/gen_wcag_coverage.cjs\` after adding a tool.
 
 ## Honest summary
 
-Of the **${stats.docApplicable}** WCAG 2.1 A/AA criteria that meaningfully apply to a *static remediated document*:
+Of the **${stats.docApplicable}** WCAG 2.2 A/AA criteria that meaningfully apply to a *static remediated document*:
 
 - **${stats.automated}** have a dedicated automated repair tool (✅ Automated) — ${stats.tools} tools across ${stats.scWithTool} criteria.
 - **${stats.structural}** are satisfied structurally by how the output is built (🏗️ Structural — e.g. reading order from the PDF struct-tree, reflowable semantic HTML).
 - **${stats.manual}** still need human review (✍️ Manual — e.g. "don't rely on color/shape alone"); AlloFlow flags but cannot reliably auto-repair these.
-- **${stats.conditional}** apply only when the document contains the relevant content (◐ forms/media).
+- **${stats.conditional}** apply only when the document contains the relevant content (◐ forms, media, or interactive HTML).
 
-The remaining **${stats.na}** A/AA criteria are interactive-web criteria (keyboard operation, timing, focus, status messages, …) that **do not apply to a static document** — they are listed below as N/A rather than counted as gaps, because counting them would understate coverage dishonestly.
+The remaining **${stats.na}** A/AA criteria do not apply to a static document. Interactive criteria are marked **Conditional**, because HTML exports can contain forms, media, annotation tools, or other controls — they are listed below as N/A rather than counted as gaps, because counting them would understate coverage dishonestly.
 
 > **This is a self-reported capability map, not a conformance claim.** Per-document PDF/UA-1 conformance is checked independently by veraPDF (\`dev-tools/verapdf_diff.cjs\`, gated in \`verify_all\`); WCAG verification is the axe-core (Deque) deterministic axis plus a multi-pass AI self-consistency review. A criterion marked "Automated" means AlloFlow *attempts a repair* for it, not that every document passes it. Independent validation (veraPDF / PAC 2024 / a human audit) is always recommended for compliance-sensitive use.
 
@@ -201,7 +207,7 @@ ${sections.join('\n\n')}
 
 ---
 
-**Legend** — ✅ Automated: a \`fix_*\` surgical tool repairs it · 🏗️ Structural: satisfied by how the accessible output is constructed · ✍️ Manual: applies but needs human judgment · ◐ Conditional: applies only with forms/media present · — N/A: interactive-web criterion, not meaningful for a static document.
+**Legend** — ✅ Automated: a \`fix_*\` surgical tool repairs it · 🏗️ Structural: satisfied by how the accessible output is constructed · ✍️ Manual: applies but needs human judgment · ◐ Conditional: applies only when relevant forms, media, or interactive HTML are present · — N/A: interactive-web criterion, not meaningful for a static document.
 `;
 }
 

@@ -20082,7 +20082,19 @@
     "zen_off_hint": "ಇಂಟರ್ಫೇಸ್ ಅನ್ನು ಮರಳಿ ತನ್ನಿ",
     "zen_on": "ಝೆನ್ ಮೋಡ್ ಪ್ರವೇಶಿಸಿ",
     "zen_on_done": "ಝೆನ್ ಮೋಡ್ ಆನ್ — ಮರಳಲು Ctrl+K ಒತ್ತಿ ಮತ್ತು “exit zen” ಚಲಾಯಿಸಿ.",
-    "zen_on_hint": "ವಿಷಯವನ್ನು ಹೊರತುಪಡಿಸಿ ಎಲ್ಲವನ್ನೂ ಮರೆಮಾಡಿ"
+    "zen_on_hint": "ವಿಷಯವನ್ನು ಹೊರತುಪಡಿಸಿ ಎಲ್ಲವನ್ನೂ ಮರೆಮಾಡಿ",
+    "find_reading": "Find the right book",
+    "find_reading_done": "I found a good match and opened it",
+    "find_reading_hint": "Ask by topic, grade, language, source, or type",
+    "find_reading_none": "I opened the Reading Library, but I could not find a strong match yet",
+    "generate_analysis_ready": "Source analysis ready.",
+    "generate_glossary_ready": "Glossary ready.",
+    "generate_quiz_ready": "Quiz ready — it’s in the output panel.",
+    "generate_sentence_frames_ready": "Sentence frames ready.",
+    "generate_simplified_ready": "Simpler version ready.",
+    "open_reading_library": "Open the Reading Library",
+    "open_reading_library_done": "Reading Library opened.",
+    "open_reading_library_hint": "Browse open picture books in 10 languages"
   },
   "palette": {
     "aria": "AlloFlow ಆದೇಶ ಪ್ಯಾಲೆಟ್",

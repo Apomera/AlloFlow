@@ -43,8 +43,10 @@ describe('anti-drift: warm-at-gesture + validate-at-end is wired', () => {
   });
   it('the end of the handler generates the tagged PDF + validates on the warm window', () => {
     expect(viewSrc).toMatch(/await createTaggedPdf\(_bytesV, _fr,/);
-    expect(viewSrc).toMatch(/await validateOnWarmWindow\(_veraWarm, _tbV\)/);
-    expect(viewSrc).toMatch(/_lastTaggedBytesRef\.current = _tbV/);
+    expect(viewSrc).toMatch(/const _autoArtifact = _selectTaggedArtifact\(_tbV\)/);
+    expect(viewSrc).toMatch(/_veraRun = _beginVeraPdfValidation\(_autoArtifact, _autoSourceHtml\)/);
+    expect(viewSrc).toMatch(/_viaIframe \? await validateOnIframe\(_veraIframe, _veraRun\.bytes\) : await validateOnWarmWindow\(_veraWarm, _veraRun\.bytes\)/);
+    expect(viewSrc).toMatch(/if \(_veraPdfValidationIsCurrent\(_veraRun\)\) \{[\s\S]{0,220}_viewAttachTaggedArtifactProof\(_boundAutoValidation, _veraRun\)/);
   });
   it('default-on preference, persisted, with an opt-out toggle', () => {
     expect(viewSrc).toMatch(/const \[pdfAutoVeraPdf, setPdfAutoVeraPdf\] = useState/);

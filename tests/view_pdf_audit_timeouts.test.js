@@ -41,14 +41,28 @@ describe('anti-drift: Compare PDF-preview no longer leaks the pdf.js doc + is bo
 });
 
 describe('anti-drift: every remote fetch in view_pdf_audit is timeout-bounded', () => {
-  it('no bare await fetch( remains', () => {
-    expect(audit).not.toMatch(/await fetch\(/);          // every fetch goes through _withTimeout
-    expect(audit).not.toMatch(/\(await fetch\(/);
+  it('routes the sole direct fetch through an AbortController that spans headers and body', () => {
+    expect(audit.match(/await fetch\(/g) || []).toHaveLength(1);
+    expect(audit).toContain("response = await fetch(url, { ...(options || {}), signal: controller.signal })");
+    expect(audit).toContain("const timer = setTimeout(() => { timedOut = true; try { controller.abort(); } catch (_) {} }, timeoutMs);");
+    expect(audit).toContain("timedOut ? (label + ' timed out.')");
   });
-  it('the TTS / proxy / image fetches are wrapped', () => {
-    const wrapped = audit.match(/_withTimeout\(fetch\(/g) || [];
-    expect(wrapped.length).toBeGreaterThanOrEqual(5); // TTS ×3 + proxy + image
-    expect(audit).toMatch(/_withTimeout\(fetch\(proxyUrl\), 20000, 'website fetch \(proxy\)'\)/);
-    expect(audit).toMatch(/_withTimeout\(fetch\(img\.src\), 20000, 'image fetch'\)/);
+  it('streams website bodies with a byte counter and aborts above the 5 MB limit', () => {
+    expect(audit).toContain('const reader = response.body.getReader();');
+    expect(audit).toContain('const part = await reader.read();');
+    expect(audit).toContain('total += part.value.byteLength;');
+    expect(audit).toContain('if (total > limit) {');
+    expect(audit).toContain('try { await reader.cancel(); } catch (_) {}');
+    const proxyCall = audit.indexOf('_fetchWebsiteSourceOnce(', audit.indexOf('const proxyUrl ='));
+    expect(proxyCall).toBeGreaterThan(-1);
+    const proxySlice = audit.slice(proxyCall, proxyCall + 500);
+    expect(proxySlice).toContain('proxyUrl');
+    expect(proxySlice).toContain('20000');
+    expect(proxySlice).toContain('maxWebsiteBytes');
+  });
+  it('keeps the TTS and image fetches promise-timeout wrapped', () => {
+    const wrapped = audit.split('_withTimeout(fetch(').slice(1);
+    expect(wrapped.length).toBeGreaterThanOrEqual(4); // TTS ×3 + image
+    expect(audit).toContain("_withTimeout(fetch(img.src), 20000, 'image fetch')");
   });
 });

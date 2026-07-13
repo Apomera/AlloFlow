@@ -19867,7 +19867,19 @@
     "set_ui_language": "更改界面语言",
     "set_ui_language_done": "已为你指向页眉中的语言选择器——请在那里选择你的语言。",
     "set_ui_language_hint": "跳转到页眉中的语言选择器",
-    "set_ui_language_miss": "界面语言选择器位于顶部菜单栏中。"
+    "set_ui_language_miss": "界面语言选择器位于顶部菜单栏中。",
+    "find_reading": "Find the right book",
+    "find_reading_done": "I found a good match and opened it",
+    "find_reading_hint": "Ask by topic, grade, language, source, or type",
+    "find_reading_none": "I opened the Reading Library, but I could not find a strong match yet",
+    "generate_analysis_ready": "Source analysis ready.",
+    "generate_glossary_ready": "Glossary ready.",
+    "generate_quiz_ready": "Quiz ready — it’s in the output panel.",
+    "generate_sentence_frames_ready": "Sentence frames ready.",
+    "generate_simplified_ready": "Simpler version ready.",
+    "open_reading_library": "Open the Reading Library",
+    "open_reading_library_done": "Reading Library opened.",
+    "open_reading_library_hint": "Browse open picture books in 10 languages"
   },
   "palette": {
     "aria": "AlloFlow 命令面板",

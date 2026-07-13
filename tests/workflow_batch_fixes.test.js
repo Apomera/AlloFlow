@@ -104,7 +104,7 @@ describe('anti-drift: the host auto-continue loop scores by min + clears the deg
   it('a completed FULL-COVERAGE re-verify clears _aiVerificationIncomplete on the primary path', () => {
     // Tightened 2026-07-10 (ChatGPT review, finding 6): a PARTIAL re-audit can carry a numeric
     // score — clearing on "numeric" alone erased the incomplete disclosure from 2-of-3 coverage.
-    expect(host).toMatch(/_aiVerificationIncomplete: \(typeof reVerify\.score === 'number' && !reVerify\._partialAudit && !reVerify\._scoreDegraded && !reVerify\.synthesized\) \? false : cur\._aiVerificationIncomplete/);
+    expect(host).toContain("const _aiVerificationIncomplete = _verificationCoverage.ai !== 'complete';");
   });
 });
 
@@ -134,6 +134,8 @@ describe('anti-drift: the view ships the veraPDF popup/chip fixes', () => {
   });
   it('the dashboard chip is busy-aware (no stale verdict vs a validating headline)', () => {
     expect(view).toMatch(/\{veraPdfBusy && \(/);
-    expect(view).toMatch(/\{!veraPdfBusy && lastTaggedValidation && \(\(\) =>/);
+    expect(view).toContain('const _currentTaggedValidation = (_viewValidationMatchesHtml(');
+    expect(view).toContain('&& _viewTaggedArtifactProofMatches(lastTaggedValidation, _renderTaggedArtifactTicket)');
+    expect(view).toMatch(/\{!veraPdfBusy && _currentTaggedValidation && \(\(\) =>/);
   });
 });

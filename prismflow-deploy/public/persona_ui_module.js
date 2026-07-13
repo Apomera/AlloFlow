@@ -139,7 +139,7 @@ const GoldenThreadPanel = ({
         concept: c
       }) || 'Remove concept ' + c,
       className: "ml-1 text-amber-600 hover:text-red-500 font-bold leading-none"
-    }, "×"));
+    }, "\xD7"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -171,7 +171,7 @@ const GoldenThreadPanel = ({
         term: term
       }) || 'Remove term ' + term,
       className: "ml-1 text-indigo-600 hover:text-red-500 font-bold leading-none"
-    }, "×"));
+    }, "\xD7"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {

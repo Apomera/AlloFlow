@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 
 const studioHtml = readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf8');
 
-test('official tutorial records, restores, and retries failed narration', async ({ page, context }) => {
+test('official tutorial preflights, rehearses, records, quality-checks, and recovers narration', async ({ page, context }) => {
   await context.addInitScript(() => {
     const makeStream = () => {
       const canvas = document.createElement('canvas');
@@ -59,7 +59,12 @@ test('official tutorial records, restores, and retries failed narration', async 
             addEventListener('message', event => {
               const request = event.data || {};
               window.bridgeLog.push(request.type);
-              if (request.type === 'allostudio-official-tutorial-request') {
+              if (request.type === 'allostudio-demoplan-request') {
+                reply(event.source, request, 'allostudio-demoplan-response', { steps: [
+                  { commandId: 'first-step', label: 'First custom step', why: 'Start here' },
+                  { commandId: 'second-step', label: 'Second custom step', why: 'Then continue' }
+                ] });
+              }              if (request.type === 'allostudio-official-tutorial-request') {
                 reply(event.source, request, 'allostudio-official-tutorial-response', {
                   generatedFrom: 'GUIDED_STEPS',
                   steps: [
@@ -112,18 +117,38 @@ test('official tutorial records, restores, and retries failed narration', async 
   await expect.poll(() => studio.url()).toContain('/studio');
   await studio.waitForLoadState('domcontentloaded');
 
+  await studio.locator('#demoGoal').fill('Custom workflow fixture');
+  await studio.locator('#demoPlanBtn').click();
+  await expect(studio.locator('#demoPlanSummary')).toContainText('2 approved steps');
+  await studio.getByRole('button', { name: 'Move step 2 earlier' }).click();
+  await expect(studio.locator('#demoPlanList > div').first()).toContainText('Second custom step');
+  await studio.locator('#demoPlanResetBtn').click();
+  await expect(studio.locator('#demoPlanList > div').first()).toContainText('First custom step');
+
   await studio.locator('#demoOfficialTextBtn').click();
   await expect(studio.locator('#demoPlanList')).toContainText('Text Adaptation');
+  await expect(studio.locator('#demoPreflightStatus')).toContainText('Preflight passed');
+  await studio.locator('#demoRehearseBtn').click();
+  await expect(studio.locator('#demoStatus')).toContainText('Rehearsal complete', { timeout: 10000 });
+  await expect(studio.locator('#demoPrivacyIndicator')).toContainText('not recording');
+  await expect(studio.locator('#demoPlanResetBtn')).toBeHidden();
+  await expect(studio.locator('#clipList')).toBeEmpty();
   await studio.locator('#demoStartBtn').click();
 
   await expect(studio.locator('#clipList')).toContainText('Regenerate', { timeout: 20000 });
   await expect(studio.locator('#demoNarrRetryEditBtn')).toBeVisible({ timeout: 10000 });
+  await expect(studio.locator('#demoQualityCard')).toBeVisible();
+  await expect(studio.locator('#demoQualityStatus')).toContainText('Quality score:');
+  await expect(studio.getByRole('button', { name: /Review/ }).first()).toBeVisible();
   await expect.poll(() => page.evaluate(() => (window as any).cleanupSeen)).toBe(true);
 
   await studio.locator('#demoNarrRetryEditBtn').click();
   await expect(studio.locator('#demoNarrCancelEditBtn')).toBeVisible();
   await studio.locator('#demoNarrCancelEditBtn').click();
   await expect(studio.locator('#demoNarrRetryEditBtn')).toBeVisible({ timeout: 10000 });
+  await expect(studio.locator('#demoQualityCard')).toBeVisible();
+  await expect(studio.locator('#demoQualityStatus')).toContainText('Quality score:');
+  await expect(studio.getByRole('button', { name: /Review/ }).first()).toBeVisible();
   await expect.poll(() => page.evaluate(() => (window as any).ttsCount)).toBe(3);
 
   await studio.locator('#demoNarrRetryEditBtn').click();
@@ -135,4 +160,6 @@ test('official tutorial records, restores, and retries failed narration', async 
   await regenerate.first().click();
   await expect.poll(() => page.evaluate(() => (window as any).ttsCount)).toBe(5);
   await expect(studio.locator('#aiNarrStatus')).toContainText('Narration line regenerated');
+  await studio.locator('#demoQualityRerunBtn').click();
+  await expect(studio.locator('#demoQualityStatus')).toContainText('0 failed');
 });

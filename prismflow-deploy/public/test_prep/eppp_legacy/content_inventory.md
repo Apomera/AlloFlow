@@ -1,6 +1,6 @@
 # Pass the EPPP learning-content inventory
 
-Generated: 2026-07-11T19:57:23.698Z
+Generated: 2026-07-12T21:42:15.693Z
 
 ## Inventory
 
@@ -16,9 +16,9 @@ Generated: 2026-07-11T19:57:23.698Z
 | Memory aids and mnemonics | 255 |
 | Textbook chapters | 49 |
 | Textbook sections | 278 |
-| Embedded knowledge checks | 90 |
+| Embedded knowledge checks | 91 |
 | Interactive diagram templates | 25 |
-| Diagram placements in chapters | 50 |
+| Diagram placements in chapters | 52 |
 | Searchable term definitions | 1583 |
 | Chapter reference entries | 293 |
 | AI-reflective chapter codas | 49 |

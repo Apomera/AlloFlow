@@ -24,7 +24,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 8;
+var VERSION = 9;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -577,6 +577,45 @@ function pathStarts(key, root) {
   return key === root || key.indexOf(root + '.') === 0;
 }
 
+function validWsMetricNumber(value, max) {
+  return typeof value === 'number' && isFinite(value) && value >= 0 && value <= (max || 100000);
+}
+// Word Sounds live-progress / probe-result roster leaves (mirror of the shell
+// validator in AlloFlowANTI.txt — keep both in sync): structured numbers + an
+// activity id from a fixed code-defined set. Every string field is
+// pattern-checked, so no free text can travel on these fields.
+function validWsProgressValue(value) {
+  if (value === null) return true;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var allowed = { kind: 1, activity: 1, correct: 1, total: 1, goal: 1, done: 1, at: 1 };
+  var keys = Object.keys(value);
+  for (var i = 0; i < keys.length; i++) { if (!allowed[keys[i]]) return false; }
+  if (value.kind != null && value.kind !== 'practice' && value.kind !== 'probe') return false;
+  if (value.activity != null && !(typeof value.activity === 'string' && /^[a-z_]{1,32}$/.test(value.activity))) return false;
+  if (value.done != null && typeof value.done !== 'boolean') return false;
+  if (value.correct != null && !validWsMetricNumber(value.correct)) return false;
+  if (value.total != null && !validWsMetricNumber(value.total)) return false;
+  if (value.goal != null && !validWsMetricNumber(value.goal)) return false;
+  if (value.at != null && !validWsMetricNumber(value.at, 999999999999999)) return false;
+  return true;
+}
+function validWsProbeResultValue(value) {
+  if (value === null) return true;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var allowed = { activity: 1, correct: 1, total: 1, accuracy: 1, itemsPerMin: 1, elapsed: 1, grade: 1, form: 1, at: 1 };
+  var keys = Object.keys(value);
+  for (var i = 0; i < keys.length; i++) { if (!allowed[keys[i]]) return false; }
+  if (value.activity != null && !(typeof value.activity === 'string' && /^[a-z_]{1,32}$/.test(value.activity))) return false;
+  if (value.grade != null && !(typeof value.grade === 'string' && /^[A-Za-z0-9 -]{1,16}$/.test(value.grade))) return false;
+  if (value.form != null && !(typeof value.form === 'string' && /^[A-Za-z0-9-]{1,8}$/.test(value.form))) return false;
+  if (value.correct != null && !validWsMetricNumber(value.correct)) return false;
+  if (value.total != null && !validWsMetricNumber(value.total)) return false;
+  if (value.accuracy != null && !validWsMetricNumber(value.accuracy)) return false;
+  if (value.itemsPerMin != null && !validWsMetricNumber(value.itemsPerMin)) return false;
+  if (value.elapsed != null && !validWsMetricNumber(value.elapsed)) return false;
+  if (value.at != null && !validWsMetricNumber(value.at, 999999999999999)) return false;
+  return true;
+}
 function validParticipantRosterField(field, value, uid) {
   if (value && typeof value === 'object' && value.__op === 'deleteField') return field !== 'uid';
   if (field === 'uid') return value === uid;
@@ -587,6 +626,8 @@ function validParticipantRosterField(field, value, uid) {
   if (field === 'signal') return value === null || value === 'stuck' || value === 'slow' || value === 'repeat' || value === 'ready';
   if (field === 'signalAt' || field === 'viewingAt') return value === null || (typeof value === 'number' && isFinite(value) && value >= 0);
   if (field === 'viewingResourceId') return value === null || (typeof value === 'string' && value.length <= 100);
+  if (field === 'wsProgress') return validWsProgressValue(value);
+  if (field === 'wsProbeResult') return validWsProbeResultValue(value);
   return false;
 }
 function participantCanPatchSession(updates, uid) {
@@ -594,7 +635,8 @@ function participantCanPatchSession(updates, uid) {
   var rosterRoot = 'roster.' + uid;
   var rosterFields = {
     uid: 1, name: 1, joinedAt: 1, status: 1, xp: 1,
-    signal: 1, signalAt: 1, viewingResourceId: 1, viewingAt: 1
+    signal: 1, signalAt: 1, viewingResourceId: 1, viewingAt: 1,
+    wsProgress: 1, wsProbeResult: 1
   };
   var roots = [
     'quizState.allResponses.' + uid,
@@ -773,6 +815,7 @@ function putSubmission(cache, props, p, admin) {
     var packMeta;
     try { packMeta = JSON.parse(manifest.getBlob().getDataAsString()); } catch (e) { return out({ ok: false, e: 'corrupt' }); }
     if (String(p.k || '') !== String(packMeta.k || '')) return out({ ok: false, e: 'denied' });
+    if (packMeta.expiresAt && Date.parse(packMeta.expiresAt) <= Date.now()) return out({ ok: false, e: 'expired' });
     sourceKind = 'homework';
     sourceId = packId;
     rateIdentity = packId.slice(-12) + ':' + String(p.k || '').slice(0, 12);
@@ -863,7 +906,7 @@ function putPack(cache, p) {
     }
     replacePackFileV7('pack-' + id + '.json', JSON.stringify({
       v: 2, k: String(p.k), t: Date.now(), title: String(p.title || '').slice(0, 140),
-      chars: assembled.length, of: downloadParts
+      expiresAt: String(p.expiresAt || ''), chars: assembled.length, of: downloadParts
     }), 'application/json');
     for (var r = 1; r <= of; r++) cache.remove('u:' + id + ':' + r);
     return out({ ok: true, id: id, chars: assembled.length, of: downloadParts });
@@ -881,6 +924,7 @@ function getPack(cache, p) {
   var body;
   try { body = JSON.parse(file.getBlob().getDataAsString()); } catch (err) { return out({ ok: false, e: 'corrupt' }); }
   if (String(p.k || '') !== String(body.k || '')) return out({ ok: false, e: 'denied' });
+  if (body.expiresAt && Date.parse(body.expiresAt) <= Date.now()) return out({ ok: false, e: 'expired' });
   var part = Math.max(1, parseInt(p.part, 10) || 1);
   if (body.data !== undefined) {
     var legacy = String(body.data || '');
