@@ -1886,6 +1886,14 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
   const [lastHint, setLastHint] = useState(null);
   const moveMenuRef = useRef(null);
   const hintTimerRef = useRef(null);
+  const vennDialogRef = useRef(null);
+  const vennCloseRef = useRef(null);
+  const vennVictoryRef = useRef(null);
+  const vennPlayAgainRef = useRef(null);
+  useGameDialogFocus(vennDialogRef, vennCloseRef, onClose);
+  useEffect(() => {
+    if (isWon) vennPlayAgainRef.current?.focus();
+  }, [isWon]);
   const showZoneHint = (correctZone) => {
     if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
     setLastHint(correctZone);
@@ -2006,6 +2014,20 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
       }
     }
   }, [items, score, onScoreUpdate, playSound, isWon]);
+  const resetVennGame = () => {
+    const shuffled = items.map((item) => ({ ...item, currentZone: "bank" }));
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    setItems(shuffled);
+    setScore(0);
+    setAttempts(0);
+    setIsWon(false);
+    setKeyboardSelectedItemId(null);
+    setAnnouncement(t("concept_map.venn.restarted") || "Venn sort restarted.");
+    window.setTimeout(() => vennDialogRef.current?.focus(), 0);
+  };
   const getText = (item) => {
     if (gameLang === "english" && item.translation) return item.translation;
     return item.text;
@@ -2033,7 +2055,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
   const vennSetB = useMemo(() => items.filter((i) => i.currentZone === "setB"), [items]);
   const vennShared = useMemo(() => items.filter((i) => i.currentZone === "shared"), [items]);
   const vennBank = useMemo(() => items.filter((i) => i.currentZone === "bank"), [items]);
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[200] bg-slate-50 flex flex-col animate-in zoom-in-95", "data-help-key": "venn_game_container" }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-600 p-4 text-white flex justify-between items-center shadow-md z-30" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-xl flex items-center gap-2", "data-help-key": "venn_header" }, /* @__PURE__ */ React.createElement(Layout, { size: 24 }), " ", t("common.venn_sort_title")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, hasTranslations && /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: vennDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "venn-game-title", className: `fixed inset-0 z-[200] bg-slate-50 flex flex-col focus:outline-none${useReducedMotion() ? "" : " animate-in zoom-in-95"}`, "data-help-key": "venn_game_container" }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-600 p-4 text-white flex justify-between items-center shadow-md z-30" }, /* @__PURE__ */ React.createElement("h3", { id: "venn-game-title", className: "font-bold text-xl flex items-center gap-2", "data-help-key": "venn_header" }, /* @__PURE__ */ React.createElement(Layout, { size: 24 }), " ", t("common.venn_sort_title")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, hasTranslations && /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -2048,13 +2070,49 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
     {
       "aria-label": t("common.close"),
       onClick: onClose,
+      ref: vennCloseRef,
+      type: "button",
       "data-help-key": "venn_back_btn",
-      className: "flex items-center gap-1 text-xs font-bold bg-indigo-700 hover:bg-indigo-500 px-3 py-1.5 rounded-full transition-colors border border-indigo-400"
+      className: "min-h-11 flex items-center gap-1 text-xs font-bold bg-indigo-700 hover:bg-indigo-500 px-3 py-1.5 rounded-full transition-colors border border-indigo-400 focus:outline-none focus:ring-2 focus:ring-white"
     },
     /* @__PURE__ */ React.createElement(ArrowDown, { className: "rotate-90", size: 14 }),
     " ",
     t("concept_map.venn.back_to_editor")
-  ))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow relative bg-slate-100 overflow-hidden flex flex-col items-center justify-center" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none" }), isWon && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm", role: "dialog", "aria-modal": "true", "aria-labelledby": "venn-victory-title" }, /* @__PURE__ */ React.createElement("div", { className: `bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? "animate-in zoom-in-95 duration-300" : ""}` }, /* @__PURE__ */ React.createElement("h2", { id: "venn-victory-title", className: "text-4xl font-black text-indigo-600 mb-2" }, t("concept_map.venn.victory_title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600" }, t("concept_map.venn.victory_desc"))), !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null)), lastHint && /* @__PURE__ */ React.createElement("div", { className: "absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16 }), " Try: ", lastHint === "shared" ? getTitle("shared") || "Both" : getTitle(lastHint)), keyboardSelectedItemId && /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow relative bg-slate-100 overflow-hidden flex flex-col items-center justify-center" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none" }), isWon && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4", role: "presentation" }, /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      ref: vennVictoryRef,
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": "venn-victory-title",
+      "aria-describedby": "venn-victory-description",
+      onKeyDown: (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          onClose();
+          return;
+        }
+        if (event.key !== "Tab") return;
+        const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+        if (!focusable.length) {
+          event.preventDefault();
+          return;
+        }
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      },
+      className: `relative z-10 bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? "animate-in zoom-in-95 duration-300" : ""}`
+    },
+    /* @__PURE__ */ React.createElement("h2", { id: "venn-victory-title", className: "text-4xl font-black text-indigo-600 mb-2" }, t("concept_map.venn.victory_title")),
+    /* @__PURE__ */ React.createElement("p", { id: "venn-victory-description", className: "text-slate-600" }, t("concept_map.venn.victory_desc")),
+    /* @__PURE__ */ React.createElement("div", { className: "mt-6 flex flex-wrap justify-center gap-3" }, /* @__PURE__ */ React.createElement("button", { ref: vennPlayAgainRef, type: "button", onClick: resetVennGame, className: "min-h-11 rounded-lg bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" }, t("games.bucket_sort.play_again") || "Play again"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-h-11 rounded-lg bg-slate-200 px-4 py-2 font-bold text-slate-800 hover:bg-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500" }, t("common.close") || "Close"))
+  ), !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null)), lastHint && /* @__PURE__ */ React.createElement("div", { className: "absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16 }), " Try: ", lastHint === "shared" ? getTitle("shared") || "Both" : getTitle(lastHint)), keyboardSelectedItemId && /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "absolute inset-0 z-50 bg-black/10 backdrop-blur-[2px] flex items-center justify-center",

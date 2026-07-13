@@ -105,6 +105,8 @@ This report evaluates the current local desktop command center and the bundled A
 
 - Made Concept Sort a named focus-managed full-screen dialog using the shared game-workspace hook; focused its named 44 CSS-pixel Close control, contained Tab, supported Escape closing, restored focus to the launcher, hid the Close icon, added reduced-motion-aware entry, and verified its existing keyboard select-and-place alternative to dragging (WCAG 1.1.1, 2.1.1, 2.3.3, 2.4.3, 2.4.6, 2.4.7, 2.5.7, 2.5.8, 4.1.2).
 
+- Made Venn Sort a named focus-managed full-screen dialog and repaired its previously actionless victory overlay: added a named/described nested dialog, initial Play again focus, contained Tab, Escape closing, replay and Close actions, focus return to the workspace after replay, reduced-motion-aware entry, 44 CSS-pixel actions, and retained keyboard select-and-place alternatives to dragging (WCAG 2.1.1, 2.3.3, 2.4.3, 2.4.6, 2.4.7, 2.5.7, 2.5.8, 4.1.2).
+
 ## Resolved finding
 
 ### A11Y-REFLOW-001 - Header controls rendered off-screen at 320 CSS pixels
